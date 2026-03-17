@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Game } from '@/lib/gameData';
-import { useCart } from '@/lib/cartStore';
+import { useCart } from '@/hooks/useCart';
 import { ShoppingCart } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
