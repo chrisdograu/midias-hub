@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, ReactNode, FC } from 'react';
 import { Game } from './gameData';
 
 export interface CartItem {
@@ -18,7 +18,7 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | null>(null);
 
-export function CartProvider({ children }: { children: ReactNode }) {
+export const CartProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [items, setItems] = useState<CartItem[]>([]);
 
   const addItem = useCallback((game: Game) => {
@@ -51,7 +51,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       {children}
     </CartContext.Provider>
   );
-}
+};
 
 export function useCart() {
   const ctx = useContext(CartContext);
