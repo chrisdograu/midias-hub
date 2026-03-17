@@ -1,23 +1,6 @@
-import { createContext, useContext, useState, useCallback, ReactNode, FC } from 'react';
-import { Game } from './gameData';
-
-export interface CartItem {
-  game: Game;
-  quantity: number;
-}
-
-interface CartContextType {
-  items: CartItem[];
-  addItem: (game: Game) => void;
-  removeItem: (gameId: string) => void;
-  updateQuantity: (gameId: string, quantity: number) => void;
-  clearCart: () => void;
-  total: number;
-  itemCount: number;
-}
-
-// Cart context for global state
-const CartContext = createContext<CartContextType | null>(null);
+import { useState, useCallback, FC, ReactNode } from 'react';
+import { CartContext, CartItem } from '@/lib/cartContext';
+import { Game } from '@/lib/gameData';
 
 export const CartProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -53,9 +36,3 @@ export const CartProvider: FC<{ children: ReactNode }> = ({ children }) => {
     </CartContext.Provider>
   );
 };
-
-export function useCart() {
-  const ctx = useContext(CartContext);
-  if (!ctx) throw new Error('useCart must be used within CartProvider');
-  return ctx;
-}
