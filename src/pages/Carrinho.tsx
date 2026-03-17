@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { useCart } from '@/lib/cartStore';
+import { useCart } from '@/hooks/useCart';
 import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 

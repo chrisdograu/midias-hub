@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useCart } from '@/lib/cartStore';
+import { useCart } from '@/hooks/useCart';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, CreditCard, QrCode, Building, ShieldCheck, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';

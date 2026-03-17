@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ShoppingCart, Search, User, Menu, X, Gamepad2 } from 'lucide-react';
-import { useCart } from '@/lib/cartStore';
+import { useCart } from '@/hooks/useCart';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Header() {

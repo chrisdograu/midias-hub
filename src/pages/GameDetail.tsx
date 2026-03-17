@@ -1,6 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { games } from '@/lib/gameData';
-import { useCart } from '@/lib/cartStore';
+import { useCart } from '@/hooks/useCart';
 import { ShoppingCart, Star, ArrowLeft, Shield, Zap, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
