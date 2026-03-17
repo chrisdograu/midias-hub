@@ -1,52 +1,60 @@
-import { create } from 'zustand';
+import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { Game } from './gameData';
 
-interface CartItem {
+export interface CartItem {
   game: Game;
   quantity: number;
 }
 
-interface CartStore {
+interface CartContextType {
   items: CartItem[];
   addItem: (game: Game) => void;
   removeItem: (gameId: string) => void;
+  updateQuantity: (gameId: string, quantity: number) => void;
   clearCart: () => void;
-  getTotal: () => number;
-  getItemCount: () => number;
+  total: number;
+  itemCount: number;
 }
 
-// Simple store using closure
-let listeners: (() => void)[] = [];
-let cartItems: CartItem[] = [];
+const CartContext = createContext<CartContextType | null>(null);
 
-function notify() {
-  listeners.forEach(l => l());
+export function CartProvider({ children }: { children: ReactNode }) {
+  const [items, setItems] = useState<CartItem[]>([]);
+
+  const addItem = useCallback((game: Game) => {
+    setItems(prev => {
+      const existing = prev.find(i => i.game.id === game.id);
+      if (existing) return prev.map(i => i.game.id === game.id ? { ...i, quantity: i.quantity + 1 } : i);
+      return [...prev, { game, quantity: 1 }];
+    });
+  }, []);
+
+  const removeItem = useCallback((gameId: string) => {
+    setItems(prev => prev.filter(i => i.game.id !== gameId));
+  }, []);
+
+  const updateQuantity = useCallback((gameId: string, quantity: number) => {
+    if (quantity <= 0) {
+      setItems(prev => prev.filter(i => i.game.id !== gameId));
+    } else {
+      setItems(prev => prev.map(i => i.game.id === gameId ? { ...i, quantity } : i));
+    }
+  }, []);
+
+  const clearCart = useCallback(() => setItems([]), []);
+
+  const total = items.reduce((sum, i) => sum + i.game.price * i.quantity, 0);
+  const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
+
+  return (
+    <CartContext.Provider value={{ items, addItem, removeItem, updateQuantity, clearCart, total, itemCount }}>
+      {children}
+    </CartContext.Provider>
+  );
 }
 
-export function useCart(): CartStore {
-  const [, setTick] = (await import('react')).useState(0);
-
-  // We'll use a simpler approach
-  return {
-    items: cartItems,
-    addItem: (game: Game) => {
-      const existing = cartItems.find(i => i.game.id === game.id);
-      if (existing) {
-        existing.quantity += 1;
-      } else {
-        cartItems = [...cartItems, { game, quantity: 1 }];
-      }
-      notify();
-    },
-    removeItem: (gameId: string) => {
-      cartItems = cartItems.filter(i => i.game.id !== gameId);
-      notify();
-    },
-    clearCart: () => {
-      cartItems = [];
-      notify();
-    },
-    getTotal: () => cartItems.reduce((sum, i) => sum + i.game.price * i.quantity, 0),
-    getItemCount: () => cartItems.reduce((sum, i) => sum + i.quantity, 0),
-  };
+export function useCart() {
+  const ctx = useContext(CartContext);
+  if (!ctx) throw new Error('useCart must be used within CartProvider');
+  return ctx;
 }
