@@ -16,6 +16,7 @@ interface CartContextType {
   itemCount: number;
 }
 
+// Cart context for global state
 const CartContext = createContext<CartContextType | null>(null);
 
 export const CartProvider: FC<{ children: ReactNode }> = ({ children }) => {
