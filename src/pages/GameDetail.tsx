@@ -1,21 +1,27 @@
+import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { games } from '@/lib/gameData';
+import { useProduto, useProdutos } from '@/hooks/useProdutos';
 import { useCart } from '@/hooks/useCart';
-import { ShoppingCart, Star, ArrowLeft, Shield, Zap, Clock } from 'lucide-react';
+import { useFavoritos } from '@/hooks/useFavoritos';
+import { useAvaliacoes } from '@/hooks/useAvaliacoes';
+import { useAuth } from '@/hooks/useAuth';
+import { ShoppingCart, Star, ArrowLeft, Shield, Zap, Clock, Heart, Loader2, Send } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import GameCard from '@/components/GameCard';
-import { useMemo } from 'react';
 
 export default function GameDetail() {
   const { id } = useParams();
-  const game = games.find(g => g.id === id);
+  const { data: game, isLoading } = useProduto(id);
+  const { data: allGames = [] } = useProdutos();
   const { addItem } = useCart();
+  const { user } = useAuth();
+  const { isFavorito, toggleFavorito } = useFavoritos();
+  const { avaliacoes, addAvaliacao } = useAvaliacoes(id);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState('');
 
-  const related = useMemo(() => {
-    if (!game) return [];
-    return games.filter(g => g.id !== game.id && g.category === game.category).slice(0, 4);
-  }, [game]);
+  if (isLoading) return <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
 
   if (!game) {
     return (
@@ -26,12 +32,25 @@ export default function GameDetail() {
     );
   }
 
-  const handleAdd = () => {
-    addItem(game);
-    toast.success(`${game.title} adicionado ao carrinho!`);
+  const related = allGames.filter(g => g.id !== game.id && g.category === game.category).slice(0, 4);
+
+  const handleAdd = () => { addItem(game); toast.success(`${game.title} adicionado ao carrinho!`); };
+  const handleFav = () => {
+    if (!user) { toast.error('Faça login para favoritar'); return; }
+    toggleFavorito(game.id);
+  };
+  const handleReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) { toast.error('Faça login para avaliar'); return; }
+    try {
+      await addAvaliacao.mutateAsync({ rating: reviewRating, comment: reviewComment });
+      toast.success('Avaliação enviada! Aguarde aprovação.');
+      setReviewComment('');
+      setReviewRating(5);
+    } catch { toast.error('Erro ao enviar avaliação'); }
   };
 
-  const installments = Math.ceil(game.price / 10) > 12 ? 12 : Math.ceil(game.price / 10) < 2 ? 2 : Math.ceil(game.price / 10);
+  const installments = Math.min(12, Math.max(2, Math.ceil(game.price / 10)));
   const installmentValue = (game.price / installments).toFixed(2);
 
   return (
@@ -39,45 +58,31 @@ export default function GameDetail() {
       <Link to="/catalogo" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors mb-6">
         <ArrowLeft className="h-4 w-4" /> Voltar ao catálogo
       </Link>
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Image */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="lg:col-span-2"
-        >
+        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="lg:col-span-2">
           <div className="relative rounded-xl overflow-hidden aspect-video">
             <img src={game.image} alt={game.title} className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent" />
+            <button onClick={handleFav} className="absolute top-4 right-4 p-2 rounded-full bg-card/80 backdrop-blur-sm hover:bg-card transition-colors">
+              <Heart className={`h-5 w-5 ${isFavorito(game.id) ? 'fill-destructive text-destructive' : 'text-muted-foreground'}`} />
+            </button>
           </div>
         </motion.div>
-
-        {/* Info panel */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="space-y-4"
-        >
+        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
           <div>
             <div className="flex flex-wrap gap-2 mb-2">
-              {game.platform.map(p => (
-                <span key={p} className="text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded">{p}</span>
-              ))}
+              {game.platform.map(p => <span key={p} className="text-xs bg-secondary text-secondary-foreground px-2 py-1 rounded">{p}</span>)}
               <span className="text-xs bg-accent/20 text-accent px-2 py-1 rounded">{game.category}</span>
             </div>
             <h1 className="text-2xl font-bold text-foreground">{game.title}</h1>
             <p className="text-sm text-muted-foreground mt-1">{game.publisher}</p>
           </div>
-
           <div className="flex items-center gap-1">
             {Array.from({ length: 5 }).map((_, i) => (
               <Star key={i} className={`h-4 w-4 ${i < Math.floor(game.rating) ? 'text-price fill-price' : 'text-muted-foreground'}`} />
             ))}
             <span className="text-sm text-muted-foreground ml-1">{game.rating}</span>
           </div>
-
-          {/* Price card */}
           <div className="bg-card border border-border rounded-xl p-4 space-y-3">
             {game.discount > 0 && (
               <div className="flex items-center gap-2">
@@ -86,27 +91,14 @@ export default function GameDetail() {
               </div>
             )}
             <div className="text-3xl font-bold text-price">R$ {game.price.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground">
-              ou {installments}x de R$ {installmentValue} sem juros
-            </p>
-
-            <button
-              onClick={handleAdd}
-              className="w-full py-3 bg-primary text-primary-foreground font-semibold rounded-lg flex items-center justify-center gap-2 hover:opacity-90 transition-all glow-primary"
-            >
+            <p className="text-xs text-muted-foreground">ou {installments}x de R$ {installmentValue} sem juros</p>
+            <button onClick={handleAdd} className="w-full py-3 bg-primary text-primary-foreground font-semibold rounded-lg flex items-center justify-center gap-2 hover:opacity-90 transition-all glow-primary">
               <ShoppingCart className="h-5 w-5" /> Adicionar ao Carrinho
             </button>
-
             <div className="space-y-2 pt-2">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Zap className="h-3.5 w-3.5 text-primary" /> Entrega instantânea por e-mail
-              </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Shield className="h-3.5 w-3.5 text-success" /> Garantia de 30 dias
-              </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Clock className="h-3.5 w-3.5 text-warning" /> Suporte 24/7
-              </div>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground"><Zap className="h-3.5 w-3.5 text-primary" /> Entrega instantânea por e-mail</div>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground"><Shield className="h-3.5 w-3.5 text-success" /> Garantia de 30 dias</div>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground"><Clock className="h-3.5 w-3.5 text-warning" /> Suporte 24/7</div>
             </div>
           </div>
         </motion.div>
@@ -118,20 +110,62 @@ export default function GameDetail() {
           <h2 className="text-lg font-bold text-foreground">Sobre o Jogo</h2>
           <p className="text-muted-foreground leading-relaxed">{game.description}</p>
           <div className="flex flex-wrap gap-2 mt-4">
-            {game.tags.map(tag => (
-              <span key={tag} className="text-xs bg-secondary text-secondary-foreground px-3 py-1.5 rounded-full">{tag}</span>
-            ))}
+            {game.tags.map(tag => <span key={tag} className="text-xs bg-secondary text-secondary-foreground px-3 py-1.5 rounded-full">{tag}</span>)}
           </div>
         </div>
         <div className="space-y-3">
           <h2 className="text-lg font-bold text-foreground">Detalhes</h2>
           <div className="bg-card border border-border rounded-xl p-4 space-y-3 text-sm">
             <div className="flex justify-between"><span className="text-muted-foreground">Publicadora</span><span className="text-foreground">{game.publisher}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Lançamento</span><span className="text-foreground">{new Date(game.releaseDate).toLocaleDateString('pt-BR')}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Lançamento</span><span className="text-foreground">{game.releaseDate ? new Date(game.releaseDate).toLocaleDateString('pt-BR') : '-'}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Categoria</span><span className="text-foreground">{game.category}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Plataformas</span><span className="text-foreground">{game.platform.join(', ')}</span></div>
           </div>
         </div>
+      </div>
+
+      {/* Reviews */}
+      <div className="mt-12">
+        <h2 className="text-lg font-bold text-foreground mb-4">Avaliações</h2>
+        {user && (
+          <form onSubmit={handleReview} className="bg-card border border-border rounded-xl p-4 mb-6 space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Sua nota:</span>
+              {[1, 2, 3, 4, 5].map(n => (
+                <button key={n} type="button" onClick={() => setReviewRating(n)}>
+                  <Star className={`h-5 w-5 ${n <= reviewRating ? 'text-price fill-price' : 'text-muted-foreground'}`} />
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <input value={reviewComment} onChange={e => setReviewComment(e.target.value)} placeholder="Deixe um comentário..."
+                className="flex-1 px-4 py-2 bg-secondary border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+              <button type="submit" disabled={addAvaliacao.isPending} className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-all">
+                <Send className="h-4 w-4" />
+              </button>
+            </div>
+          </form>
+        )}
+        {avaliacoes.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Nenhuma avaliação ainda. Seja o primeiro!</p>
+        ) : (
+          <div className="space-y-3">
+            {avaliacoes.map(av => (
+              <div key={av.id} className="bg-card border border-border rounded-xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center">
+                    <span className="text-xs font-bold text-primary">{((av.profiles as any)?.display_name || 'U')[0].toUpperCase()}</span>
+                  </div>
+                  <span className="text-sm font-medium text-foreground">{(av.profiles as any)?.display_name || 'Usuário'}</span>
+                  <div className="flex gap-0.5 ml-auto">
+                    {[1, 2, 3, 4, 5].map(n => <Star key={n} className={`h-3 w-3 ${n <= av.rating ? 'text-price fill-price' : 'text-muted-foreground'}`} />)}
+                  </div>
+                </div>
+                {av.comment && <p className="text-sm text-muted-foreground">{av.comment}</p>}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Related */}
