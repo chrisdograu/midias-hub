@@ -1,3 +1,4 @@
+// Product type matching the database schema
 export interface Game {
   id: string;
   title: string;
@@ -14,188 +15,38 @@ export interface Game {
   tags: string[];
 }
 
-export const games: Game[] = [
-  {
-    id: "1",
-    title: "Cyberpunk 2077: Ultimate Edition",
-    image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=600&q=80",
-    price: 89.90,
-    originalPrice: 249.90,
-    discount: 64,
-    category: "RPG",
-    platform: ["PC", "PS5", "Xbox"],
-    rating: 4.5,
-    description: "Mergulhe em Night City, uma megalópole obcecada por poder, glamour e modificação corporal.",
-    releaseDate: "2020-12-10",
-    publisher: "CD Projekt Red",
-    tags: ["Mundo Aberto", "RPG", "Ação", "Sci-Fi"],
-  },
-  {
-    id: "2",
-    title: "Elden Ring",
-    image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=600&q=80",
-    price: 124.90,
-    originalPrice: 299.90,
-    discount: 58,
-    category: "RPG",
-    platform: ["PC", "PS5", "Xbox"],
-    rating: 4.8,
-    description: "Um RPG de ação épico ambientado em um vasto mundo criado por Hidetaka Miyazaki e George R.R. Martin.",
-    releaseDate: "2022-02-25",
-    publisher: "Bandai Namco",
-    tags: ["Souls-like", "Mundo Aberto", "Fantasia", "Difícil"],
-  },
-  {
-    id: "3",
-    title: "God of War Ragnarök",
-    image: "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=600&q=80",
-    price: 149.90,
-    originalPrice: 349.90,
-    discount: 57,
-    category: "Ação",
-    platform: ["PC", "PS5"],
-    rating: 4.9,
-    description: "Embarque com Kratos e Atreus em uma jornada mítica pela sobrevivência contra as forças de Asgard.",
-    releaseDate: "2022-11-09",
-    publisher: "Sony Interactive",
-    tags: ["Ação", "Aventura", "Mitologia", "Narrativo"],
-  },
-  {
-    id: "4",
-    title: "Hogwarts Legacy",
-    image: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600&q=80",
-    price: 99.90,
-    originalPrice: 249.90,
-    discount: 60,
-    category: "RPG",
-    platform: ["PC", "PS5", "Xbox", "Switch"],
-    rating: 4.3,
-    description: "Viva a vida de um estudante do mundo bruxo no século 1800. Sua história, sua aventura.",
-    releaseDate: "2023-02-10",
-    publisher: "Warner Bros. Games",
-    tags: ["Mundo Aberto", "Magia", "RPG", "Aventura"],
-  },
-  {
-    id: "5",
-    title: "Red Dead Redemption 2",
-    image: "https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=600&q=80",
-    price: 59.90,
-    originalPrice: 199.90,
-    discount: 70,
-    category: "Ação",
-    platform: ["PC", "PS5", "Xbox"],
-    rating: 4.9,
-    description: "Uma história épica sobre vida no impiedoso coração dos Estados Unidos.",
-    releaseDate: "2018-10-26",
-    publisher: "Rockstar Games",
-    tags: ["Mundo Aberto", "Western", "Ação", "Narrativo"],
-  },
-  {
-    id: "6",
-    title: "The Witcher 3: Wild Hunt",
-    image: "https://images.unsplash.com/photo-1535223289827-42f1e9919769?w=600&q=80",
-    price: 39.90,
-    originalPrice: 149.90,
-    discount: 73,
-    category: "RPG",
-    platform: ["PC", "PS5", "Xbox", "Switch"],
-    rating: 4.9,
-    description: "Você é Geralt de Rívia, caçador de monstros. Numa terra devastada pela guerra.",
-    releaseDate: "2015-05-19",
-    publisher: "CD Projekt Red",
-    tags: ["RPG", "Mundo Aberto", "Fantasia", "História Rica"],
-  },
-  {
-    id: "7",
-    title: "Starfield",
-    image: "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?w=600&q=80",
-    price: 179.90,
-    originalPrice: 349.90,
-    discount: 49,
-    category: "RPG",
-    platform: ["PC", "Xbox"],
-    rating: 3.8,
-    description: "Explore a galáxia neste RPG de exploração espacial da Bethesda.",
-    releaseDate: "2023-09-06",
-    publisher: "Bethesda",
-    tags: ["Espacial", "RPG", "Exploração", "Sci-Fi"],
-  },
-  {
-    id: "8",
-    title: "Resident Evil 4 Remake",
-    image: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=600&q=80",
-    price: 109.90,
-    originalPrice: 279.90,
-    discount: 61,
-    category: "Terror",
-    platform: ["PC", "PS5", "Xbox"],
-    rating: 4.7,
-    description: "O clássico de sobrevivência reinventado com gráficos modernos e gameplay aprimorado.",
-    releaseDate: "2023-03-24",
-    publisher: "Capcom",
-    tags: ["Terror", "Ação", "Sobrevivência", "Remake"],
-  },
-  {
-    id: "9",
-    title: "FIFA 24 / EA FC 24",
-    image: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=600&q=80",
-    price: 69.90,
-    originalPrice: 299.90,
-    discount: 77,
-    category: "Esporte",
-    platform: ["PC", "PS5", "Xbox", "Switch"],
-    rating: 3.5,
-    description: "A experiência definitiva de futebol com HyperMotion e gráficos de nova geração.",
-    releaseDate: "2023-09-29",
-    publisher: "Electronic Arts",
-    tags: ["Esporte", "Futebol", "Multiplayer", "Online"],
-  },
-  {
-    id: "10",
-    title: "Baldur's Gate 3",
-    image: "https://images.unsplash.com/photo-1563089145-599997674d42?w=600&q=80",
-    price: 159.90,
-    originalPrice: 249.90,
-    discount: 36,
-    category: "RPG",
-    platform: ["PC", "PS5"],
-    rating: 4.9,
-    description: "Um RPG revolucionário com escolhas que moldam sua história.",
-    releaseDate: "2023-08-03",
-    publisher: "Larian Studios",
-    tags: ["RPG", "Turnos", "D&D", "Narrativo"],
-  },
-  {
-    id: "11",
-    title: "GTA V Premium",
-    image: "https://images.unsplash.com/photo-1552820728-8b83bb6b2b28?w=600&q=80",
-    price: 44.90,
-    originalPrice: 149.90,
-    discount: 70,
-    category: "Ação",
-    platform: ["PC", "PS5", "Xbox"],
-    rating: 4.6,
-    description: "Explore Los Santos com três protagonistas neste clássico de mundo aberto.",
-    releaseDate: "2013-09-17",
-    publisher: "Rockstar Games",
-    tags: ["Mundo Aberto", "Ação", "Crime", "Multiplayer"],
-  },
-  {
-    id: "12",
-    title: "Minecraft Java & Bedrock",
-    image: "https://images.unsplash.com/photo-1587573088697-b4fa09de2738?w=600&q=80",
-    price: 54.90,
-    originalPrice: 119.90,
-    discount: 54,
-    category: "Sandbox",
-    platform: ["PC"],
-    rating: 4.7,
-    description: "Construa, explore e sobreviva em mundos infinitos gerados proceduralmente.",
-    releaseDate: "2011-11-18",
-    publisher: "Mojang Studios",
-    tags: ["Sandbox", "Criatividade", "Sobrevivência", "Multiplayer"],
-  },
-];
+// Map database row to Game interface
+export function mapProdutoToGame(row: {
+  id: string;
+  title: string;
+  image_url: string | null;
+  price: number;
+  original_price: number;
+  discount: number;
+  category: string | null;
+  platform: string[] | null;
+  rating: number | null;
+  description: string | null;
+  release_date: string | null;
+  publisher: string | null;
+  tags: string[] | null;
+}): Game {
+  return {
+    id: row.id,
+    title: row.title,
+    image: row.image_url || '/placeholder.svg',
+    price: Number(row.price),
+    originalPrice: Number(row.original_price),
+    discount: row.discount,
+    category: row.category || 'Outros',
+    platform: row.platform || [],
+    rating: Number(row.rating) || 0,
+    description: row.description || '',
+    releaseDate: row.release_date || '',
+    publisher: row.publisher || '',
+    tags: row.tags || [],
+  };
+}
 
 export const categories = ["Todos", "RPG", "Ação", "Terror", "Esporte", "Sandbox"];
 export const platforms = ["Todos", "PC", "PS5", "Xbox", "Switch"];

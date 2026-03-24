@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Search, User, Menu, X, Gamepad2, LogOut } from 'lucide-react';
+import { ShoppingCart, Search, User, Menu, X, Gamepad2, LogOut, Heart, Package, MessageCircle, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -18,6 +18,7 @@ export default function Header() {
     { to: '/', label: 'Início' },
     { to: '/catalogo', label: 'Catálogo' },
     { to: '/ofertas', label: 'Ofertas' },
+    { to: '/marketplace', label: 'Marketplace' },
   ];
 
   const handleSearch = (e: React.FormEvent) => {
@@ -45,9 +46,7 @@ export default function Header() {
           <nav className="hidden md:flex items-center gap-1">
             {navLinks.map(link => (
               <Link key={link.to} to={link.to}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                  location.pathname === link.to ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-                }`}>
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${location.pathname === link.to ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-secondary'}`}>
                 {link.label}
               </Link>
             ))}
@@ -73,15 +72,12 @@ export default function Header() {
               )}
             </Link>
 
-            {/* User area */}
             {user ? (
               <div className="relative">
                 <button onClick={() => setUserMenuOpen(!userMenuOpen)}
                   className="flex items-center gap-2 p-2 rounded-lg hover:bg-secondary transition-colors">
                   <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center">
-                    <span className="text-xs font-bold text-primary">
-                      {(profile?.display_name || user.email || '?')[0].toUpperCase()}
-                    </span>
+                    <span className="text-xs font-bold text-primary">{(profile?.display_name || user.email || '?')[0].toUpperCase()}</span>
                   </div>
                   <span className="hidden md:block text-sm text-foreground truncate max-w-[100px]">
                     {profile?.display_name || user.email?.split('@')[0]}
@@ -90,15 +86,31 @@ export default function Header() {
                 <AnimatePresence>
                   {userMenuOpen && (
                     <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-                      className="absolute right-0 top-full mt-1 w-48 bg-card border border-border rounded-lg shadow-xl overflow-hidden z-50">
+                      className="absolute right-0 top-full mt-1 w-52 bg-card border border-border rounded-lg shadow-xl overflow-hidden z-50">
                       <div className="p-3 border-b border-border">
                         <p className="text-sm font-medium text-foreground truncate">{profile?.display_name || 'Usuário'}</p>
                         <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                       </div>
-                      <button onClick={handleSignOut}
-                        className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-destructive hover:bg-secondary transition-colors">
-                        <LogOut className="h-4 w-4" /> Sair
-                      </button>
+                      <div className="py-1">
+                        <Link to="/perfil" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-secondary transition-colors">
+                          <User className="h-4 w-4" /> Meu Perfil
+                        </Link>
+                        <Link to="/pedidos" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-secondary transition-colors">
+                          <Package className="h-4 w-4" /> Meus Pedidos
+                        </Link>
+                        <Link to="/favoritos" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-secondary transition-colors">
+                          <Heart className="h-4 w-4" /> Favoritos
+                        </Link>
+                        <Link to="/mensagens" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-secondary transition-colors">
+                          <MessageCircle className="h-4 w-4" /> Mensagens
+                        </Link>
+                      </div>
+                      <div className="border-t border-border">
+                        <button onClick={handleSignOut}
+                          className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-destructive hover:bg-secondary transition-colors">
+                          <LogOut className="h-4 w-4" /> Sair
+                        </button>
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -131,9 +143,7 @@ export default function Header() {
               <nav className="flex flex-col pb-3 gap-1">
                 {navLinks.map(link => (
                   <Link key={link.to} to={link.to} onClick={() => setMobileMenuOpen(false)}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                      location.pathname === link.to ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
-                    }`}>
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${location.pathname === link.to ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-secondary'}`}>
                     {link.label}
                   </Link>
                 ))}

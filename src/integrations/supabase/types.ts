@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      anuncios: {
+        Row: {
+          condition: string
+          created_at: string
+          description: string | null
+          game_title: string
+          id: string
+          platform: string
+          price: number
+          seller_id: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          condition?: string
+          created_at?: string
+          description?: string | null
+          game_title: string
+          id?: string
+          platform: string
+          price?: number
+          seller_id: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          condition?: string
+          created_at?: string
+          description?: string | null
+          game_title?: string
+          id?: string
+          platform?: string
+          price?: number
+          seller_id?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       avaliacoes: {
         Row: {
           comment: string | null
@@ -51,6 +93,44 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      avaliacoes_usuario: {
+        Row: {
+          anuncio_id: string | null
+          comment: string | null
+          created_at: string
+          id: string
+          rating: number
+          reviewed_id: string
+          reviewer_id: string
+        }
+        Insert: {
+          anuncio_id?: string | null
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating: number
+          reviewed_id: string
+          reviewer_id: string
+        }
+        Update: {
+          anuncio_id?: string | null
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating?: number
+          reviewed_id?: string
+          reviewer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "avaliacoes_usuario_anuncio_id_fkey"
+            columns: ["anuncio_id"]
+            isOneToOne: false
+            referencedRelation: "anuncios"
             referencedColumns: ["id"]
           },
         ]
@@ -144,6 +224,38 @@ export type Database = {
           },
         ]
       }
+      fotos_anuncio: {
+        Row: {
+          anuncio_id: string
+          created_at: string
+          id: string
+          image_url: string
+          position: number
+        }
+        Insert: {
+          anuncio_id: string
+          created_at?: string
+          id?: string
+          image_url: string
+          position?: number
+        }
+        Update: {
+          anuncio_id?: string
+          created_at?: string
+          id?: string
+          image_url?: string
+          position?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fotos_anuncio_anuncio_id_fkey"
+            columns: ["anuncio_id"]
+            isOneToOne: false
+            referencedRelation: "anuncios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       itens_pedido: {
         Row: {
           created_at: string
@@ -182,6 +294,44 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mensagens: {
+        Row: {
+          anuncio_id: string | null
+          content: string
+          created_at: string
+          id: string
+          is_read: boolean
+          receiver_id: string
+          sender_id: string
+        }
+        Insert: {
+          anuncio_id?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          receiver_id: string
+          sender_id: string
+        }
+        Update: {
+          anuncio_id?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          receiver_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mensagens_anuncio_id_fkey"
+            columns: ["anuncio_id"]
+            isOneToOne: false
+            referencedRelation: "anuncios"
             referencedColumns: ["id"]
           },
         ]

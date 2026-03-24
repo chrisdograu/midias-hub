@@ -16,6 +16,12 @@ import Carrinho from "./pages/Carrinho";
 import Checkout from "./pages/Checkout";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
+import Pedidos from "./pages/Pedidos";
+import Favoritos from "./pages/Favoritos";
+import Perfil from "./pages/Perfil";
+import Marketplace from "./pages/Marketplace";
+import AnuncioDetail from "./pages/AnuncioDetail";
+import Mensagens from "./pages/Mensagens";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,11 +43,15 @@ const App = () => (
                   <Route path="/ofertas" element={<Ofertas />} />
                   <Route path="/jogo/:id" element={<GameDetail />} />
                   <Route path="/carrinho" element={<Carrinho />} />
-                  <Route path="/checkout" element={
-                    <ProtectedRoute><Checkout /></ProtectedRoute>
-                  } />
+                  <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
                   <Route path="/auth" element={<Auth />} />
                   <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/pedidos" element={<ProtectedRoute><Pedidos /></ProtectedRoute>} />
+                  <Route path="/favoritos" element={<ProtectedRoute><Favoritos /></ProtectedRoute>} />
+                  <Route path="/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
+                  <Route path="/marketplace" element={<Marketplace />} />
+                  <Route path="/marketplace/:id" element={<AnuncioDetail />} />
+                  <Route path="/mensagens" element={<ProtectedRoute><Mensagens /></ProtectedRoute>} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </main>
