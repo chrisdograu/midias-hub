@@ -18,7 +18,7 @@ export default function GameDetail() {
   const { user } = useAuth();
   const { isFavorito, toggleFavorito } = useFavoritos();
   const { avgRating, totalReviews, userRating, submitRating } = useAvaliacoes(id);
-  const [hoverRating, setHoverRating] = useState(0);
+  
 
   if (isLoading) return <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
 
