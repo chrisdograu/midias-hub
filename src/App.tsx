@@ -20,6 +20,9 @@ import Pedidos from "./pages/Pedidos";
 import Favoritos from "./pages/Favoritos";
 import Perfil from "./pages/Perfil";
 import Biblioteca from "./pages/Biblioteca";
+import FAQ from "./pages/FAQ";
+import Contato from "./pages/Contato";
+import TermosDeUso from "./pages/TermosDeUso";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -48,6 +51,9 @@ const App = () => (
                   <Route path="/favoritos" element={<ProtectedRoute><Favoritos /></ProtectedRoute>} />
                   <Route path="/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
                   <Route path="/biblioteca" element={<ProtectedRoute><Biblioteca /></ProtectedRoute>} />
+                  <Route path="/faq" element={<FAQ />} />
+                  <Route path="/contato" element={<Contato />} />
+                  <Route path="/termos" element={<TermosDeUso />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </main>

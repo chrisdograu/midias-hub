@@ -26,9 +26,9 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold text-foreground mb-3">Suporte</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><span className="hover:text-primary cursor-pointer transition-colors">FAQ</span></li>
-              <li><span className="hover:text-primary cursor-pointer transition-colors">Contato</span></li>
-              <li><span className="hover:text-primary cursor-pointer transition-colors">Termos de Uso</span></li>
+              <li><Link to="/faq" className="hover:text-primary transition-colors">FAQ</Link></li>
+              <li><Link to="/contato" className="hover:text-primary transition-colors">Contato</Link></li>
+              <li><Link to="/termos" className="hover:text-primary transition-colors">Termos de Uso</Link></li>
             </ul>
           </div>
           <div>
