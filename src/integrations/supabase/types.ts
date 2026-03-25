@@ -135,6 +135,38 @@ export type Database = {
           },
         ]
       }
+      biblioteca_usuario: {
+        Row: {
+          acquired_at: string
+          id: string
+          product_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          acquired_at?: string
+          id?: string
+          product_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          acquired_at?: string
+          id?: string
+          product_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "biblioteca_usuario_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categorias: {
         Row: {
           created_at: string
@@ -393,6 +425,7 @@ export type Database = {
           publisher: string | null
           rating: number | null
           release_date: string | null
+          stock: number
           tags: string[] | null
           title: string
           updated_at: string
@@ -411,6 +444,7 @@ export type Database = {
           publisher?: string | null
           rating?: number | null
           release_date?: string | null
+          stock?: number
           tags?: string[] | null
           title: string
           updated_at?: string
@@ -429,6 +463,7 @@ export type Database = {
           publisher?: string | null
           rating?: number | null
           release_date?: string | null
+          stock?: number
           tags?: string[] | null
           title?: string
           updated_at?: string
@@ -485,6 +520,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_product_avg_rating: {
+        Args: { p_product_id: string }
+        Returns: {
+          avg_rating: number
+          total_reviews: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

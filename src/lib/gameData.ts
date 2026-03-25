@@ -13,6 +13,7 @@ export interface Game {
   releaseDate: string;
   publisher: string;
   tags: string[];
+  stock: number;
 }
 
 // Map database row to Game interface
@@ -30,6 +31,7 @@ export function mapProdutoToGame(row: {
   release_date: string | null;
   publisher: string | null;
   tags: string[] | null;
+  stock?: number;
 }): Game {
   return {
     id: row.id,
@@ -45,6 +47,7 @@ export function mapProdutoToGame(row: {
     releaseDate: row.release_date || '',
     publisher: row.publisher || '',
     tags: row.tags || [],
+    stock: row.stock ?? 100,
   };
 }
 

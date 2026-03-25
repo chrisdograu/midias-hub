@@ -5,7 +5,7 @@ import { useCart } from '@/hooks/useCart';
 import { useFavoritos } from '@/hooks/useFavoritos';
 import { useAvaliacoes } from '@/hooks/useAvaliacoes';
 import { useAuth } from '@/hooks/useAuth';
-import { ShoppingCart, Star, ArrowLeft, Shield, Zap, Clock, Heart, Loader2, Send } from 'lucide-react';
+import { ShoppingCart, Star, ArrowLeft, Shield, Zap, Clock, Heart, Loader2, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import GameCard from '@/components/GameCard';
@@ -17,9 +17,8 @@ export default function GameDetail() {
   const { addItem } = useCart();
   const { user } = useAuth();
   const { isFavorito, toggleFavorito } = useFavoritos();
-  const { avaliacoes, addAvaliacao } = useAvaliacoes(id);
-  const [reviewRating, setReviewRating] = useState(5);
-  const [reviewComment, setReviewComment] = useState('');
+  const { avgRating, totalReviews, userRating, submitRating } = useAvaliacoes(id);
+  const [hoverRating, setHoverRating] = useState(0);
 
   if (isLoading) return <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
 
@@ -33,21 +32,23 @@ export default function GameDetail() {
   }
 
   const related = allGames.filter(g => g.id !== game.id && g.category === game.category).slice(0, 4);
+  const outOfStock = game.stock <= 0;
 
-  const handleAdd = () => { addItem(game); toast.success(`${game.title} adicionado ao carrinho!`); };
+  const handleAdd = () => {
+    if (outOfStock) { toast.error('Produto fora de estoque'); return; }
+    addItem(game);
+    toast.success(`${game.title} adicionado ao carrinho!`);
+  };
   const handleFav = () => {
     if (!user) { toast.error('Faça login para favoritar'); return; }
     toggleFavorito(game.id);
   };
-  const handleReview = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleRate = async (rating: number) => {
     if (!user) { toast.error('Faça login para avaliar'); return; }
     try {
-      await addAvaliacao.mutateAsync({ rating: reviewRating, comment: reviewComment });
-      toast.success('Avaliação enviada! Aguarde aprovação.');
-      setReviewComment('');
-      setReviewRating(5);
-    } catch { toast.error('Erro ao enviar avaliação'); }
+      await submitRating.mutateAsync(rating);
+      toast.success('Avaliação registrada!');
+    } catch { toast.error('Erro ao avaliar'); }
   };
 
   const installments = Math.min(12, Math.max(2, Math.ceil(game.price / 10)));
@@ -77,13 +78,24 @@ export default function GameDetail() {
             <h1 className="text-2xl font-bold text-foreground">{game.title}</h1>
             <p className="text-sm text-muted-foreground mt-1">{game.publisher}</p>
           </div>
-          <div className="flex items-center gap-1">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Star key={i} className={`h-4 w-4 ${i < Math.floor(game.rating) ? 'text-price fill-price' : 'text-muted-foreground'}`} />
-            ))}
-            <span className="text-sm text-muted-foreground ml-1">{game.rating}</span>
+
+          {/* Rating display */}
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-0.5">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star key={i} className={`h-4 w-4 ${i < Math.floor(avgRating) ? 'text-price fill-price' : 'text-muted-foreground'}`} />
+              ))}
+            </div>
+            <span className="text-sm text-muted-foreground">{avgRating.toFixed(1)} ({totalReviews} {totalReviews === 1 ? 'avaliação' : 'avaliações'})</span>
           </div>
+
           <div className="bg-card border border-border rounded-xl p-4 space-y-3">
+            {outOfStock && (
+              <div className="flex items-center gap-2 text-destructive bg-destructive/10 border border-destructive/20 rounded-lg p-2">
+                <AlertTriangle className="h-4 w-4" />
+                <span className="text-sm font-medium">Fora de estoque</span>
+              </div>
+            )}
             {game.discount > 0 && (
               <div className="flex items-center gap-2">
                 <span className="bg-primary text-primary-foreground text-sm font-bold px-2 py-1 rounded">-{game.discount}%</span>
@@ -92,8 +104,10 @@ export default function GameDetail() {
             )}
             <div className="text-3xl font-bold text-price">R$ {game.price.toFixed(2)}</div>
             <p className="text-xs text-muted-foreground">ou {installments}x de R$ {installmentValue} sem juros</p>
-            <button onClick={handleAdd} className="w-full py-3 bg-primary text-primary-foreground font-semibold rounded-lg flex items-center justify-center gap-2 hover:opacity-90 transition-all glow-primary">
-              <ShoppingCart className="h-5 w-5" /> Adicionar ao Carrinho
+            {!outOfStock && <p className="text-xs text-success">{game.stock} unidades em estoque</p>}
+            <button onClick={handleAdd} disabled={outOfStock}
+              className="w-full py-3 bg-primary text-primary-foreground font-semibold rounded-lg flex items-center justify-center gap-2 hover:opacity-90 transition-all glow-primary disabled:opacity-50 disabled:cursor-not-allowed">
+              <ShoppingCart className="h-5 w-5" /> {outOfStock ? 'Indisponível' : 'Adicionar ao Carrinho'}
             </button>
             <div className="space-y-2 pt-2">
               <div className="flex items-center gap-2 text-xs text-muted-foreground"><Zap className="h-3.5 w-3.5 text-primary" /> Entrega instantânea por e-mail</div>
@@ -120,52 +134,46 @@ export default function GameDetail() {
             <div className="flex justify-between"><span className="text-muted-foreground">Lançamento</span><span className="text-foreground">{game.releaseDate ? new Date(game.releaseDate).toLocaleDateString('pt-BR') : '-'}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Categoria</span><span className="text-foreground">{game.category}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Plataformas</span><span className="text-foreground">{game.platform.join(', ')}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Estoque</span><span className={outOfStock ? 'text-destructive' : 'text-foreground'}>{outOfStock ? 'Esgotado' : `${game.stock} un.`}</span></div>
           </div>
         </div>
       </div>
 
-      {/* Reviews */}
+      {/* Star Rating */}
       <div className="mt-12">
-        <h2 className="text-lg font-bold text-foreground mb-4">Avaliações</h2>
-        {user && (
-          <form onSubmit={handleReview} className="bg-card border border-border rounded-xl p-4 mb-6 space-y-3">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Sua nota:</span>
-              {[1, 2, 3, 4, 5].map(n => (
-                <button key={n} type="button" onClick={() => setReviewRating(n)}>
-                  <Star className={`h-5 w-5 ${n <= reviewRating ? 'text-price fill-price' : 'text-muted-foreground'}`} />
-                </button>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <input value={reviewComment} onChange={e => setReviewComment(e.target.value)} placeholder="Deixe um comentário..."
-                className="flex-1 px-4 py-2 bg-secondary border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
-              <button type="submit" disabled={addAvaliacao.isPending} className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-all">
-                <Send className="h-4 w-4" />
-              </button>
-            </div>
-          </form>
-        )}
-        {avaliacoes.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Nenhuma avaliação ainda. Seja o primeiro!</p>
-        ) : (
-          <div className="space-y-3">
-            {avaliacoes.map(av => (
-              <div key={av.id} className="bg-card border border-border rounded-xl p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center">
-                    <span className="text-xs font-bold text-primary">{((av.profiles as any)?.display_name || 'U')[0].toUpperCase()}</span>
-                  </div>
-                  <span className="text-sm font-medium text-foreground">{(av.profiles as any)?.display_name || 'Usuário'}</span>
-                  <div className="flex gap-0.5 ml-auto">
-                    {[1, 2, 3, 4, 5].map(n => <Star key={n} className={`h-3 w-3 ${n <= av.rating ? 'text-price fill-price' : 'text-muted-foreground'}`} />)}
-                  </div>
-                </div>
-                {av.comment && <p className="text-sm text-muted-foreground">{av.comment}</p>}
+        <h2 className="text-lg font-bold text-foreground mb-4">Avaliação</h2>
+        <div className="bg-card border border-border rounded-xl p-6">
+          <div className="flex items-center gap-6 flex-wrap">
+            <div className="text-center">
+              <div className="text-4xl font-bold text-price">{avgRating.toFixed(1)}</div>
+              <div className="flex gap-0.5 mt-1">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star key={i} className={`h-4 w-4 ${i < Math.round(avgRating) ? 'text-price fill-price' : 'text-muted-foreground'}`} />
+                ))}
               </div>
-            ))}
+              <p className="text-xs text-muted-foreground mt-1">{totalReviews} {totalReviews === 1 ? 'avaliação' : 'avaliações'}</p>
+            </div>
+            {user && (
+              <div className="border-l border-border pl-6">
+                <p className="text-sm text-muted-foreground mb-2">{userRating ? 'Sua avaliação:' : 'Avalie este jogo:'}</p>
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4, 5].map(n => (
+                    <button key={n} onClick={() => handleRate(n)}
+                      onMouseEnter={() => setHoverRating(n)} onMouseLeave={() => setHoverRating(0)}
+                      className="transition-transform hover:scale-125">
+                      <Star className={`h-7 w-7 ${n <= (hoverRating || userRating || 0) ? 'text-price fill-price' : 'text-muted-foreground'}`} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {!user && (
+              <p className="text-sm text-muted-foreground">
+                <Link to="/auth" className="text-primary hover:underline">Faça login</Link> para avaliar
+              </p>
+            )}
           </div>
-        )}
+        </div>
       </div>
 
       {/* Related */}
