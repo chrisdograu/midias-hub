@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
 import { Game } from '@/lib/gameData';
 import { useCart } from '@/hooks/useCart';
-import { ShoppingCart, Star } from 'lucide-react';
+import { ShoppingCart } from 'lucide-react';
+import { HalfStarDisplay } from '@/components/HalfStarRating';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 
