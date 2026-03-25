@@ -51,6 +51,9 @@ const App = () => (
                   <Route path="/favoritos" element={<ProtectedRoute><Favoritos /></ProtectedRoute>} />
                   <Route path="/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
                   <Route path="/biblioteca" element={<ProtectedRoute><Biblioteca /></ProtectedRoute>} />
+                  <Route path="/faq" element={<FAQ />} />
+                  <Route path="/contato" element={<Contato />} />
+                  <Route path="/termos" element={<TermosDeUso />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </main>

@@ -65,11 +65,9 @@ export default function GameCard({ game, index = 0 }: GameCardProps) {
             <h3 className="text-sm font-semibold text-foreground line-clamp-2 leading-tight mb-1 group-hover:text-primary transition-colors">
               {game.title}
             </h3>
-            <div className="flex items-center gap-0.5 mb-1">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Star key={i} className={`h-3 w-3 ${i < Math.floor(game.rating) ? 'text-price fill-price' : 'text-muted-foreground'}`} />
-              ))}
-              <span className="text-[10px] text-muted-foreground ml-1">{game.rating.toFixed(1)}</span>
+            <div className="flex items-center gap-1 mb-1">
+              <HalfStarDisplay rating={game.rating} size={12} />
+              <span className="text-[10px] text-muted-foreground">{game.rating.toFixed(1)}</span>
             </div>
             <div className="flex items-end gap-2">
               <span className="text-lg font-bold text-price">R$ {game.price.toFixed(2)}</span>

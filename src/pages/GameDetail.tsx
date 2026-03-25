@@ -143,25 +143,13 @@ export default function GameDetail() {
           <div className="flex items-center gap-6 flex-wrap">
             <div className="text-center">
               <div className="text-4xl font-bold text-price">{avgRating.toFixed(1)}</div>
-              <div className="flex gap-0.5 mt-1">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className={`h-4 w-4 ${i < Math.round(avgRating) ? 'text-price fill-price' : 'text-muted-foreground'}`} />
-                ))}
-              </div>
+              <HalfStarDisplay rating={avgRating} size={16} className="justify-center mt-1" />
               <p className="text-xs text-muted-foreground mt-1">{totalReviews} {totalReviews === 1 ? 'avaliação' : 'avaliações'}</p>
             </div>
             {user && (
               <div className="border-l border-border pl-6">
                 <p className="text-sm text-muted-foreground mb-2">{userRating ? 'Sua avaliação:' : 'Avalie este jogo:'}</p>
-                <div className="flex gap-1">
-                  {[1, 2, 3, 4, 5].map(n => (
-                    <button key={n} onClick={() => handleRate(n)}
-                      onMouseEnter={() => setHoverRating(n)} onMouseLeave={() => setHoverRating(0)}
-                      className="transition-transform hover:scale-125">
-                      <Star className={`h-7 w-7 ${n <= (hoverRating || userRating || 0) ? 'text-price fill-price' : 'text-muted-foreground'}`} />
-                    </button>
-                  ))}
-                </div>
+                <InteractiveHalfStar value={userRating || 0} onChange={handleRate} />
               </div>
             )}
             {!user && (
