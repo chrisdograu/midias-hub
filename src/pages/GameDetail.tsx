@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useProduto, useProdutos } from '@/hooks/useProdutos';
 import { useCart } from '@/hooks/useCart';
