@@ -82,11 +82,7 @@ export default function GameDetail() {
 
           {/* Rating display */}
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-0.5">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Star key={i} className={`h-4 w-4 ${i < Math.floor(avgRating) ? 'text-price fill-price' : 'text-muted-foreground'}`} />
-              ))}
-            </div>
+            <HalfStarDisplay rating={avgRating} size={16} />
             <span className="text-sm text-muted-foreground">{avgRating.toFixed(1)} ({totalReviews} {totalReviews === 1 ? 'avaliação' : 'avaliações'})</span>
           </div>
 
