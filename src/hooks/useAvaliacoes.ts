@@ -2,48 +2,67 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
-export interface Avaliacao {
-  id: string;
-  user_id: string;
-  product_id: string;
-  rating: number;
-  comment: string | null;
-  created_at: string;
-  profiles?: { display_name: string | null; avatar_url: string | null };
-}
-
 export function useAvaliacoes(productId: string | undefined) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: avaliacoes = [], ...query } = useQuery({
-    queryKey: ['avaliacoes', productId],
+  // Get avg rating + total
+  const { data: ratingData } = useQuery({
+    queryKey: ['rating', productId],
     queryFn: async () => {
-      if (!productId) return [];
-      const { data, error } = await supabase
-        .from('avaliacoes')
-        .select('*, profiles:user_id(display_name, avatar_url)')
-        .eq('product_id', productId)
-        .order('created_at', { ascending: false });
+      if (!productId) return { avg_rating: 0, total_reviews: 0 };
+      const { data, error } = await supabase.rpc('get_product_avg_rating', { p_product_id: productId });
       if (error) throw error;
-      return data as unknown as Avaliacao[];
+      const row = data?.[0] || { avg_rating: 0, total_reviews: 0 };
+      return { avg_rating: Number(row.avg_rating), total_reviews: Number(row.total_reviews) };
     },
     enabled: !!productId,
   });
 
-  const addAvaliacao = useMutation({
-    mutationFn: async ({ rating, comment }: { rating: number; comment: string }) => {
-      if (!user || !productId) throw new Error('Missing data');
-      const { error } = await supabase.from('avaliacoes').insert({
-        user_id: user.id,
-        product_id: productId,
-        rating,
-        comment: comment || null,
-      });
+  // Get user's own rating
+  const { data: userRating } = useQuery({
+    queryKey: ['my-rating', productId, user?.id],
+    queryFn: async () => {
+      if (!user || !productId) return null;
+      const { data, error } = await supabase
+        .from('avaliacoes')
+        .select('id, rating')
+        .eq('product_id', productId)
+        .eq('user_id', user.id)
+        .maybeSingle();
       if (error) throw error;
+      return data;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['avaliacoes', productId] }),
+    enabled: !!user && !!productId,
   });
 
-  return { avaliacoes, addAvaliacao, isLoading: query.isLoading };
+  const submitRating = useMutation({
+    mutationFn: async (rating: number) => {
+      if (!user || !productId) throw new Error('Missing data');
+      if (userRating) {
+        // Update existing
+        const { error } = await supabase.from('avaliacoes').update({ rating }).eq('id', userRating.id);
+        if (error) throw error;
+      } else {
+        // Insert new
+        const { error } = await supabase.from('avaliacoes').insert({
+          user_id: user.id,
+          product_id: productId,
+          rating,
+        });
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['rating', productId] });
+      queryClient.invalidateQueries({ queryKey: ['my-rating', productId] });
+    },
+  });
+
+  return {
+    avgRating: ratingData?.avg_rating ?? 0,
+    totalReviews: ratingData?.total_reviews ?? 0,
+    userRating: userRating?.rating ?? null,
+    submitRating,
+  };
 }

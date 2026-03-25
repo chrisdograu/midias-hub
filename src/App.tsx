@@ -19,9 +19,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Pedidos from "./pages/Pedidos";
 import Favoritos from "./pages/Favoritos";
 import Perfil from "./pages/Perfil";
-import Marketplace from "./pages/Marketplace";
-import AnuncioDetail from "./pages/AnuncioDetail";
-import Mensagens from "./pages/Mensagens";
+import Biblioteca from "./pages/Biblioteca";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -49,9 +47,7 @@ const App = () => (
                   <Route path="/pedidos" element={<ProtectedRoute><Pedidos /></ProtectedRoute>} />
                   <Route path="/favoritos" element={<ProtectedRoute><Favoritos /></ProtectedRoute>} />
                   <Route path="/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
-                  <Route path="/marketplace" element={<Marketplace />} />
-                  <Route path="/marketplace/:id" element={<AnuncioDetail />} />
-                  <Route path="/mensagens" element={<ProtectedRoute><Mensagens /></ProtectedRoute>} />
+                  <Route path="/biblioteca" element={<ProtectedRoute><Biblioteca /></ProtectedRoute>} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </main>
