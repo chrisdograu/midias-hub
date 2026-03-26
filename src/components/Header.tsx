@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Search, User, Menu, X, Gamepad2, LogOut, Heart, Package, Library } from 'lucide-react';
+import { ShoppingCart, Search, User, Menu, X, Gamepad2, LogOut, Heart, Package, Library, Sun, Moon } from 'lucide-react';
+import { useTheme } from '@/hooks/useTheme';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function Header() {
   const { itemCount } = useCart();
   const { user, profile, signOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -61,6 +63,10 @@ export default function Header() {
           </form>
 
           <div className="flex items-center gap-2">
+            <button onClick={toggleTheme} className="p-2 rounded-lg hover:bg-secondary transition-colors" title={theme === 'dark' ? 'Modo claro' : 'Modo escuro'}>
+              {theme === 'dark' ? <Sun className="h-5 w-5 text-foreground" /> : <Moon className="h-5 w-5 text-foreground" />}
+            </button>
+
             <Link to="/carrinho" className="relative p-2 rounded-lg hover:bg-secondary transition-colors">
               <ShoppingCart className="h-5 w-5 text-foreground" />
               {itemCount > 0 && (
