@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Search, User, Menu, X, Gamepad2, LogOut, Heart, Package, Library, Sun, Moon } from 'lucide-react';
+import { ShoppingCart, Search, User, Menu, X, Gamepad2, LogOut, Heart, Package, Library, Sun, Moon, Sparkles, ShoppingBag, MessageCircle } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
@@ -20,6 +20,8 @@ export default function Header() {
     { to: '/', label: 'Início' },
     { to: '/catalogo', label: 'Catálogo' },
     { to: '/ofertas', label: 'Ofertas' },
+    { to: '/reviews', label: 'Reviews' },
+    { to: '/marketplace', label: 'Marketplace' },
   ];
 
   const handleSearch = (e: React.FormEvent) => {
@@ -44,10 +46,12 @@ export default function Header() {
             <span className="font-display text-xl font-bold gradient-text tracking-wider">MIDIAS</span>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden lg:flex items-center gap-1">
             {navLinks.map(link => (
               <Link key={link.to} to={link.to}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${location.pathname === link.to ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-secondary'}`}>
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  location.pathname === link.to || (link.to !== '/' && location.pathname.startsWith(link.to))
+                    ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-secondary'}`}>
                 {link.label}
               </Link>
             ))}
@@ -109,6 +113,12 @@ export default function Header() {
                         <Link to="/favoritos" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-secondary transition-colors">
                           <Heart className="h-4 w-4" /> Favoritos
                         </Link>
+                        <Link to="/mensagens" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-secondary transition-colors">
+                          <MessageCircle className="h-4 w-4" /> Mensagens
+                        </Link>
+                        <Link to="/marketplace/meus-anuncios" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-secondary transition-colors">
+                          <ShoppingBag className="h-4 w-4" /> Meus Anúncios
+                        </Link>
                       </div>
                       <div className="border-t border-border">
                         <button onClick={handleSignOut}
@@ -127,7 +137,7 @@ export default function Header() {
             )}
 
             <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-lg hover:bg-secondary transition-colors">
+              className="lg:hidden p-2 rounded-lg hover:bg-secondary transition-colors">
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
           </div>
@@ -136,7 +146,7 @@ export default function Header() {
         <AnimatePresence>
           {mobileMenuOpen && (
             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
-              className="md:hidden overflow-hidden border-t border-border">
+              className="lg:hidden overflow-hidden border-t border-border">
               <form onSubmit={handleSearch} className="py-3">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -148,7 +158,9 @@ export default function Header() {
               <nav className="flex flex-col pb-3 gap-1">
                 {navLinks.map(link => (
                   <Link key={link.to} to={link.to} onClick={() => setMobileMenuOpen(false)}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${location.pathname === link.to ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-secondary'}`}>
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                      location.pathname === link.to || (link.to !== '/' && location.pathname.startsWith(link.to))
+                        ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-secondary'}`}>
                     {link.label}
                   </Link>
                 ))}
