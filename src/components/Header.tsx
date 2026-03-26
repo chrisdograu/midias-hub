@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function Header() {
   const { itemCount } = useCart();
   const { user, profile, signOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
