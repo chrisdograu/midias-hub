@@ -137,7 +137,10 @@ export default function GameDetail() {
 
       {/* Star Rating */}
       <div className="mt-12">
-        <h2 className="text-lg font-bold text-foreground mb-4">Avaliação</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-foreground">Avaliação</h2>
+          <Link to={`/reviews/${id}`} className="text-sm text-primary hover:underline">Ver todas as reviews →</Link>
+        </div>
         <div className="bg-card border border-border rounded-xl p-6">
           <div className="flex items-center gap-6 flex-wrap">
             <div className="text-center">
