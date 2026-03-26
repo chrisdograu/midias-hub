@@ -12,6 +12,10 @@ export interface Anuncio {
   condition: string;
   price: number;
   status: string;
+  ad_type: string;
+  category: string;
+  certificate_type: string;
+  desired_item: string | null;
   created_at: string;
   profiles?: { display_name: string | null; avatar_url: string | null };
   fotos_anuncio?: { id: string; image_url: string; position: number }[];
@@ -53,11 +57,12 @@ export function useAnuncios() {
     mutationFn: async (anuncio: {
       title: string; description: string; game_title: string;
       platform: string; condition: string; price: number;
+      ad_type?: string; category?: string; certificate_type?: string; desired_item?: string;
     }) => {
       if (!user) throw new Error('Not authenticated');
       const { data, error } = await supabase
         .from('anuncios')
-        .insert({ ...anuncio, seller_id: user.id })
+        .insert({ ...anuncio, seller_id: user.id } as any)
         .select()
         .single();
       if (error) throw error;
