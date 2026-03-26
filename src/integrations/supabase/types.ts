@@ -16,9 +16,13 @@ export type Database = {
     Tables: {
       anuncios: {
         Row: {
+          ad_type: string
+          category: string
+          certificate_type: string
           condition: string
           created_at: string
           description: string | null
+          desired_item: string | null
           game_title: string
           id: string
           platform: string
@@ -29,9 +33,13 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          ad_type?: string
+          category?: string
+          certificate_type?: string
           condition?: string
           created_at?: string
           description?: string | null
+          desired_item?: string | null
           game_title: string
           id?: string
           platform: string
@@ -42,9 +50,13 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          ad_type?: string
+          category?: string
+          certificate_type?: string
           condition?: string
           created_at?: string
           description?: string | null
+          desired_item?: string | null
           game_title?: string
           id?: string
           platform?: string
@@ -224,6 +236,39 @@ export type Database = {
           uses_count?: number
           valid_from?: string | null
           valid_until?: string | null
+        }
+        Relationships: []
+      }
+      denuncias: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          reason: string
+          reporter_id: string
+          status: string
+          target_id: string
+          target_type: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          reason: string
+          reporter_id: string
+          status?: string
+          target_id: string
+          target_type: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          reason?: string
+          reporter_id?: string
+          status?: string
+          target_id?: string
+          target_type?: string
         }
         Relationships: []
       }
@@ -496,6 +541,105 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      review_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          review_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          review_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          review_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_comments_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "avaliacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      review_likes: {
+        Row: {
+          created_at: string
+          id: string
+          review_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          review_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          review_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_likes_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "avaliacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trade_proposals: {
+        Row: {
+          anuncio_id: string
+          created_at: string
+          id: string
+          offered_item: string
+          proposer_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          anuncio_id: string
+          created_at?: string
+          id?: string
+          offered_item: string
+          proposer_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          anuncio_id?: string
+          created_at?: string
+          id?: string
+          offered_item?: string
+          proposer_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trade_proposals_anuncio_id_fkey"
+            columns: ["anuncio_id"]
+            isOneToOne: false
+            referencedRelation: "anuncios"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
