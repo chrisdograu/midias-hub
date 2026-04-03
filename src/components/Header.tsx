@@ -112,12 +112,6 @@ export default function Header() {
                         <Link to="/favoritos" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-secondary transition-colors">
                           <Heart className="h-4 w-4" /> Favoritos
                         </Link>
-                        <Link to="/mensagens" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-secondary transition-colors">
-                          <MessageCircle className="h-4 w-4" /> Mensagens
-                        </Link>
-                        <Link to="/marketplace/meus-anuncios" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-secondary transition-colors">
-                          <ShoppingBag className="h-4 w-4" /> Meus Anúncios
-                        </Link>
                       </div>
                       <div className="border-t border-border">
                         <button onClick={handleSignOut}

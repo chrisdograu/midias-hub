@@ -9,7 +9,6 @@ import { ThemeProvider } from "@/hooks/useTheme";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import MobileNav from "@/components/MobileNav";
 import Index from "./pages/Index";
 import Catalogo from "./pages/Catalogo";
 import Ofertas from "./pages/Ofertas";
@@ -27,11 +26,6 @@ import Contato from "./pages/Contato";
 import TermosDeUso from "./pages/TermosDeUso";
 import ReviewsFeed from "./pages/ReviewsFeed";
 import GameReviews from "./pages/GameReviews";
-import Marketplace from "./pages/Marketplace";
-import AnuncioDetail from "./pages/AnuncioDetail";
-import CreateAd from "./pages/CreateAd";
-import MeusAnuncios from "./pages/MeusAnuncios";
-import Mensagens from "./pages/Mensagens";
 import PublicProfile from "./pages/PublicProfile";
 import NotFound from "./pages/NotFound";
 
@@ -48,7 +42,7 @@ const App = () => (
           <BrowserRouter>
             <div className="min-h-screen flex flex-col">
               <Header />
-              <main className="flex-1 pb-16 md:pb-0">
+              <main className="flex-1">
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/catalogo" element={<Catalogo />} />
@@ -65,11 +59,6 @@ const App = () => (
                   <Route path="/biblioteca" element={<ProtectedRoute><Biblioteca /></ProtectedRoute>} />
                   <Route path="/reviews" element={<ReviewsFeed />} />
                   <Route path="/reviews/:id" element={<GameReviews />} />
-                  <Route path="/marketplace" element={<Marketplace />} />
-                  <Route path="/marketplace/:id" element={<AnuncioDetail />} />
-                  <Route path="/marketplace/criar" element={<ProtectedRoute><CreateAd /></ProtectedRoute>} />
-                  <Route path="/marketplace/meus-anuncios" element={<ProtectedRoute><MeusAnuncios /></ProtectedRoute>} />
-                  <Route path="/mensagens" element={<ProtectedRoute><Mensagens /></ProtectedRoute>} />
                   <Route path="/faq" element={<FAQ />} />
                   <Route path="/contato" element={<Contato />} />
                   <Route path="/termos" element={<TermosDeUso />} />
@@ -77,7 +66,6 @@ const App = () => (
                 </Routes>
               </main>
               <Footer />
-              <MobileNav />
             </div>
           </BrowserRouter>
         </CartProvider>
