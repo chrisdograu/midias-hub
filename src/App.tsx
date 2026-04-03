@@ -24,8 +24,6 @@ import Biblioteca from "./pages/Biblioteca";
 import FAQ from "./pages/FAQ";
 import Contato from "./pages/Contato";
 import TermosDeUso from "./pages/TermosDeUso";
-import ReviewsFeed from "./pages/ReviewsFeed";
-import GameReviews from "./pages/GameReviews";
 import PublicProfile from "./pages/PublicProfile";
 import NotFound from "./pages/NotFound";
 
