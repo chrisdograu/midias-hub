@@ -20,7 +20,6 @@ export default function Header() {
     { to: '/', label: 'Início' },
     { to: '/catalogo', label: 'Catálogo' },
     { to: '/ofertas', label: 'Ofertas' },
-    { to: '/reviews', label: 'Reviews' },
   ];
 
   const handleSearch = (e: React.FormEvent) => {

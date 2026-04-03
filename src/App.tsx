@@ -24,8 +24,6 @@ import Biblioteca from "./pages/Biblioteca";
 import FAQ from "./pages/FAQ";
 import Contato from "./pages/Contato";
 import TermosDeUso from "./pages/TermosDeUso";
-import ReviewsFeed from "./pages/ReviewsFeed";
-import GameReviews from "./pages/GameReviews";
 import PublicProfile from "./pages/PublicProfile";
 import NotFound from "./pages/NotFound";
 
@@ -57,8 +55,6 @@ const App = () => (
                   <Route path="/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
                   <Route path="/perfil/:userId" element={<PublicProfile />} />
                   <Route path="/biblioteca" element={<ProtectedRoute><Biblioteca /></ProtectedRoute>} />
-                  <Route path="/reviews" element={<ReviewsFeed />} />
-                  <Route path="/reviews/:id" element={<GameReviews />} />
                   <Route path="/faq" element={<FAQ />} />
                   <Route path="/contato" element={<Contato />} />
                   <Route path="/termos" element={<TermosDeUso />} />
