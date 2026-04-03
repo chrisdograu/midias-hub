@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Search, User, Menu, X, Gamepad2, LogOut, Heart, Package, Library, Sun, Moon, Sparkles, ShoppingBag, MessageCircle } from 'lucide-react';
+import { ShoppingCart, Search, User, Menu, X, Gamepad2, LogOut, Heart, Package, Library, Sun, Moon, Sparkles } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
@@ -21,7 +21,6 @@ export default function Header() {
     { to: '/catalogo', label: 'Catálogo' },
     { to: '/ofertas', label: 'Ofertas' },
     { to: '/reviews', label: 'Reviews' },
-    { to: '/marketplace', label: 'Marketplace' },
   ];
 
   const handleSearch = (e: React.FormEvent) => {
@@ -112,12 +111,6 @@ export default function Header() {
                         </Link>
                         <Link to="/favoritos" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-secondary transition-colors">
                           <Heart className="h-4 w-4" /> Favoritos
-                        </Link>
-                        <Link to="/mensagens" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-secondary transition-colors">
-                          <MessageCircle className="h-4 w-4" /> Mensagens
-                        </Link>
-                        <Link to="/marketplace/meus-anuncios" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-secondary transition-colors">
-                          <ShoppingBag className="h-4 w-4" /> Meus Anúncios
                         </Link>
                       </div>
                       <div className="border-t border-border">
