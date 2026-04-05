@@ -205,54 +205,103 @@ export type Database = {
       }
       certificados: {
         Row: {
-          activated_at: string | null
           created_at: string
           expires_at: string | null
           id: string
-          order_id: string | null
           product_id: string
-          serial_key: string
+          reason: string | null
+          requested_at: string
+          reviewed_at: string | null
+          reviewed_by: string | null
           status: Database["public"]["Enums"]["certificate_status"]
           updated_at: string
           user_id: string
         }
         Insert: {
-          activated_at?: string | null
           created_at?: string
           expires_at?: string | null
           id?: string
-          order_id?: string | null
           product_id: string
-          serial_key: string
+          reason?: string | null
+          requested_at?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           status?: Database["public"]["Enums"]["certificate_status"]
           updated_at?: string
           user_id: string
         }
         Update: {
-          activated_at?: string | null
           created_at?: string
           expires_at?: string | null
           id?: string
-          order_id?: string | null
           product_id?: string
-          serial_key?: string
+          reason?: string | null
+          requested_at?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           status?: Database["public"]["Enums"]["certificate_status"]
           updated_at?: string
           user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "certificados_order_id_fkey"
+            foreignKeyName: "certificados_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "certificados_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cupon_usos: {
+        Row: {
+          coupon_id: string
+          id: string
+          order_id: string
+          used_at: string
+          user_id: string | null
+        }
+        Insert: {
+          coupon_id: string
+          id?: string
+          order_id: string
+          used_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          coupon_id?: string
+          id?: string
+          order_id?: string
+          used_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cupon_usos_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "cupons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cupon_usos_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "pedidos"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "certificados_product_id_fkey"
-            columns: ["product_id"]
+            foreignKeyName: "cupon_usos_user_id_fkey"
+            columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "produtos"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -300,6 +349,8 @@ export type Database = {
           id: string
           reason: string
           reporter_id: string
+          resolved_at: string | null
+          resolved_by: string | null
           status: string
           target_id: string
           target_type: string
@@ -310,6 +361,8 @@ export type Database = {
           id?: string
           reason: string
           reporter_id: string
+          resolved_at?: string | null
+          resolved_by?: string | null
           status?: string
           target_id: string
           target_type: string
@@ -320,11 +373,21 @@ export type Database = {
           id?: string
           reason?: string
           reporter_id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
           status?: string
           target_id?: string
           target_type?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "denuncias_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       device_tokens: {
         Row: {
@@ -392,6 +455,7 @@ export type Database = {
           id: string
           is_active: boolean
           name: string
+          notes: string | null
           phone: string | null
           updated_at: string
         }
@@ -404,6 +468,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           name: string
+          notes?: string | null
           phone?: string | null
           updated_at?: string
         }
@@ -416,6 +481,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           name?: string
+          notes?: string | null
           phone?: string | null
           updated_at?: string
         }
@@ -536,35 +602,51 @@ export type Database = {
       movimentacoes_estoque: {
         Row: {
           created_at: string
-          created_by: string | null
+          employee_id: string | null
           id: string
+          notes: string | null
           product_id: string
           quantity: number
-          reason: string | null
+          quantity_after: number
+          quantity_before: number
           reference_id: string | null
+          reference_type: string | null
           type: Database["public"]["Enums"]["stock_movement_type"]
         }
         Insert: {
           created_at?: string
-          created_by?: string | null
+          employee_id?: string | null
           id?: string
+          notes?: string | null
           product_id: string
           quantity: number
-          reason?: string | null
+          quantity_after?: number
+          quantity_before?: number
           reference_id?: string | null
+          reference_type?: string | null
           type: Database["public"]["Enums"]["stock_movement_type"]
         }
         Update: {
           created_at?: string
-          created_by?: string | null
+          employee_id?: string | null
           id?: string
+          notes?: string | null
           product_id?: string
           quantity?: number
-          reason?: string | null
+          quantity_after?: number
+          quantity_before?: number
           reference_id?: string | null
+          reference_type?: string | null
           type?: Database["public"]["Enums"]["stock_movement_type"]
         }
         Relationships: [
+          {
+            foreignKeyName: "movimentacoes_estoque_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "movimentacoes_estoque_product_id_fkey"
             columns: ["product_id"]
@@ -576,31 +658,34 @@ export type Database = {
       }
       notifications: {
         Row: {
+          body: string | null
           created_at: string
           id: string
           is_read: boolean
-          link: string | null
-          message: string | null
+          reference_id: string | null
+          reference_type: string | null
           title: string
           type: Database["public"]["Enums"]["notification_type"]
           user_id: string
         }
         Insert: {
+          body?: string | null
           created_at?: string
           id?: string
           is_read?: boolean
-          link?: string | null
-          message?: string | null
+          reference_id?: string | null
+          reference_type?: string | null
           title: string
           type?: Database["public"]["Enums"]["notification_type"]
           user_id: string
         }
         Update: {
+          body?: string | null
           created_at?: string
           id?: string
           is_read?: boolean
-          link?: string | null
-          message?: string | null
+          reference_id?: string | null
+          reference_type?: string | null
           title?: string
           type?: Database["public"]["Enums"]["notification_type"]
           user_id?: string
@@ -621,7 +706,7 @@ export type Database = {
           subtotal: number
           total: number
           updated_at: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           coupon_code?: string | null
@@ -636,7 +721,7 @@ export type Database = {
           subtotal?: number
           total?: number
           updated_at?: string
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           coupon_code?: string | null
@@ -651,7 +736,7 @@ export type Database = {
           subtotal?: number
           total?: number
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -674,6 +759,7 @@ export type Database = {
           rating: number | null
           release_date: string | null
           stock: number
+          stock_alert_threshold: number
           supplier_id: string | null
           tags: string[] | null
           title: string
@@ -697,6 +783,7 @@ export type Database = {
           rating?: number | null
           release_date?: string | null
           stock?: number
+          stock_alert_threshold?: number
           supplier_id?: string | null
           tags?: string[] | null
           title: string
@@ -720,6 +807,7 @@ export type Database = {
           rating?: number | null
           release_date?: string | null
           stock?: number
+          stock_alert_threshold?: number
           supplier_id?: string | null
           tags?: string[] | null
           title?: string
@@ -753,6 +841,7 @@ export type Database = {
           is_private: boolean
           phone: string | null
           updated_at: string
+          username: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -764,6 +853,7 @@ export type Database = {
           is_private?: boolean
           phone?: string | null
           updated_at?: string
+          username?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -775,6 +865,7 @@ export type Database = {
           is_private?: boolean
           phone?: string | null
           updated_at?: string
+          username?: string | null
         }
         Relationships: []
       }
@@ -842,28 +933,37 @@ export type Database = {
       trade_proposals: {
         Row: {
           anuncio_id: string
+          completed_at: string | null
           created_at: string
           id: string
           offered_item: string
+          proposer_confirmed: boolean
           proposer_id: string
+          seller_confirmed: boolean
           status: string
           updated_at: string
         }
         Insert: {
           anuncio_id: string
+          completed_at?: string | null
           created_at?: string
           id?: string
           offered_item: string
+          proposer_confirmed?: boolean
           proposer_id: string
+          seller_confirmed?: boolean
           status?: string
           updated_at?: string
         }
         Update: {
           anuncio_id?: string
+          completed_at?: string | null
           created_at?: string
           id?: string
           offered_item?: string
+          proposer_confirmed?: boolean
           proposer_id?: string
+          seller_confirmed?: boolean
           status?: string
           updated_at?: string
         }
@@ -907,6 +1007,7 @@ export type Database = {
           total_reviews: number
         }[]
       }
+      has_active_certificate: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -915,17 +1016,25 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: never; Returns: boolean }
+      is_atendente: { Args: never; Returns: boolean }
+      is_staff: { Args: never; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "user" | "atendente"
-      certificate_status: "pending" | "active" | "used" | "expired" | "revoked"
+      certificate_status:
+        | "pendente"
+        | "ativo"
+        | "recusado"
+        | "revogado"
+        | "expirado"
       notification_type:
-        | "message"
-        | "review"
-        | "order"
-        | "proposal"
-        | "certificate"
-        | "system"
+        | "nova_mensagem"
+        | "proposta_aceita"
+        | "proposta_recusada"
+        | "comentario_review"
+        | "certificado_aprovado"
+        | "certificado_recusado"
+        | "certificado_revogado"
       order_status:
         | "pending"
         | "confirmed"
@@ -1063,14 +1172,21 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user", "atendente"],
-      certificate_status: ["pending", "active", "used", "expired", "revoked"],
+      certificate_status: [
+        "pendente",
+        "ativo",
+        "recusado",
+        "revogado",
+        "expirado",
+      ],
       notification_type: [
-        "message",
-        "review",
-        "order",
-        "proposal",
-        "certificate",
-        "system",
+        "nova_mensagem",
+        "proposta_aceita",
+        "proposta_recusada",
+        "comentario_review",
+        "certificado_aprovado",
+        "certificado_recusado",
+        "certificado_revogado",
       ],
       order_status: [
         "pending",
