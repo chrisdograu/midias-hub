@@ -203,6 +203,60 @@ export type Database = {
         }
         Relationships: []
       }
+      certificados: {
+        Row: {
+          activated_at: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          order_id: string | null
+          product_id: string
+          serial_key: string
+          status: Database["public"]["Enums"]["certificate_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activated_at?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          order_id?: string | null
+          product_id: string
+          serial_key: string
+          status?: Database["public"]["Enums"]["certificate_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activated_at?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          order_id?: string | null
+          product_id?: string
+          serial_key?: string
+          status?: Database["public"]["Enums"]["certificate_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certificados_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "pedidos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "certificados_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cupons: {
         Row: {
           code: string
@@ -272,6 +326,33 @@ export type Database = {
         }
         Relationships: []
       }
+      device_tokens: {
+        Row: {
+          created_at: string
+          id: string
+          platform: string
+          token: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          platform?: string
+          token: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          platform?: string
+          token?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       favoritos: {
         Row: {
           created_at: string
@@ -300,6 +381,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      fornecedores: {
+        Row: {
+          address: string | null
+          cnpj: string | null
+          contact_name: string | null
+          created_at: string
+          email: string | null
+          id: string
+          is_active: boolean
+          name: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          cnpj?: string | null
+          contact_name?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          cnpj?: string | null
+          contact_name?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       fotos_anuncio: {
         Row: {
@@ -413,14 +533,90 @@ export type Database = {
           },
         ]
       }
+      movimentacoes_estoque: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          product_id: string
+          quantity: number
+          reason: string | null
+          reference_id: string | null
+          type: Database["public"]["Enums"]["stock_movement_type"]
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          product_id: string
+          quantity: number
+          reason?: string | null
+          reference_id?: string | null
+          type: Database["public"]["Enums"]["stock_movement_type"]
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          product_id?: string
+          quantity?: number
+          reason?: string | null
+          reference_id?: string | null
+          type?: Database["public"]["Enums"]["stock_movement_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "movimentacoes_estoque_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          link: string | null
+          message: string | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          message?: string | null
+          title: string
+          type?: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          message?: string | null
+          title?: string
+          type?: Database["public"]["Enums"]["notification_type"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       pedidos: {
         Row: {
           coupon_code: string | null
           created_at: string
           discount_amount: number
+          employee_id: string | null
           id: string
           installments: number | null
           payment_method: string | null
+          source: string | null
           status: Database["public"]["Enums"]["order_status"]
           subtotal: number
           total: number
@@ -431,9 +627,11 @@ export type Database = {
           coupon_code?: string | null
           created_at?: string
           discount_amount?: number
+          employee_id?: string | null
           id?: string
           installments?: number | null
           payment_method?: string | null
+          source?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           subtotal?: number
           total?: number
@@ -444,9 +642,11 @@ export type Database = {
           coupon_code?: string | null
           created_at?: string
           discount_amount?: number
+          employee_id?: string | null
           id?: string
           installments?: number | null
           payment_method?: string | null
+          source?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           subtotal?: number
           total?: number
@@ -458,6 +658,8 @@ export type Database = {
       produtos: {
         Row: {
           category: string | null
+          category_id: string | null
+          cost_price: number | null
           created_at: string
           description: string | null
           discount: number
@@ -467,16 +669,20 @@ export type Database = {
           original_price: number
           platform: string[] | null
           price: number
+          product_type: Database["public"]["Enums"]["product_type"]
           publisher: string | null
           rating: number | null
           release_date: string | null
           stock: number
+          supplier_id: string | null
           tags: string[] | null
           title: string
           updated_at: string
         }
         Insert: {
           category?: string | null
+          category_id?: string | null
+          cost_price?: number | null
           created_at?: string
           description?: string | null
           discount?: number
@@ -486,16 +692,20 @@ export type Database = {
           original_price?: number
           platform?: string[] | null
           price?: number
+          product_type?: Database["public"]["Enums"]["product_type"]
           publisher?: string | null
           rating?: number | null
           release_date?: string | null
           stock?: number
+          supplier_id?: string | null
           tags?: string[] | null
           title: string
           updated_at?: string
         }
         Update: {
           category?: string | null
+          category_id?: string | null
+          cost_price?: number | null
           created_at?: string
           description?: string | null
           discount?: number
@@ -505,39 +715,65 @@ export type Database = {
           original_price?: number
           platform?: string[] | null
           price?: number
+          product_type?: Database["public"]["Enums"]["product_type"]
           publisher?: string | null
           rating?: number | null
           release_date?: string | null
           stock?: number
+          supplier_id?: string | null
           tags?: string[] | null
           title?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "produtos_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categorias"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "produtos_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "fornecedores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
           avatar_url: string | null
           bio: string | null
+          cpf: string | null
           created_at: string
           display_name: string | null
           id: string
+          is_private: boolean
+          phone: string | null
           updated_at: string
         }
         Insert: {
           avatar_url?: string | null
           bio?: string | null
+          cpf?: string | null
           created_at?: string
           display_name?: string | null
           id: string
+          is_private?: boolean
+          phone?: string | null
           updated_at?: string
         }
         Update: {
           avatar_url?: string | null
           bio?: string | null
+          cpf?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
+          is_private?: boolean
+          phone?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -681,7 +917,15 @@ export type Database = {
       is_admin: { Args: never; Returns: boolean }
     }
     Enums: {
-      app_role: "admin" | "user"
+      app_role: "admin" | "user" | "atendente"
+      certificate_status: "pending" | "active" | "used" | "expired" | "revoked"
+      notification_type:
+        | "message"
+        | "review"
+        | "order"
+        | "proposal"
+        | "certificate"
+        | "system"
       order_status:
         | "pending"
         | "confirmed"
@@ -689,6 +933,8 @@ export type Database = {
         | "shipped"
         | "delivered"
         | "cancelled"
+      product_type: "digital" | "physical" | "subscription"
+      stock_movement_type: "entrada" | "saida" | "ajuste"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -816,7 +1062,16 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user"],
+      app_role: ["admin", "user", "atendente"],
+      certificate_status: ["pending", "active", "used", "expired", "revoked"],
+      notification_type: [
+        "message",
+        "review",
+        "order",
+        "proposal",
+        "certificate",
+        "system",
+      ],
       order_status: [
         "pending",
         "confirmed",
@@ -825,6 +1080,8 @@ export const Constants = {
         "delivered",
         "cancelled",
       ],
+      product_type: ["digital", "physical", "subscription"],
+      stock_movement_type: ["entrada", "saida", "ajuste"],
     },
   },
 } as const
