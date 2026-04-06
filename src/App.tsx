@@ -27,6 +27,22 @@ import TermosDeUso from "./pages/TermosDeUso";
 import PublicProfile from "./pages/PublicProfile";
 import NotFound from "./pages/NotFound";
 
+// Desktop Backoffice
+import DesktopLayout from "./desktop/DesktopLayout";
+import DesktopLogin from "./desktop/DesktopLogin";
+import Dashboard from "./desktop/pages/Dashboard";
+import DesktopProdutos from "./desktop/pages/Produtos";
+import Funcionarios from "./desktop/pages/Funcionarios";
+import Clientes from "./desktop/pages/Clientes";
+import Fornecedores from "./desktop/pages/Fornecedores";
+import Categorias from "./desktop/pages/Categorias";
+import Vendas from "./desktop/pages/Vendas";
+import Estoque from "./desktop/pages/Estoque";
+import PedidosOnline from "./desktop/pages/PedidosOnline";
+import Moderacao from "./desktop/pages/Moderacao";
+import Relatorios from "./desktop/pages/Relatorios";
+import Certificados from "./desktop/pages/Certificados";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -38,31 +54,59 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <div className="min-h-screen flex flex-col">
-              <Header />
-              <main className="flex-1">
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/catalogo" element={<Catalogo />} />
-                  <Route path="/ofertas" element={<Ofertas />} />
-                  <Route path="/jogo/:id" element={<GameDetail />} />
-                  <Route path="/carrinho" element={<Carrinho />} />
-                  <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
-                  <Route path="/auth" element={<Auth />} />
-                  <Route path="/reset-password" element={<ResetPassword />} />
-                  <Route path="/pedidos" element={<ProtectedRoute><Pedidos /></ProtectedRoute>} />
-                  <Route path="/favoritos" element={<ProtectedRoute><Favoritos /></ProtectedRoute>} />
-                  <Route path="/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
-                  <Route path="/perfil/:userId" element={<PublicProfile />} />
-                  <Route path="/biblioteca" element={<ProtectedRoute><Biblioteca /></ProtectedRoute>} />
-                  <Route path="/faq" element={<FAQ />} />
-                  <Route path="/contato" element={<Contato />} />
-                  <Route path="/termos" element={<TermosDeUso />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </main>
-              <Footer />
-            </div>
+            <Routes>
+              {/* Desktop Backoffice Routes */}
+              <Route path="/desktop/login" element={<DesktopLogin />} />
+              <Route path="/desktop" element={<DesktopLayout />}>
+                <Route index element={<Dashboard />} />
+                <Route path="produtos" element={<DesktopProdutos />} />
+                <Route path="funcionarios" element={<Funcionarios />} />
+                <Route path="clientes" element={<Clientes />} />
+                <Route path="fornecedores" element={<Fornecedores />} />
+                <Route path="categorias" element={<Categorias />} />
+                <Route path="vendas" element={<Vendas />} />
+                <Route path="estoque" element={<Estoque />} />
+                <Route path="pedidos" element={<PedidosOnline />} />
+                <Route path="moderacao" element={<Moderacao />} />
+                <Route path="relatorios" element={<Relatorios />} />
+                <Route path="certificados" element={<Certificados />} />
+              </Route>
+
+              {/* Web E-commerce Routes */}
+              <Route path="/" element={
+                <div className="min-h-screen flex flex-col">
+                  <Header />
+                  <main className="flex-1"><Index /></main>
+                  <Footer />
+                </div>
+              } />
+              <Route path="/*" element={
+                <div className="min-h-screen flex flex-col">
+                  <Header />
+                  <main className="flex-1">
+                    <Routes>
+                      <Route path="/catalogo" element={<Catalogo />} />
+                      <Route path="/ofertas" element={<Ofertas />} />
+                      <Route path="/jogo/:id" element={<GameDetail />} />
+                      <Route path="/carrinho" element={<Carrinho />} />
+                      <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+                      <Route path="/auth" element={<Auth />} />
+                      <Route path="/reset-password" element={<ResetPassword />} />
+                      <Route path="/pedidos" element={<ProtectedRoute><Pedidos /></ProtectedRoute>} />
+                      <Route path="/favoritos" element={<ProtectedRoute><Favoritos /></ProtectedRoute>} />
+                      <Route path="/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
+                      <Route path="/perfil/:userId" element={<PublicProfile />} />
+                      <Route path="/biblioteca" element={<ProtectedRoute><Biblioteca /></ProtectedRoute>} />
+                      <Route path="/faq" element={<FAQ />} />
+                      <Route path="/contato" element={<Contato />} />
+                      <Route path="/termos" element={<TermosDeUso />} />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </main>
+                  <Footer />
+                </div>
+              } />
+            </Routes>
           </BrowserRouter>
         </CartProvider>
       </AuthProvider>
