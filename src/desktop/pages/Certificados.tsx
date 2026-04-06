@@ -27,7 +27,7 @@ export default function Certificados() {
           { label: 'Pendentes', count: mockCertificados.filter(c => c.status === 'pendente').length, icon: Clock, color: 'text-yellow-400', bg: 'bg-yellow-500/10' },
           { label: 'Ativos', count: mockCertificados.filter(c => c.status === 'ativo').length, icon: CheckCircle, color: 'text-green-400', bg: 'bg-green-500/10' },
           { label: 'Recusados', count: mockCertificados.filter(c => c.status === 'recusado').length, icon: XCircle, color: 'text-red-400', bg: 'bg-red-500/10' },
-          { label: 'Revogados', count: mockCertificados.filter(c => c.status === 'revogado').length, icon: Ban, color: 'text-orange-400', bg: 'bg-orange-500/10' },
+          { label: 'Revogados', count: mockCertificados.filter(c => (c.status as string) === 'revogado').length, icon: Ban, color: 'text-orange-400', bg: 'bg-orange-500/10' },
         ].map(s => (
           <Card key={s.label} className="border-border/50">
             <CardContent className="py-4 px-4 flex items-center gap-3">
