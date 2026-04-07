@@ -1,8 +1,12 @@
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { Navigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+
+const DEV_BYPASS = true; // mude para false antes de publicar
 
 export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
+
+  if (DEV_BYPASS) return <>{children}</>;
 
   if (loading) {
     return (
