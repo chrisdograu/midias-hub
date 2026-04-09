@@ -36,7 +36,7 @@ import Funcionarios from "./desktop/pages/Funcionarios";
 import Clientes from "./desktop/pages/Clientes";
 import Fornecedores from "./desktop/pages/Fornecedores";
 import Categorias from "./desktop/pages/Categorias";
-import Vendas from "./desktop/pages/Vendas";
+
 import Estoque from "./desktop/pages/Estoque";
 import PedidosOnline from "./desktop/pages/PedidosOnline";
 import Moderacao from "./desktop/pages/Moderacao";
