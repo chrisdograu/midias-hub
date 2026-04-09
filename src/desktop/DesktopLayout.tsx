@@ -1,7 +1,7 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Package, Users, UserCog, Truck, Tags,
-  ShoppingCart, Warehouse, ClipboardList, Shield, BarChart3,
+  Warehouse, ClipboardList, Shield, BarChart3,
   Award, LogOut, Gamepad2, ChevronLeft, ChevronRight,
   Megaphone, ArrowLeftRight, MessageSquare, Star, Bell,
 } from 'lucide-react';
