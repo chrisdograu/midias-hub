@@ -33,7 +33,6 @@ const navSections = [
   {
     label: 'Operacional',
     items: [
-      { title: 'Vendas Presenciais', url: '/desktop/vendas', icon: ShoppingCart },
       { title: 'Estoque', url: '/desktop/estoque', icon: Warehouse },
       { title: 'Pedidos Online', url: '/desktop/pedidos', icon: ClipboardList },
     ],
