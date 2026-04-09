@@ -142,3 +142,79 @@ export const certStatusColors: Record<string, string> = {
   revogado: 'bg-orange-500/20 text-orange-400',
   expirado: 'bg-muted text-muted-foreground',
 };
+
+// === Mobile Admin Mock Data ===
+
+export const mockAnuncios = [
+  { id: '1', seller: 'Lucas Rocha', title: 'PS5 Slim usado - 6 meses', game_title: 'Console PS5', platform: 'PS5', condition: 'usado', price: 2800.00, ad_type: 'venda' as const, category: 'console', status: 'active' as const, certificate_type: 'certificado_vendedor', created_at: '2025-04-05 10:00', fotos: 2 },
+  { id: '2', seller: 'Beatriz Alves', title: 'Zelda TOTK - Troco por God of War', game_title: 'Zelda: TOTK', platform: 'Nintendo Switch', condition: 'novo', price: 0, ad_type: 'troca' as const, category: 'jogo_fisico', status: 'active' as const, certificate_type: 'sem_certificado', desired_item: 'God of War Ragnarök', created_at: '2025-04-04 14:30', fotos: 3 },
+  { id: '3', seller: 'user_gamer99', title: 'MEGA PROMOÇÃO PS5!!!! BARATO', game_title: 'PS5', platform: 'PS5', condition: 'novo', price: 500.00, ad_type: 'venda' as const, category: 'console', status: 'flagged' as const, certificate_type: 'sem_certificado', created_at: '2025-04-03 18:00', fotos: 1 },
+  { id: '4', seller: 'Fernanda Lima', title: 'Headset HyperX Cloud II', game_title: 'HyperX Cloud II', platform: 'Multiplataforma', condition: 'usado', price: 250.00, ad_type: 'venda' as const, category: 'acessorio', status: 'active' as const, certificate_type: 'certificado_vendedor', created_at: '2025-04-02 09:15', fotos: 4 },
+  { id: '5', seller: 'Rafael Dias', title: 'Conta com jogos (BLOQUEADO)', game_title: 'Conta Steam', platform: 'PC', condition: 'novo', price: 300.00, ad_type: 'venda' as const, category: 'jogo_digital', status: 'removed' as const, certificate_type: 'sem_certificado', created_at: '2025-03-28 20:00', fotos: 0 },
+  { id: '6', seller: 'João Mendes', title: 'FIFA 25 PS5 - Lacrado', game_title: 'FIFA 25', platform: 'PS5', condition: 'novo', price: 199.90, ad_type: 'venda' as const, category: 'jogo_fisico', status: 'sold' as const, certificate_type: 'sem_certificado', created_at: '2025-03-25 11:00', fotos: 2 },
+];
+
+export const mockPropostasTroca = [
+  { id: '1', proposer: 'João Mendes', seller: 'Beatriz Alves', anuncio_title: 'Zelda TOTK - Troco por God of War', offered_item: 'God of War Ragnarök PS5 - Lacrado', status: 'pending' as const, proposer_confirmed: false, seller_confirmed: false, created_at: '2025-04-05 15:00' },
+  { id: '2', proposer: 'Lucas Rocha', seller: 'Fernanda Lima', anuncio_title: 'Headset HyperX Cloud II', offered_item: 'Mouse Logitech G502 + R$50', status: 'accepted' as const, proposer_confirmed: true, seller_confirmed: true, created_at: '2025-04-03 10:30' },
+  { id: '3', proposer: 'Rafael Dias', seller: 'João Mendes', anuncio_title: 'FIFA 25 PS5 - Lacrado', offered_item: 'eFootball coins R$100', status: 'rejected' as const, proposer_confirmed: false, seller_confirmed: false, created_at: '2025-04-01 08:00' },
+  { id: '4', proposer: 'Fernanda Lima', seller: 'Lucas Rocha', anuncio_title: 'PS5 Slim usado - 6 meses', offered_item: 'Nintendo Switch OLED + R$500', status: 'pending' as const, proposer_confirmed: false, seller_confirmed: false, created_at: '2025-04-06 09:00' },
+];
+
+export const mockMensagensAdmin = [
+  { id: '1', sender: 'João Mendes', receiver: 'Beatriz Alves', anuncio_title: 'Zelda TOTK - Troco por GoW', content: 'Oi! Tenho o GoW lacrado, aceita trocar?', is_read: true, created_at: '2025-04-05 14:55' },
+  { id: '2', sender: 'Beatriz Alves', receiver: 'João Mendes', anuncio_title: 'Zelda TOTK - Troco por GoW', content: 'Aceito sim! Manda proposta', is_read: true, created_at: '2025-04-05 15:02' },
+  { id: '3', sender: 'Lucas Rocha', receiver: 'Fernanda Lima', anuncio_title: 'Headset HyperX Cloud II', content: 'Ainda tem o headset? Posso trocar pelo meu mouse', is_read: true, created_at: '2025-04-03 10:00' },
+  { id: '4', sender: 'user_gamer99', receiver: 'Rafael Dias', anuncio_title: null, content: 'Compra meu PS5 barato, pix na hora!!', is_read: false, created_at: '2025-04-04 22:00' },
+  { id: '5', sender: 'Fernanda Lima', receiver: 'Lucas Rocha', anuncio_title: 'PS5 Slim usado', content: 'Aceita Switch OLED + dinheiro?', is_read: false, created_at: '2025-04-06 08:45' },
+];
+
+export const mockAvaliacoesUsuario = [
+  { id: '1', reviewer: 'João Mendes', reviewed: 'Beatriz Alves', anuncio_title: 'Zelda TOTK', rating: 5, comment: 'Excelente vendedora, produto conforme descrito!', created_at: '2025-04-06 10:00' },
+  { id: '2', reviewer: 'Fernanda Lima', reviewed: 'Lucas Rocha', anuncio_title: 'Headset HyperX', rating: 4, comment: 'Boa negociação, mas demorou um pouco pra responder.', created_at: '2025-04-04 16:00' },
+  { id: '3', reviewer: 'Lucas Rocha', reviewed: 'Fernanda Lima', anuncio_title: 'Headset HyperX', rating: 5, comment: 'Troca tranquila, recomendo!', created_at: '2025-04-04 16:30' },
+  { id: '4', reviewer: 'Rafael Dias', reviewed: 'user_gamer99', anuncio_title: 'PS5 MEGA PROMOÇÃO', rating: 1, comment: 'Parece golpe, produto não existe.', created_at: '2025-04-03 19:00' },
+  { id: '5', reviewer: 'Beatriz Alves', reviewed: 'João Mendes', anuncio_title: 'FIFA 25', rating: 5, comment: 'Comprador honesto e pontual!', created_at: '2025-03-26 14:00' },
+];
+
+export const mockNotificacoesAdmin = [
+  { id: '1', user: 'João Mendes', type: 'nova_mensagem', title: 'Nova mensagem', body: 'Beatriz Alves enviou uma mensagem', is_read: true, created_at: '2025-04-05 15:02' },
+  { id: '2', user: 'Fernanda Lima', type: 'proposta_aceita', title: 'Proposta aceita!', body: 'Lucas Rocha aceitou sua proposta de troca', is_read: true, created_at: '2025-04-03 11:00' },
+  { id: '3', user: 'Lucas Rocha', type: 'certificado_aprovado', title: 'Certificado aprovado!', body: 'Seu certificado de vendedor foi aprovado', is_read: false, created_at: '2025-04-02 09:30' },
+  { id: '4', user: 'user_gamer99', type: 'certificado_recusado', title: 'Certificado não aprovado', body: 'Conta com denúncias pendentes', is_read: false, created_at: '2025-02-21 10:00' },
+  { id: '5', user: 'Rafael Dias', type: 'comentario_review', title: 'Comentário na sua review', body: 'João Mendes comentou na sua avaliação', is_read: false, created_at: '2025-04-06 08:00' },
+];
+
+export const anuncioStatusLabels: Record<string, string> = {
+  active: 'Ativo',
+  sold: 'Vendido',
+  traded: 'Trocado',
+  flagged: 'Sinalizado',
+  removed: 'Removido',
+  inactive: 'Inativo',
+};
+
+export const anuncioStatusColors: Record<string, string> = {
+  active: 'bg-green-500/20 text-green-400',
+  sold: 'bg-blue-500/20 text-blue-400',
+  traded: 'bg-purple-500/20 text-purple-400',
+  flagged: 'bg-yellow-500/20 text-yellow-400',
+  removed: 'bg-red-500/20 text-red-400',
+  inactive: 'bg-muted text-muted-foreground',
+};
+
+export const tradeStatusLabels: Record<string, string> = {
+  pending: 'Pendente',
+  accepted: 'Aceita',
+  rejected: 'Recusada',
+  completed: 'Concluída',
+  cancelled: 'Cancelada',
+};
+
+export const tradeStatusColors: Record<string, string> = {
+  pending: 'bg-yellow-500/20 text-yellow-400',
+  accepted: 'bg-green-500/20 text-green-400',
+  rejected: 'bg-red-500/20 text-red-400',
+  completed: 'bg-blue-500/20 text-blue-400',
+  cancelled: 'bg-muted text-muted-foreground',
+};

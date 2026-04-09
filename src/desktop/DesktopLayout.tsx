@@ -3,6 +3,7 @@ import {
   LayoutDashboard, Package, Users, UserCog, Truck, Tags,
   ShoppingCart, Warehouse, ClipboardList, Shield, BarChart3,
   Award, LogOut, Gamepad2, ChevronLeft, ChevronRight,
+  Megaphone, ArrowLeftRight, MessageSquare, Star, Bell,
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -35,6 +36,17 @@ const navSections = [
       { title: 'Vendas Presenciais', url: '/desktop/vendas', icon: ShoppingCart },
       { title: 'Estoque', url: '/desktop/estoque', icon: Warehouse },
       { title: 'Pedidos Online', url: '/desktop/pedidos', icon: ClipboardList },
+    ],
+  },
+  {
+    label: 'Marketplace Mobile',
+    adminOnly: true,
+    items: [
+      { title: 'Anúncios', url: '/desktop/anuncios', icon: Megaphone },
+      { title: 'Propostas de Troca', url: '/desktop/propostas', icon: ArrowLeftRight },
+      { title: 'Mensagens', url: '/desktop/mensagens', icon: MessageSquare },
+      { title: 'Avaliações Usuários', url: '/desktop/avaliacoes-usuario', icon: Star },
+      { title: 'Notificações', url: '/desktop/notificacoes', icon: Bell },
     ],
   },
   {
