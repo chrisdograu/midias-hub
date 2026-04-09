@@ -39,6 +39,17 @@ const navSections = [
     ],
   },
   {
+    label: 'Marketplace Mobile',
+    adminOnly: true,
+    items: [
+      { title: 'Anúncios', url: '/desktop/anuncios', icon: Megaphone },
+      { title: 'Propostas de Troca', url: '/desktop/propostas', icon: ArrowLeftRight },
+      { title: 'Mensagens', url: '/desktop/mensagens', icon: MessageSquare },
+      { title: 'Avaliações Usuários', url: '/desktop/avaliacoes-usuario', icon: Star },
+      { title: 'Notificações', url: '/desktop/notificacoes', icon: Bell },
+    ],
+  },
+  {
     label: 'Administração',
     adminOnly: true,
     items: [

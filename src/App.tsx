@@ -42,6 +42,11 @@ import PedidosOnline from "./desktop/pages/PedidosOnline";
 import Moderacao from "./desktop/pages/Moderacao";
 import Relatorios from "./desktop/pages/Relatorios";
 import Certificados from "./desktop/pages/Certificados";
+import AnunciosAdmin from "./desktop/pages/AnunciosAdmin";
+import PropostasTroca from "./desktop/pages/PropostasTroca";
+import MensagensAdmin from "./desktop/pages/MensagensAdmin";
+import AvaliacoesUsuario from "./desktop/pages/AvaliacoesUsuario";
+import NotificacoesAdmin from "./desktop/pages/NotificacoesAdmin";
 
 const queryClient = new QueryClient();
 

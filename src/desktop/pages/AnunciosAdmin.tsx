@@ -22,7 +22,7 @@ export default function AnunciosAdmin() {
     active: mockAnuncios.filter(a => a.status === 'active').length,
     flagged: mockAnuncios.filter(a => a.status === 'flagged').length,
     removed: mockAnuncios.filter(a => a.status === 'removed').length,
-    sold: mockAnuncios.filter(a => a.status === 'sold' || a.status === 'traded').length,
+    sold: mockAnuncios.filter(a => (a.status as string) === 'sold' || (a.status as string) === 'traded').length,
   };
 
   return (
