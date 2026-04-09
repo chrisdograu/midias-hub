@@ -54,12 +54,6 @@ export const mockPedidosOnline = [
   { id: 'PED-006', cliente: 'Fernanda Lima', items: 1, total: 149.90, status: 'cancelled' as const, payment_method: 'PIX', created_at: '2025-03-30 18:30' },
 ];
 
-export const mockVendasPresenciais = [
-  { id: 'VP-001', cliente: 'João Mendes', funcionario: 'Ana Oliveira', items: 2, subtotal: 549.80, desconto: 49.80, total: 500.00, payment_method: 'PIX', created_at: '2025-04-06 10:30' },
-  { id: 'VP-002', cliente: 'Venda Anônima', funcionario: 'Pedro Santos', items: 1, subtotal: 299.90, desconto: 0, total: 299.90, payment_method: 'Dinheiro', created_at: '2025-04-06 11:15' },
-  { id: 'VP-003', cliente: 'Beatriz Alves', funcionario: 'Ana Oliveira', items: 3, subtotal: 899.70, desconto: 89.97, total: 809.73, payment_method: 'Cartão 2x', created_at: '2025-04-05 15:00' },
-  { id: 'VP-004', cliente: 'Venda Anônima', funcionario: 'Pedro Santos', items: 1, subtotal: 1299.90, desconto: 0, total: 1299.90, payment_method: 'Cartão de Crédito', created_at: '2025-04-05 09:45' },
-];
 
 export const mockMovimentacoes = [
   { id: '1', product: 'Controle DualSense Edge', type: 'entrada' as const, quantity: 10, quantity_before: 3, quantity_after: 13, employee: 'Carlos Silva', notes: 'Compra fornecedor Sony', created_at: '2025-04-06 08:00' },
