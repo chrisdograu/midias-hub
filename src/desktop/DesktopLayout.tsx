@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Package, Users, UserCog, Truck, Tags,
   Warehouse, ClipboardList, Shield, BarChart3,
   Award, LogOut, Gamepad2, ChevronLeft, ChevronRight,
-  Megaphone, ArrowLeftRight, MessageSquare, Star, Bell,
+  Megaphone, ArrowLeftRight, MessageSquare, Star, Bell, MessageCircle,
 } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -46,6 +46,7 @@ const navSections = [
       { title: 'Mensagens', url: '/desktop/mensagens', icon: MessageSquare },
       { title: 'Avaliações Usuários', url: '/desktop/avaliacoes-usuario', icon: Star },
       { title: 'Notificações', url: '/desktop/notificacoes', icon: Bell },
+      { title: 'Fórum', url: '/desktop/forum', icon: MessageCircle },
     ],
   },
   {

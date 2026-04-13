@@ -47,6 +47,7 @@ import PropostasTroca from "./desktop/pages/PropostasTroca";
 import MensagensAdmin from "./desktop/pages/MensagensAdmin";
 import AvaliacoesUsuario from "./desktop/pages/AvaliacoesUsuario";
 import NotificacoesAdmin from "./desktop/pages/NotificacoesAdmin";
+import ForumAdmin from "./desktop/pages/ForumAdmin";
 
 const queryClient = new QueryClient();
 
@@ -77,6 +78,7 @@ const App = () => (
                 <Route path="mensagens" element={<MensagensAdmin />} />
                 <Route path="avaliacoes-usuario" element={<AvaliacoesUsuario />} />
                 <Route path="notificacoes" element={<NotificacoesAdmin />} />
+                <Route path="forum" element={<ForumAdmin />} />
                 <Route path="moderacao" element={<Moderacao />} />
                 <Route path="relatorios" element={<Relatorios />} />
                 <Route path="certificados" element={<Certificados />} />
