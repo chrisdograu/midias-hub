@@ -28,6 +28,7 @@ import PublicProfile from "./pages/PublicProfile";
 import NotFound from "./pages/NotFound";
 
 // Desktop Backoffice
+import { DesktopAuthProvider } from "./hooks/useDesktopAuth";
 import DesktopLayout from "./desktop/DesktopLayout";
 import DesktopLogin from "./desktop/DesktopLogin";
 import Dashboard from "./desktop/pages/Dashboard";
@@ -63,8 +64,8 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               {/* Desktop Backoffice Routes */}
-              <Route path="/desktop/login" element={<DesktopLogin />} />
-              <Route path="/desktop" element={<DesktopLayout />}>
+              <Route path="/desktop/login" element={<DesktopAuthProvider><DesktopLogin /></DesktopAuthProvider>} />
+              <Route path="/desktop" element={<DesktopAuthProvider><DesktopLayout /></DesktopAuthProvider>}>
                 <Route index element={<Dashboard />} />
                 <Route path="produtos" element={<DesktopProdutos />} />
                 <Route path="funcionarios" element={<Funcionarios />} />
