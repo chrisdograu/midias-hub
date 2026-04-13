@@ -4,8 +4,10 @@ import {
   Warehouse, ClipboardList, Shield, BarChart3,
   Award, LogOut, Gamepad2, ChevronLeft, ChevronRight,
   Megaphone, ArrowLeftRight, MessageSquare, Star, Bell, MessageCircle,
+  Sun, Moon, Settings,
 } from 'lucide-react';
 import { useState } from 'react';
+import { useTheme } from '@/hooks/useTheme';
 import { cn } from '@/lib/utils';
 import { NavLink } from '@/components/NavLink';
 import { Button } from '@/components/ui/button';
