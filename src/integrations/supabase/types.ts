@@ -1094,16 +1094,19 @@ export type Database = {
       user_roles: {
         Row: {
           id: string
+          position: Database["public"]["Enums"]["employee_position"] | null
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Insert: {
           id?: string
+          position?: Database["public"]["Enums"]["employee_position"] | null
           role?: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Update: {
           id?: string
+          position?: Database["public"]["Enums"]["employee_position"] | null
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
         }
@@ -1114,6 +1117,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_employee_position: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["employee_position"]
+      }
       get_product_avg_rating: {
         Args: { p_product_id: string }
         Returns: {
@@ -1141,6 +1148,13 @@ export type Database = {
         | "recusado"
         | "revogado"
         | "expirado"
+      employee_position:
+        | "admin"
+        | "gerente"
+        | "moderador"
+        | "atendente_marketplace"
+        | "estoquista"
+        | "atendente"
       notification_type:
         | "nova_mensagem"
         | "proposta_aceita"
@@ -1292,6 +1306,14 @@ export const Constants = {
         "recusado",
         "revogado",
         "expirado",
+      ],
+      employee_position: [
+        "admin",
+        "gerente",
+        "moderador",
+        "atendente_marketplace",
+        "estoquista",
+        "atendente",
       ],
       notification_type: [
         "nova_mensagem",
