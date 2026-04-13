@@ -48,6 +48,7 @@ import MensagensAdmin from "./desktop/pages/MensagensAdmin";
 import AvaliacoesUsuario from "./desktop/pages/AvaliacoesUsuario";
 import NotificacoesAdmin from "./desktop/pages/NotificacoesAdmin";
 import ForumAdmin from "./desktop/pages/ForumAdmin";
+import Configuracoes from "./desktop/pages/Configuracoes";
 
 const queryClient = new QueryClient();
 
