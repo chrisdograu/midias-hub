@@ -48,9 +48,9 @@ export default function Index() {
             <motion.div key={game.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}>
               <Link to={`/jogo/${game.id}`} className="group block relative rounded-xl overflow-hidden aspect-[16/9]">
                 <img src={game.image} alt={game.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-4">
-                  <h3 className="text-lg font-bold text-foreground mb-1">{game.title}</h3>
+                  <h3 className="text-lg font-bold text-white mb-1">{game.title}</h3>
                   <div className="flex items-center gap-2">
                     {game.discount > 0 && <span className="bg-primary text-primary-foreground text-xs font-bold px-2 py-0.5 rounded">-{game.discount}%</span>}
                     <span className="text-price font-bold">R$ {game.price.toFixed(2)}</span>

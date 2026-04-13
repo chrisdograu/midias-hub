@@ -48,6 +48,7 @@ import MensagensAdmin from "./desktop/pages/MensagensAdmin";
 import AvaliacoesUsuario from "./desktop/pages/AvaliacoesUsuario";
 import NotificacoesAdmin from "./desktop/pages/NotificacoesAdmin";
 import ForumAdmin from "./desktop/pages/ForumAdmin";
+import Configuracoes from "./desktop/pages/Configuracoes";
 
 const queryClient = new QueryClient();
 
@@ -82,6 +83,7 @@ const App = () => (
                 <Route path="moderacao" element={<Moderacao />} />
                 <Route path="relatorios" element={<Relatorios />} />
                 <Route path="certificados" element={<Certificados />} />
+                <Route path="configuracoes" element={<Configuracoes />} />
               </Route>
 
               {/* Web E-commerce Routes */}

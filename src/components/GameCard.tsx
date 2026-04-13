@@ -33,7 +33,7 @@ export default function GameCard({ game, index = 0 }: GameCardProps) {
         <div className={`relative bg-card rounded-lg overflow-hidden border border-border hover:border-primary/40 transition-all duration-300 hover:glow-primary ${outOfStock ? 'opacity-60' : ''}`}>
           <div className="relative aspect-[3/4] overflow-hidden">
             <img src={game.image} alt={game.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" />
-            <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent opacity-80" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
             {game.discount > 0 && (
               <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs font-bold px-2 py-1 rounded-md">
@@ -56,7 +56,7 @@ export default function GameCard({ game, index = 0 }: GameCardProps) {
 
             <div className="absolute bottom-2 left-2 flex gap-1">
               {game.platform.map(p => (
-                <span key={p} className="text-[10px] bg-card/70 backdrop-blur-sm text-muted-foreground px-1.5 py-0.5 rounded">{p}</span>
+                <span key={p} className="text-[10px] bg-black/50 backdrop-blur-sm text-white px-1.5 py-0.5 rounded">{p}</span>
               ))}
             </div>
           </div>

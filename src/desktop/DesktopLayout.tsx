@@ -4,8 +4,10 @@ import {
   Warehouse, ClipboardList, Shield, BarChart3,
   Award, LogOut, Gamepad2, ChevronLeft, ChevronRight,
   Megaphone, ArrowLeftRight, MessageSquare, Star, Bell, MessageCircle,
+  Sun, Moon, Settings,
 } from 'lucide-react';
 import { useState } from 'react';
+import { useTheme } from '@/hooks/useTheme';
 import { cn } from '@/lib/utils';
 import { NavLink } from '@/components/NavLink';
 import { Button } from '@/components/ui/button';
@@ -56,12 +58,14 @@ const navSections = [
       { title: 'Moderação', url: '/desktop/moderacao', icon: Shield },
       { title: 'Relatórios', url: '/desktop/relatorios', icon: BarChart3 },
       { title: 'Certificados', url: '/desktop/certificados', icon: Award },
+      { title: 'Configurações', url: '/desktop/configuracoes', icon: Settings },
     ],
   },
 ];
 
 export default function DesktopLayout() {
   const [collapsed, setCollapsed] = useState(false);
+  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -143,6 +147,15 @@ export default function DesktopLayout() {
               <p className="text-[10px] text-muted-foreground">Administrador</p>
             </div>
           )}
+          <Button
+            variant="ghost"
+            size="sm"
+            className={cn('w-full text-muted-foreground', collapsed ? 'justify-center' : 'justify-start')}
+            onClick={toggleTheme}
+          >
+            {theme === 'dark' ? <Sun className="h-4 w-4 mr-2" /> : <Moon className="h-4 w-4 mr-2" />}
+            {!collapsed && (theme === 'dark' ? 'Modo Claro' : 'Modo Escuro')}
+          </Button>
           <Button
             variant="ghost"
             size="sm"
