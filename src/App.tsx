@@ -83,6 +83,7 @@ const App = () => (
                 <Route path="moderacao" element={<Moderacao />} />
                 <Route path="relatorios" element={<Relatorios />} />
                 <Route path="certificados" element={<Certificados />} />
+                <Route path="configuracoes" element={<Configuracoes />} />
               </Route>
 
               {/* Web E-commerce Routes */}
