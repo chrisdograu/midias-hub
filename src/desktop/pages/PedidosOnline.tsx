@@ -36,7 +36,7 @@ export default function PedidosOnline() {
     const { data: profiles } = userIds.length > 0
       ? await supabase.from('profiles').select('id, display_name').in('id', userIds)
       : { data: [] };
-    const profileMap = new Map(profiles?.map(p => [p.id, p.display_name]) || []);
+    const profileMap = new Map<string, string>(profiles?.map(p => [p.id, p.display_name]) || []);
 
     // Get item counts
     const { data: items } = await supabase.from('itens_pedido').select('order_id');

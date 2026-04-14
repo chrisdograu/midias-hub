@@ -25,7 +25,7 @@ export default function Moderacao() {
     if (!data) { setLoading(false); return; }
     const reporterIds = [...new Set(data.map(d => d.reporter_id))];
     const { data: profiles } = await supabase.from('profiles').select('id, display_name').in('id', reporterIds);
-    const profileMap = new Map(profiles?.map(p => [p.id, p.display_name || 'Usuário']) || []);
+    const profileMap = new Map<string, string>(profiles?.map(p => [p.id, p.display_name || 'Usuário']) || []);
     setDenuncias(data.map(d => ({ ...d, reporter_name: profileMap.get(d.reporter_id) || 'Usuário' })));
     setLoading(false);
   };

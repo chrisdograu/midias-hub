@@ -22,7 +22,7 @@ export default function MensagensAdmin() {
 
       const userIds = [...new Set(data.flatMap(m => [m.sender_id, m.receiver_id]))];
       const { data: profiles } = await supabase.from('profiles').select('id, display_name').in('id', userIds);
-      const profileMap = new Map(profiles?.map(p => [p.id, p.display_name || 'Usuário']) || []);
+      const profileMap = new Map<string, string>(profiles?.map(p => [p.id, p.display_name || 'Usuário']) || []);
 
       setMsgs(data.map(m => ({
         id: m.id, sender_name: profileMap.get(m.sender_id) || 'Usuário',

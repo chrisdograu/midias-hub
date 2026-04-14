@@ -31,8 +31,8 @@ export default function ForumAdmin() {
       supabase.from('forum_replies').select('post_id'),
     ]);
 
-    const profileMap = new Map(profiles?.map(p => [p.id, p.display_name || 'Usuário']) || []);
-    const prodMap = new Map(prods?.map(p => [p.id, p.title]) || []);
+    const profileMap = new Map<string, string>(profiles?.map(p => [p.id, p.display_name || 'Usuário']) || []);
+    const prodMap = new Map<string, string>(prods?.map(p => [p.id, p.title])) || []);
     const replyCount = new Map<string, number>();
     replies?.forEach(r => replyCount.set(r.post_id, (replyCount.get(r.post_id) || 0) + 1));
 

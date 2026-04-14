@@ -29,13 +29,13 @@ export default function PropostasTroca() {
         supabase.from('anuncios').select('id, title, seller_id').in('id', anuncioIds),
       ]);
 
-      const profileMap = new Map(profiles?.map(p => [p.id, p.display_name || 'Usuário']) || []);
-      const anuncioMap = new Map(anuncios?.map(a => [a.id, a]) || []);
+      const profileMap = new Map<string, string>(profiles?.map(p => [p.id, p.display_name || 'Usuário']) || []);
+      const anuncioMap = new Map<string, any>(anuncios?.map(a => [a.id, a])) || []);
 
       // Get seller names
       const sellerIds = [...new Set(anuncios?.map(a => a.seller_id) || [])];
       const { data: sellerProfiles } = sellerIds.length > 0 ? await supabase.from('profiles').select('id, display_name').in('id', sellerIds) : { data: [] };
-      const sellerMap = new Map(sellerProfiles?.map(p => [p.id, p.display_name || 'Vendedor']) || []);
+      const sellerMap = new Map<string, string>(sellerProfiles?.map(p => [p.id, p.display_name || 'Vendedor']) || []);
 
       setProposals(data.map(p => {
         const anuncio = anuncioMap.get(p.anuncio_id);

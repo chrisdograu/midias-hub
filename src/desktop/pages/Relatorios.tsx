@@ -36,7 +36,7 @@ export default function Relatorios() {
 
       const topIds = [...prodSales.entries()].sort((a, b) => b[1].qty - a[1].qty).slice(0, 10).map(e => e[0]);
       const { data: prods } = topIds.length > 0 ? await supabase.from('produtos').select('id, title').in('id', topIds) : { data: [] };
-      const prodMap = new Map(prods?.map(p => [p.id, p.title]) || []);
+      const prodMap = new Map<string, string>(prods?.map(p => [p.id, p.title])) || []);
 
       setTopProdutos(topIds.map(id => ({
         title: prodMap.get(id) || 'Produto',

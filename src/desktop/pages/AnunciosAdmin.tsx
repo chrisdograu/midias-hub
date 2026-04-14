@@ -29,7 +29,7 @@ export default function AnunciosAdmin() {
 
     const sellerIds = [...new Set(data.map(a => a.seller_id))];
     const { data: profiles } = await supabase.from('profiles').select('id, display_name').in('id', sellerIds);
-    const profileMap = new Map(profiles?.map(p => [p.id, p.display_name || 'Vendedor']) || []);
+    const profileMap = new Map<string, string>(profiles?.map(p => [p.id, p.display_name || 'Vendedor']) || []);
 
     // Count photos
     const { data: fotos } = await supabase.from('fotos_anuncio').select('anuncio_id');

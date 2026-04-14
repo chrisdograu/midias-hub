@@ -30,7 +30,7 @@ export default function Dashboard() {
       // Get recent order client names
       const userIds = [...new Set((pedidos || []).slice(0, 5).map(p => p.user_id).filter(Boolean))] as string[];
       const { data: profiles } = userIds.length > 0 ? await supabase.from('profiles').select('id, display_name').in('id', userIds) : { data: [] };
-      const profileMap = new Map(profiles?.map(p => [p.id, p.display_name || 'Cliente']) || []);
+      const profileMap = new Map<string, string>(profiles?.map(p => [p.id, p.display_name || 'Cliente']) || []);
 
       const itemCount = new Map<string, number>();
       items?.forEach(i => itemCount.set(i.order_id, (itemCount.get(i.order_id) || 0) + 1));

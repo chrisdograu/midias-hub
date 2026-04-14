@@ -30,7 +30,7 @@ export default function NotificacoesAdmin() {
       if (!data) { setLoading(false); return; }
       const userIds = [...new Set(data.map(n => n.user_id))];
       const { data: profiles } = await supabase.from('profiles').select('id, display_name').in('id', userIds);
-      const profileMap = new Map(profiles?.map(p => [p.id, p.display_name || 'Usuário']) || []);
+      const profileMap = new Map<string, string>(profiles?.map(p => [p.id, p.display_name || 'Usuário']) || []);
       setNotifs(data.map(n => ({ ...n, user_name: profileMap.get(n.user_id) || 'Usuário' })));
       setLoading(false);
     };

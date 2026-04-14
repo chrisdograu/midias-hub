@@ -43,11 +43,11 @@ export default function Estoque() {
     setProdutos(prods || []);
 
     // Resolve product names
-    const prodMap = new Map((prods || []).map(p => [p.id, p.title]));
+    const prodMap = new Map<string, string>((prods || []).map(p => [p.id, p.title]));
     // Resolve employee names
     const empIds = [...new Set((rawMovs || []).map(m => m.employee_id).filter(Boolean))] as string[];
     const { data: profiles } = empIds.length > 0 ? await supabase.from('profiles').select('id, display_name').in('id', empIds) : { data: [] };
-    const empMap = new Map(profiles?.map(p => [p.id, p.display_name || 'Funcionário']) || []);
+    const empMap = new Map<string, string>(profiles?.map(p => [p.id, p.display_name || 'Funcionário']) || []);
 
     setMovs((rawMovs || []).map(m => ({
       ...m, product_name: prodMap.get(m.product_id) || 'Produto', employee_name: m.employee_id ? (empMap.get(m.employee_id) || '—') : '—',

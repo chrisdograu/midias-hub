@@ -35,7 +35,7 @@ export default function Certificados() {
     if (!data) { setLoading(false); return; }
     const userIds = [...new Set(data.map(c => c.user_id))];
     const { data: profiles } = await supabase.from('profiles').select('id, display_name').in('id', userIds);
-    const profileMap = new Map(profiles?.map(p => [p.id, p.display_name || 'Usuário']) || []);
+    const profileMap = new Map<string, string>(profiles?.map(p => [p.id, p.display_name || 'Usuário']) || []);
     setCerts(data.map(c => ({ ...c, user_name: profileMap.get(c.user_id) || 'Usuário' })));
     setLoading(false);
   };
