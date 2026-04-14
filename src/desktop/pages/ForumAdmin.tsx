@@ -1,134 +1,107 @@
-import { MessageCircle, ThumbsUp, Trash2, Eye, AlertTriangle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { MessageCircle, ThumbsUp, Trash2, Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
-const mockForumPosts = [
-  { id: '1', user: 'João Mendes', product: 'The Legend of Zelda: TOTK', content: 'Alguém sabe como resolver o puzzle do templo de fogo?', likes: 12, replies: 5, created_at: '2025-04-03 14:30', reported: false },
-  { id: '2', user: 'Fernanda Lima', product: 'God of War Ragnarök', content: 'Dicas para derrotar o Odin no modo difícil', likes: 24, replies: 8, created_at: '2025-04-02 09:15', reported: false },
-  { id: '3', user: 'Lucas Rocha', product: 'Elden Ring', content: 'Melhor build para mago no late game', likes: 18, replies: 12, created_at: '2025-04-01 16:45', reported: false },
-  { id: '4', user: 'user_troll99', product: 'Xbox Game Pass', content: 'Conteúdo impróprio removido pelo moderador...', likes: 0, replies: 1, created_at: '2025-03-30 22:10', reported: true },
-  { id: '5', user: 'Beatriz Alves', product: 'Nintendo Switch OLED', content: 'Vale a pena trocar do Switch normal pro OLED?', likes: 31, replies: 15, created_at: '2025-03-28 11:20', reported: false },
-  { id: '6', user: 'spam_bot_x', product: 'PS5 Slim Digital', content: 'COMPRE AGORA www.golpe.com DESCONTO 90%', likes: 0, replies: 0, created_at: '2025-03-27 03:45', reported: true },
-];
+interface ForumPost {
+  id: string; user_name: string; product_name: string; content: string;
+  likes_count: number; replies_count: number; created_at: string;
+}
 
 export default function ForumAdmin() {
-  const posts = mockForumPosts.filter(p => !p.reported);
-  const reported = mockForumPosts.filter(p => p.reported);
+  const [posts, setPosts] = useState<ForumPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  const fetchPosts = async () => {
+    setLoading(true);
+    const { data } = await supabase.from('forum_posts').select('*').order('created_at', { ascending: false });
+    if (!data) { setLoading(false); return; }
+
+    const userIds = [...new Set(data.map(p => p.user_id))];
+    const prodIds = [...new Set(data.map(p => p.product_id))];
+
+    const [{ data: profiles }, { data: prods }, { data: replies }] = await Promise.all([
+      supabase.from('profiles').select('id, display_name').in('id', userIds),
+      supabase.from('produtos').select('id, title').in('id', prodIds),
+      supabase.from('forum_replies').select('post_id'),
+    ]);
+
+    const profileMap = new Map(profiles?.map(p => [p.id, p.display_name || 'Usuário']) || []);
+    const prodMap = new Map(prods?.map(p => [p.id, p.title]) || []);
+    const replyCount = new Map<string, number>();
+    replies?.forEach(r => replyCount.set(r.post_id, (replyCount.get(r.post_id) || 0) + 1));
+
+    setPosts(data.map(p => ({
+      id: p.id, user_name: profileMap.get(p.user_id) || 'Usuário',
+      product_name: prodMap.get(p.product_id) || 'Produto', content: p.content,
+      likes_count: p.likes_count, replies_count: replyCount.get(p.id) || 0,
+      created_at: p.created_at || '',
+    })));
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchPosts(); }, []);
+
+  const handleDelete = async (id: string) => {
+    await supabase.from('forum_replies').delete().eq('post_id', id);
+    await supabase.from('forum_posts').delete().eq('id', id);
+    toast({ title: 'Post removido' }); fetchPosts();
+  };
+
+  if (loading) return <div className="p-6 flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <MessageCircle className="h-6 w-6 text-primary" /> Fórum
-        </h1>
-        <p className="text-muted-foreground text-sm">Marketplace Mobile - Gestão de posts e discussões</p>
-      </div>
+      <div><h1 className="text-2xl font-bold flex items-center gap-2"><MessageCircle className="h-6 w-6 text-primary" /> Fórum</h1><p className="text-muted-foreground text-sm">Gestão de posts e discussões</p></div>
 
       <div className="grid grid-cols-3 gap-4">
-        <Card className="border-border/50">
-          <CardContent className="py-4 px-4 flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/10"><MessageCircle className="h-5 w-5 text-primary" /></div>
-            <div><p className="text-2xl font-bold">{mockForumPosts.length}</p><p className="text-xs text-muted-foreground">Total de Posts</p></div>
-          </CardContent>
-        </Card>
-        <Card className="border-border/50">
-          <CardContent className="py-4 px-4 flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-yellow-500/10"><AlertTriangle className="h-5 w-5 text-yellow-400" /></div>
-            <div><p className="text-2xl font-bold">{reported.length}</p><p className="text-xs text-muted-foreground">Denunciados</p></div>
-          </CardContent>
-        </Card>
-        <Card className="border-border/50">
-          <CardContent className="py-4 px-4 flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-green-500/10"><ThumbsUp className="h-5 w-5 text-green-400" /></div>
-            <div><p className="text-2xl font-bold">{mockForumPosts.reduce((s, p) => s + p.likes, 0)}</p><p className="text-xs text-muted-foreground">Total de Curtidas</p></div>
-          </CardContent>
-        </Card>
+        {[
+          { label: 'Total de Posts', value: posts.length, icon: MessageCircle, color: 'text-primary', bg: 'bg-primary/10' },
+          { label: 'Total de Respostas', value: posts.reduce((s, p) => s + p.replies_count, 0), icon: MessageCircle, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+          { label: 'Total de Curtidas', value: posts.reduce((s, p) => s + p.likes_count, 0), icon: ThumbsUp, color: 'text-green-400', bg: 'bg-green-500/10' },
+        ].map(s => (
+          <Card key={s.label} className="border-border/50">
+            <CardContent className="py-4 px-4 flex items-center gap-3">
+              <div className={`p-2 rounded-lg ${s.bg}`}><s.icon className={`h-5 w-5 ${s.color}`} /></div>
+              <div><p className="text-2xl font-bold">{s.value}</p><p className="text-xs text-muted-foreground">{s.label}</p></div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      <Tabs defaultValue="todos">
-        <TabsList>
-          <TabsTrigger value="todos"><MessageCircle className="h-4 w-4 mr-1" />Todos os Posts</TabsTrigger>
-          <TabsTrigger value="denunciados">
-            <AlertTriangle className="h-4 w-4 mr-1" />Denunciados
-            {reported.length > 0 && <Badge className="ml-1 bg-destructive/20 text-destructive text-[10px] px-1.5">{reported.length}</Badge>}
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="todos" className="mt-4">
-          <Card className="border-border/50">
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-border">
-                    <TableHead>Usuário</TableHead>
-                    <TableHead>Produto</TableHead>
-                    <TableHead className="max-w-[300px]">Conteúdo</TableHead>
-                    <TableHead className="text-center">Curtidas</TableHead>
-                    <TableHead className="text-center">Respostas</TableHead>
-                    <TableHead>Data</TableHead>
-                    <TableHead className="text-center w-28">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {posts.map(p => (
-                    <TableRow key={p.id} className="border-border hover:bg-muted/30">
-                      <TableCell className="text-sm font-medium">{p.user}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{p.product}</TableCell>
-                      <TableCell className="text-sm max-w-[300px] truncate">{p.content}</TableCell>
-                      <TableCell className="text-center text-sm">{p.likes}</TableCell>
-                      <TableCell className="text-center text-sm">{p.replies}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{p.created_at}</TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex gap-1 justify-center">
-                          <Button variant="ghost" size="sm" className="text-xs h-7"><Eye className="h-3 w-3 mr-1" />Ver</Button>
-                          <Button variant="ghost" size="sm" className="text-xs h-7 text-destructive"><Trash2 className="h-3 w-3" /></Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="denunciados" className="mt-4">
-          <Card className="border-border/50">
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-border">
-                    <TableHead>Usuário</TableHead>
-                    <TableHead>Produto</TableHead>
-                    <TableHead className="max-w-[300px]">Conteúdo</TableHead>
-                    <TableHead>Data</TableHead>
-                    <TableHead className="text-center w-40">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {reported.map(p => (
-                    <TableRow key={p.id} className="border-border hover:bg-muted/30">
-                      <TableCell className="text-sm font-medium">{p.user}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{p.product}</TableCell>
-                      <TableCell className="text-sm max-w-[300px] truncate">{p.content}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{p.created_at}</TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex gap-1 justify-center">
-                          <Button variant="ghost" size="sm" className="text-xs h-7"><Eye className="h-3 w-3 mr-1" />Ver</Button>
-                          <Button variant="ghost" size="sm" className="text-xs h-7 text-destructive"><Trash2 className="h-3 w-3 mr-1" />Remover</Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+      <Card className="border-border/50">
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader><TableRow className="border-border">
+              <TableHead>Usuário</TableHead><TableHead>Produto</TableHead><TableHead className="max-w-[300px]">Conteúdo</TableHead>
+              <TableHead className="text-center">Curtidas</TableHead><TableHead className="text-center">Respostas</TableHead>
+              <TableHead>Data</TableHead><TableHead className="text-center w-20">Ações</TableHead>
+            </TableRow></TableHeader>
+            <TableBody>
+              {posts.length === 0 ? (
+                <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Nenhum post</TableCell></TableRow>
+              ) : posts.map(p => (
+                <TableRow key={p.id} className="border-border hover:bg-muted/30">
+                  <TableCell className="text-sm font-medium">{p.user_name}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{p.product_name}</TableCell>
+                  <TableCell className="text-sm max-w-[300px] truncate">{p.content}</TableCell>
+                  <TableCell className="text-center text-sm">{p.likes_count}</TableCell>
+                  <TableCell className="text-center text-sm">{p.replies_count}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR') : '—'}</TableCell>
+                  <TableCell className="text-center">
+                    <Button variant="ghost" size="sm" className="text-xs h-7 text-destructive" onClick={() => handleDelete(p.id)}><Trash2 className="h-3 w-3" /></Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   );
 }
