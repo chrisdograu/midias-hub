@@ -23,14 +23,16 @@ export type Database = {
           created_at: string
           description: string | null
           desired_item: string | null
-          game_title: string
+          game_title: string | null
           id: string
-          platform: string
+          plataformas: string[] | null
+          platform: string | null
           price: number
           seller_id: string
           status: string
           title: string
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           ad_type?: string
@@ -40,14 +42,16 @@ export type Database = {
           created_at?: string
           description?: string | null
           desired_item?: string | null
-          game_title: string
+          game_title?: string | null
           id?: string
-          platform: string
+          plataformas?: string[] | null
+          platform?: string | null
           price?: number
           seller_id: string
           status?: string
           title: string
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           ad_type?: string
@@ -57,14 +61,16 @@ export type Database = {
           created_at?: string
           description?: string | null
           desired_item?: string | null
-          game_title?: string
+          game_title?: string | null
           id?: string
-          platform?: string
+          plataformas?: string[] | null
+          platform?: string | null
           price?: number
           seller_id?: string
           status?: string
           title?: string
           updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -179,6 +185,27 @@ export type Database = {
           },
         ]
       }
+      blocked_users: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
       categorias: {
         Row: {
           created_at: string
@@ -208,7 +235,7 @@ export type Database = {
           created_at: string
           expires_at: string | null
           id: string
-          product_id: string
+          product_id: string | null
           reason: string | null
           requested_at: string
           reviewed_at: string | null
@@ -221,7 +248,7 @@ export type Database = {
           created_at?: string
           expires_at?: string | null
           id?: string
-          product_id: string
+          product_id?: string | null
           reason?: string | null
           requested_at?: string
           reviewed_at?: string | null
@@ -234,7 +261,7 @@ export type Database = {
           created_at?: string
           expires_at?: string | null
           id?: string
-          product_id?: string
+          product_id?: string | null
           reason?: string | null
           requested_at?: string
           reviewed_at?: string | null
@@ -949,9 +976,11 @@ export type Database = {
           cpf: string | null
           created_at: string
           display_name: string | null
+          email_notifications: boolean
           id: string
           is_private: boolean
           phone: string | null
+          push_notifications: boolean
           updated_at: string
           username: string | null
         }
@@ -962,9 +991,11 @@ export type Database = {
           cpf?: string | null
           created_at?: string
           display_name?: string | null
+          email_notifications?: boolean
           id: string
           is_private?: boolean
           phone?: string | null
+          push_notifications?: boolean
           updated_at?: string
           username?: string | null
         }
@@ -975,9 +1006,11 @@ export type Database = {
           cpf?: string | null
           created_at?: string
           display_name?: string | null
+          email_notifications?: boolean
           id?: string
           is_private?: boolean
           phone?: string | null
+          push_notifications?: boolean
           updated_at?: string
           username?: string | null
         }

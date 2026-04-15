@@ -4,7 +4,7 @@ import {
   Warehouse, ClipboardList, Shield, BarChart3,
   Award, LogOut, Gamepad2, ChevronLeft, ChevronRight,
   Megaphone, ArrowLeftRight, MessageSquare, Star, Bell, MessageCircle,
-  Sun, Moon, Settings, Loader2,
+  Sun, Moon, Settings, Loader2, Ticket,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useTheme } from '@/hooks/useTheme';
@@ -30,6 +30,7 @@ const navSections = [
       { title: 'Clientes', url: '/desktop/clientes', icon: Users, route: 'clientes' },
       { title: 'Fornecedores', url: '/desktop/fornecedores', icon: Truck, route: 'fornecedores' },
       { title: 'Categorias', url: '/desktop/categorias', icon: Tags, route: 'categorias' },
+      { title: 'Cupons', url: '/desktop/cupons', icon: Ticket, route: 'cupons' },
     ],
   },
   {

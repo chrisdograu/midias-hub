@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Package, Plus, Search, Filter, Edit, Trash2, MoreHorizontal, Loader2 } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Package, Plus, Search, Filter, Edit, Trash2, MoreHorizontal, Loader2, Upload } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,6 +42,8 @@ export default function Produtos() {
   const [fCatId, setFCatId] = useState('');
   const [fSuppId, setFSuppId] = useState('');
   const [fImage, setFImage] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const fetchAll = async () => {
     setLoading(true);
@@ -92,6 +94,21 @@ export default function Produtos() {
       toast({ title: 'Produto criado!' });
     }
     setSaving(false); setDialogOpen(false); resetForm(); fetchAll();
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { toast({ title: 'Imagem deve ter no máximo 5MB', variant: 'destructive' }); return; }
+    setUploadingImage(true);
+    const ext = file.name.split('.').pop();
+    const path = `${crypto.randomUUID()}.${ext}`;
+    const { error } = await supabase.storage.from('product-images').upload(path, file, { upsert: true });
+    if (error) { toast({ title: 'Erro ao enviar imagem', variant: 'destructive' }); setUploadingImage(false); return; }
+    const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(path);
+    setFImage(publicUrl);
+    setUploadingImage(false);
+    toast({ title: 'Imagem enviada!' });
   };
 
   const handleDelete = async () => {
@@ -220,7 +237,19 @@ export default function Produtos() {
                 <SelectContent>{fornecedores.map(f => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
-            <div className="col-span-2 space-y-2"><Label>URL da Imagem</Label><Input placeholder="https://..." value={fImage} onChange={e => setFImage(e.target.value)} /></div>
+            <div className="col-span-2 space-y-2">
+              <Label>Imagem do Produto</Label>
+              <div className="flex items-center gap-3">
+                {fImage && <img src={fImage} alt="" className="w-16 h-16 rounded object-cover border border-border" />}
+                <div className="flex-1 flex gap-2">
+                  <Input placeholder="URL ou envie um arquivo..." value={fImage} onChange={e => setFImage(e.target.value)} className="flex-1" />
+                  <Button type="button" variant="outline" size="sm" onClick={() => fileRef.current?.click()} disabled={uploadingImage}>
+                    {uploadingImage ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                  </Button>
+                  <input ref={fileRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                </div>
+              </div>
+            </div>
             <div className="col-span-2 flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={() => { setDialogOpen(false); resetForm(); }}>Cancelar</Button>
               <Button className="bg-primary text-primary-foreground" onClick={handleSave} disabled={saving}>
