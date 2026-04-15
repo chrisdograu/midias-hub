@@ -96,7 +96,21 @@ export default function Produtos() {
     setSaving(false); setDialogOpen(false); resetForm(); fetchAll();
   };
 
-  const handleDelete = async () => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { toast({ title: 'Imagem deve ter no máximo 5MB', variant: 'destructive' }); return; }
+    setUploadingImage(true);
+    const ext = file.name.split('.').pop();
+    const path = `${crypto.randomUUID()}.${ext}`;
+    const { error } = await supabase.storage.from('product-images').upload(path, file, { upsert: true });
+    if (error) { toast({ title: 'Erro ao enviar imagem', variant: 'destructive' }); setUploadingImage(false); return; }
+    const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(path);
+    setFImage(publicUrl);
+    setUploadingImage(false);
+    toast({ title: 'Imagem enviada!' });
+  };
+
     if (!selected) return;
     setSaving(true);
     await supabase.from('produtos').delete().eq('id', selected.id);
