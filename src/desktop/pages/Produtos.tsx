@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Package, Plus, Search, Filter, Edit, Trash2, MoreHorizontal, Loader2 } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Package, Plus, Search, Filter, Edit, Trash2, MoreHorizontal, Loader2, Upload } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,6 +42,8 @@ export default function Produtos() {
   const [fCatId, setFCatId] = useState('');
   const [fSuppId, setFSuppId] = useState('');
   const [fImage, setFImage] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const fetchAll = async () => {
     setLoading(true);
