@@ -237,7 +237,19 @@ export default function Produtos() {
                 <SelectContent>{fornecedores.map(f => <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
-            <div className="col-span-2 space-y-2"><Label>URL da Imagem</Label><Input placeholder="https://..." value={fImage} onChange={e => setFImage(e.target.value)} /></div>
+            <div className="col-span-2 space-y-2">
+              <Label>Imagem do Produto</Label>
+              <div className="flex items-center gap-3">
+                {fImage && <img src={fImage} alt="" className="w-16 h-16 rounded object-cover border border-border" />}
+                <div className="flex-1 flex gap-2">
+                  <Input placeholder="URL ou envie um arquivo..." value={fImage} onChange={e => setFImage(e.target.value)} className="flex-1" />
+                  <Button type="button" variant="outline" size="sm" onClick={() => fileRef.current?.click()} disabled={uploadingImage}>
+                    {uploadingImage ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                  </Button>
+                  <input ref={fileRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                </div>
+              </div>
+            </div>
             <div className="col-span-2 flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={() => { setDialogOpen(false); resetForm(); }}>Cancelar</Button>
               <Button className="bg-primary text-primary-foreground" onClick={handleSave} disabled={saving}>
