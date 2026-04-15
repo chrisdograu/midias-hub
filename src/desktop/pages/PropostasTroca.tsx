@@ -29,19 +29,19 @@ export default function PropostasTroca() {
         supabase.from('anuncios').select('id, title, seller_id').in('id', anuncioIds),
       ]);
 
-      const profileMap = new Map<string, string>(profiles?.map(p => [p.id, p.display_name || 'Usuário']) || []);
-      const anuncioMap = new Map<string, any>(anuncios?.map(a => [a.id, a])) || []);
+      const profileMap = new Map<string, string>((profiles || []).map(p => [p.id, p.display_name || 'Usuário'] as [string, string]));
+      const anuncioMap = new Map<string, any>((anuncios || []).map(a => [a.id, a] as [string, any]));
 
       // Get seller names
       const sellerIds = [...new Set(anuncios?.map(a => a.seller_id) || [])];
       const { data: sellerProfiles } = sellerIds.length > 0 ? await supabase.from('profiles').select('id, display_name').in('id', sellerIds) : { data: [] };
-      const sellerMap = new Map<string, string>(sellerProfiles?.map(p => [p.id, p.display_name || 'Vendedor']) || []);
+      const sellerMap = new Map<string, string>((sellerProfiles || []).map(p => [p.id, p.display_name || 'Vendedor'] as [string, string]));
 
       setProposals(data.map(p => {
         const anuncio = anuncioMap.get(p.anuncio_id);
         return {
           id: p.id, proposer_name: profileMap.get(p.proposer_id) || 'Usuário',
-          seller_name: anuncio ? (sellerMap.get(anuncio.seller_id) || 'Vendedor') : 'Vendedor',
+          seller_name: (anuncio ? (sellerMap.get(anuncio.seller_id) || 'Vendedor') : 'Vendedor') as string,
           anuncio_title: anuncio?.title || 'Anúncio', offered_item: p.offered_item,
           status: p.status, proposer_confirmed: p.proposer_confirmed,
           seller_confirmed: p.seller_confirmed, created_at: p.created_at,

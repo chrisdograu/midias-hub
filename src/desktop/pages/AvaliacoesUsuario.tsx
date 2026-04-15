@@ -29,8 +29,8 @@ export default function AvaliacoesUsuario() {
       anuncioIds.length > 0 ? supabase.from('anuncios').select('id, title').in('id', anuncioIds) : { data: [] },
     ]);
 
-    const profileMap = new Map<string, string>(profiles?.map(p => [p.id, p.display_name || 'Usuário']) || []);
-    const anuncioMap = new Map<string, string>(anuncios?.map(a => [a.id, a.title])) || []);
+    const profileMap = new Map<string, string>((profiles || []).map(p => [p.id, p.display_name || 'Usuário'] as [string, string]));
+    const anuncioMap = new Map<string, string>((anuncios || []).map(a => [a.id, a.title] as [string, string]));
 
     setReviews(data.map(a => ({
       id: a.id, reviewer_name: profileMap.get(a.reviewer_id) || 'Usuário',
