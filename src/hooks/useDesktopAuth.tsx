@@ -8,7 +8,7 @@ export type EmployeePosition = 'admin' | 'gerente' | 'moderador' | 'atendente_ma
 export const POSITION_PERMISSIONS: Record<EmployeePosition, string[]> = {
   admin: ['*'], // all sections
   gerente: [
-    'produtos', 'funcionarios', 'clientes', 'fornecedores', 'categorias',
+    'produtos', 'funcionarios', 'clientes', 'fornecedores', 'categorias', 'cupons',
     'estoque', 'pedidos', 'relatorios',
   ],
   moderador: [
