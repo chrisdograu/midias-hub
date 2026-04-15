@@ -74,6 +74,7 @@ const App = () => (
                 <Route path="clientes" element={<Clientes />} />
                 <Route path="fornecedores" element={<Fornecedores />} />
                 <Route path="categorias" element={<Categorias />} />
+                <Route path="cupons" element={<Cupons />} />
                 
                 <Route path="estoque" element={<Estoque />} />
                 <Route path="pedidos" element={<PedidosOnline />} />
@@ -107,6 +108,7 @@ const App = () => (
                       <Route path="/jogo/:id" element={<GameDetail />} />
                       <Route path="/carrinho" element={<Carrinho />} />
                       <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+                      <Route path="/checkout/sucesso" element={<ProtectedRoute><CheckoutSucesso /></ProtectedRoute>} />
                       <Route path="/auth" element={<Auth />} />
                       <Route path="/reset-password" element={<ResetPassword />} />
                       <Route path="/pedidos" element={<ProtectedRoute><Pedidos /></ProtectedRoute>} />
