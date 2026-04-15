@@ -111,6 +111,7 @@ export default function Produtos() {
     toast({ title: 'Imagem enviada!' });
   };
 
+  const handleDelete = async () => {
     if (!selected) return;
     setSaving(true);
     await supabase.from('produtos').delete().eq('id', selected.id);
