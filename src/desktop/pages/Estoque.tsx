@@ -47,10 +47,10 @@ export default function Estoque() {
     // Resolve employee names
     const empIds = [...new Set((rawMovs || []).map(m => m.employee_id).filter(Boolean))] as string[];
     const { data: profiles } = empIds.length > 0 ? await supabase.from('profiles').select('id, display_name').in('id', empIds) : { data: [] };
-    const empMap = new Map<string, string>(profiles?.map(p => [p.id, p.display_name || 'Funcionário']) || []);
+    const empMap = new Map<string, string>((profiles || []).map(p => [p.id, p.display_name || 'Funcionário'] as [string, string]));
 
     setMovs((rawMovs || []).map(m => ({
-      ...m, product_name: prodMap.get(m.product_id) || 'Produto', employee_name: m.employee_id ? (empMap.get(m.employee_id) || '—') : '—',
+      ...m, product_name: prodMap.get(m.product_id) || 'Produto', employee_name: (m.employee_id ? (empMap.get(m.employee_id) || '—') : '—') as string,
     })));
     setLoading(false);
   };
