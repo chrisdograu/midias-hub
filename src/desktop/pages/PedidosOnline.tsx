@@ -144,7 +144,7 @@ export default function PedidosOnline() {
                     <TableCell className="text-center"><Badge className={statusColors[p.status]}>{statusLabels[p.status] || p.status}</Badge></TableCell>
                     <TableCell className="text-sm text-muted-foreground">{new Date(p.created_at).toLocaleDateString('pt-BR')}</TableCell>
                     <TableCell className="text-center">
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setDetailPedido(p); setNewStatus(p.status); }}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openDetail(p)}>
                         <Eye className="h-4 w-4" />
                       </Button>
                     </TableCell>
@@ -157,16 +157,36 @@ export default function PedidosOnline() {
       </Card>
 
       <Dialog open={!!detailPedido} onOpenChange={o => { if (!o) setDetailPedido(null); }}>
-        <DialogContent>
+        <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>Pedido {detailPedido?.id.slice(0, 8)}...</DialogTitle></DialogHeader>
           {detailPedido && (
-            <div className="space-y-3 py-2">
+            <div className="space-y-4 py-2">
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Cliente</p><p className="text-sm font-medium">{detailPedido.cliente_name}</p></div>
                 <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Total</p><p className="text-sm font-bold text-primary">R$ {detailPedido.total.toFixed(2)}</p></div>
                 <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Pagamento</p><p className="text-sm">{detailPedido.payment_method || '—'}</p></div>
                 <div className="p-3 rounded-lg bg-muted/50"><p className="text-xs text-muted-foreground">Status</p><Badge className={statusColors[detailPedido.status]}>{statusLabels[detailPedido.status]}</Badge></div>
               </div>
+
+              <div className="space-y-2">
+                <p className="text-sm font-medium">Itens do Pedido</p>
+                {loadingItems ? (
+                  <div className="flex justify-center py-4"><Loader2 className="h-4 w-4 animate-spin text-primary" /></div>
+                ) : detailItems.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-2">Nenhum item encontrado</p>
+                ) : (
+                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                    {detailItems.map(item => (
+                      <div key={item.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/30 text-sm">
+                        <span className="flex-1 truncate">{item.product_title}</span>
+                        <span className="text-muted-foreground mx-2">x{item.quantity}</span>
+                        <span className="font-semibold text-primary">R$ {Number(item.price_at_purchase).toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <div className="space-y-2">
                 <p className="text-sm font-medium">Atualizar Status</p>
                 <Select value={newStatus} onValueChange={setNewStatus}>
