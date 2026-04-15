@@ -25,7 +25,7 @@ export default function Header() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      window.location.href = `/catalogo?q=${encodeURIComponent(searchQuery)}`;
+      navigate(`/catalogo?q=${encodeURIComponent(searchQuery)}`);
     }
   };
 

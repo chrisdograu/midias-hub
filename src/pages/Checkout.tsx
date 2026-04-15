@@ -45,8 +45,8 @@ export default function Checkout() {
       });
       clearCart();
       toast.success('Compra realizada com sucesso!');
-      navigate('/pedidos');
-    } catch {
+      navigate('/checkout/sucesso', { state: { orderId: pedido.id } });
+    } catch (err: any) {
       toast.error('Erro ao processar pedido. Tente novamente.');
     }
     setProcessing(false);
