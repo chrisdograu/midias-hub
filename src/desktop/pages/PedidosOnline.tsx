@@ -61,6 +61,18 @@ export default function PedidosOnline() {
 
   useEffect(() => { fetchPedidos(); }, []);
 
+  const openDetail = async (p: Pedido) => {
+    setDetailPedido(p); setNewStatus(p.status); setDetailItems([]); setLoadingItems(true);
+    const { data: items } = await supabase.from('itens_pedido').select('id, product_id, quantity, price_at_purchase').eq('order_id', p.id);
+    if (items && items.length > 0) {
+      const prodIds = [...new Set(items.map(i => i.product_id))];
+      const { data: prods } = await supabase.from('produtos').select('id, title').in('id', prodIds);
+      const prodMap = new Map<string, string>((prods || []).map(pr => [pr.id, pr.title]));
+      setDetailItems(items.map(i => ({ ...i, product_title: prodMap.get(i.product_id) || 'Produto' })));
+    }
+    setLoadingItems(false);
+  };
+
   const updateStatus = async () => {
     if (!detailPedido || !newStatus) return;
     await supabase.from('pedidos').update({ status: newStatus as any }).eq('id', detailPedido.id);
