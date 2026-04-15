@@ -25,6 +25,7 @@ import FAQ from "./pages/FAQ";
 import Contato from "./pages/Contato";
 import TermosDeUso from "./pages/TermosDeUso";
 import PublicProfile from "./pages/PublicProfile";
+import CheckoutSucesso from "./pages/CheckoutSucesso";
 import NotFound from "./pages/NotFound";
 
 // Desktop Backoffice
@@ -37,6 +38,7 @@ import Funcionarios from "./desktop/pages/Funcionarios";
 import Clientes from "./desktop/pages/Clientes";
 import Fornecedores from "./desktop/pages/Fornecedores";
 import Categorias from "./desktop/pages/Categorias";
+import Cupons from "./desktop/pages/Cupons";
 
 import Estoque from "./desktop/pages/Estoque";
 import PedidosOnline from "./desktop/pages/PedidosOnline";
