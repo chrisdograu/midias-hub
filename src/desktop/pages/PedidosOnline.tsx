@@ -18,12 +18,19 @@ interface Pedido {
   created_at: string; items_count: number; cliente_name: string;
 }
 
+interface PedidoItem {
+  id: string; product_id: string; quantity: number; price_at_purchase: number;
+  product_title: string;
+}
+
 export default function PedidosOnline() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [loading, setLoading] = useState(true);
   const [detailPedido, setDetailPedido] = useState<Pedido | null>(null);
+  const [detailItems, setDetailItems] = useState<PedidoItem[]>([]);
+  const [loadingItems, setLoadingItems] = useState(false);
   const [newStatus, setNewStatus] = useState('');
   const { toast } = useToast();
 
