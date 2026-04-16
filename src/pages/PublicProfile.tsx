@@ -132,7 +132,7 @@ export default function PublicProfile() {
           <h2 className="text-sm font-bold text-foreground mb-3">{section.emoji} {section.title} ({section.items.length})</h2>
           <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
             {section.items.map(item => item.game && (
-              <Link key={item.product_id} to={`/reviews/${item.product_id}`}
+              <Link key={item.product_id} to={`/jogo/${item.product_id}`}
                 className="group">
                 <img src={item.game.image} alt={item.game.title}
                   className="w-full aspect-[3/4] object-cover rounded-lg group-hover:ring-2 ring-primary transition-all" />
