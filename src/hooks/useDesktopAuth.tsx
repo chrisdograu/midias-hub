@@ -149,8 +149,8 @@ export function DesktopAuthProvider({ children }: { children: ReactNode }) {
     if (!position) return false;
     const perms = POSITION_PERMISSIONS[position];
     if (perms.includes('*')) return true;
-    // Dashboard is always accessible
-    if (route === '' || route === '/desktop') return true;
+    // Dashboard and Settings are always accessible to any staff member
+    if (route === '' || route === '/desktop' || route === 'configuracoes') return true;
     return perms.some(p => route.includes(p));
   };
 
