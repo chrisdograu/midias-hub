@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { categories, platforms } from '@/lib/gameData';
+import { platforms } from '@/lib/gameData';
 import { useProdutos } from '@/hooks/useProdutos';
+import { supabase } from '@/integrations/supabase/client';
 import GameCard from '@/components/GameCard';
 import { Search, Loader2 } from 'lucide-react';
 
@@ -13,6 +14,15 @@ export default function Catalogo() {
   const [platform, setPlatform] = useState('Todos');
   const [sortBy, setSortBy] = useState('relevance');
   const { data: games = [], isLoading } = useProdutos();
+  const [dbCategories, setDbCategories] = useState<string[]>([]);
+
+  useEffect(() => {
+    supabase.from('categorias').select('name').order('name').then(({ data }) => {
+      if (data) setDbCategories(['Todos', ...data.map(c => c.name)]);
+    });
+  }, []);
+
+  const categoryOptions = dbCategories.length > 1 ? dbCategories : ['Todos'];
 
   const filtered = useMemo(() => {
     let result = games.filter(g => {
@@ -41,7 +51,7 @@ export default function Catalogo() {
         </div>
         <div className="flex flex-wrap gap-2">
           <select value={category} onChange={e => setCategory(e.target.value)} className="px-3 py-2.5 bg-card border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50">
-            {categories.map(c => <option key={c} value={c}>{c}</option>)}
+            {categoryOptions.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
           <select value={platform} onChange={e => setPlatform(e.target.value)} className="px-3 py-2.5 bg-card border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50">
             {platforms.map(p => <option key={p} value={p}>{p}</option>)}

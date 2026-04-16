@@ -51,5 +51,5 @@ export function mapProdutoToGame(row: {
   };
 }
 
-export const categories = ["Todos", "RPG", "Ação", "Terror", "Esporte", "Sandbox"];
+export const categories = ["Todos", "RPG", "Ação", "Aventura", "Esportes", "Corrida", "Estratégia", "Terror", "Indie"];
 export const platforms = ["Todos", "PC", "PS5", "Xbox", "Switch"];
