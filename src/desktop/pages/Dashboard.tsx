@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { DollarSign, ShoppingCart, AlertTriangle, Users, ClipboardList, TrendingUp, ArrowUpRight, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { supabase } from '@/integrations/supabase/client';
 import { statusLabels, statusColors } from '../mockData';
 
@@ -10,6 +12,7 @@ export default function Dashboard() {
   const [stats, setStats] = useState({ totalProdutos: 0, totalClientes: 0, pedidosPendentes: 0, estoqueBaixo: 0, faturamentoTotal: 0, totalPedidos: 0 });
   const [alertProducts, setAlertProducts] = useState<{ id: string; title: string; stock: number; stock_alert_threshold: number; image_url: string | null; platform: string[] | null }[]>([]);
   const [recentOrders, setRecentOrders] = useState<{ id: string; cliente: string; total: number; status: string; items: number }[]>([]);
+  const [serie14d, setSerie14d] = useState<{ data: string; valor: number }[]>([]);
 
   useEffect(() => {
     const fetch = async () => {
