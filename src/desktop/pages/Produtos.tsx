@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Package, Plus, Search, Filter, Edit, Trash2, MoreHorizontal, Loader2, Upload } from 'lucide-react';
+import { Package, Plus, Search, Filter, Edit, Trash2, MoreHorizontal, Loader2, Upload, Eye, EyeOff } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -191,7 +191,9 @@ export default function Produtos() {
                         <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => openEdit(p)}><Edit className="h-4 w-4 mr-2" />Editar</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleToggle(p)}>{p.is_active ? 'Desativar' : 'Ativar'}</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleToggle(p)}>
+                            {p.is_active ? <><EyeOff className="h-4 w-4 mr-2" />Desativar</> : <><Eye className="h-4 w-4 mr-2" />Ativar</>}
+                          </DropdownMenuItem>
                           <DropdownMenuItem className="text-destructive" onClick={() => { setSelected(p); setDeleteOpen(true); }}><Trash2 className="h-4 w-4 mr-2" />Excluir</DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
