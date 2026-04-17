@@ -20,7 +20,7 @@ export default function Dashboard() {
       const [{ data: prods }, { count: clientCount }, { data: pedidos }, { data: items }] = await Promise.all([
         supabase.from('produtos').select('id, title, stock, stock_alert_threshold, image_url, platform'),
         supabase.from('user_roles').select('*', { count: 'exact', head: true }).eq('role', 'user'),
-        supabase.from('pedidos').select('id, user_id, total, status, created_at').order('created_at', { ascending: false }).limit(50),
+        supabase.from('pedidos').select('id, user_id, total, status, created_at').order('created_at', { ascending: false }).limit(200),
         supabase.from('itens_pedido').select('order_id'),
       ]);
 
@@ -28,7 +28,23 @@ export default function Dashboard() {
       setAlertProducts(alerts);
 
       const pending = (pedidos || []).filter(p => p.status === 'pending').length;
-      const faturamento = (pedidos || []).filter(p => ['confirmed', 'processing', 'shipped', 'delivered'].includes(p.status)).reduce((s, p) => s + Number(p.total), 0);
+      const validPaid = (pedidos || []).filter(p => ['confirmed', 'processing', 'shipped', 'delivered'].includes(p.status));
+      const faturamento = validPaid.reduce((s, p) => s + Number(p.total), 0);
+
+      // Série dos últimos 14 dias
+      const since14 = new Date(Date.now() - 14 * 86400000).toISOString();
+      const buckets = new Map<string, number>();
+      for (let i = 13; i >= 0; i--) {
+        const d = new Date(Date.now() - i * 86400000);
+        buckets.set(d.toISOString().slice(0, 10), 0);
+      }
+      validPaid.forEach(p => {
+        if (p.created_at >= since14) {
+          const key = (p.created_at as string).slice(0, 10);
+          if (buckets.has(key)) buckets.set(key, (buckets.get(key) || 0) + Number(p.total));
+        }
+      });
+      setSerie14d([...buckets.entries()].map(([k, v]) => ({ data: k.slice(5).replace('-', '/'), valor: Number(v.toFixed(2)) })));
 
       // Get recent order client names
       const userIds = [...new Set((pedidos || []).slice(0, 5).map(p => p.user_id).filter(Boolean))] as string[];
