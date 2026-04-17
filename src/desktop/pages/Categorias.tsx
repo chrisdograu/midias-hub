@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Tags, Plus, Edit, Trash2, Package, Loader2 } from 'lucide-react';
+import { Tags, Plus, Edit, Trash2, Package, Loader2, Eye } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -20,12 +21,24 @@ interface Categoria {
   produtos_count: number;
 }
 
+interface ProdutoSimple {
+  id: string;
+  title: string;
+  price: number;
+  stock: number;
+  image_url: string | null;
+  is_active: boolean;
+}
+
 export default function Categorias() {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [viewOpen, setViewOpen] = useState(false);
   const [selected, setSelected] = useState<Categoria | null>(null);
+  const [categoriaProdutos, setCategoriaProdutos] = useState<ProdutoSimple[]>([]);
+  const [loadingProdutos, setLoadingProdutos] = useState(false);
   const [saving, setSaving] = useState(false);
   const [formName, setFormName] = useState('');
   const [formDesc, setFormDesc] = useState('');
@@ -37,7 +50,6 @@ export default function Categorias() {
     const { data: cats } = await supabase.from('categorias').select('*').order('name');
     if (!cats) { setLoading(false); return; }
 
-    // Count products per category
     const { data: produtos } = await supabase.from('produtos').select('category_id');
     const countMap = new Map<string, number>();
     produtos?.forEach(p => {
@@ -58,16 +70,31 @@ export default function Categorias() {
     setDialogOpen(true);
   };
 
+  const openView = async (c: Categoria) => {
+    setSelected(c);
+    setViewOpen(true);
+    setLoadingProdutos(true);
+    const { data } = await supabase
+      .from('produtos')
+      .select('id, title, price, stock, image_url, is_active')
+      .eq('category_id', c.id)
+      .order('title');
+    setCategoriaProdutos(data || []);
+    setLoadingProdutos(false);
+  };
+
   const handleSave = async () => {
     if (!formName.trim()) { toast({ title: 'Nome obrigatório', variant: 'destructive' }); return; }
     setSaving(true);
     const payload = { name: formName, description: formDesc || null, image_url: formImage || null };
 
     if (selected) {
-      await supabase.from('categorias').update(payload).eq('id', selected.id);
+      const { error } = await supabase.from('categorias').update(payload).eq('id', selected.id);
+      if (error) { toast({ title: 'Erro ao atualizar', description: error.message, variant: 'destructive' }); setSaving(false); return; }
       toast({ title: 'Categoria atualizada!' });
     } else {
-      await supabase.from('categorias').insert(payload);
+      const { error } = await supabase.from('categorias').insert(payload);
+      if (error) { toast({ title: 'Erro ao criar', description: error.message, variant: 'destructive' }); setSaving(false); return; }
       toast({ title: 'Categoria criada!' });
     }
     setSaving(false); setDialogOpen(false); resetForm(); fetchCategorias();
@@ -76,7 +103,8 @@ export default function Categorias() {
   const handleDelete = async () => {
     if (!selected) return;
     setSaving(true);
-    await supabase.from('categorias').delete().eq('id', selected.id);
+    const { error } = await supabase.from('categorias').delete().eq('id', selected.id);
+    if (error) { toast({ title: 'Erro ao excluir', description: error.message, variant: 'destructive' }); setSaving(false); return; }
     toast({ title: 'Categoria excluída' });
     setSaving(false); setDeleteOpen(false); setSelected(null); fetchCategorias();
   };
@@ -95,18 +123,25 @@ export default function Categorias() {
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {categorias.map((c) => (
-          <Card key={c.id} className="border-border/50 group hover:border-primary/30 transition-colors">
-            <CardContent className="p-4">
-              <div className="aspect-video rounded-lg overflow-hidden mb-3 bg-muted">
+          <Card key={c.id} className="border-border/50 hover:border-primary/40 transition-colors flex flex-col">
+            <CardContent className="p-4 flex flex-col flex-1">
+              <button
+                onClick={() => openView(c)}
+                className="aspect-video rounded-lg overflow-hidden mb-3 bg-muted hover:opacity-80 transition-opacity cursor-pointer w-full"
+                title="Ver produtos desta categoria"
+              >
                 {c.image_url ? <img src={c.image_url} alt={c.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-muted-foreground"><Tags className="h-8 w-8" /></div>}
-              </div>
-              <h3 className="font-semibold text-sm">{c.name}</h3>
+              </button>
+              <button onClick={() => openView(c)} className="text-left">
+                <h3 className="font-semibold text-sm hover:text-primary transition-colors">{c.name}</h3>
+              </button>
               <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{c.description || 'Sem descrição'}</p>
               <div className="flex items-center justify-between mt-3">
                 <Badge variant="outline" className="gap-1 text-xs"><Package className="h-3 w-3" />{c.produtos_count} produtos</Badge>
-                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(c)}><Edit className="h-3.5 w-3.5" /></Button>
-                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => { setSelected(c); setDeleteOpen(true); }}><Trash2 className="h-3.5 w-3.5" /></Button>
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="icon" className="h-7 w-7" title="Visualizar produtos" onClick={() => openView(c)}><Eye className="h-3.5 w-3.5" /></Button>
+                  <Button variant="ghost" size="icon" className="h-7 w-7" title="Editar" onClick={() => openEdit(c)}><Edit className="h-3.5 w-3.5" /></Button>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" title="Excluir" onClick={() => { setSelected(c); setDeleteOpen(true); }}><Trash2 className="h-3.5 w-3.5" /></Button>
                 </div>
               </div>
             </CardContent>
@@ -114,6 +149,54 @@ export default function Categorias() {
         ))}
       </div>
 
+      {/* View Products Dialog */}
+      <Dialog open={viewOpen} onOpenChange={setViewOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Tags className="h-5 w-5 text-primary" /> {selected?.name}
+            </DialogTitle>
+            {selected?.description && <p className="text-sm text-muted-foreground">{selected.description}</p>}
+          </DialogHeader>
+          <div className="flex-1 overflow-hidden">
+            {loadingProdutos ? (
+              <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+            ) : categoriaProdutos.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                <Package className="h-10 w-10 mx-auto mb-3 opacity-40" />
+                <p className="text-sm">Nenhum produto cadastrado nesta categoria</p>
+              </div>
+            ) : (
+              <ScrollArea className="h-[420px] pr-3">
+                <div className="space-y-2">
+                  {categoriaProdutos.map(p => (
+                    <div key={p.id} className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors">
+                      {p.image_url ? (
+                        <img src={p.image_url} alt={p.title} className="w-12 h-12 rounded object-cover" />
+                      ) : (
+                        <div className="w-12 h-12 rounded bg-muted flex items-center justify-center"><Package className="h-5 w-5 text-muted-foreground" /></div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm truncate">{p.title}</p>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-xs text-muted-foreground">Estoque: {p.stock}</span>
+                          {!p.is_active && <Badge variant="outline" className="text-[10px] py-0 h-4">Inativo</Badge>}
+                        </div>
+                      </div>
+                      <p className="font-semibold text-sm text-primary shrink-0">R$ {Number(p.price).toFixed(2)}</p>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            )}
+          </div>
+          <div className="text-xs text-muted-foreground border-t border-border pt-3">
+            Total: {categoriaProdutos.length} {categoriaProdutos.length === 1 ? 'produto' : 'produtos'}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) resetForm(); }}>
         <DialogContent>
           <DialogHeader><DialogTitle>{selected ? 'Editar Categoria' : 'Cadastrar Categoria'}</DialogTitle></DialogHeader>
@@ -135,11 +218,20 @@ export default function Categorias() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir categoria?</AlertDialogTitle>
-            <AlertDialogDescription>Tem certeza que deseja excluir "{selected?.name}"?</AlertDialogDescription>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir "{selected?.name}"?
+              {(selected?.produtos_count ?? 0) > 0 && (
+                <span className="block mt-2 text-destructive font-medium">
+                  Atenção: esta categoria possui {selected?.produtos_count} produto(s) vinculado(s).
+                </span>
+              )}
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground" disabled={saving}>Excluir</AlertDialogAction>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground" disabled={saving}>
+              {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Excluir
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
