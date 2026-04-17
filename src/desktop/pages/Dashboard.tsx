@@ -99,6 +99,27 @@ export default function Dashboard() {
         ))}
       </div>
 
+      <Card className="border-border/50">
+        <CardHeader className="pb-2"><CardTitle className="text-base font-semibold flex items-center gap-2"><TrendingUp className="h-4 w-4 text-primary" /> Faturamento — Últimos 14 dias</CardTitle></CardHeader>
+        <CardContent>
+          <ChartContainer config={{ valor: { label: 'Faturamento', color: 'hsl(var(--primary))' } }} className="h-[220px] w-full">
+            <AreaChart data={serie14d}>
+              <defs>
+                <linearGradient id="dashFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.5} />
+                  <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.05} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="data" stroke="hsl(var(--muted-foreground))" fontSize={11} />
+              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Area type="monotone" dataKey="valor" stroke="hsl(var(--primary))" fill="url(#dashFill)" strokeWidth={2} />
+            </AreaChart>
+          </ChartContainer>
+        </CardContent>
+      </Card>
+
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <Card className="border-border/50">
           <CardHeader className="pb-2"><CardTitle className="text-base font-semibold flex items-center gap-2"><AlertTriangle className="h-4 w-4 text-yellow-400" /> Alertas de Estoque</CardTitle></CardHeader>
