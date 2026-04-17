@@ -1,28 +1,69 @@
 import { useState, useEffect } from 'react';
-import { BarChart3, Calendar, DollarSign, Package, Users, Loader2 } from 'lucide-react';
+import { BarChart3, Calendar, DollarSign, Package, Users, Loader2, TrendingUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis, Cell, PieChart, Pie, Legend } from 'recharts';
 import { supabase } from '@/integrations/supabase/client';
+
+const PERIODO_DAYS: Record<string, number> = { semana: 7, mes: 30, trimestre: 90, ano: 365 };
 
 export default function Relatorios() {
   const [loading, setLoading] = useState(true);
   const [periodo, setPeriodo] = useState('mes');
   const [kpis, setKpis] = useState({ faturamento: 0, vendas: 0, ticket: 0, clientes: 0 });
   const [topProdutos, setTopProdutos] = useState<{ title: string; vendas: number; faturamento: number }[]>([]);
+  const [serieFaturamento, setSerieFaturamento] = useState<{ data: string; valor: number; pedidos: number }[]>([]);
+  const [statusDist, setStatusDist] = useState<{ name: string; value: number }[]>([]);
 
   useEffect(() => {
     const fetch = async () => {
       setLoading(true);
-      const { data: pedidos } = await supabase.from('pedidos').select('id, total, status, user_id').in('status', ['confirmed', 'processing', 'shipped', 'delivered']);
-      const validOrders = pedidos || [];
-      const fat = validOrders.reduce((s, p) => s + Number(p.total), 0);
-      const uniqueClients = new Set(validOrders.map(p => p.user_id).filter(Boolean));
+      const days = PERIODO_DAYS[periodo] || 30;
+      const since = new Date(Date.now() - days * 86400000).toISOString();
 
-      // Top products by sales
-      const orderIds = validOrders.map(o => o.id);
+      const { data: pedidos } = await supabase
+        .from('pedidos')
+        .select('id, total, status, user_id, created_at')
+        .gte('created_at', since);
+
+      const all = pedidos || [];
+      const valid = all.filter(p => ['confirmed', 'processing', 'shipped', 'delivered'].includes(p.status));
+      const fat = valid.reduce((s, p) => s + Number(p.total), 0);
+      const uniqueClients = new Set(valid.map(p => p.user_id).filter(Boolean));
+
+      // Status distribution
+      const statusMap = new Map<string, number>();
+      all.forEach(p => statusMap.set(p.status, (statusMap.get(p.status) || 0) + 1));
+      const statusLabel: Record<string, string> = {
+        pending: 'Pendente', confirmed: 'Confirmado', processing: 'Processando',
+        shipped: 'Enviado', delivered: 'Entregue', cancelled: 'Cancelado',
+      };
+      setStatusDist([...statusMap.entries()].map(([k, v]) => ({ name: statusLabel[k] || k, value: v })));
+
+      // Time series (faturamento por dia)
+      const buckets = new Map<string, { valor: number; pedidos: number }>();
+      for (let i = days - 1; i >= 0; i--) {
+        const d = new Date(Date.now() - i * 86400000);
+        const key = d.toISOString().slice(0, 10);
+        buckets.set(key, { valor: 0, pedidos: 0 });
+      }
+      valid.forEach(p => {
+        const key = (p.created_at as string).slice(0, 10);
+        const cur = buckets.get(key);
+        if (cur) { cur.valor += Number(p.total); cur.pedidos += 1; }
+      });
+      setSerieFaturamento([...buckets.entries()].map(([k, v]) => ({
+        data: k.slice(5).replace('-', '/'),
+        valor: Number(v.valor.toFixed(2)),
+        pedidos: v.pedidos,
+      })));
+
+      // Top products
+      const orderIds = valid.map(o => o.id);
       const { data: items } = orderIds.length > 0
         ? await supabase.from('itens_pedido').select('product_id, quantity, price_at_purchase').in('order_id', orderIds)
         : { data: [] };
@@ -45,8 +86,8 @@ export default function Relatorios() {
       })));
 
       setKpis({
-        faturamento: fat, vendas: validOrders.length,
-        ticket: validOrders.length > 0 ? fat / validOrders.length : 0,
+        faturamento: fat, vendas: valid.length,
+        ticket: valid.length > 0 ? fat / valid.length : 0,
         clientes: uniqueClients.size,
       });
       setLoading(false);
@@ -55,6 +96,14 @@ export default function Relatorios() {
   }, [periodo]);
 
   if (loading) return <div className="p-6 flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
+
+  const PIE_COLORS = ['hsl(var(--primary))', 'hsl(var(--accent))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))', 'hsl(var(--muted-foreground))'];
+
+  const chartConfig = {
+    valor: { label: 'Faturamento', color: 'hsl(var(--primary))' },
+    pedidos: { label: 'Pedidos', color: 'hsl(var(--accent))' },
+    vendas: { label: 'Vendas', color: 'hsl(var(--primary))' },
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -87,8 +136,71 @@ export default function Relatorios() {
         ))}
       </div>
 
+      {/* Faturamento ao longo do tempo */}
+      <Card className="border-border/50">
+        <CardHeader className="pb-2"><CardTitle className="text-base flex items-center gap-2"><TrendingUp className="h-4 w-4 text-primary" /> Faturamento no Período</CardTitle></CardHeader>
+        <CardContent>
+          <ChartContainer config={chartConfig} className="h-[280px] w-full">
+            <AreaChart data={serieFaturamento}>
+              <defs>
+                <linearGradient id="fillValor" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.5} />
+                  <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.05} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="data" stroke="hsl(var(--muted-foreground))" fontSize={11} />
+              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Area type="monotone" dataKey="valor" stroke="hsl(var(--primary))" fill="url(#fillValor)" strokeWidth={2} />
+            </AreaChart>
+          </ChartContainer>
+        </CardContent>
+      </Card>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Top produtos em barras */}
+        <Card className="border-border/50">
+          <CardHeader className="pb-2"><CardTitle className="text-base">Top 10 Produtos (Unidades)</CardTitle></CardHeader>
+          <CardContent>
+            {topProdutos.length === 0 ? (
+              <p className="text-center text-sm text-muted-foreground py-12">Sem vendas no período</p>
+            ) : (
+              <ChartContainer config={chartConfig} className="h-[280px] w-full">
+                <BarChart data={topProdutos} layout="vertical" margin={{ left: 20 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
+                  <XAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={11} />
+                  <YAxis type="category" dataKey="title" stroke="hsl(var(--muted-foreground))" fontSize={10} width={120} tickFormatter={(v) => v.length > 18 ? v.slice(0, 18) + '…' : v} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Bar dataKey="vendas" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ChartContainer>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Distribuição de status */}
+        <Card className="border-border/50">
+          <CardHeader className="pb-2"><CardTitle className="text-base">Status dos Pedidos</CardTitle></CardHeader>
+          <CardContent>
+            {statusDist.length === 0 ? (
+              <p className="text-center text-sm text-muted-foreground py-12">Sem dados</p>
+            ) : (
+              <ChartContainer config={chartConfig} className="h-[280px] w-full">
+                <PieChart>
+                  <Pie data={statusDist} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90} label={(e) => `${e.name}: ${e.value}`} labelLine={false} fontSize={11}>
+                    {statusDist.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
+                  </Pie>
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                </PieChart>
+              </ChartContainer>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
       <Tabs defaultValue="produtos">
-        <TabsList><TabsTrigger value="produtos">Top Produtos</TabsTrigger></TabsList>
+        <TabsList><TabsTrigger value="produtos">Detalhamento Top Produtos</TabsTrigger></TabsList>
         <TabsContent value="produtos" className="mt-4">
           <Card className="border-border/50">
             <CardHeader className="pb-2"><CardTitle className="text-base">Mais Vendidos</CardTitle></CardHeader>

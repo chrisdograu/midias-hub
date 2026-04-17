@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { DollarSign, ShoppingCart, AlertTriangle, Users, ClipboardList, TrendingUp, ArrowUpRight, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { supabase } from '@/integrations/supabase/client';
 import { statusLabels, statusColors } from '../mockData';
 
@@ -10,6 +12,7 @@ export default function Dashboard() {
   const [stats, setStats] = useState({ totalProdutos: 0, totalClientes: 0, pedidosPendentes: 0, estoqueBaixo: 0, faturamentoTotal: 0, totalPedidos: 0 });
   const [alertProducts, setAlertProducts] = useState<{ id: string; title: string; stock: number; stock_alert_threshold: number; image_url: string | null; platform: string[] | null }[]>([]);
   const [recentOrders, setRecentOrders] = useState<{ id: string; cliente: string; total: number; status: string; items: number }[]>([]);
+  const [serie14d, setSerie14d] = useState<{ data: string; valor: number }[]>([]);
 
   useEffect(() => {
     const fetch = async () => {
@@ -17,7 +20,7 @@ export default function Dashboard() {
       const [{ data: prods }, { count: clientCount }, { data: pedidos }, { data: items }] = await Promise.all([
         supabase.from('produtos').select('id, title, stock, stock_alert_threshold, image_url, platform'),
         supabase.from('user_roles').select('*', { count: 'exact', head: true }).eq('role', 'user'),
-        supabase.from('pedidos').select('id, user_id, total, status, created_at').order('created_at', { ascending: false }).limit(50),
+        supabase.from('pedidos').select('id, user_id, total, status, created_at').order('created_at', { ascending: false }).limit(200),
         supabase.from('itens_pedido').select('order_id'),
       ]);
 
@@ -25,7 +28,23 @@ export default function Dashboard() {
       setAlertProducts(alerts);
 
       const pending = (pedidos || []).filter(p => p.status === 'pending').length;
-      const faturamento = (pedidos || []).filter(p => ['confirmed', 'processing', 'shipped', 'delivered'].includes(p.status)).reduce((s, p) => s + Number(p.total), 0);
+      const validPaid = (pedidos || []).filter(p => ['confirmed', 'processing', 'shipped', 'delivered'].includes(p.status));
+      const faturamento = validPaid.reduce((s, p) => s + Number(p.total), 0);
+
+      // Série dos últimos 14 dias
+      const since14 = new Date(Date.now() - 14 * 86400000).toISOString();
+      const buckets = new Map<string, number>();
+      for (let i = 13; i >= 0; i--) {
+        const d = new Date(Date.now() - i * 86400000);
+        buckets.set(d.toISOString().slice(0, 10), 0);
+      }
+      validPaid.forEach(p => {
+        if (p.created_at >= since14) {
+          const key = (p.created_at as string).slice(0, 10);
+          if (buckets.has(key)) buckets.set(key, (buckets.get(key) || 0) + Number(p.total));
+        }
+      });
+      setSerie14d([...buckets.entries()].map(([k, v]) => ({ data: k.slice(5).replace('-', '/'), valor: Number(v.toFixed(2)) })));
 
       // Get recent order client names
       const userIds = [...new Set((pedidos || []).slice(0, 5).map(p => p.user_id).filter(Boolean))] as string[];
@@ -79,6 +98,27 @@ export default function Dashboard() {
           </Card>
         ))}
       </div>
+
+      <Card className="border-border/50">
+        <CardHeader className="pb-2"><CardTitle className="text-base font-semibold flex items-center gap-2"><TrendingUp className="h-4 w-4 text-primary" /> Faturamento — Últimos 14 dias</CardTitle></CardHeader>
+        <CardContent>
+          <ChartContainer config={{ valor: { label: 'Faturamento', color: 'hsl(var(--primary))' } }} className="h-[220px] w-full">
+            <AreaChart data={serie14d}>
+              <defs>
+                <linearGradient id="dashFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.5} />
+                  <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.05} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="data" stroke="hsl(var(--muted-foreground))" fontSize={11} />
+              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Area type="monotone" dataKey="valor" stroke="hsl(var(--primary))" fill="url(#dashFill)" strokeWidth={2} />
+            </AreaChart>
+          </ChartContainer>
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <Card className="border-border/50">
