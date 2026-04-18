@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
-import { BarChart3, Calendar, DollarSign, Package, Users, Loader2, TrendingUp } from 'lucide-react';
+import { BarChart3, Calendar, DollarSign, Package, Users, Loader2, TrendingUp, Download } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, ResponsiveContainer, XAxis, YAxis, Cell, PieChart, Pie, Legend } from 'recharts';
@@ -109,15 +111,32 @@ export default function Relatorios() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div><h1 className="text-2xl font-bold flex items-center gap-2"><BarChart3 className="h-6 w-6 text-primary" /> Relatórios</h1><p className="text-muted-foreground text-sm">Análise de vendas e desempenho</p></div>
-        <Select value={periodo} onValueChange={setPeriodo}>
-          <SelectTrigger className="w-40"><Calendar className="h-4 w-4 mr-2" /><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="semana">Última Semana</SelectItem>
-            <SelectItem value="mes">Último Mês</SelectItem>
-            <SelectItem value="trimestre">Último Trimestre</SelectItem>
-            <SelectItem value="ano">Último Ano</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => {
+            if (serieFaturamento.length === 0) { toast.error('Sem dados para exportar'); return; }
+            const headers = 'Data,Faturamento,Pedidos\n';
+            const rows = serieFaturamento.map(r => `${r.data},${r.valor.toFixed(2)},${r.pedidos}`).join('\n');
+            const top = '\n\nTop Produtos\nProduto,Vendas,Faturamento\n' + topProdutos.map(p => `"${p.title}",${p.vendas},${p.faturamento.toFixed(2)}`).join('\n');
+            const csv = headers + rows + top;
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `relatorio-${periodo}-${new Date().toISOString().slice(0,10)}.csv`;
+            a.click(); URL.revokeObjectURL(url);
+            toast.success('Relatório exportado!');
+          }}>
+            <Download className="h-4 w-4 mr-2" />Exportar CSV
+          </Button>
+          <Select value={periodo} onValueChange={setPeriodo}>
+            <SelectTrigger className="w-40"><Calendar className="h-4 w-4 mr-2" /><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="semana">Última Semana</SelectItem>
+              <SelectItem value="mes">Último Mês</SelectItem>
+              <SelectItem value="trimestre">Último Trimestre</SelectItem>
+              <SelectItem value="ano">Último Ano</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="grid grid-cols-4 gap-4">
