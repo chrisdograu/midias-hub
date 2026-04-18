@@ -265,6 +265,8 @@ export default function Perfil() {
             </div>
           )}
         </div>
+          </TabsContent>
+        </Tabs>
       </motion.div>
     </div>
   );
