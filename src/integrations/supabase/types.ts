@@ -971,6 +971,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          banned_until: string | null
           bio: string | null
           contact_email: string | null
           cpf: string | null
@@ -986,6 +987,7 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          banned_until?: string | null
           bio?: string | null
           contact_email?: string | null
           cpf?: string | null
@@ -1001,6 +1003,7 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          banned_until?: string | null
           bio?: string | null
           contact_email?: string | null
           cpf?: string | null
@@ -1076,6 +1079,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      site_settings: {
+        Row: {
+          id: string
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          id?: string
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Update: {
+          id?: string
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Relationships: []
       }
       trade_proposals: {
         Row: {

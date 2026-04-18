@@ -1,11 +1,14 @@
 import { useState, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { User, Save, Loader2, Camera, Lock, Bell, Eye, EyeOff, Shield } from 'lucide-react';
+import { User, Save, Loader2, Camera, Lock, Bell, Eye, EyeOff, Shield, UserX, Star } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import BlockedUsersTab from '@/components/perfil/BlockedUsersTab';
+import MyReviewsTab from '@/components/perfil/MyReviewsTab';
 
 export default function Perfil() {
   const { user, profile, updatePassword } = useAuth();
@@ -97,6 +100,29 @@ export default function Perfil() {
     <div className="container mx-auto px-4 py-8 max-w-2xl">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="text-2xl font-bold text-foreground mb-6">Minha Conta</h1>
+
+        <Tabs defaultValue="conta" className="mb-6">
+          <TabsList className="w-full grid grid-cols-3">
+            <TabsTrigger value="conta"><User className="h-4 w-4 mr-1" />Conta</TabsTrigger>
+            <TabsTrigger value="bloqueados"><UserX className="h-4 w-4 mr-1" />Bloqueados</TabsTrigger>
+            <TabsTrigger value="reviews"><Star className="h-4 w-4 mr-1" />Avaliações</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="bloqueados" className="mt-4">
+            <div className="bg-card border border-border rounded-xl p-6">
+              <h2 className="text-base font-semibold text-foreground mb-4">Usuários bloqueados</h2>
+              <BlockedUsersTab />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="reviews" className="mt-4">
+            <div className="bg-card border border-border rounded-xl p-6">
+              <h2 className="text-base font-semibold text-foreground mb-4">Minhas avaliações</h2>
+              <MyReviewsTab />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="conta" className="mt-4 space-y-4">
 
         {/* Avatar & Info */}
         <div className="bg-card border border-border rounded-xl p-6 mb-4">
@@ -239,6 +265,8 @@ export default function Perfil() {
             </div>
           )}
         </div>
+          </TabsContent>
+        </Tabs>
       </motion.div>
     </div>
   );
