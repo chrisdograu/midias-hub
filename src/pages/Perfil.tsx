@@ -1,11 +1,14 @@
 import { useState, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { User, Save, Loader2, Camera, Lock, Bell, Eye, EyeOff, Shield } from 'lucide-react';
+import { User, Save, Loader2, Camera, Lock, Bell, Eye, EyeOff, Shield, UserX, Star } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import BlockedUsersTab from '@/components/perfil/BlockedUsersTab';
+import MyReviewsTab from '@/components/perfil/MyReviewsTab';
 
 export default function Perfil() {
   const { user, profile, updatePassword } = useAuth();
