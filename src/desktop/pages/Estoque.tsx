@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { Warehouse, ArrowDownToLine, ArrowUpFromLine, RefreshCw, Search, AlertTriangle, Plus, Loader2 } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { useState, useEffect, useMemo } from 'react';
+import { Warehouse, ArrowDownToLine, ArrowUpFromLine, RefreshCw, Search, AlertTriangle, Plus, Loader2, TrendingUp } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from 'recharts';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { Tables } from '@/integrations/supabase/types';
@@ -86,6 +87,24 @@ export default function Estoque() {
 
   const alertProducts = produtos.filter(p => p.stock <= p.stock_alert_threshold);
 
+  const chartData = useMemo(() => {
+    const days: { date: string; label: string; entrada: number; saida: number }[] = [];
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(today); d.setDate(d.getDate() - i);
+      const iso = d.toISOString().slice(0, 10);
+      days.push({ date: iso, label: d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }), entrada: 0, saida: 0 });
+    }
+    const idx = new Map(days.map((d, i) => [d.date, i]));
+    movs.forEach(m => {
+      const k = m.created_at.slice(0, 10);
+      const i = idx.get(k); if (i === undefined) return;
+      if (m.type === 'entrada') days[i].entrada += m.quantity;
+      else if (m.type === 'saida') days[i].saida += m.quantity;
+    });
+    return days;
+  }, [movs]);
+
   if (loading) return <div className="p-6 flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
 
   return (
@@ -109,6 +128,30 @@ export default function Estoque() {
           </CardContent>
         </Card>
       )}
+
+      <Card className="border-border/50">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 text-primary" /> Movimentações dos últimos 30 dias
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="label" tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} interval={3} />
+              <YAxis tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} allowDecimals={false} />
+              <Tooltip
+                contentStyle={{ background: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))', borderRadius: 8, fontSize: 12 }}
+                labelStyle={{ color: 'hsl(var(--foreground))' }}
+              />
+              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <Bar dataKey="entrada" name="Entradas" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="saida" name="Saídas" fill="hsl(var(--destructive))" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
 
       <Tabs defaultValue="movimentacoes">
         <TabsList>

@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { User, Save, Loader2, Camera, Lock, Bell, Eye, EyeOff, Shield, UserX, Star } from 'lucide-react';
+import { User, Save, Loader2, Camera, Lock, Bell, Eye, EyeOff, Shield, UserX, Star, Ban } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Switch } from '@/components/ui/switch';
@@ -20,6 +20,7 @@ export default function Perfil() {
   const [isPrivate, setIsPrivate] = useState(false);
   const [pushNotifications, setPushNotifications] = useState(true);
   const [emailNotifications, setEmailNotifications] = useState(false);
+  const [bannedUntil, setBannedUntil] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -44,6 +45,7 @@ export default function Perfil() {
         setIsPrivate(data.is_private || false);
         setPushNotifications(data.push_notifications ?? true);
         setEmailNotifications(data.email_notifications ?? false);
+        setBannedUntil(data.banned_until || null);
       }
       setLoaded(true);
     });
@@ -100,6 +102,21 @@ export default function Perfil() {
     <div className="container mx-auto px-4 py-8 max-w-2xl">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="text-2xl font-bold text-foreground mb-6">Minha Conta</h1>
+
+        {bannedUntil && new Date(bannedUntil) > new Date() && (
+          <div className="mb-6 p-4 rounded-xl border border-destructive/40 bg-destructive/10 flex items-start gap-3">
+            <Ban className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-semibold text-destructive">Sua conta está suspensa</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Você não pode criar anúncios, postar no fórum ou enviar mensagens até{' '}
+                <span className="font-medium text-foreground">
+                  {new Date(bannedUntil).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}
+                </span>.
+              </p>
+            </div>
+          </div>
+        )}
 
         <Tabs defaultValue="conta" className="mb-6">
           <TabsList className="w-full grid grid-cols-3">
