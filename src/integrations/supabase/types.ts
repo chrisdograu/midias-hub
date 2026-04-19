@@ -1199,6 +1199,7 @@ export type Database = {
       is_admin: { Args: never; Returns: boolean }
       is_atendente: { Args: never; Returns: boolean }
       is_staff: { Args: never; Returns: boolean }
+      is_user_banned: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "user" | "atendente"

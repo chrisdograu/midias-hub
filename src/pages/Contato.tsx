@@ -1,10 +1,16 @@
 import { useState } from 'react';
-import { Mail, MessageSquare, Send } from 'lucide-react';
+import { Mail, MessageSquare, Send, Phone } from 'lucide-react';
 import { toast } from 'sonner';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
+
+interface StoreInfo { name?: string; email?: string; phone?: string }
 
 export default function Contato() {
+  const { value: store } = useSiteSettings<StoreInfo>('store_info');
   const [form, setForm] = useState({ nome: '', email: '', assunto: '', mensagem: '' });
   const [sending, setSending] = useState(false);
+  const contactEmail = store?.email || 'suporte@midias.com.br';
+  const contactPhone = store?.phone;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,12 +38,12 @@ export default function Contato() {
         <div className="bg-card border border-border rounded-xl p-6 text-center">
           <Mail className="h-8 w-8 text-primary mx-auto mb-2" />
           <h3 className="font-semibold text-foreground">E-mail</h3>
-          <p className="text-sm text-muted-foreground">suporte@midias.com.br</p>
+          <p className="text-sm text-muted-foreground">{contactEmail}</p>
         </div>
         <div className="bg-card border border-border rounded-xl p-6 text-center">
-          <MessageSquare className="h-8 w-8 text-primary mx-auto mb-2" />
-          <h3 className="font-semibold text-foreground">Atendimento</h3>
-          <p className="text-sm text-muted-foreground">24 horas, 7 dias por semana</p>
+          {contactPhone ? <Phone className="h-8 w-8 text-primary mx-auto mb-2" /> : <MessageSquare className="h-8 w-8 text-primary mx-auto mb-2" />}
+          <h3 className="font-semibold text-foreground">{contactPhone ? 'Telefone' : 'Atendimento'}</h3>
+          <p className="text-sm text-muted-foreground">{contactPhone || '24 horas, 7 dias por semana'}</p>
         </div>
       </div>
 

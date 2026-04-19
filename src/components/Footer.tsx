@@ -1,9 +1,18 @@
-import { Gamepad2 } from 'lucide-react';
+import { Gamepad2, Mail, Phone } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
+
+interface StoreInfo { name?: string; email?: string; phone?: string; description?: string }
 
 export default function Footer() {
   const { user } = useAuth();
+  const { value: store } = useSiteSettings<StoreInfo>('store_info');
+
+  const name = store?.name || 'MIDIAS';
+  const description = store?.description || 'Sua loja de jogos digitais com os melhores preços e ofertas exclusivas.';
+  const email = store?.email || 'suporte@midias.com.br';
+  const phone = store?.phone;
 
   return (
     <footer className="border-t border-border mt-16">
@@ -12,11 +21,9 @@ export default function Footer() {
           <div>
             <Link to="/" className="flex items-center gap-2 mb-4">
               <Gamepad2 className="h-6 w-6 text-primary" />
-              <span className="font-display text-lg font-bold gradient-text">MIDIAS</span>
+              <span className="font-display text-lg font-bold gradient-text">{name}</span>
             </Link>
-            <p className="text-sm text-muted-foreground">
-              Sua loja de jogos digitais com os melhores preços e ofertas exclusivas.
-            </p>
+            <p className="text-sm text-muted-foreground">{description}</p>
           </div>
           <div>
             <h4 className="font-semibold text-foreground mb-3">Navegação</h4>
@@ -45,8 +52,13 @@ export default function Footer() {
             </ul>
           </div>
           <div>
-            <h4 className="font-semibold text-foreground mb-3">Pagamento</h4>
+            <h4 className="font-semibold text-foreground mb-3">Contato</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
+              <li className="flex items-center gap-2"><Mail className="h-3.5 w-3.5 text-primary" />{email}</li>
+              {phone && <li className="flex items-center gap-2"><Phone className="h-3.5 w-3.5 text-primary" />{phone}</li>}
+            </ul>
+            <h4 className="font-semibold text-foreground mt-4 mb-2">Pagamento</h4>
+            <ul className="space-y-1 text-sm text-muted-foreground">
               <li>💳 Cartão de Crédito</li>
               <li>📱 Pix</li>
               <li>🏦 Boleto Bancário</li>
@@ -54,7 +66,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="mt-8 pt-8 border-t border-border text-center text-sm text-muted-foreground">
-          © 2024 Midias. Todos os direitos reservados. Preços e ofertas sujeitos a alteração.
+          © {new Date().getFullYear()} {name}. Todos os direitos reservados. Preços e ofertas sujeitos a alteração.
         </div>
       </div>
     </footer>

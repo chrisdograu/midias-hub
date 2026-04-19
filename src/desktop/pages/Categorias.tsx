@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Tags, Plus, Edit, Trash2, Package, Loader2, Eye } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Tags, Plus, Edit, Trash2, Package, Loader2, Eye, Upload, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,7 +43,24 @@ export default function Categorias() {
   const [formName, setFormName] = useState('');
   const [formDesc, setFormDesc] = useState('');
   const [formImage, setFormImage] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { toast({ title: 'Imagem máxima de 2MB', variant: 'destructive' }); return; }
+    setUploading(true);
+    const ext = file.name.split('.').pop();
+    const path = `categorias/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { error: upErr } = await supabase.storage.from('product-images').upload(path, file, { cacheControl: '3600' });
+    if (upErr) { toast({ title: 'Erro no upload', description: upErr.message, variant: 'destructive' }); setUploading(false); return; }
+    const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(path);
+    setFormImage(publicUrl);
+    setUploading(false);
+    toast({ title: 'Imagem enviada!' });
+  };
 
   const fetchCategorias = async () => {
     setLoading(true);
@@ -203,7 +220,29 @@ export default function Categorias() {
           <div className="grid gap-4 py-4">
             <div className="space-y-2"><Label>Nome</Label><Input placeholder="Nome da categoria" value={formName} onChange={e => setFormName(e.target.value)} /></div>
             <div className="space-y-2"><Label>Descrição</Label><Textarea placeholder="Descrição da categoria" rows={2} value={formDesc} onChange={e => setFormDesc(e.target.value)} /></div>
-            <div className="space-y-2"><Label>URL da Imagem</Label><Input placeholder="https://..." value={formImage} onChange={e => setFormImage(e.target.value)} /></div>
+            <div className="space-y-2">
+              <Label>Imagem da Categoria</Label>
+              {formImage ? (
+                <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-muted border border-border">
+                  <img src={formImage} alt="preview" className="w-full h-full object-cover" />
+                  <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={() => setFormImage('')}>
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  className="w-full aspect-video rounded-lg border-2 border-dashed border-border hover:border-primary/50 transition-colors flex flex-col items-center justify-center gap-2 text-muted-foreground hover:text-primary"
+                >
+                  {uploading ? <Loader2 className="h-6 w-6 animate-spin" /> : <Upload className="h-6 w-6" />}
+                  <span className="text-xs">{uploading ? 'Enviando...' : 'Clique para enviar imagem (max 2MB)'}</span>
+                </button>
+              )}
+              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileUpload} />
+              <Input placeholder="Ou cole uma URL: https://..." value={formImage} onChange={e => setFormImage(e.target.value)} className="text-xs" />
+            </div>
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={() => { setDialogOpen(false); resetForm(); }}>Cancelar</Button>
               <Button className="bg-primary text-primary-foreground" onClick={handleSave} disabled={saving}>
