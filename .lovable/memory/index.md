@@ -32,6 +32,7 @@
 - [Database Schema Details](mem://database/schema-v2-detalhes) — 'employee_position' enum, expanded profiles, triggers
 - [Forum & Chat Tables](mem://database/forum-chat-tables) — 'forum_posts', 'forum_replies', 'conversas' with RLS policies
 - [DB Unified Schema](mem://database/schema-unificado) — blocked_users, push/email notifications on profiles, plataformas on anuncios
+- [Site Settings](mem://database/site-settings) — Singleton chave/valor JSONB para configurações globais persistentes
 
 - [E-commerce Engine](mem://funcionalidades/ecommerce) — Real-time stock via Supabase triggers, empty stock handling
 - [Simulated Checkout](mem://funcionalidades/checkout-simulado) — Pix (5% off) and Credit Card installments logic
@@ -52,3 +53,4 @@
 - [Discount Coupons](mem://features/cupons-desconto) — System using 'cupon_usos' for limits and valid periods, CRUD in desktop
 - [Game Rankings](mem://features/ranking-jogos) — Mobile leaderboard using average scores and library data
 - [Checkout Success](mem://features/checkout-sucesso) — Post-purchase success page with order ID and library info
+- [Moderação e Banimento](mem://features/moderacao-banimento) — banned_until + is_user_banned() bloqueia ações sensíveis via RLS
