@@ -26,6 +26,7 @@ export default function Auth() {
     setLoading(true);
 
     if (mode === 'forgot') {
+      if (!email) { setLoading(false); toast.error('Informe seu e-mail'); return; }
       const { error } = await resetPassword(email);
       setLoading(false);
       if (error) { toast.error(error); return; }
@@ -116,10 +117,14 @@ export default function Auth() {
           </form>
 
           <div className="mt-4 text-center text-sm text-muted-foreground">
-            {mode === 'login' ? (
+            {mode === 'login' && (
               <>Não tem conta? <button onClick={() => setMode('signup')} className="text-primary hover:underline font-medium">Criar conta</button></>
-            ) : (
+            )}
+            {mode === 'signup' && (
               <>Já tem conta? <button onClick={() => setMode('login')} className="text-primary hover:underline font-medium">Fazer login</button></>
+            )}
+            {mode === 'forgot' && (
+              <>Lembrou a senha? <button onClick={() => setMode('login')} className="text-primary hover:underline font-medium">Voltar ao login</button></>
             )}
           </div>
         </div>

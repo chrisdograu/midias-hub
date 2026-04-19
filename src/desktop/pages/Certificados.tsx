@@ -44,6 +44,10 @@ export default function Certificados() {
 
   const handleDecision = async () => {
     if (!selected || !decision) return;
+    if (decision === 'recusado' && !reason.trim()) {
+      toast({ title: 'Justificativa obrigatória', description: 'Informe o motivo da recusa.', variant: 'destructive' });
+      return;
+    }
     setSaving(true);
     const { data: { user } } = await supabase.auth.getUser();
     const update: any = {
@@ -153,7 +157,10 @@ export default function Certificados() {
                   </Select>
                 </div>
               )}
-              <div className="space-y-2"><Label>Justificativa</Label><Textarea placeholder="Motivo da decisão" rows={2} value={reason} onChange={e => setReason(e.target.value)} /></div>
+              <div className="space-y-2">
+                <Label>Justificativa {decision === 'recusado' && <span className="text-destructive">*</span>}</Label>
+                <Textarea placeholder={decision === 'recusado' ? 'Obrigatório: motivo da recusa' : 'Motivo da decisão (opcional)'} rows={2} value={reason} onChange={e => setReason(e.target.value)} />
+              </div>
               <Button className="w-full bg-primary text-primary-foreground" onClick={handleDecision} disabled={saving || !decision}>
                 {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Confirmar
               </Button>
