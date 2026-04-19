@@ -87,6 +87,24 @@ export default function Estoque() {
 
   const alertProducts = produtos.filter(p => p.stock <= p.stock_alert_threshold);
 
+  const chartData = useMemo(() => {
+    const days: { date: string; label: string; entrada: number; saida: number }[] = [];
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(today); d.setDate(d.getDate() - i);
+      const iso = d.toISOString().slice(0, 10);
+      days.push({ date: iso, label: d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }), entrada: 0, saida: 0 });
+    }
+    const idx = new Map(days.map((d, i) => [d.date, i]));
+    movs.forEach(m => {
+      const k = m.created_at.slice(0, 10);
+      const i = idx.get(k); if (i === undefined) return;
+      if (m.type === 'entrada') days[i].entrada += m.quantity;
+      else if (m.type === 'saida') days[i].saida += m.quantity;
+    });
+    return days;
+  }, [movs]);
+
   if (loading) return <div className="p-6 flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
 
   return (
