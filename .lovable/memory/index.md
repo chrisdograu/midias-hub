@@ -56,3 +56,5 @@
 - [Moderação e Banimento](mem://features/moderacao-banimento) — banned_until + is_user_banned() bloqueia ações sensíveis via RLS
 - [Banner banimento global](mem://features/banimento-header-global) — Barra vermelha no Header quando conta suspensa
 - [Estoque gráfico com filtros](mem://features/estoque-grafico-filtros) — Gráfico entradas vs saídas com filtros 7/30/90 dias
+- [Seed de dados de teste](mem://features/seed-de-testes) — Edge function seed-test-users + botão admin em /desktop/configuracoes
+- [Guia de Testes](GUIA_DE_TESTES.md) — Documento na raiz com contas, fluxos QA e limitações conhecidas
