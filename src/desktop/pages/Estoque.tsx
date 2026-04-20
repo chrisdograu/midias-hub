@@ -40,7 +40,7 @@ export default function Estoque() {
     setLoading(true);
     const [{ data: prods }, { data: rawMovs }] = await Promise.all([
       supabase.from('produtos').select('*').order('title'),
-      supabase.from('movimentacoes_estoque').select('*').order('created_at', { ascending: false }).limit(50),
+      supabase.from('movimentacoes_estoque').select('*').order('created_at', { ascending: false }).limit(500),
     ]);
     setProdutos(prods || []);
 
