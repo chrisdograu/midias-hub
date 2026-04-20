@@ -152,9 +152,31 @@ export default function Configuracoes() {
               </Button>
             </CardContent>
           </Card>
+
+          {isAdmin && (
+            <Card className="border-primary/30 bg-primary/5">
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2"><Database className="h-4 w-4 text-primary" />Popular Dados de Teste</CardTitle>
+                <CardDescription>Cria 4 contas de teste e popula anúncios, fórum, denúncias e certificados. Operação idempotente — pode rodar várias vezes.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="text-xs text-muted-foreground space-y-1">
+                  <p><strong>Contas criadas (senha: Teste@123):</strong></p>
+                  <ul className="list-disc list-inside space-y-0.5">
+                    <li>cliente1@teste.com — comprador comum</li>
+                    <li>cliente2@teste.com — vendedor marketplace</li>
+                    <li>cliente3@teste.com — avaliador</li>
+                    <li>banido@teste.com — conta suspensa por 7 dias</li>
+                  </ul>
+                </div>
+                <Button onClick={handleSeedTestData} disabled={seedingData} variant="outline">
+                  {seedingData ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Populando...</> : <><Database className="h-4 w-4 mr-2" />Popular dados de teste</>}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
-        {/* Loja */}
         <TabsContent value="loja" className="mt-4 space-y-4">
           <Card className="border-border/50">
             <CardHeader>
