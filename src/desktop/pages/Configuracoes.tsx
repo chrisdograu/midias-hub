@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Settings, Store, Bell, Shield, Globe, Palette, Sun, Moon, User, Loader2 } from 'lucide-react';
+import { Settings, Store, Bell, Shield, Globe, Palette, Sun, Moon, User, Loader2, Database } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,6 +21,8 @@ export default function Configuracoes() {
   const [newPassword, setNewPassword] = useState('');
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
+  const [seedingData, setSeedingData] = useState(false);
+  const isAdmin = position === 'admin';
 
   // Settings hooks (persistem no banco)
   const storeInfo = useSiteSettings<{ name: string; email: string; phone: string; address: string; cnpj?: string }>('store_info');
