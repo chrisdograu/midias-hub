@@ -71,6 +71,8 @@ export default function Configuracoes() {
     if ((data as { error?: string })?.error) { toast.error((data as { error: string }).error); return; }
     toast.success('Dados de teste populados! Veja o GUIA_DE_TESTES.md para credenciais.');
   };
+
+  const positionLabel = position ? POSITION_LABELS[position] : 'N/A';
   const permissions = position ? POSITION_PERMISSIONS[position] : [];
 
   return (
