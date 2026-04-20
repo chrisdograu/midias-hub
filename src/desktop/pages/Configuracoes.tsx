@@ -62,7 +62,15 @@ export default function Configuracoes() {
     else { toast.success('Senha alterada com sucesso!'); setNewPassword(''); }
   };
 
-  const positionLabel = position ? POSITION_LABELS[position] : 'N/A';
+  const handleSeedTestData = async () => {
+    if (!confirm('Isso criará 4 contas de teste (cliente1/2/3@teste.com e banido@teste.com — senha Teste@123) e populará anúncios, fórum, denúncias e certificados. A operação é segura para rodar várias vezes. Continuar?')) return;
+    setSeedingData(true);
+    const { data, error } = await supabase.functions.invoke('seed-test-users');
+    setSeedingData(false);
+    if (error) { toast.error('Erro ao popular dados: ' + error.message); return; }
+    if ((data as { error?: string })?.error) { toast.error((data as { error: string }).error); return; }
+    toast.success('Dados de teste populados! Veja o GUIA_DE_TESTES.md para credenciais.');
+  };
   const permissions = position ? POSITION_PERMISSIONS[position] : [];
 
   return (
