@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Search, User, Menu, X, Gamepad2, LogOut, Heart, Package, Library, Sun, Moon, Sparkles } from 'lucide-react';
+import { ShoppingCart, Search, User, Menu, X, Gamepad2, LogOut, Heart, Package, Library, Sun, Moon, Sparkles, Ban } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
@@ -15,6 +15,8 @@ export default function Header() {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+
+  const isBanned = profile?.banned_until && new Date(profile.banned_until) > new Date();
 
   const navLinks = [
     { to: '/', label: 'Início' },
@@ -36,7 +38,14 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 glass">
+    <>
+      {isBanned && (
+        <div className="bg-destructive/90 text-destructive-foreground text-center text-xs py-1.5 px-4 flex items-center justify-center gap-2">
+          <Ban className="h-3.5 w-3.5" />
+          <span>Sua conta está suspensa até {new Date(profile!.banned_until!).toLocaleDateString('pt-BR')}. Funcionalidades limitadas.</span>
+        </div>
+      )}
+      <header className="sticky top-0 z-50 glass">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16 gap-4">
           <Link to="/" className="flex items-center gap-2 shrink-0">
@@ -161,6 +170,7 @@ export default function Header() {
           )}
         </AnimatePresence>
       </div>
-    </header>
+      </header>
+    </>
   );
 }

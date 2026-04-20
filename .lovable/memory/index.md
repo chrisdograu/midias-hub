@@ -54,3 +54,5 @@
 - [Game Rankings](mem://features/ranking-jogos) — Mobile leaderboard using average scores and library data
 - [Checkout Success](mem://features/checkout-sucesso) — Post-purchase success page with order ID and library info
 - [Moderação e Banimento](mem://features/moderacao-banimento) — banned_until + is_user_banned() bloqueia ações sensíveis via RLS
+- [Banner banimento global](mem://features/banimento-header-global) — Barra vermelha no Header quando conta suspensa
+- [Estoque gráfico com filtros](mem://features/estoque-grafico-filtros) — Gráfico entradas vs saídas com filtros 7/30/90 dias

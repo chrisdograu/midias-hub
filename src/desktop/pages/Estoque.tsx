@@ -34,12 +34,13 @@ export default function Estoque() {
   const [fProduct, setFProduct] = useState('');
   const [fQty, setFQty] = useState('');
   const [fNotes, setFNotes] = useState('');
+  const [chartDays, setChartDays] = useState(30);
 
   const fetchAll = async () => {
     setLoading(true);
     const [{ data: prods }, { data: rawMovs }] = await Promise.all([
       supabase.from('produtos').select('*').order('title'),
-      supabase.from('movimentacoes_estoque').select('*').order('created_at', { ascending: false }).limit(50),
+      supabase.from('movimentacoes_estoque').select('*').order('created_at', { ascending: false }).limit(500),
     ]);
     setProdutos(prods || []);
 
@@ -90,7 +91,7 @@ export default function Estoque() {
   const chartData = useMemo(() => {
     const days: { date: string; label: string; entrada: number; saida: number }[] = [];
     const today = new Date(); today.setHours(0, 0, 0, 0);
-    for (let i = 29; i >= 0; i--) {
+    for (let i = chartDays - 1; i >= 0; i--) {
       const d = new Date(today); d.setDate(d.getDate() - i);
       const iso = d.toISOString().slice(0, 10);
       days.push({ date: iso, label: d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }), entrada: 0, saida: 0 });
@@ -103,7 +104,7 @@ export default function Estoque() {
       else if (m.type === 'saida') days[i].saida += m.quantity;
     });
     return days;
-  }, [movs]);
+  }, [movs, chartDays]);
 
   if (loading) return <div className="p-6 flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
 
@@ -130,10 +131,18 @@ export default function Estoque() {
       )}
 
       <Card className="border-border/50">
-        <CardHeader className="pb-2">
+        <CardHeader className="pb-2 flex flex-row items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
-            <TrendingUp className="h-4 w-4 text-primary" /> Movimentações dos últimos 30 dias
+            <TrendingUp className="h-4 w-4 text-primary" /> Movimentações
           </CardTitle>
+          <div className="flex gap-1">
+            {[7, 30, 90].map(d => (
+              <Button key={d} size="sm" variant={chartDays === d ? 'default' : 'outline'}
+                className="h-7 text-xs px-2" onClick={() => setChartDays(d)}>
+                {d}d
+              </Button>
+            ))}
+          </div>
         </CardHeader>
         <CardContent className="h-64">
           <ResponsiveContainer width="100%" height="100%">
