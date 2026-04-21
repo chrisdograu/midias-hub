@@ -117,16 +117,18 @@ Este documento descreve como testar **todas as funcionalidades** do sistema (Web
 - [ ] Denúncias geradas pelo seed aparecem em `/desktop/moderacao`
 - [ ] Certificado pendente aparece em `/desktop/certificados`
 - [ ] Aprovar/recusar certificado pede motivo
+- [ ] **Badges vermelhos no menu lateral** mostram contagem de pedidos/denúncias/certificados/propostas pendentes
+- [ ] Resolver uma denúncia faz o badge cair em tempo real (Realtime)
+- [ ] **Exportar PDF** em `/desktop/relatorios` gera arquivo com KPIs, top produtos e série diária
+- [ ] **Trigger de banimento**: tente alterar `banned_until` logado como `gerente` ou `cliente1` → operação rejeitada com erro 42501
 
 ---
 
 ## 5. Limitações conhecidas (documentadas, não são bugs)
 
 1. **Movimentações de estoque não podem ser deletadas/editadas** — por desenho (auditoria imutável). Se errar, registre uma movimentação de ajuste compensatória.
-2. **Fórum não tem UI no Web** — implementação intencionalmente apenas mobile + admin desktop. O backend (`forum_posts`/`forum_replies`) é compartilhado.
-3. **`profiles.banned_until` pode ser editado por qualquer admin** — não há trigger de proteção. Aceitável para o escopo do TCC.
-4. **Sem badges no menu lateral do desktop** indicando contagem de denúncias/certificados pendentes — sugestão de melhoria futura.
-5. **Pagamentos são 100% simulados** (TCC) — Pix e Cartão apenas registram o pedido, sem integração real.
+2. **Fórum é exclusivo do mobile** — decisão de escopo: Web = loja, Mobile = comunidade. O backend (`forum_posts`/`forum_replies`) é compartilhado e o admin pode moderar via `/desktop/forum`, mas usuários web não postam.
+3. **Pagamentos são 100% simulados** (TCC) — Pix e Cartão apenas registram o pedido, sem integração real.
 
 ---
 
@@ -138,4 +140,4 @@ Não há botão de "limpar". Para começar do zero:
 
 ---
 
-**Última atualização**: implementado junto com a Edge Function `seed-test-users`.
+**Última atualização**: badges de pendências no menu lateral, exportação PDF de relatórios e proteção do `banned_until` via trigger.
