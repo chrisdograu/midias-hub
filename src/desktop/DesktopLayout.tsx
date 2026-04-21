@@ -73,6 +73,7 @@ export default function DesktopLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const { user, profile, position, isStaff, loading, signOut, canAccess } = useDesktopAuth();
+  const pending = useDesktopPending(!!user && isStaff);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -130,20 +131,38 @@ export default function DesktopLayout() {
               )}
               <div className="space-y-0.5">
                 {section.items.map((item) => {
+                  const count = item.pendingKey ? pending[item.pendingKey] : 0;
+                  const showBadge = count > 0;
                   const link = (
                     <NavLink
                       key={item.title}
                       to={item.url}
                       end={item.url === '/desktop'}
                       className={cn(
-                        'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                        'relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                         'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
                         collapsed && 'justify-center px-2'
                       )}
                       activeClassName="bg-primary/10 text-primary"
                     >
-                      <item.icon className="h-4.5 w-4.5 shrink-0" />
-                      {!collapsed && <span>{item.title}</span>}
+                      <span className="relative shrink-0">
+                        <item.icon className="h-4.5 w-4.5" />
+                        {showBadge && collapsed && (
+                          <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-[16px] px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center leading-none">
+                            {count > 99 ? '99+' : count}
+                          </span>
+                        )}
+                      </span>
+                      {!collapsed && (
+                        <>
+                          <span className="flex-1">{item.title}</span>
+                          {showBadge && (
+                            <Badge variant="destructive" className="h-5 min-w-[20px] px-1.5 text-[10px] font-bold">
+                              {count > 99 ? '99+' : count}
+                            </Badge>
+                          )}
+                        </>
+                      )}
                     </NavLink>
                   );
 
@@ -152,7 +171,7 @@ export default function DesktopLayout() {
                       <Tooltip key={item.title} delayDuration={0}>
                         <TooltipTrigger asChild>{link}</TooltipTrigger>
                         <TooltipContent side="right" className="font-medium">
-                          {item.title}
+                          {item.title}{showBadge && <span className="ml-1 text-destructive">({count})</span>}
                         </TooltipContent>
                       </Tooltip>
                     );
