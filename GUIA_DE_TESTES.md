@@ -2,13 +2,13 @@
 
 Este documento descreve como testar **todas as funcionalidades** do sistema (Web, Desktop e fluxos de banco).
 
-> **Antes de começar**: entre em `/desktop/configuracoes` → aba **Minha Conta** logado como admin e clique em **"Popular dados de teste"**. Isso cria as 4 contas de cliente e popula anúncios, fórum, denúncias, certificados, favoritos e mensagens.
+> **Os dados de teste já foram populados no banco.** Use as credenciais abaixo direto na tela de login. Se em algum momento precisar repopular, a Edge Function `seed-test-users` continua disponível e é idempotente.
 
 ---
 
 ## 1. Contas de teste
 
-### 👤 Clientes (criados pelo botão "Popular dados de teste")
+### 👤 Clientes
 
 | E-mail | Senha | Papel no teste |
 |---|---|---|

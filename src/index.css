@@ -59,23 +59,23 @@
   }
 
   .light {
-    --background: 0 0% 98%;
+    --background: 220 14% 93%;
     --foreground: 220 20% 12%;
 
-    --card: 0 0% 100%;
+    --card: 0 0% 99%;
     --card-foreground: 220 20% 12%;
 
-    --popover: 0 0% 100%;
+    --popover: 0 0% 99%;
     --popover-foreground: 220 20% 12%;
 
     --primary: 170 80% 40%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 14% 92%;
-    --secondary-foreground: 220 15% 30%;
+    --secondary: 220 13% 87%;
+    --secondary-foreground: 220 15% 25%;
 
-    --muted: 220 14% 94%;
-    --muted-foreground: 215 15% 45%;
+    --muted: 220 13% 89%;
+    --muted-foreground: 215 15% 40%;
 
     --accent: 270 60% 50%;
     --accent-foreground: 0 0% 100%;
@@ -83,22 +83,22 @@
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 87%;
-    --input: 220 13% 87%;
+    --border: 220 13% 82%;
+    --input: 220 13% 84%;
     --ring: 170 80% 40%;
 
-    --sidebar-background: 0 0% 97%;
-    --sidebar-foreground: 220 15% 30%;
+    --sidebar-background: 220 13% 90%;
+    --sidebar-foreground: 220 15% 25%;
     --sidebar-primary: 170 80% 40%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 14% 92%;
-    --sidebar-accent-foreground: 220 15% 30%;
-    --sidebar-border: 220 13% 87%;
+    --sidebar-accent: 220 13% 86%;
+    --sidebar-accent-foreground: 220 15% 25%;
+    --sidebar-border: 220 13% 82%;
     --sidebar-ring: 170 80% 40%;
 
     --glow-primary: 170 80% 40%;
     --glow-accent: 270 60% 50%;
-    --surface-hover: 220 14% 94%;
+    --surface-hover: 220 13% 88%;
     --gradient-start: 170 80% 40%;
     --gradient-end: 270 60% 50%;
     --success: 142 71% 35%;
