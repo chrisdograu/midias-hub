@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Settings, Store, Bell, Shield, Globe, Palette, Sun, Moon, User, Loader2, Database } from 'lucide-react';
+import { Settings, Store, Bell, Shield, Globe, Palette, Sun, Moon, User, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,8 +21,6 @@ export default function Configuracoes() {
   const [newPassword, setNewPassword] = useState('');
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
-  const [seedingData, setSeedingData] = useState(false);
-  const isAdmin = position === 'admin';
 
   // Settings hooks (persistem no banco)
   const storeInfo = useSiteSettings<{ name: string; email: string; phone: string; address: string; cnpj?: string }>('store_info');
@@ -60,16 +58,6 @@ export default function Configuracoes() {
     setSavingPassword(false);
     if (error) toast.error('Erro ao alterar senha');
     else { toast.success('Senha alterada com sucesso!'); setNewPassword(''); }
-  };
-
-  const handleSeedTestData = async () => {
-    if (!confirm('Isso criará 4 contas de teste (cliente1/2/3@teste.com e banido@teste.com — senha Teste@123) e populará anúncios, fórum, denúncias e certificados. A operação é segura para rodar várias vezes. Continuar?')) return;
-    setSeedingData(true);
-    const { data, error } = await supabase.functions.invoke('seed-test-users');
-    setSeedingData(false);
-    if (error) { toast.error('Erro ao popular dados: ' + error.message); return; }
-    if ((data as { error?: string })?.error) { toast.error((data as { error: string }).error); return; }
-    toast.success('Dados de teste populados! Veja o GUIA_DE_TESTES.md para credenciais.');
   };
 
   const positionLabel = position ? POSITION_LABELS[position] : 'N/A';
@@ -153,28 +141,6 @@ export default function Configuracoes() {
             </CardContent>
           </Card>
 
-          {isAdmin && (
-            <Card className="border-primary/30 bg-primary/5">
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2"><Database className="h-4 w-4 text-primary" />Popular Dados de Teste</CardTitle>
-                <CardDescription>Cria 4 contas de teste e popula anúncios, fórum, denúncias e certificados. Operação idempotente — pode rodar várias vezes.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="text-xs text-muted-foreground space-y-1">
-                  <p><strong>Contas criadas (senha: Teste@123):</strong></p>
-                  <ul className="list-disc list-inside space-y-0.5">
-                    <li>cliente1@teste.com — comprador comum</li>
-                    <li>cliente2@teste.com — vendedor marketplace</li>
-                    <li>cliente3@teste.com — avaliador</li>
-                    <li>banido@teste.com — conta suspensa por 7 dias</li>
-                  </ul>
-                </div>
-                <Button onClick={handleSeedTestData} disabled={seedingData} variant="outline">
-                  {seedingData ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Populando...</> : <><Database className="h-4 w-4 mr-2" />Popular dados de teste</>}
-                </Button>
-              </CardContent>
-            </Card>
-          )}
         </TabsContent>
 
         <TabsContent value="loja" className="mt-4 space-y-4">
