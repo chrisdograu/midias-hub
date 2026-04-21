@@ -1,94 +1,64 @@
 
 
-## Plano: Ambiente de testes completo + análise de deficiências
+## Alinhamento — próximas necessidades
 
-### 1. Estado atual (resumo do banco)
+Respondendo suas dúvidas primeiro:
 
-| Recurso | Existem | Faltam para testar |
-|---|---|---|
-| Produtos | 12 | ✅ ok |
-| Categorias | 8 | ✅ ok |
-| Fornecedores | 4 | ✅ ok |
-| Cupons | 3 | ✅ ok |
-| Pedidos | 7 | ✅ ok |
-| Avaliações de produto | 7 | ✅ ok |
-| **Anúncios marketplace** | **0** | ❌ |
-| **Fórum (posts/replies)** | **0** | ❌ |
-| **Denúncias** | **0** | ❌ |
-| **Certificados** | **0** | ❌ |
-| **Clientes "comuns" para testar** | poucos | ❌ |
+1. **`GUIA_DE_TESTES.md`** já existe na **raiz do projeto** (`/GUIA_DE_TESTES.md`, 7KB). Ele aparece no explorador de arquivos junto com `README.md`, `package.json`, etc. Vou apenas atualizá-lo removendo a instrução de clicar em "Popular dados de teste".
+2. **Marketplace mobile vazio** — correto. O app mobile é **Flutter/Dart** (projeto separado, não está neste repositório). Os anúncios, fórum e mensagens criados pelo seed vivem no mesmo banco Supabase, então quando o app Flutter for rodado eles aparecerão lá. No web este conteúdo só é visível pelas telas do **Desktop** (`/desktop/anuncios`, `/desktop/forum`, `/desktop/mensagens`).
+3. **Modo claro muito claro** — confirmado, vou suavizar.
 
-Já existem todos os funcionários (admin, gerente, moderadora, marketplace, 2 estoquistas, atendente).
+---
 
-### 2. O que vou criar — Guia de testes + seed de dados
+## O que vou fazer agora
 
-**A. Documento `GUIA_DE_TESTES.md`** (na raiz) com:
-- Lista de todas as contas de teste (email + senha) por papel
-- Fluxos passo-a-passo para cada funcionalidade:
-  - Cliente: cadastro, login, comprar com cupom, favoritar, avaliar, comentar review, ver biblioteca, pedir reset de senha
-  - Admin: gerenciar produtos/categorias/fornecedores, banir usuário, ver relatórios, alterar configurações da loja
-  - Gerente/Estoquista/Atendente/Moderador/Marketplace: o que cada um vê e pode fazer (RBAC)
-  - Banimento: banir um cliente e validar que ele vê o banner global no Header e no Perfil, e que o RLS bloqueia ações sensíveis
-  - Marketplace (mobile/web): publicar anúncio, denunciar, moderar
-  - Fórum: postar, responder, moderar
+### 1. Remover botão "Popular dados de teste" (já não é mais necessário)
+Em `src/desktop/pages/Configuracoes.tsx`:
+- Remover state `seedingData`, função `handleSeedTestData`, ícone `Database` e o `Card` inteiro (linhas 157-176) da aba "Minha Conta".
+- Manter a Edge Function `seed-test-users` no projeto (caso precise rodar de novo no futuro via SQL/CLI), só some da UI.
 
-**B. Seed de dados via SQL** (insert no banco existente):
-- **3 clientes de teste** (`cliente1@teste.com`, `cliente2@teste.com`, `cliente3@teste.com`) — senha padrão `Teste@123` — com perfil completo (nome, bio, telefone)
-- **1 cliente já banido** (`banido@teste.com`) com `banned_until = now() + 7 dias` para testar o banner imediatamente
-- **6 anúncios** no marketplace (variando categoria, plataforma, condição) ligados aos clientes
-- **3 fotos** de anúncio
-- **4 posts de fórum** + **6 respostas** em produtos existentes
-- **3 denúncias pendentes** (1 contra anúncio, 2 contra usuário) para a tela de Moderação
-- **2 certificados** (1 pendente, 1 ativo) para a tela de Certificados
-- **5 favoritos** distribuídos
-- **Mensagens** de exemplo entre cliente e vendedor
-
-**C. Edge Function `seed-test-users`** — necessária porque clientes precisam existir em `auth.users` (não posso inserir lá direto via SQL). A function:
-- Cria os 4 usuários de teste via `supabase.auth.admin.createUser`
-- Devolve os IDs que o seed SQL referencia
-- Pode ser chamada uma vez pela tela de configurações (botão "Popular dados de teste") visível só para admin
-
-### 3. Análise de deficiências encontradas
-
-Pontos que percebi durante a análise e proponho corrigir:
-
-1. **`ProtectedRoute` com `DEV_BYPASS = true`** — toda rota protegida está liberada sem login. Vou trocar para `false` (ou ler de env), senão o teste de banimento/perfil não reflete a realidade.
-2. **Fórum sem UI no Web** — existe no banco e no Desktop (`ForumAdmin`), mas usuário web não tem onde postar. Para o TCC isso é ok (fórum é mobile), mas vale documentar no guia.
-3. **Movimentações de estoque sem botão de exclusão de erro** — se admin errar uma movimentação manual, não há como reverter. Sugestão: deixar registrado no guia como "limitação por desenho" (auditoria).
-4. **`profiles` sem trigger de proteção em `banned_until`** — qualquer admin pode editar; ok para o escopo, mas anotar no guia.
-5. **Sem indicador no Desktop de quantos itens pendentes** existem (denúncias, certificados, pedidos pendentes) — sugestão para futuro: badges no menu lateral.
-
-### 4. Ordem de execução
-
+### 2. Suavizar o modo claro
+Em `src/index.css` (bloco `.light`), trocar para um cinza mais confortável (estilo "off-white" / soft):
 ```text
-1. Criar Edge Function seed-test-users (cria usuários auth + retorna IDs)
-2. Migration de seed: anúncios, fórum, denúncias, certificados, favoritos, mensagens
-3. Trocar DEV_BYPASS para false em ProtectedRoute
-4. Adicionar botão "Popular dados de teste" em /desktop/configuracoes (admin only)
-5. Escrever GUIA_DE_TESTES.md com contas, fluxos e checklist QA
-6. Atualizar memórias (mem://features/seed-de-testes)
+--background:        0 0% 98%   →  220 14% 93%   (cinza levíssimo)
+--card:              0 0% 100%  →  0   0% 99%    (off-white)
+--popover:           0 0% 100%  →  0   0% 99%
+--secondary:         220 14% 92% →  220 13% 87%
+--muted:             220 14% 94% →  220 13% 89%
+--border:            220 13% 87% →  220 13% 82%
+--input:             220 13% 87% →  220 13% 84%
+--sidebar-background:0 0% 97%   →  220 13% 90%
+--sidebar-accent:    220 14% 92% →  220 13% 86%
+--surface-hover:     220 14% 94% →  220 13% 88%
+```
+Resultado: fundo cinza-claro suave (em vez de branco quase puro), com cards levemente destacados, mantendo bom contraste de texto.
+
+### 3. Atualizar `GUIA_DE_TESTES.md`
+- Remover a frase introdutória "**Antes de começar**: entre em /desktop/configuracoes…".
+- Substituir por um aviso simples: "Os dados de teste já foram populados. Use as credenciais abaixo."
+- Manter a seção "Resetar dados de teste" (instrução SQL) intacta.
+
+### 4. Análise — necessidades restantes (deficiências)
+
+Mapeei o que ainda falta para o sistema ficar "redondo" para o TCC. Listo em ordem de impacto para você escolher o próximo passo:
+
+| # | Item | Impacto | Esforço |
+|---|---|---|---|
+| A | **Badges no menu lateral do Desktop** mostrando contagem de denúncias pendentes, certificados pendentes e pedidos novos | Alto (UX admin) | Baixo |
+| B | **Trigger de proteção em `profiles.banned_until`** — só admin verdadeiro (não gerente) pode editar | Médio (segurança) | Baixo |
+| C | **Botão "Limpar dados de teste"** no Desktop — remove contas `@teste.com` e tudo gerado por elas | Médio (DX) | Médio |
+| D | **Página `/desktop/avaliacoes-usuario`** — moderar reviews ofensivos (a tabela existe, falta CRUD) | Baixo | Médio |
+| E | **Fórum web (read-only)** — listar `forum_posts` em `/comunidade` para o usuário web pelo menos visualizar | Baixo | Médio |
+| F | **Reativar exportação PDF de relatórios** (estava pausado a seu pedido) | Médio | Médio |
+| G | **Notificações em tempo real** — toast quando admin recebe nova denúncia/pedido (Supabase Realtime) | Baixo | Médio |
+
+### 5. Ordem de execução desta rodada
+```text
+1. Remover botão de seed do Configuracoes.tsx
+2. Suavizar paleta do modo claro em index.css
+3. Atualizar GUIA_DE_TESTES.md (tirar instrução de seed)
+4. Atualizar memória (mem://features/seed-de-testes — marcar como concluído)
 ```
 
-### Detalhes técnicos rápidos
-
-```text
-Contas de teste criadas pela edge function:
-  cliente1@teste.com   senha: Teste@123   (comprador comum)
-  cliente2@teste.com   senha: Teste@123   (vendedor marketplace)
-  cliente3@teste.com   senha: Teste@123   (avaliador/comentarista)
-  banido@teste.com     senha: Teste@123   (banned_until = now()+7d)
-
-Funcionários (já existem, senha definida na criação original):
-  admin2@midias.com           → Admin
-  Roberto Gerente             → gerente
-  Juliana Moderadora          → moderador
-  Lucas Marketplace           → atendente_marketplace
-  Paulo / 67                  → estoquista
-  Carla Atendente             → atendente
-
-Botão "Popular dados de teste" → invoke('seed-test-users')
-  → idempotente (ON CONFLICT DO NOTHING em tudo)
-```
-
-**Confirma seguir nessa ordem (1→6)?** Posso também pular o passo 3 (manter `DEV_BYPASS` ligado para facilitar) se você preferir.
+Depois desses 4 ajustes, **escolha quais itens (A–G) da tabela seguimos** — sugiro **A + B** como próximo combo (alto impacto, baixo esforço).
 
