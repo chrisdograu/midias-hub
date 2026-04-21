@@ -125,9 +125,113 @@ export default function Relatorios() {
             const a = document.createElement('a');
             a.href = url; a.download = `relatorio-${periodo}-${new Date().toISOString().slice(0,10)}.csv`;
             a.click(); URL.revokeObjectURL(url);
-            toast.success('Relatório exportado!');
+            toast.success('Relatório CSV exportado!');
           }}>
             <Download className="h-4 w-4 mr-2" />Exportar CSV
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => {
+            if (serieFaturamento.length === 0 && topProdutos.length === 0) { toast.error('Sem dados para exportar'); return; }
+            try {
+              const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+              const pageWidth = doc.internal.pageSize.getWidth();
+              const periodoLabel: Record<string, string> = { semana: 'Última Semana', mes: 'Último Mês', trimestre: 'Último Trimestre', ano: 'Último Ano' };
+              const dataAtual = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+              // Cabeçalho
+              doc.setFillColor(20, 184, 166);
+              doc.rect(0, 0, pageWidth, 60, 'F');
+              doc.setTextColor(255, 255, 255);
+              doc.setFontSize(20);
+              doc.setFont('helvetica', 'bold');
+              doc.text('MIDIAS — Relatório de Vendas', 40, 30);
+              doc.setFontSize(10);
+              doc.setFont('helvetica', 'normal');
+              doc.text(`Período: ${periodoLabel[periodo] || periodo}  ·  Gerado em ${dataAtual}`, 40, 48);
+
+              // KPIs
+              doc.setTextColor(30, 30, 30);
+              doc.setFontSize(13);
+              doc.setFont('helvetica', 'bold');
+              doc.text('Indicadores Principais', 40, 90);
+              autoTable(doc, {
+                startY: 100,
+                head: [['Indicador', 'Valor']],
+                body: [
+                  ['Faturamento Total', `R$ ${kpis.faturamento.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`],
+                  ['Total de Vendas', kpis.vendas.toString()],
+                  ['Ticket Médio', `R$ ${kpis.ticket.toFixed(2)}`],
+                  ['Clientes Ativos', kpis.clientes.toString()],
+                ],
+                theme: 'striped',
+                headStyles: { fillColor: [168, 85, 247], textColor: 255, fontStyle: 'bold' },
+                styles: { fontSize: 10, cellPadding: 6 },
+                margin: { left: 40, right: 40 },
+              });
+
+              // Top produtos
+              if (topProdutos.length > 0) {
+                doc.setFontSize(13);
+                doc.setFont('helvetica', 'bold');
+                const lastY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY;
+                doc.text('Top Produtos Mais Vendidos', 40, lastY + 30);
+                autoTable(doc, {
+                  startY: lastY + 40,
+                  head: [['#', 'Produto', 'Vendas', 'Faturamento']],
+                  body: topProdutos.map((p, i) => [
+                    `${i + 1}`,
+                    p.title,
+                    `${p.vendas}`,
+                    `R$ ${p.faturamento.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+                  ]),
+                  theme: 'striped',
+                  headStyles: { fillColor: [20, 184, 166], textColor: 255, fontStyle: 'bold' },
+                  styles: { fontSize: 9, cellPadding: 5 },
+                  columnStyles: { 0: { cellWidth: 30 }, 2: { halign: 'center', cellWidth: 60 }, 3: { halign: 'right', cellWidth: 110 } },
+                  margin: { left: 40, right: 40 },
+                });
+              }
+
+              // Detalhamento por dia
+              if (serieFaturamento.length > 0) {
+                const lastY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY;
+                if (lastY > 700) doc.addPage();
+                const startY = lastY > 700 ? 60 : lastY + 30;
+                doc.setFontSize(13);
+                doc.setFont('helvetica', 'bold');
+                doc.text('Faturamento Diário', 40, startY);
+                autoTable(doc, {
+                  startY: startY + 10,
+                  head: [['Data', 'Faturamento', 'Pedidos']],
+                  body: serieFaturamento.filter(r => r.valor > 0 || r.pedidos > 0).map(r => [
+                    r.data,
+                    `R$ ${r.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+                    `${r.pedidos}`,
+                  ]),
+                  theme: 'striped',
+                  headStyles: { fillColor: [168, 85, 247], textColor: 255, fontStyle: 'bold' },
+                  styles: { fontSize: 9, cellPadding: 5 },
+                  columnStyles: { 1: { halign: 'right' }, 2: { halign: 'center' } },
+                  margin: { left: 40, right: 40 },
+                });
+              }
+
+              // Rodapé em todas as páginas
+              const pageCount = doc.getNumberOfPages();
+              for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFontSize(8);
+                doc.setTextColor(120, 120, 120);
+                doc.text(`MIDIAS Backoffice  ·  Página ${i} de ${pageCount}`, 40, doc.internal.pageSize.getHeight() - 20);
+              }
+
+              doc.save(`relatorio-${periodo}-${new Date().toISOString().slice(0,10)}.pdf`);
+              toast.success('Relatório PDF exportado!');
+            } catch (e) {
+              const msg = e instanceof Error ? e.message : 'Erro desconhecido';
+              toast.error('Erro ao gerar PDF: ' + msg);
+            }
+          }}>
+            <FileText className="h-4 w-4 mr-2" />Exportar PDF
           </Button>
           <Select value={periodo} onValueChange={setPeriodo}>
             <SelectTrigger className="w-40"><Calendar className="h-4 w-4 mr-2" /><SelectValue /></SelectTrigger>
