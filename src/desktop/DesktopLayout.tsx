@@ -44,14 +44,14 @@ const navSections: {
     label: 'Operacional',
     items: [
       { title: 'Estoque', url: '/desktop/estoque', icon: Warehouse, route: 'estoque' },
-      { title: 'Pedidos Online', url: '/desktop/pedidos', icon: ClipboardList, route: 'pedidos' },
+      { title: 'Pedidos Online', url: '/desktop/pedidos', icon: ClipboardList, route: 'pedidos', pendingKey: 'pedidos' },
     ],
   },
   {
     label: 'Marketplace Mobile',
     items: [
       { title: 'Anúncios', url: '/desktop/anuncios', icon: Megaphone, route: 'anuncios' },
-      { title: 'Propostas de Troca', url: '/desktop/propostas', icon: ArrowLeftRight, route: 'propostas' },
+      { title: 'Propostas de Troca', url: '/desktop/propostas', icon: ArrowLeftRight, route: 'propostas', pendingKey: 'propostas' },
       { title: 'Mensagens', url: '/desktop/mensagens', icon: MessageSquare, route: 'mensagens' },
       { title: 'Avaliações Usuários', url: '/desktop/avaliacoes-usuario', icon: Star, route: 'avaliacoes-usuario' },
       { title: 'Notificações', url: '/desktop/notificacoes', icon: Bell, route: 'notificacoes' },
@@ -61,9 +61,9 @@ const navSections: {
   {
     label: 'Administração',
     items: [
-      { title: 'Moderação', url: '/desktop/moderacao', icon: Shield, route: 'moderacao' },
+      { title: 'Moderação', url: '/desktop/moderacao', icon: Shield, route: 'moderacao', pendingKey: 'denuncias' },
       { title: 'Relatórios', url: '/desktop/relatorios', icon: BarChart3, route: 'relatorios' },
-      { title: 'Certificados', url: '/desktop/certificados', icon: Award, route: 'certificados' },
+      { title: 'Certificados', url: '/desktop/certificados', icon: Award, route: 'certificados', pendingKey: 'certificados' },
       { title: 'Configurações', url: '/desktop/configuracoes', icon: Settings, route: 'configuracoes' },
     ],
   },
