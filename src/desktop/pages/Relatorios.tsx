@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { BarChart3, Calendar, DollarSign, Package, Users, Loader2, TrendingUp, Download } from 'lucide-react';
+import { BarChart3, Calendar, DollarSign, Package, Users, Loader2, TrendingUp, Download, FileText } from 'lucide-react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
