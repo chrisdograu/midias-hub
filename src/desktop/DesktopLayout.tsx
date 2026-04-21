@@ -9,13 +9,20 @@ import {
 import { useState } from 'react';
 import { useTheme } from '@/hooks/useTheme';
 import { useDesktopAuth, POSITION_LABELS } from '@/hooks/useDesktopAuth';
+import { useDesktopPending, type PendingCounts } from '@/hooks/useDesktopPending';
 import { cn } from '@/lib/utils';
 import { NavLink } from '@/components/NavLink';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
-const navSections = [
+type PendingKey = keyof PendingCounts;
+
+const navSections: {
+  label: string;
+  items: { title: string; url: string; icon: typeof LayoutDashboard; route: string; pendingKey?: PendingKey }[];
+}[] = [
   {
     label: 'Geral',
     items: [
