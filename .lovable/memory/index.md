@@ -57,4 +57,7 @@
 - [Banner banimento global](mem://features/banimento-header-global) — Barra vermelha no Header quando conta suspensa
 - [Estoque gráfico com filtros](mem://features/estoque-grafico-filtros) — Gráfico entradas vs saídas com filtros 7/30/90 dias
 - [Seed de dados de teste](mem://features/seed-de-testes) — Edge function seed-test-users + botão admin em /desktop/configuracoes
+- [Badges menu Desktop](mem://features/desktop-badges-pendencias) — Contagens em tempo real de denúncias/certificados/pedidos/propostas pendentes
+- [Trigger banned_until](mem://features/banned-until-trigger) — Só admin pode alterar status de banimento via SQL
+- [Relatórios PDF](mem://features/relatorios-pdf) — Exportação PDF com jsPDF/autotable em /desktop/relatorios
 - [Guia de Testes](GUIA_DE_TESTES.md) — Documento na raiz com contas, fluxos QA e limitações conhecidas
