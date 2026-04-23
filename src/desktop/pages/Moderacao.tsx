@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Shield, AlertTriangle, Ban, CheckCircle, Flag, Loader2, UserX, Eye, XCircle, ExternalLink } from 'lucide-react';
+import { Shield, AlertTriangle, Ban, CheckCircle, Flag, Loader2, UserX, Eye, XCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
