@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 
 interface Cliente {
@@ -16,6 +17,7 @@ interface Cliente {
 
 export default function Clientes() {
   const [search, setSearch] = useState('');
+  const [purchaseFilter, setPurchaseFilter] = useState('all');
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
@@ -54,11 +56,19 @@ export default function Clientes() {
     fetch();
   }, []);
 
-  const filtered = clientes.filter(c =>
-    (c.display_name || '').toLowerCase().includes(search.toLowerCase()) ||
-    (c.contact_email || '').toLowerCase().includes(search.toLowerCase()) ||
-    (c.cpf || '').includes(search)
-  );
+  const filtered = clientes.filter(c => {
+    const query = search.trim().toLowerCase();
+    const matchesSearch = !query ||
+      (c.display_name || '').toLowerCase().includes(query) ||
+      (c.contact_email || '').toLowerCase().includes(query) ||
+      (c.phone || '').toLowerCase().includes(query) ||
+      (c.cpf || '').includes(query);
+    const matchesPurchases =
+      purchaseFilter === 'all' ||
+      (purchaseFilter === 'with_orders' && c.total_compras > 0) ||
+      (purchaseFilter === 'without_orders' && c.total_compras === 0);
+    return matchesSearch && matchesPurchases;
+  });
 
   return (
     <div className="p-6 space-y-6">
@@ -69,9 +79,19 @@ export default function Clientes() {
 
       <Card className="border-border/50">
         <CardContent className="py-3 px-4">
-          <div className="relative max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Buscar por nome, email ou CPF..." className="pl-9" value={search} onChange={e => setSearch(e.target.value)} />
+          <div className="flex flex-wrap gap-3">
+            <div className="relative flex-1 min-w-[260px] max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input placeholder="Buscar por nome, email, telefone ou CPF..." className="pl-9" value={search} onChange={e => setSearch(e.target.value)} />
+            </div>
+            <Select value={purchaseFilter} onValueChange={setPurchaseFilter}>
+              <SelectTrigger className="w-[190px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os clientes</SelectItem>
+                <SelectItem value="with_orders">Com compras</SelectItem>
+                <SelectItem value="without_orders">Sem compras</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
