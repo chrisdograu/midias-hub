@@ -10,6 +10,7 @@ import { useState } from 'react';
 import { useTheme } from '@/hooks/useTheme';
 import { useDesktopAuth, POSITION_LABELS } from '@/hooks/useDesktopAuth';
 import { useDesktopPending, type PendingCounts } from '@/hooks/useDesktopPending';
+import { useDesktopRealtimeAlerts } from '@/hooks/useDesktopRealtimeAlerts';
 import { cn } from '@/lib/utils';
 import { NavLink } from '@/components/NavLink';
 import { Button } from '@/components/ui/button';
@@ -74,6 +75,7 @@ export default function DesktopLayout() {
   const { theme, toggleTheme } = useTheme();
   const { user, profile, position, isStaff, loading, signOut, canAccess } = useDesktopAuth();
   const pending = useDesktopPending(!!user && isStaff);
+  useDesktopRealtimeAlerts(!!user && isStaff);
   const location = useLocation();
   const navigate = useNavigate();
 
