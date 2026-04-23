@@ -17,6 +17,7 @@ interface Anuncio {
 
 export default function AnunciosAdmin() {
   const [statusFilter, setStatusFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [anuncios, setAnuncios] = useState<Anuncio[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,8 +54,15 @@ export default function AnunciosAdmin() {
   };
 
   const filtered = anuncios.filter(a => {
+    const query = search.trim().toLowerCase();
     if (statusFilter !== 'all' && a.status !== statusFilter) return false;
-    if (search && !a.title.toLowerCase().includes(search.toLowerCase()) && !a.seller_name.toLowerCase().includes(search.toLowerCase())) return false;
+    if (typeFilter !== 'all' && a.ad_type !== typeFilter) return false;
+    if (query && ![
+      a.title,
+      a.game_title,
+      a.seller_name,
+      a.platform,
+    ].some(value => (value || '').toLowerCase().includes(query))) return false;
     return true;
   });
 
@@ -85,10 +93,10 @@ export default function AnunciosAdmin() {
         ))}
       </div>
 
-      <div className="flex gap-3">
-        <div className="relative flex-1 max-w-sm">
+      <div className="flex flex-wrap gap-3">
+        <div className="relative flex-1 min-w-[260px] max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Buscar..." className="pl-9" value={search} onChange={e => setSearch(e.target.value)} />
+          <Input placeholder="Buscar por título, jogo, vendedor ou plataforma..." className="pl-9" value={search} onChange={e => setSearch(e.target.value)} />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-[180px]"><Filter className="h-4 w-4 mr-2" /><SelectValue /></SelectTrigger>
@@ -97,6 +105,14 @@ export default function AnunciosAdmin() {
             <SelectItem value="active">Ativos</SelectItem>
             <SelectItem value="flagged">Sinalizados</SelectItem>
             <SelectItem value="removed">Removidos</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={typeFilter} onValueChange={setTypeFilter}>
+          <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos os tipos</SelectItem>
+            <SelectItem value="venda">Venda</SelectItem>
+            <SelectItem value="troca">Troca</SelectItem>
           </SelectContent>
         </Select>
       </div>
