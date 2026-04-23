@@ -27,20 +27,20 @@ export default function Configuracoes() {
   const salePolicies = useSiteSettings<{ pix_discount_percent: number; max_installments: number; auto_send_keys?: boolean; require_email_confirm?: boolean }>('sale_policies');
   const emailNotif = useSiteSettings<{ new_order: boolean; order_status_change: boolean; low_stock: boolean; new_user: boolean; new_report?: boolean; new_certificate?: boolean }>('email_notifications');
   const marketplace = useSiteSettings<{ allow_trades: boolean; require_certificate: boolean; manual_approval?: boolean; commission_percent?: number }>('marketplace');
-  const security = useSiteSettings<{ session_timeout_minutes: number; require_2fa?: boolean; access_log?: boolean }>('security');
+  const security = useSiteSettings<{ session_timeout_minutes: number; require_2fa?: boolean }>('security');
 
   // Local form state
   const [storeForm, setStoreForm] = useState({ name: '', email: '', phone: '', address: '', cnpj: '' });
   const [policiesForm, setPoliciesForm] = useState({ pix_discount_percent: 5, max_installments: 12, auto_send_keys: true, require_email_confirm: false });
   const [notifForm, setNotifForm] = useState({ new_order: true, order_status_change: true, low_stock: true, new_user: false, new_report: true, new_certificate: false });
   const [marketForm, setMarketForm] = useState({ allow_trades: true, require_certificate: true, manual_approval: false, commission_percent: 5 });
-  const [secForm, setSecForm] = useState({ session_timeout_minutes: 60, require_2fa: false, access_log: true });
+  const [secForm, setSecForm] = useState({ session_timeout_minutes: 60, require_2fa: false });
 
   useEffect(() => { if (storeInfo.value) setStoreForm({ name: '', email: '', phone: '', address: '', cnpj: '', ...storeInfo.value }); }, [storeInfo.value]);
   useEffect(() => { if (salePolicies.value) setPoliciesForm({ pix_discount_percent: 5, max_installments: 12, auto_send_keys: true, require_email_confirm: false, ...salePolicies.value }); }, [salePolicies.value]);
   useEffect(() => { if (emailNotif.value) setNotifForm({ new_order: true, order_status_change: true, low_stock: true, new_user: false, new_report: true, new_certificate: false, ...emailNotif.value }); }, [emailNotif.value]);
   useEffect(() => { if (marketplace.value) setMarketForm({ allow_trades: true, require_certificate: true, manual_approval: false, commission_percent: 5, ...marketplace.value }); }, [marketplace.value]);
-  useEffect(() => { if (security.value) setSecForm({ session_timeout_minutes: 60, require_2fa: false, access_log: true, ...security.value }); }, [security.value]);
+  useEffect(() => { if (security.value) setSecForm({ session_timeout_minutes: 60, require_2fa: false, ...security.value }); }, [security.value]);
 
   const handleSaveProfile = async () => {
     if (!user) return;
@@ -260,11 +260,6 @@ export default function Configuracoes() {
                 <div className="flex-1"><p className="text-sm font-medium">Tempo limite de sessão</p><p className="text-xs text-muted-foreground">Encerrar sessão após inatividade</p></div>
                 <Input className="w-24 text-center" type="number" value={secForm.session_timeout_minutes} onChange={e => setSecForm({ ...secForm, session_timeout_minutes: Number(e.target.value) })} />
                 <span className="text-xs text-muted-foreground">min</span>
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div><p className="text-sm font-medium">Log de acessos</p><p className="text-xs text-muted-foreground">Registrar todas as ações dos funcionários</p></div>
-                <Switch checked={secForm.access_log} onCheckedChange={v => setSecForm({ ...secForm, access_log: v })} />
               </div>
               <Button onClick={() => security.save(secForm)} disabled={security.saving}>
                 {security.saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Salvar

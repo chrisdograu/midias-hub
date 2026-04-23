@@ -119,6 +119,10 @@ Este documento descreve como testar **todas as funcionalidades** do sistema (Web
 - [ ] Aprovar/recusar certificado pede motivo
 - [ ] **Badges vermelhos no menu lateral** mostram contagem de pedidos/denúncias/certificados/propostas pendentes
 - [ ] Resolver uma denúncia faz o badge cair em tempo real (Realtime)
+- [ ] **Toast em tempo real** aparece no Desktop ao criar nova denúncia, pedido, certificado ou proposta conforme o cargo logado
+- [ ] `/desktop/moderacao` mostra o conteúdo denunciado e permite resolver/improcedente/banir pelo modal de detalhes
+- [ ] `/desktop/clientes`, `/desktop/anuncios` e `/desktop/notificacoes` filtram corretamente por busca/status/tipo
+- [ ] `/desktop/notificacoes` permite marcar notificações como lidas
 - [ ] **Exportar PDF** em `/desktop/relatorios` gera arquivo com KPIs, top produtos e série diária
 - [ ] **Trigger de banimento**: tente alterar `banned_until` logado como `gerente` ou `cliente1` → operação rejeitada com erro 42501
 
@@ -135,9 +139,55 @@ Este documento descreve como testar **todas as funcionalidades** do sistema (Web
 ## 6. Resetar dados de teste
 
 Não há botão de "limpar". Para começar do zero:
-- Os dados criados pelo seed têm `@teste.com` como sufixo dos e-mails — fácil identificar.
-- Para limpar via SQL (admin do banco): delete primeiro `mensagens`, `forum_replies`, `forum_posts`, `denuncias`, `certificados`, `favoritos`, `fotos_anuncio`, `anuncios` filtrando por `user_id` dos clientes de teste, e por fim os usuários em `auth.users`.
+- Os dados criados pelo seed usam os e-mails `cliente1@teste.com`, `cliente2@teste.com`, `cliente3@teste.com` e `banido@teste.com`.
+- Execute o bloco abaixo no editor SQL do backend para remover apenas os dados desses clientes:
+
+```sql
+do $$
+declare
+  test_user_ids uuid[];
+  test_ad_ids uuid[];
+  test_post_ids uuid[];
+  test_review_ids uuid[];
+begin
+  select array_agg(id) into test_user_ids
+  from auth.users
+  where email in ('cliente1@teste.com', 'cliente2@teste.com', 'cliente3@teste.com', 'banido@teste.com');
+
+  if test_user_ids is null then
+    raise notice 'Nenhum usuário de teste encontrado.';
+    return;
+  end if;
+
+  select array_agg(id) into test_ad_ids from public.anuncios where seller_id = any(test_user_ids) or user_id = any(test_user_ids);
+  select array_agg(id) into test_post_ids from public.forum_posts where user_id = any(test_user_ids);
+  select array_agg(id) into test_review_ids from public.avaliacoes where user_id = any(test_user_ids);
+
+  delete from public.mensagens where sender_id = any(test_user_ids) or receiver_id = any(test_user_ids);
+  delete from public.conversas where participant_1 = any(test_user_ids) or participant_2 = any(test_user_ids);
+  delete from public.trade_proposals where proposer_id = any(test_user_ids) or anuncio_id = any(coalesce(test_ad_ids, array[]::uuid[]));
+  delete from public.denuncias where reporter_id = any(test_user_ids) or target_id = any(coalesce(test_ad_ids, array[]::uuid[]));
+  delete from public.certificados where user_id = any(test_user_ids);
+  delete from public.favoritos where user_id = any(test_user_ids);
+  delete from public.notifications where user_id = any(test_user_ids);
+  delete from public.review_likes where user_id = any(test_user_ids) or review_id = any(coalesce(test_review_ids, array[]::uuid[]));
+  delete from public.review_comments where user_id = any(test_user_ids) or review_id = any(coalesce(test_review_ids, array[]::uuid[]));
+  delete from public.avaliacoes where user_id = any(test_user_ids);
+  delete from public.avaliacoes_usuario where reviewer_id = any(test_user_ids) or reviewed_id = any(test_user_ids);
+  delete from public.forum_replies where user_id = any(test_user_ids) or post_id = any(coalesce(test_post_ids, array[]::uuid[]));
+  delete from public.forum_posts where user_id = any(test_user_ids);
+  delete from public.fotos_anuncio where anuncio_id = any(coalesce(test_ad_ids, array[]::uuid[]));
+  delete from public.anuncios where seller_id = any(test_user_ids) or user_id = any(test_user_ids);
+  delete from public.blocked_users where blocker_id = any(test_user_ids) or blocked_id = any(test_user_ids);
+  delete from public.biblioteca_usuario where user_id = any(test_user_ids);
+  delete from public.cupon_usos where user_id = any(test_user_ids);
+  delete from public.pedidos where user_id = any(test_user_ids);
+  delete from public.user_roles where user_id = any(test_user_ids);
+  delete from public.profiles where id = any(test_user_ids);
+  delete from auth.users where id = any(test_user_ids);
+end $$;
+```
 
 ---
 
-**Última atualização**: badges de pendências no menu lateral, exportação PDF de relatórios e proteção do `banned_until` via trigger.
+**Última atualização**: filtros do backoffice, notificações administráveis, reset SQL de testes e remoção do toggle de logs de acesso.

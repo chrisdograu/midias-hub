@@ -1,9 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Bell, Mail, MailOpen, Loader2 } from 'lucide-react';
+import { Bell, Mail, MailOpen, Loader2, Search } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const typeLabels: Record<string, string> = {
   nova_mensagem: 'Mensagem', proposta_aceita: 'Proposta Aceita', proposta_recusada: 'Proposta Recusada',
@@ -22,6 +26,9 @@ interface Notif {
 export default function NotificacoesAdmin() {
   const [notifs, setNotifs] = useState<Notif[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [readFilter, setReadFilter] = useState('all');
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetch = async () => {
@@ -38,6 +45,19 @@ export default function NotificacoesAdmin() {
   }, []);
 
   const unread = notifs.filter(n => !n.is_read).length;
+  const filtered = notifs.filter(n => {
+    const query = search.trim().toLowerCase();
+    const matchesSearch = !query || [n.user_name, n.title, n.body || '', typeLabels[n.type] || n.type]
+      .some(value => value.toLowerCase().includes(query));
+    const matchesRead = readFilter === 'all' || (readFilter === 'unread' && !n.is_read) || (readFilter === 'read' && n.is_read);
+    return matchesSearch && matchesRead;
+  });
+
+  const markAsRead = async (id: string) => {
+    const { error } = await supabase.from('notifications').update({ is_read: true }).eq('id', id);
+    if (error) { toast({ title: 'Erro ao marcar notificação', variant: 'destructive' }); return; }
+    setNotifs(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -59,24 +79,46 @@ export default function NotificacoesAdmin() {
       </div>
 
       <Card className="border-border/50">
+        <CardContent className="py-3 px-4">
+          <div className="flex flex-wrap gap-3">
+            <div className="relative flex-1 min-w-[260px] max-w-sm">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input placeholder="Buscar por usuário, título, tipo ou conteúdo..." className="pl-9" value={search} onChange={e => setSearch(e.target.value)} />
+            </div>
+            <Select value={readFilter} onValueChange={setReadFilter}>
+              <SelectTrigger className="w-[170px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas</SelectItem>
+                <SelectItem value="unread">Não lidas</SelectItem>
+                <SelectItem value="read">Lidas</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border-border/50">
         <CardContent className="p-0">
           {loading ? <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div> : (
             <Table>
               <TableHeader><TableRow className="border-border">
                 <TableHead>Usuário</TableHead><TableHead>Tipo</TableHead><TableHead>Título</TableHead>
-                <TableHead>Conteúdo</TableHead><TableHead className="text-center">Lida</TableHead><TableHead>Data</TableHead>
+                <TableHead>Conteúdo</TableHead><TableHead className="text-center">Lida</TableHead><TableHead>Data</TableHead><TableHead className="text-center w-24">Ações</TableHead>
               </TableRow></TableHeader>
               <TableBody>
-                {notifs.length === 0 ? (
-                  <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Nenhuma notificação</TableCell></TableRow>
-                ) : notifs.map(n => (
+                {filtered.length === 0 ? (
+                  <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Nenhuma notificação</TableCell></TableRow>
+                ) : filtered.map(n => (
                   <TableRow key={n.id} className="border-border hover:bg-muted/30">
                     <TableCell className="text-sm font-medium">{n.user_name}</TableCell>
                     <TableCell><Badge className={typeColors[n.type] || 'bg-muted text-muted-foreground'}>{typeLabels[n.type] || n.type}</Badge></TableCell>
                     <TableCell className="text-sm">{n.title}</TableCell>
                     <TableCell className="text-sm text-muted-foreground truncate max-w-[250px]">{n.body || '—'}</TableCell>
-                    <TableCell className="text-center">{n.is_read ? <MailOpen className="h-4 w-4 text-muted-foreground mx-auto" /> : <Mail className="h-4 w-4 text-yellow-400 mx-auto" />}</TableCell>
+                    <TableCell className="text-center">{n.is_read ? <MailOpen className="h-4 w-4 text-muted-foreground mx-auto" /> : <Mail className="h-4 w-4 text-primary mx-auto" />}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{new Date(n.created_at).toLocaleDateString('pt-BR')}</TableCell>
+                    <TableCell className="text-center">
+                      {!n.is_read && <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => markAsRead(n.id)}>Marcar lida</Button>}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
