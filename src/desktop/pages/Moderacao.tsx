@@ -82,9 +82,9 @@ export default function Moderacao() {
       ]);
 
       const profileMap = new Map<string, string>(profilesRes.data?.map(p => [p.id, p.display_name || 'Usuário']) || []);
-      const anuncioMap = new Map<string, { title: string; seller_id: string }>(anunciosRes.data?.map((a: { id: string; title: string; seller_id: string }) => [a.id, { title: a.title, seller_id: a.seller_id }]) || []);
-      const forumMap = new Map<string, { content: string; user_id: string }>(forumRes.data?.map((f: { id: string; content: string; user_id: string }) => [f.id, { content: f.content, user_id: f.user_id }]) || []);
-      const mensagemMap = new Map<string, { content: string; sender_id: string }>(mensagensRes.data?.map((m: { id: string; content: string; sender_id: string }) => [m.id, { content: m.content, sender_id: m.sender_id }]) || []);
+      const anuncioMap = new Map<string, { title: string; seller_id: string }>(anunciosRes.data?.map((a: { id: string; title: string; seller_id: string }) => [a.id, { title: a.title, seller_id: a.seller_id }] as [string, { title: string; seller_id: string }]) || []);
+      const forumMap = new Map<string, { content: string; user_id: string }>(forumRes.data?.map((f: { id: string; content: string; user_id: string }) => [f.id, { content: f.content, user_id: f.user_id }] as [string, { content: string; user_id: string }]) || []);
+      const mensagemMap = new Map<string, { content: string; sender_id: string }>(mensagensRes.data?.map((m: { id: string; content: string; sender_id: string }) => [m.id, { content: m.content, sender_id: m.sender_id }] as [string, { content: string; sender_id: string }]) || []);
 
       setDenuncias(denData.map(d => {
         let target_label = d.target_id.slice(0, 8);
