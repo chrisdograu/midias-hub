@@ -114,7 +114,7 @@ export default function NotificacoesAdmin() {
                     <TableCell><Badge className={typeColors[n.type] || 'bg-muted text-muted-foreground'}>{typeLabels[n.type] || n.type}</Badge></TableCell>
                     <TableCell className="text-sm">{n.title}</TableCell>
                     <TableCell className="text-sm text-muted-foreground truncate max-w-[250px]">{n.body || '—'}</TableCell>
-                    <TableCell className="text-center">{n.is_read ? <MailOpen className="h-4 w-4 text-muted-foreground mx-auto" /> : <Mail className="h-4 w-4 text-yellow-400 mx-auto" />}</TableCell>
+                    <TableCell className="text-center">{n.is_read ? <MailOpen className="h-4 w-4 text-muted-foreground mx-auto" /> : <Mail className="h-4 w-4 text-primary mx-auto" />}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{new Date(n.created_at).toLocaleDateString('pt-BR')}</TableCell>
                     <TableCell className="text-center">
                       {!n.is_read && <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => markAsRead(n.id)}>Marcar lida</Button>}
