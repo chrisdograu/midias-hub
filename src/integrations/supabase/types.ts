@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       anuncios: {
         Row: {
+          accepts_counteroffer: boolean
           ad_type: string
           category: string
           certificate_type: string
@@ -35,6 +36,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          accepts_counteroffer?: boolean
           ad_type?: string
           category?: string
           certificate_type?: string
@@ -54,6 +56,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          accepts_counteroffer?: boolean
           ad_type?: string
           category?: string
           certificate_type?: string
@@ -296,6 +299,7 @@ export type Database = {
           last_message_at: string | null
           participant_1: string
           participant_2: string
+          status: string
         }
         Insert: {
           anuncio_id?: string | null
@@ -305,6 +309,7 @@ export type Database = {
           last_message_at?: string | null
           participant_1: string
           participant_2: string
+          status?: string
         }
         Update: {
           anuncio_id?: string | null
@@ -314,6 +319,7 @@ export type Database = {
           last_message_at?: string | null
           participant_1?: string
           participant_2?: string
+          status?: string
         }
         Relationships: [
           {
@@ -705,7 +711,10 @@ export type Database = {
           content: string
           created_at: string
           id: string
+          image_url: string | null
           is_read: boolean
+          message_type: string
+          payload: Json | null
           receiver_id: string
           sender_id: string
         }
@@ -714,7 +723,10 @@ export type Database = {
           content: string
           created_at?: string
           id?: string
+          image_url?: string | null
           is_read?: boolean
+          message_type?: string
+          payload?: Json | null
           receiver_id: string
           sender_id: string
         }
@@ -723,7 +735,10 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
+          image_url?: string | null
           is_read?: boolean
+          message_type?: string
+          payload?: Json | null
           receiver_id?: string
           sender_id?: string
         }
