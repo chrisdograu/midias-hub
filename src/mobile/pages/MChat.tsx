@@ -1,0 +1,162 @@
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Loader2, Search, MessagesSquare, Check, X } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { timeAgo } from '@/mobile/lib/time';
+import { MobileBadge } from '@/mobile/lib/badge';
+import { toast } from 'sonner';
+
+interface Conv {
+  id: string; participant_1: string; participant_2: string; anuncio_id: string | null;
+  last_message: string | null; last_message_at: string | null; status: string;
+  other_id: string; other_name: string; other_avatar: string | null;
+  unread: number; ad_title: string | null;
+}
+
+export default function MChat() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [conversas, setConversas] = useState<Conv[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [query, setQuery] = useState('');
+
+  const load = async () => {
+    if (!user) return;
+    setLoading(true);
+    const { data: convs } = await supabase
+      .from('conversas').select('*')
+      .or(`participant_1.eq.${user.id},participant_2.eq.${user.id}`)
+      .order('last_message_at', { ascending: false, nullsFirst: false });
+    if (!convs) { setLoading(false); return; }
+
+    const otherIds = convs.map(c => c.participant_1 === user.id ? c.participant_2 : c.participant_1);
+    const adIds = convs.map(c => c.anuncio_id).filter(Boolean) as string[];
+    const [{ data: profiles }, { data: ads }, { data: unread }] = await Promise.all([
+      otherIds.length ? supabase.from('profiles').select('id, display_name, avatar_url').in('id', otherIds) : Promise.resolve({ data: [] }),
+      adIds.length ? supabase.from('anuncios').select('id, title').in('id', adIds) : Promise.resolve({ data: [] }),
+      supabase.from('mensagens').select('sender_id').eq('receiver_id', user.id).eq('is_read', false),
+    ]);
+    const profileMap = new Map((profiles || []).map(p => [p.id, p]));
+    const adMap = new Map((ads || []).map(a => [a.id, a.title]));
+    const unreadMap = new Map<string, number>();
+    (unread || []).forEach(m => unreadMap.set(m.sender_id, (unreadMap.get(m.sender_id) || 0) + 1));
+
+    setConversas(convs.map(c => {
+      const otherId = c.participant_1 === user.id ? c.participant_2 : c.participant_1;
+      const p = profileMap.get(otherId);
+      return {
+        id: c.id, participant_1: c.participant_1, participant_2: c.participant_2,
+        anuncio_id: c.anuncio_id, last_message: c.last_message, last_message_at: c.last_message_at,
+        status: (c as any).status || 'accepted',
+        other_id: otherId, other_name: p?.display_name || 'Usuário', other_avatar: p?.avatar_url || null,
+        unread: unreadMap.get(otherId) || 0, ad_title: c.anuncio_id ? adMap.get(c.anuncio_id) || null : null,
+      };
+    }));
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    load();
+    if (!user) return;
+    const ch = supabase.channel('chat-list')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'conversas' }, load)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensagens' }, load)
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [user]);
+
+  const handleAccept = async (id: string) => {
+    await supabase.from('conversas').update({ status: 'accepted' }).eq('id', id);
+    toast.success('Conversa aceita');
+    load();
+  };
+  const handleReject = async (id: string) => {
+    await supabase.from('conversas').update({ status: 'rejected' }).eq('id', id);
+    toast('Conversa recusada');
+    load();
+  };
+
+  if (!user) {
+    return (
+      <div className="px-6 py-12 text-center">
+        <MessagesSquare className="h-10 w-10 mx-auto mb-3 text-muted-foreground opacity-40" />
+        <p className="text-sm text-muted-foreground mb-4">Entre para acessar suas conversas.</p>
+        <Link to="/m/auth" className="inline-block px-5 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-semibold">Entrar</Link>
+      </div>
+    );
+  }
+
+  const pending = conversas.filter(c => c.status === 'pending' && c.participant_2 === user.id);
+  const active = conversas.filter(c => c.status === 'accepted');
+  const filtered = active.filter(c => !query.trim() || c.other_name.toLowerCase().includes(query.toLowerCase()));
+
+  return (
+    <div className="px-4 py-5 space-y-4">
+      <h1 className="font-display text-xl font-bold gradient-text">Chat</h1>
+
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Buscar conversas..." className="w-full pl-10 pr-3 py-2.5 bg-card border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+      ) : (
+        <>
+          {pending.length > 0 && (
+            <section>
+              <h2 className="text-xs font-bold uppercase tracking-wider text-warning mb-2">Pedidos de conversa ({pending.length})</h2>
+              <div className="space-y-2">
+                {pending.map(c => (
+                  <div key={c.id} className="glass rounded-xl p-3 flex items-center gap-3">
+                    <Avatar name={c.other_name} url={c.other_avatar} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold truncate">{c.other_name}</p>
+                      <p className="text-xs text-muted-foreground line-clamp-1">{c.last_message || 'quer iniciar uma conversa'}</p>
+                    </div>
+                    <button onClick={() => handleAccept(c.id)} className="w-8 h-8 rounded-full bg-success/20 text-success flex items-center justify-center"><Check className="h-4 w-4" /></button>
+                    <button onClick={() => handleReject(c.id)} className="w-8 h-8 rounded-full bg-destructive/20 text-destructive flex items-center justify-center"><X className="h-4 w-4" /></button>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {filtered.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <MessagesSquare className="h-10 w-10 mx-auto mb-2 opacity-40" />
+              <p className="text-sm">Nenhuma conversa ainda.</p>
+              <p className="text-xs mt-1">Inicie uma conversa pelo Marketplace ou pelo Fórum.</p>
+            </div>
+          ) : (
+            <div className="space-y-1.5">
+              {filtered.map(c => (
+                <Link key={c.id} to={`/m/chat/${c.id}`} className="flex items-center gap-3 p-3 glass rounded-xl hover:border-primary/40 transition-colors">
+                  <Avatar name={c.other_name} url={c.other_avatar} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-semibold truncate">{c.other_name}</p>
+                      <span className="text-[10px] text-muted-foreground shrink-0">{timeAgo(c.last_message_at)}</span>
+                    </div>
+                    {c.ad_title && <MobileBadge tone="primary">📦 {c.ad_title.slice(0, 30)}</MobileBadge>}
+                    <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{c.last_message || 'Sem mensagens'}</p>
+                  </div>
+                  {c.unread > 0 && <span className="w-5 h-5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">{c.unread > 9 ? '9+' : c.unread}</span>}
+                </Link>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+function Avatar({ name, url }: { name: string; url: string | null }) {
+  return (
+    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent overflow-hidden flex items-center justify-center text-primary-foreground font-bold shrink-0">
+      {url ? <img src={url} alt="" className="w-full h-full object-cover" /> : name[0]?.toUpperCase() || '?'}
+    </div>
+  );
+}
