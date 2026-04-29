@@ -118,7 +118,7 @@ export default function MHome() {
           </div>
           <div className="flex gap-3 overflow-x-auto scrollbar-thin -mx-4 px-4 pb-1">
             {topGames.map(g => (
-              <Link key={g.id} to={`/m/forum/jogo/${g.id}`} className="shrink-0 w-32">
+              <Link key={g.id} to={`/m/review/${g.id}`} className="shrink-0 w-32">
                 <div className="aspect-[3/4] rounded-xl overflow-hidden bg-card border border-border/50 relative group">
                   {g.image_url
                     ? <img src={g.image_url} alt={g.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
@@ -178,7 +178,7 @@ function FeedCard({ item }: { item: FeedItem }) {
   }
   if (item.kind === 'review') {
     return (
-      <Link to={`/m/forum/jogo/${item.productId}`} className="block glass rounded-xl p-4 hover:border-accent/40 transition-colors">
+      <Link to={`/m/review/${item.productId}`} className="block glass rounded-xl p-4 hover:border-accent/40 transition-colors">
         <div className="flex items-center justify-between mb-1.5">
           <MobileBadge tone="price">Review</MobileBadge>
           <span className="text-[10px] text-muted-foreground">{timeAgo(item.created_at)}</span>

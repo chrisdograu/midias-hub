@@ -67,6 +67,7 @@ import MChat from "./mobile/pages/MChat";
 import MChatThread from "./mobile/pages/MChatThread";
 import MProfile from "./mobile/pages/MProfile";
 import MConfig from "./mobile/pages/MConfig";
+import MReview from "./mobile/pages/MReview";
 
 const queryClient = new QueryClient();
 
@@ -90,6 +91,7 @@ const App = () => (
                 <Route path="forum" element={<MForum />} />
                 <Route path="forum/:gameId" element={<MForumGame />} />
                 <Route path="forum/post/:postId" element={<MForumPost />} />
+                <Route path="review/:productId" element={<MReview />} />
                 <Route path="chat" element={<ProtectedRoute><MChat /></ProtectedRoute>} />
                 <Route path="chat/:conversationId" element={<ProtectedRoute><MChatThread /></ProtectedRoute>} />
                 <Route path="perfil" element={<ProtectedRoute><MProfile /></ProtectedRoute>} />
