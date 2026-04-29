@@ -1,9 +1,9 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Filter, Plus, Loader2, Tag, ShieldCheck, ArrowLeftRight, ShoppingBag } from 'lucide-react';
+import { Search, Plus, Loader2, ShieldCheck, ArrowLeftRight, ShoppingBag, SlidersHorizontal, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
-import { MobileChip, MobileBadge } from '@/mobile/lib/badge';
+import { MobileChip } from '@/mobile/lib/badge';
 import { timeAgo } from '@/mobile/lib/time';
 
 interface Ad {
@@ -19,12 +19,38 @@ const TYPE_FILTERS = [
   { id: 'troca', label: '🔄 Troca' },
 ] as const;
 
+const CATEGORIES = [
+  { id: 'all', label: 'Todas' },
+  { id: 'jogo_fisico', label: '💿 Físico' },
+  { id: 'jogo_digital', label: '💾 Digital' },
+  { id: 'acessorio', label: '🎮 Acessório' },
+  { id: 'console', label: '🕹️ Console' },
+];
+
+const PLATFORMS = ['PS5','PS4','Xbox Series X','Xbox One','Switch','PC','Mobile'];
+const CONDITIONS = [
+  { id: 'all', label: 'Qualquer' },
+  { id: 'novo', label: '✨ Novo' },
+  { id: 'usado', label: '📦 Usado' },
+];
+const SORTS = [
+  { id: 'recent', label: '🕒 Recentes' },
+  { id: 'price_asc', label: '💸 Mais barato' },
+  { id: 'price_desc', label: '💎 Mais caro' },
+] as const;
+
 export default function MMarketplace() {
   const [ads, setAds] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
   const [type, setType] = useState<typeof TYPE_FILTERS[number]['id']>('all');
   const [onlyProtected, setOnlyProtected] = useState(false);
+  const [category, setCategory] = useState('all');
+  const [platform, setPlatform] = useState<string | null>(null);
+  const [condition, setCondition] = useState('all');
+  const [priceMax, setPriceMax] = useState<number>(0);
+  const [sort, setSort] = useState<typeof SORTS[number]['id']>('recent');
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   useEffect(() => {
     let cancel = false;
@@ -32,7 +58,7 @@ export default function MMarketplace() {
       setLoading(true);
       const { data: list } = await supabase
         .from('anuncios').select('*').eq('status', 'active')
-        .order('created_at', { ascending: false }).limit(60);
+        .order('created_at', { ascending: false }).limit(80);
       if (!list) { if (!cancel) { setAds([]); setLoading(false); } return; }
 
       const ids = list.map(a => a.id);
@@ -58,30 +84,47 @@ export default function MMarketplace() {
     return () => { cancel = true; };
   }, []);
 
-  const filtered = useMemo(() => ads.filter(a => {
-    const q = query.trim().toLowerCase();
-    if (q && !a.title.toLowerCase().includes(q)) return false;
-    if (type !== 'all' && a.ad_type !== type) return false;
-    if (onlyProtected && a.certificate_type === 'sem_certificado') return false;
-    return true;
-  }), [ads, query, type, onlyProtected]);
+  const filtered = useMemo(() => {
+    let r = ads.filter(a => {
+      const q = query.trim().toLowerCase();
+      if (q && !a.title.toLowerCase().includes(q)) return false;
+      if (type !== 'all' && a.ad_type !== type) return false;
+      if (onlyProtected && a.certificate_type === 'sem_certificado') return false;
+      if (category !== 'all' && a.category !== category) return false;
+      if (platform && !(a.plataformas || []).includes(platform)) return false;
+      if (condition !== 'all' && a.condition !== condition) return false;
+      if (priceMax > 0 && a.price > priceMax) return false;
+      return true;
+    });
+    if (sort === 'price_asc') r = [...r].sort((a, b) => a.price - b.price);
+    else if (sort === 'price_desc') r = [...r].sort((a, b) => b.price - a.price);
+    return r;
+  }, [ads, query, type, onlyProtected, category, platform, condition, priceMax, sort]);
+
+  const activeFilters = (category !== 'all' ? 1 : 0) + (platform ? 1 : 0) + (condition !== 'all' ? 1 : 0) + (priceMax > 0 ? 1 : 0) + (sort !== 'recent' ? 1 : 0);
 
   return (
     <div className="px-4 py-5 space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="font-display text-xl font-bold gradient-text">Marketplace</h1>
-        <Link to="/m/anuncio/novo" className="flex items-center gap-1 text-xs font-semibold px-3 py-2 rounded-lg bg-gradient-to-r from-primary to-accent text-primary-foreground glow-primary">
+        <Link to="/m/marketplace/novo" className="flex items-center gap-1 text-xs font-semibold px-3 py-2 rounded-lg bg-gradient-to-r from-primary to-accent text-primary-foreground glow-primary">
           <Plus className="h-3.5 w-3.5" /> Anunciar
         </Link>
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <input
-          value={query} onChange={e => setQuery(e.target.value)}
-          placeholder="Buscar jogos, consoles, acessórios..."
-          className="w-full pl-10 pr-3 py-2.5 bg-card border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-        />
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input
+            value={query} onChange={e => setQuery(e.target.value)}
+            placeholder="Buscar jogos, consoles, acessórios..."
+            className="w-full pl-10 pr-3 py-2.5 bg-card border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+          />
+        </div>
+        <button onClick={() => setFiltersOpen(true)} className="relative px-3 rounded-xl bg-card border border-border">
+          <SlidersHorizontal className="h-4 w-4" />
+          {activeFilters > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center">{activeFilters}</span>}
+        </button>
       </div>
 
       <div className="flex gap-2 overflow-x-auto scrollbar-thin -mx-4 px-4">
@@ -99,11 +142,11 @@ export default function MMarketplace() {
       ) : (
         <div className="grid grid-cols-2 gap-3">
           {filtered.map((a, i) => (
-            <motion.div key={a.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.02 }}>
+            <motion.div key={a.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i * 0.02, 0.3) }}>
               <Link to={`/m/marketplace/${a.id}`} className="block glass rounded-xl overflow-hidden hover:border-primary/40 transition-colors">
                 <div className="aspect-square bg-muted relative">
                   {a.image
-                    ? <img src={a.image} alt={a.title} className="w-full h-full object-cover" />
+                    ? <img src={a.image} alt={a.title} loading="lazy" className="w-full h-full object-cover" />
                     : <div className="w-full h-full flex items-center justify-center"><ShoppingBag className="h-8 w-8 text-muted-foreground" /></div>}
                   <div className="absolute top-1.5 left-1.5 flex flex-col gap-1">
                     {a.certificate_type !== 'sem_certificado' && (
@@ -116,12 +159,63 @@ export default function MMarketplace() {
                 </div>
                 <div className="p-2.5">
                   <p className="text-xs font-semibold text-foreground line-clamp-2 leading-tight min-h-[2rem]">{a.title}</p>
-                  <p className="text-base font-bold text-price mt-1">R$ {a.price.toFixed(2)}</p>
+                  <p className="text-base font-bold text-price mt-1">{a.ad_type === 'troca' ? 'Troca' : `R$ ${a.price.toFixed(2)}`}</p>
                   <p className="text-[10px] text-muted-foreground truncate mt-0.5">{a.seller_name} · {timeAgo(a.created_at)}</p>
                 </div>
               </Link>
             </motion.div>
           ))}
+        </div>
+      )}
+
+      {/* Drawer de filtros */}
+      {filtersOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-end" onClick={() => setFiltersOpen(false)}>
+          <motion.div initial={{ y: 400 }} animate={{ y: 0 }} className="w-full max-h-[85vh] overflow-y-auto bg-card rounded-t-2xl p-5 space-y-4" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold flex items-center gap-2"><SlidersHorizontal className="h-4 w-4" />Filtros</h3>
+              <button onClick={() => setFiltersOpen(false)}><X className="h-5 w-5" /></button>
+            </div>
+
+            <div>
+              <label className="text-[10px] uppercase tracking-wide text-muted-foreground">Categoria</label>
+              <div className="flex flex-wrap gap-1.5 mt-1.5">
+                {CATEGORIES.map(c => <MobileChip key={c.id} active={category === c.id} onClick={() => setCategory(c.id)}>{c.label}</MobileChip>)}
+              </div>
+            </div>
+
+            <div>
+              <label className="text-[10px] uppercase tracking-wide text-muted-foreground">Plataforma</label>
+              <div className="flex flex-wrap gap-1.5 mt-1.5">
+                <MobileChip active={!platform} onClick={() => setPlatform(null)}>Todas</MobileChip>
+                {PLATFORMS.map(p => <MobileChip key={p} active={platform === p} onClick={() => setPlatform(p)}>{p}</MobileChip>)}
+              </div>
+            </div>
+
+            <div>
+              <label className="text-[10px] uppercase tracking-wide text-muted-foreground">Condição</label>
+              <div className="flex gap-1.5 mt-1.5">
+                {CONDITIONS.map(c => <MobileChip key={c.id} active={condition === c.id} onClick={() => setCondition(c.id)}>{c.label}</MobileChip>)}
+              </div>
+            </div>
+
+            <div>
+              <label className="text-[10px] uppercase tracking-wide text-muted-foreground">Preço máximo: {priceMax > 0 ? `R$ ${priceMax}` : 'sem limite'}</label>
+              <input type="range" min={0} max={500} step={10} value={priceMax} onChange={e => setPriceMax(Number(e.target.value))} className="w-full mt-1.5 accent-primary" />
+            </div>
+
+            <div>
+              <label className="text-[10px] uppercase tracking-wide text-muted-foreground">Ordenar por</label>
+              <div className="flex flex-wrap gap-1.5 mt-1.5">
+                {SORTS.map(s => <MobileChip key={s.id} active={sort === s.id} onClick={() => setSort(s.id)}>{s.label}</MobileChip>)}
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <button onClick={() => { setCategory('all'); setPlatform(null); setCondition('all'); setPriceMax(0); setSort('recent'); }} className="flex-1 py-2.5 rounded-lg bg-secondary text-sm font-semibold">Limpar</button>
+              <button onClick={() => setFiltersOpen(false)} className="flex-1 py-2.5 rounded-lg bg-gradient-to-r from-primary to-accent text-primary-foreground text-sm font-semibold">Aplicar</button>
+            </div>
+          </motion.div>
         </div>
       )}
     </div>

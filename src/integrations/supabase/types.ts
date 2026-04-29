@@ -1166,6 +1166,27 @@ export type Database = {
           },
         ]
       }
+      user_follows: {
+        Row: {
+          created_at: string
+          follower_id: string
+          following_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          follower_id: string
+          following_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          follower_id?: string
+          following_id?: string
+          id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -1239,6 +1260,7 @@ export type Database = {
         | "certificado_aprovado"
         | "certificado_recusado"
         | "certificado_revogado"
+        | "novo_seguidor"
       order_status:
         | "pending"
         | "confirmed"
@@ -1399,6 +1421,7 @@ export const Constants = {
         "certificado_aprovado",
         "certificado_recusado",
         "certificado_revogado",
+        "novo_seguidor",
       ],
       order_status: [
         "pending",

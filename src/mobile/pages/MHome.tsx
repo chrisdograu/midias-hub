@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Flame, ShoppingBag, MessagesSquare, Star, Loader2, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { MobileBadge, MobileChip, MForumTag } from '@/mobile/lib/badge';
 import { timeAgo } from '@/mobile/lib/time';
 import { HalfStarDisplay } from '@/components/HalfStarRating';
+import { getFollowingIds } from '@/mobile/lib/useFollow';
 
 type FeedItem =
   | { kind: 'forum'; id: string; created_at: string; content: string; author: string; product: string; likes: number; replies: number }
