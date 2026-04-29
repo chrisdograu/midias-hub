@@ -122,38 +122,38 @@ const App = () => (
                 <Route path="configuracoes" element={<Configuracoes />} />
               </Route>
 
-              {/* Web E-commerce Routes */}
-              <Route path="/" element={
+              {/* Web E-commerce Routes - explicit list to avoid wildcard collision with /m and /desktop */}
+              {([
+                { path: '/', el: <Index /> },
+                { path: '/catalogo', el: <Catalogo /> },
+                { path: '/ofertas', el: <Ofertas /> },
+                { path: '/jogo/:id', el: <GameDetail /> },
+                { path: '/carrinho', el: <Carrinho /> },
+                { path: '/checkout', el: <ProtectedRoute><Checkout /></ProtectedRoute> },
+                { path: '/checkout/sucesso', el: <ProtectedRoute><CheckoutSucesso /></ProtectedRoute> },
+                { path: '/auth', el: <Auth /> },
+                { path: '/reset-password', el: <ResetPassword /> },
+                { path: '/pedidos', el: <ProtectedRoute><Pedidos /></ProtectedRoute> },
+                { path: '/favoritos', el: <ProtectedRoute><Favoritos /></ProtectedRoute> },
+                { path: '/perfil', el: <ProtectedRoute><Perfil /></ProtectedRoute> },
+                { path: '/perfil/:userId', el: <PublicProfile /> },
+                { path: '/biblioteca', el: <ProtectedRoute><Biblioteca /></ProtectedRoute> },
+                { path: '/faq', el: <FAQ /> },
+                { path: '/contato', el: <Contato /> },
+                { path: '/termos', el: <TermosDeUso /> },
+              ] as const).map(r => (
+                <Route key={r.path} path={r.path} element={
+                  <div className="min-h-screen flex flex-col">
+                    <Header />
+                    <main className="flex-1">{r.el}</main>
+                    <Footer />
+                  </div>
+                } />
+              ))}
+              <Route path="*" element={
                 <div className="min-h-screen flex flex-col">
                   <Header />
-                  <main className="flex-1"><Index /></main>
-                  <Footer />
-                </div>
-              } />
-              <Route path="/*" element={
-                <div className="min-h-screen flex flex-col">
-                  <Header />
-                  <main className="flex-1">
-                    <Routes>
-                      <Route path="/catalogo" element={<Catalogo />} />
-                      <Route path="/ofertas" element={<Ofertas />} />
-                      <Route path="/jogo/:id" element={<GameDetail />} />
-                      <Route path="/carrinho" element={<Carrinho />} />
-                      <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
-                      <Route path="/checkout/sucesso" element={<ProtectedRoute><CheckoutSucesso /></ProtectedRoute>} />
-                      <Route path="/auth" element={<Auth />} />
-                      <Route path="/reset-password" element={<ResetPassword />} />
-                      <Route path="/pedidos" element={<ProtectedRoute><Pedidos /></ProtectedRoute>} />
-                      <Route path="/favoritos" element={<ProtectedRoute><Favoritos /></ProtectedRoute>} />
-                      <Route path="/perfil" element={<ProtectedRoute><Perfil /></ProtectedRoute>} />
-                      <Route path="/perfil/:userId" element={<PublicProfile />} />
-                      <Route path="/biblioteca" element={<ProtectedRoute><Biblioteca /></ProtectedRoute>} />
-                      <Route path="/faq" element={<FAQ />} />
-                      <Route path="/contato" element={<Contato />} />
-                      <Route path="/termos" element={<TermosDeUso />} />
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </main>
+                  <main className="flex-1"><NotFound /></main>
                   <Footer />
                 </div>
               } />
