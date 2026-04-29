@@ -118,7 +118,7 @@ export default function MHome() {
           </div>
           <div className="flex gap-3 overflow-x-auto scrollbar-thin -mx-4 px-4 pb-1">
             {topGames.map(g => (
-              <Link key={g.id} to={`/m/forum/jogo/${g.id}`} className="shrink-0 w-32">
+              <Link key={g.id} to={`/m/review/${g.id}`} className="shrink-0 w-32">
                 <div className="aspect-[3/4] rounded-xl overflow-hidden bg-card border border-border/50 relative group">
                   {g.image_url
                     ? <img src={g.image_url} alt={g.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
