@@ -67,6 +67,7 @@ import MChat from "./mobile/pages/MChat";
 import MChatThread from "./mobile/pages/MChatThread";
 import MProfile from "./mobile/pages/MProfile";
 import MConfig from "./mobile/pages/MConfig";
+import MReview from "./mobile/pages/MReview";
 
 const queryClient = new QueryClient();
 
