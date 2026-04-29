@@ -53,6 +53,21 @@ import NotificacoesAdmin from "./desktop/pages/NotificacoesAdmin";
 import ForumAdmin from "./desktop/pages/ForumAdmin";
 import Configuracoes from "./desktop/pages/Configuracoes";
 
+// Mobile PWA
+import MobileLayout from "./mobile/MobileLayout";
+import MAuth from "./mobile/pages/MAuth";
+import MHome from "./mobile/pages/MHome";
+import MMarketplace from "./mobile/pages/MMarketplace";
+import MMarketplaceItem from "./mobile/pages/MMarketplaceItem";
+import MNewAd from "./mobile/pages/MNewAd";
+import MForum from "./mobile/pages/MForum";
+import MForumGame from "./mobile/pages/MForumGame";
+import MForumPost from "./mobile/pages/MForumPost";
+import MChat from "./mobile/pages/MChat";
+import MChatThread from "./mobile/pages/MChatThread";
+import MProfile from "./mobile/pages/MProfile";
+import MConfig from "./mobile/pages/MConfig";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -65,6 +80,23 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
+              {/* Mobile PWA Routes */}
+              <Route path="/m/auth" element={<MAuth />} />
+              <Route path="/m" element={<MobileLayout />}>
+                <Route index element={<MHome />} />
+                <Route path="marketplace" element={<MMarketplace />} />
+                <Route path="marketplace/novo" element={<ProtectedRoute><MNewAd /></ProtectedRoute>} />
+                <Route path="marketplace/:id" element={<MMarketplaceItem />} />
+                <Route path="forum" element={<MForum />} />
+                <Route path="forum/:gameId" element={<MForumGame />} />
+                <Route path="forum/post/:postId" element={<MForumPost />} />
+                <Route path="chat" element={<ProtectedRoute><MChat /></ProtectedRoute>} />
+                <Route path="chat/:conversationId" element={<ProtectedRoute><MChatThread /></ProtectedRoute>} />
+                <Route path="perfil" element={<ProtectedRoute><MProfile /></ProtectedRoute>} />
+                <Route path="perfil/:userId" element={<MProfile />} />
+                <Route path="config" element={<ProtectedRoute><MConfig /></ProtectedRoute>} />
+              </Route>
+
               {/* Desktop Backoffice Routes */}
               <Route path="/desktop/login" element={<DesktopAuthProvider><DesktopLogin /></DesktopAuthProvider>} />
               <Route path="/desktop" element={<DesktopAuthProvider><DesktopLayout /></DesktopAuthProvider>}>
