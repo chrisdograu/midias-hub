@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Loader2, Edit2, ShoppingBag, Star, Settings, LogOut, ShieldCheck, Send, Flag, ShieldOff, ArrowLeft } from 'lucide-react';
+import { Loader2, ShoppingBag, Settings, LogOut, Send, Flag, ShieldOff, ArrowLeft, UserPlus, UserCheck, Users } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { HalfStarDisplay } from '@/components/HalfStarRating';
-import { MobileBadge } from '@/mobile/lib/badge';
+import { useFollow } from '@/mobile/lib/useFollow';
 import { toast } from 'sonner';
 
 interface Profile { id: string; display_name: string | null; avatar_url: string | null; bio: string | null; username: string | null }
@@ -19,19 +19,27 @@ export default function MProfile() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [rating, setRating] = useState(0);
   const [ads, setAds] = useState<Ad[]>([]);
+  const [reviewsCount, setReviewsCount] = useState(0);
+  const [postsCount, setPostsCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [reportOpen, setReportOpen] = useState(false);
   const [reportText, setReportText] = useState('');
+  const [followersOpen, setFollowersOpen] = useState<'followers' | 'following' | null>(null);
+  const [followList, setFollowList] = useState<{ id: string; display_name: string | null; avatar_url: string | null }[]>([]);
+
+  const { isFollowing, followersCount, followingCount, loading: followLoading, toggle: toggleFollow } = useFollow(targetId);
 
   useEffect(() => {
     if (!targetId) { setLoading(false); return; }
     let cancel = false;
     (async () => {
       setLoading(true);
-      const [{ data: p }, { data: revs }, { data: adsRaw }] = await Promise.all([
+      const [{ data: p }, { data: revs }, { data: adsRaw }, { count: rc }, { count: pc }] = await Promise.all([
         supabase.from('profiles').select('id, display_name, avatar_url, bio, username').eq('id', targetId).maybeSingle(),
         supabase.from('avaliacoes_usuario').select('rating').eq('reviewed_id', targetId),
         supabase.from('anuncios').select('id, title, price').eq('seller_id', targetId).eq('status', 'active').limit(20),
+        supabase.from('avaliacoes').select('id', { count: 'exact', head: true }).eq('user_id', targetId).eq('is_approved', true),
+        supabase.from('forum_posts').select('id', { count: 'exact', head: true }).eq('user_id', targetId),
       ]);
       const adIds = adsRaw?.map(a => a.id) || [];
       const { data: photos } = adIds.length
@@ -44,10 +52,24 @@ export default function MProfile() {
       setProfile(p as Profile);
       setRating(avg);
       setAds((adsRaw || []).map(a => ({ id: a.id, title: a.title, price: Number(a.price), image: photoMap.get(a.id) || null })));
+      setReviewsCount(rc || 0);
+      setPostsCount(pc || 0);
       setLoading(false);
     })();
     return () => { cancel = true; };
   }, [targetId]);
+
+  const openFollowList = async (kind: 'followers' | 'following') => {
+    if (!targetId) return;
+    setFollowersOpen(kind);
+    const col = kind === 'followers' ? 'follower_id' : 'following_id';
+    const filter = kind === 'followers' ? 'following_id' : 'follower_id';
+    const { data } = await supabase.from('user_follows').select(col).eq(filter, targetId);
+    const ids = (data || []).map((d: any) => d[col]);
+    if (!ids.length) { setFollowList([]); return; }
+    const { data: profs } = await supabase.from('profiles').select('id, display_name, avatar_url').in('id', ids);
+    setFollowList(profs || []);
+  };
 
   const handleBlock = async () => {
     if (!user || !targetId) return;
@@ -92,11 +114,34 @@ export default function MProfile() {
         {profile.username && <p className="text-xs text-muted-foreground">@{profile.username}</p>}
         <div className="flex items-center justify-center gap-1.5 mt-2"><HalfStarDisplay rating={rating} size={14} /><span className="text-xs text-muted-foreground">{rating > 0 ? rating.toFixed(1) : 'sem avaliações'}</span></div>
         {profile.bio && <p className="text-sm text-muted-foreground mt-3">{profile.bio}</p>}
+
+        {/* Stats */}
+        <div className="grid grid-cols-4 gap-2 mt-4 pt-4 border-t border-border/40">
+          <button onClick={() => openFollowList('followers')} className="text-center hover:text-primary transition-colors">
+            <div className="text-base font-bold">{followersCount}</div>
+            <div className="text-[10px] text-muted-foreground uppercase">Seguidores</div>
+          </button>
+          <button onClick={() => openFollowList('following')} className="text-center hover:text-primary transition-colors">
+            <div className="text-base font-bold">{followingCount}</div>
+            <div className="text-[10px] text-muted-foreground uppercase">Seguindo</div>
+          </button>
+          <div className="text-center">
+            <div className="text-base font-bold">{reviewsCount}</div>
+            <div className="text-[10px] text-muted-foreground uppercase">Reviews</div>
+          </div>
+          <div className="text-center">
+            <div className="text-base font-bold">{postsCount}</div>
+            <div className="text-[10px] text-muted-foreground uppercase">Posts</div>
+          </div>
+        </div>
       </div>
 
       {!isOwn && user && (
         <div className="flex gap-2">
-          <button onClick={handleMessage} className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-primary to-accent text-primary-foreground text-sm font-semibold flex items-center justify-center gap-1.5"><Send className="h-4 w-4" />Mensagem</button>
+          <button onClick={toggleFollow} disabled={followLoading} className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${isFollowing ? 'bg-card border border-border text-foreground' : 'bg-gradient-to-r from-primary to-accent text-primary-foreground glow-primary'}`}>
+            {isFollowing ? <><UserCheck className="h-4 w-4" />Seguindo</> : <><UserPlus className="h-4 w-4" />Seguir</>}
+          </button>
+          <button onClick={handleMessage} className="px-4 rounded-xl bg-card border border-border"><Send className="h-4 w-4" /></button>
           <button onClick={handleBlock} className="px-4 rounded-xl bg-card border border-border text-muted-foreground"><ShieldOff className="h-4 w-4" /></button>
           <button onClick={() => setReportOpen(true)} className="px-4 rounded-xl bg-card border border-border text-muted-foreground hover:text-destructive"><Flag className="h-4 w-4" /></button>
         </div>
@@ -104,7 +149,7 @@ export default function MProfile() {
 
       {isOwn && (
         <div className="grid grid-cols-2 gap-2">
-          <Link to="/m/anuncio/novo" className="glass rounded-xl p-3 flex flex-col items-center gap-1 hover:border-primary/40"><ShoppingBag className="h-5 w-5 text-primary" /><span className="text-xs font-semibold">Novo anúncio</span></Link>
+          <Link to="/m/marketplace/novo" className="glass rounded-xl p-3 flex flex-col items-center gap-1 hover:border-primary/40"><ShoppingBag className="h-5 w-5 text-primary" /><span className="text-xs font-semibold">Novo anúncio</span></Link>
           <Link to="/m/config" className="glass rounded-xl p-3 flex flex-col items-center gap-1 hover:border-accent/40"><Settings className="h-5 w-5 text-accent" /><span className="text-xs font-semibold">Configurações</span></Link>
         </div>
       )}
@@ -115,7 +160,7 @@ export default function MProfile() {
           <div className="grid grid-cols-2 gap-2">
             {ads.map(a => (
               <Link key={a.id} to={`/m/marketplace/${a.id}`} className="glass rounded-lg overflow-hidden">
-                <div className="aspect-square bg-muted">{a.image ? <img src={a.image} alt={a.title} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><ShoppingBag className="h-6 w-6 text-muted-foreground" /></div>}</div>
+                <div className="aspect-square bg-muted">{a.image ? <img src={a.image} alt={a.title} loading="lazy" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><ShoppingBag className="h-6 w-6 text-muted-foreground" /></div>}</div>
                 <div className="p-2"><p className="text-[11px] font-semibold line-clamp-1">{a.title}</p><p className="text-xs font-bold text-price">R$ {a.price.toFixed(2)}</p></div>
               </Link>
             ))}
@@ -136,6 +181,26 @@ export default function MProfile() {
               <button onClick={() => setReportOpen(false)} className="flex-1 py-2.5 rounded-lg bg-secondary text-sm font-semibold">Cancelar</button>
               <button onClick={submitReport} className="flex-1 py-2.5 rounded-lg bg-destructive text-destructive-foreground text-sm font-semibold">Enviar</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {followersOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-end" onClick={() => setFollowersOpen(null)}>
+          <div className="w-full max-h-[70vh] overflow-y-auto bg-card rounded-t-2xl p-5 space-y-3" onClick={e => e.stopPropagation()}>
+            <h3 className="font-bold flex items-center gap-2"><Users className="h-4 w-4" />{followersOpen === 'followers' ? 'Seguidores' : 'Seguindo'}</h3>
+            {followList.length === 0 ? <p className="text-sm text-muted-foreground text-center py-6">Lista vazia.</p> : (
+              <div className="space-y-2">
+                {followList.map(f => (
+                  <Link key={f.id} to={`/m/perfil/${f.id}`} onClick={() => setFollowersOpen(null)} className="flex items-center gap-3 p-2 glass rounded-lg">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent overflow-hidden flex items-center justify-center text-primary-foreground font-bold">
+                      {f.avatar_url ? <img src={f.avatar_url} alt="" className="w-full h-full object-cover" /> : f.display_name?.[0]?.toUpperCase() || '?'}
+                    </div>
+                    <span className="text-sm font-semibold flex-1">{f.display_name || 'Usuário'}</span>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
