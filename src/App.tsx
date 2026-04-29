@@ -91,6 +91,7 @@ const App = () => (
                 <Route path="forum" element={<MForum />} />
                 <Route path="forum/:gameId" element={<MForumGame />} />
                 <Route path="forum/post/:postId" element={<MForumPost />} />
+                <Route path="review/:productId" element={<MReview />} />
                 <Route path="chat" element={<ProtectedRoute><MChat /></ProtectedRoute>} />
                 <Route path="chat/:conversationId" element={<ProtectedRoute><MChatThread /></ProtectedRoute>} />
                 <Route path="perfil" element={<ProtectedRoute><MProfile /></ProtectedRoute>} />
