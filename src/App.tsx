@@ -53,6 +53,21 @@ import NotificacoesAdmin from "./desktop/pages/NotificacoesAdmin";
 import ForumAdmin from "./desktop/pages/ForumAdmin";
 import Configuracoes from "./desktop/pages/Configuracoes";
 
+// Mobile PWA
+import MobileLayout from "./mobile/MobileLayout";
+import MAuth from "./mobile/pages/MAuth";
+import MHome from "./mobile/pages/MHome";
+import MMarketplace from "./mobile/pages/MMarketplace";
+import MMarketplaceItem from "./mobile/pages/MMarketplaceItem";
+import MNewAd from "./mobile/pages/MNewAd";
+import MForum from "./mobile/pages/MForum";
+import MForumGame from "./mobile/pages/MForumGame";
+import MForumPost from "./mobile/pages/MForumPost";
+import MChat from "./mobile/pages/MChat";
+import MChatThread from "./mobile/pages/MChatThread";
+import MProfile from "./mobile/pages/MProfile";
+import MConfig from "./mobile/pages/MConfig";
+
 const queryClient = new QueryClient();
 
 const App = () => (
