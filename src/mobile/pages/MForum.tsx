@@ -138,7 +138,7 @@ export default function MForum() {
         <div className="flex gap-2 overflow-x-auto scrollbar-thin -mx-4 px-4 pb-1">
           {topGames.length === 0 && <p className="text-sm text-muted-foreground">Nenhum jogo ativo ainda.</p>}
           {topGames.map((g, i) => (
-            <Link key={g.id} to={`/m/forum/jogo/${g.id}`} className="shrink-0 w-28 glass rounded-xl overflow-hidden hover:border-accent/40 transition-colors">
+            <Link key={g.id} to={`/m/forum/${g.id}`} className="shrink-0 w-28 glass rounded-xl overflow-hidden hover:border-accent/40 transition-colors">
               <div className="aspect-[3/4] bg-muted relative">
                 {g.image_url ? <img src={g.image_url} alt={g.title} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-muted-foreground">🎮</div>}
                 <div className="absolute top-1 left-1 bg-accent text-accent-foreground text-[9px] font-bold px-1.5 py-0.5 rounded">#{i + 1}</div>
@@ -178,7 +178,7 @@ export default function MForum() {
         <div className="space-y-2.5">
           {sortedReviews.length === 0 ? <p className="text-center py-10 text-sm text-muted-foreground">Nenhuma review no período.</p> :
             sortedReviews.map(r => (
-              <Link key={r.id} to={`/m/forum/jogo/${r.product_id}`} className="block glass rounded-xl p-3 hover:border-accent/40 transition-colors">
+              <Link key={r.id} to={`/m/review/${r.product_id}`} className="block glass rounded-xl p-3 hover:border-accent/40 transition-colors">
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-sm font-bold">{r.product}</span>
                   <span className="text-[10px] text-muted-foreground">{timeAgo(r.created_at)}</span>
@@ -201,7 +201,7 @@ function PostCard({ p }: { p: ForumPost }) {
   return (
     <Link to={`/m/forum/post/${p.id}`} className="block glass rounded-xl p-3 hover:border-primary/40 transition-colors">
       <div className="flex items-center justify-between mb-1.5">
-        <Link to={`/m/forum/jogo/${p.product_id}`} onClick={e => e.stopPropagation()}>
+        <Link to={`/m/forum/${p.product_id}`} onClick={e => e.stopPropagation()}>
           <MForumTag name={p.product.toLowerCase().replace(/\s+/g, '').slice(0, 12)} />
         </Link>
         <span className="text-[10px] text-muted-foreground">{timeAgo(p.created_at)}</span>
