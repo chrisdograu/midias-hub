@@ -71,7 +71,7 @@ export default function MForumPost() {
       <div className="px-4 space-y-3">
         <div className="glass rounded-2xl p-4">
           <div className="flex items-center justify-between mb-2">
-            <Link to={`/m/forum/jogo/${post.product_id}`}><MForumTag name={post.product.toLowerCase().replace(/\s+/g, '').slice(0, 14)} /></Link>
+            <Link to={`/m/forum/${post.product_id}`}><MForumTag name={post.product.toLowerCase().replace(/\s+/g, '').slice(0, 14)} /></Link>
             <span className="text-[10px] text-muted-foreground">{timeAgo(post.created_at)}</span>
           </div>
           <p className="text-sm font-semibold">{post.author}</p>
