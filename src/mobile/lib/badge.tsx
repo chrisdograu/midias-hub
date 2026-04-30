@@ -31,10 +31,11 @@ export function MobileChip({ active, children, onClick }: { active?: boolean; ch
   );
 }
 
-export function MForumTag({ name }: { name: string }) {
+export const MForumTag = forwardRef<HTMLSpanElement, { name: string }>(({ name }, ref) => {
   return (
-    <span className="inline-flex items-center font-display text-[11px] font-bold tracking-wide text-accent">
+    <span ref={ref} className="inline-flex items-center font-display text-[11px] font-bold tracking-wide text-accent">
       M/{name}
     </span>
   );
-}
+});
+MForumTag.displayName = 'MForumTag';
