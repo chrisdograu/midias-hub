@@ -24,10 +24,17 @@ const FILTERS = [
 type Filter = typeof FILTERS[number]['id'];
 
 export default function MHome() {
+  const { user } = useAuth();
   const [filter, setFilter] = useState<Filter>('all');
   const [topGames, setTopGames] = useState<{ id: string; title: string; image_url: string | null; rating: number | null }[]>([]);
   const [feed, setFeed] = useState<FeedItem[]>([]);
+  const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) { setFollowingIds(new Set()); return; }
+    getFollowingIds(user.id).then(ids => setFollowingIds(new Set(ids)));
+  }, [user?.id]);
 
   useEffect(() => {
     let cancel = false;
