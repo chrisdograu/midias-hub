@@ -28,16 +28,34 @@ export default function MConfig() {
         supabase.from('profiles').select('*').eq('id', user.id).maybeSingle(),
         supabase.from('certificados').select('status').eq('user_id', user.id).order('created_at', { ascending: false }).limit(1),
       ]);
-      if (p) setForm({
-        display_name: p.display_name || '', username: p.username || '', bio: p.bio || '',
-        phone: p.phone || '', cpf: p.cpf || '',
-        push_notifications: p.push_notifications, email_notifications: p.email_notifications, is_private: p.is_private,
-      });
+      if (p) {
+        setForm({
+          display_name: p.display_name || '', username: p.username || '', bio: p.bio || '',
+          phone: p.phone || '', cpf: p.cpf || '',
+          push_notifications: p.push_notifications, email_notifications: p.email_notifications, is_private: p.is_private,
+        });
+        setAvatarUrl(p.avatar_url || null);
+      }
       const last = c?.[0]?.status;
       setHasCert(last === 'ativo' ? 'active' : last === 'pendente' ? 'pending' : 'none');
       setLoading(false);
     })();
   }, [user]);
+
+  const uploadAvatar = async (file: File) => {
+    if (!user) return;
+    if (file.size > 3 * 1024 * 1024) { toast.error('Imagem deve ter no máximo 3MB'); return; }
+    setUploadingAvatar(true);
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+    const path = `${user.id}/avatar-${Date.now()}.${ext}`;
+    const { error: upErr } = await supabase.storage.from('avatars').upload(path, file, { upsert: true });
+    if (upErr) { toast.error('Erro ao enviar imagem'); setUploadingAvatar(false); return; }
+    const { data: pub } = supabase.storage.from('avatars').getPublicUrl(path);
+    const { error } = await supabase.from('profiles').update({ avatar_url: pub.publicUrl }).eq('id', user.id);
+    if (error) toast.error('Erro ao salvar avatar');
+    else { setAvatarUrl(pub.publicUrl); toast.success('Foto atualizada ✨'); }
+    setUploadingAvatar(false);
+  };
 
   const save = async () => {
     if (!user) return;
