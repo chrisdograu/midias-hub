@@ -197,13 +197,25 @@ export default function MForum() {
   );
 }
 
+import { useNavigate } from 'react-router-dom';
+
 function PostCard({ p }: { p: ForumPost }) {
+  const navigate = useNavigate();
   return (
-    <Link to={`/m/forum/post/${p.id}`} className="block glass rounded-xl p-3 hover:border-primary/40 transition-colors">
+    <div
+      role="link"
+      tabIndex={0}
+      onClick={() => navigate(`/m/forum/post/${p.id}`)}
+      onKeyDown={e => { if (e.key === 'Enter') navigate(`/m/forum/post/${p.id}`); }}
+      className="block glass rounded-xl p-3 hover:border-primary/40 transition-colors cursor-pointer"
+    >
       <div className="flex items-center justify-between mb-1.5">
-        <Link to={`/m/forum/${p.product_id}`} onClick={e => e.stopPropagation()}>
+        <button
+          onClick={e => { e.stopPropagation(); navigate(`/m/forum/${p.product_id}`); }}
+          className="bg-transparent border-0 p-0 cursor-pointer"
+        >
           <MForumTag name={p.product.toLowerCase().replace(/\s+/g, '').slice(0, 12)} />
-        </Link>
+        </button>
         <span className="text-[10px] text-muted-foreground">{timeAgo(p.created_at)}</span>
       </div>
       <p className="text-sm text-foreground line-clamp-3">{p.content}</p>
@@ -212,6 +224,6 @@ function PostCard({ p }: { p: ForumPost }) {
         <span className="flex items-center gap-1"><ThumbsUp className="h-3 w-3" />{p.likes_count}</span>
         <span className="flex items-center gap-1"><MessageSquare className="h-3 w-3" />{p.replies_count}</span>
       </div>
-    </Link>
+    </div>
   );
 }
