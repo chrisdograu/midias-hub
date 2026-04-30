@@ -201,7 +201,7 @@ function PostCard({ p }: { p: ForumPost }) {
   return (
     <Link to={`/m/forum/post/${p.id}`} className="block glass rounded-xl p-3 hover:border-primary/40 transition-colors">
       <div className="flex items-center justify-between mb-1.5">
-        <Link to={`/m/forum/jogo/${p.product_id}`} onClick={e => e.stopPropagation()}>
+        <Link to={`/m/forum/${p.product_id}`} onClick={e => e.stopPropagation()}>
           <MForumTag name={p.product.toLowerCase().replace(/\s+/g, '').slice(0, 12)} />
         </Link>
         <span className="text-[10px] text-muted-foreground">{timeAgo(p.created_at)}</span>
