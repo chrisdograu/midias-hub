@@ -97,7 +97,11 @@ export default function MHome() {
     return () => { cancel = true; };
   }, []);
 
-  const visible = feed.filter(i => filter === 'all' || i.kind === filter);
+  const visible = feed.filter(i => {
+    if (filter === 'all') return true;
+    if (filter === 'following') return followingIds.has(i.authorId);
+    return i.kind === filter;
+  });
 
   return (
     <div className="px-4 py-5 space-y-6">
