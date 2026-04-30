@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -9,66 +10,74 @@ import { ThemeProvider } from "@/hooks/useTheme";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { Loader2 } from "lucide-react";
 import Index from "./pages/Index";
-import Catalogo from "./pages/Catalogo";
-import Ofertas from "./pages/Ofertas";
-import GameDetail from "./pages/GameDetail";
-import Carrinho from "./pages/Carrinho";
-import Checkout from "./pages/Checkout";
-import Auth from "./pages/Auth";
-import ResetPassword from "./pages/ResetPassword";
-import Pedidos from "./pages/Pedidos";
-import Favoritos from "./pages/Favoritos";
-import Perfil from "./pages/Perfil";
-import Biblioteca from "./pages/Biblioteca";
-import FAQ from "./pages/FAQ";
-import Contato from "./pages/Contato";
-import TermosDeUso from "./pages/TermosDeUso";
-import PublicProfile from "./pages/PublicProfile";
-import CheckoutSucesso from "./pages/CheckoutSucesso";
-import NotFound from "./pages/NotFound";
 
-// Desktop Backoffice
+// Web pages — lazy
+const Catalogo = lazy(() => import("./pages/Catalogo"));
+const Ofertas = lazy(() => import("./pages/Ofertas"));
+const GameDetail = lazy(() => import("./pages/GameDetail"));
+const Carrinho = lazy(() => import("./pages/Carrinho"));
+const Checkout = lazy(() => import("./pages/Checkout"));
+const Auth = lazy(() => import("./pages/Auth"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const Pedidos = lazy(() => import("./pages/Pedidos"));
+const Favoritos = lazy(() => import("./pages/Favoritos"));
+const Perfil = lazy(() => import("./pages/Perfil"));
+const Biblioteca = lazy(() => import("./pages/Biblioteca"));
+const FAQ = lazy(() => import("./pages/FAQ"));
+const Contato = lazy(() => import("./pages/Contato"));
+const TermosDeUso = lazy(() => import("./pages/TermosDeUso"));
+const PublicProfile = lazy(() => import("./pages/PublicProfile"));
+const CheckoutSucesso = lazy(() => import("./pages/CheckoutSucesso"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+
+// Desktop Backoffice — lazy
 import { DesktopAuthProvider } from "./hooks/useDesktopAuth";
-import DesktopLayout from "./desktop/DesktopLayout";
-import DesktopLogin from "./desktop/DesktopLogin";
-import Dashboard from "./desktop/pages/Dashboard";
-import DesktopProdutos from "./desktop/pages/Produtos";
-import Funcionarios from "./desktop/pages/Funcionarios";
-import Clientes from "./desktop/pages/Clientes";
-import Fornecedores from "./desktop/pages/Fornecedores";
-import Categorias from "./desktop/pages/Categorias";
-import Cupons from "./desktop/pages/Cupons";
+const DesktopLayout = lazy(() => import("./desktop/DesktopLayout"));
+const DesktopLogin = lazy(() => import("./desktop/DesktopLogin"));
+const Dashboard = lazy(() => import("./desktop/pages/Dashboard"));
+const DesktopProdutos = lazy(() => import("./desktop/pages/Produtos"));
+const Funcionarios = lazy(() => import("./desktop/pages/Funcionarios"));
+const Clientes = lazy(() => import("./desktop/pages/Clientes"));
+const Fornecedores = lazy(() => import("./desktop/pages/Fornecedores"));
+const Categorias = lazy(() => import("./desktop/pages/Categorias"));
+const Cupons = lazy(() => import("./desktop/pages/Cupons"));
+const Estoque = lazy(() => import("./desktop/pages/Estoque"));
+const PedidosOnline = lazy(() => import("./desktop/pages/PedidosOnline"));
+const Moderacao = lazy(() => import("./desktop/pages/Moderacao"));
+const Relatorios = lazy(() => import("./desktop/pages/Relatorios"));
+const Certificados = lazy(() => import("./desktop/pages/Certificados"));
+const AnunciosAdmin = lazy(() => import("./desktop/pages/AnunciosAdmin"));
+const PropostasTroca = lazy(() => import("./desktop/pages/PropostasTroca"));
+const MensagensAdmin = lazy(() => import("./desktop/pages/MensagensAdmin"));
+const AvaliacoesUsuario = lazy(() => import("./desktop/pages/AvaliacoesUsuario"));
+const NotificacoesAdmin = lazy(() => import("./desktop/pages/NotificacoesAdmin"));
+const ForumAdmin = lazy(() => import("./desktop/pages/ForumAdmin"));
+const Configuracoes = lazy(() => import("./desktop/pages/Configuracoes"));
 
-import Estoque from "./desktop/pages/Estoque";
-import PedidosOnline from "./desktop/pages/PedidosOnline";
-import Moderacao from "./desktop/pages/Moderacao";
-import Relatorios from "./desktop/pages/Relatorios";
-import Certificados from "./desktop/pages/Certificados";
-import AnunciosAdmin from "./desktop/pages/AnunciosAdmin";
-import PropostasTroca from "./desktop/pages/PropostasTroca";
-import MensagensAdmin from "./desktop/pages/MensagensAdmin";
-import AvaliacoesUsuario from "./desktop/pages/AvaliacoesUsuario";
-import NotificacoesAdmin from "./desktop/pages/NotificacoesAdmin";
-import ForumAdmin from "./desktop/pages/ForumAdmin";
-import Configuracoes from "./desktop/pages/Configuracoes";
+// Mobile PWA — lazy
+const MobileLayout = lazy(() => import("./mobile/MobileLayout"));
+const MAuth = lazy(() => import("./mobile/pages/MAuth"));
+const MHome = lazy(() => import("./mobile/pages/MHome"));
+const MMarketplace = lazy(() => import("./mobile/pages/MMarketplace"));
+const MMarketplaceItem = lazy(() => import("./mobile/pages/MMarketplaceItem"));
+const MNewAd = lazy(() => import("./mobile/pages/MNewAd"));
+const MForum = lazy(() => import("./mobile/pages/MForum"));
+const MForumGame = lazy(() => import("./mobile/pages/MForumGame"));
+const MForumPost = lazy(() => import("./mobile/pages/MForumPost"));
+const MChat = lazy(() => import("./mobile/pages/MChat"));
+const MChatThread = lazy(() => import("./mobile/pages/MChatThread"));
+const MProfile = lazy(() => import("./mobile/pages/MProfile"));
+const MConfig = lazy(() => import("./mobile/pages/MConfig"));
+const MReview = lazy(() => import("./mobile/pages/MReview"));
+const MNotFound = lazy(() => import("./mobile/pages/MNotFound"));
 
-// Mobile PWA
-import MobileLayout from "./mobile/MobileLayout";
-import MAuth from "./mobile/pages/MAuth";
-import MHome from "./mobile/pages/MHome";
-import MMarketplace from "./mobile/pages/MMarketplace";
-import MMarketplaceItem from "./mobile/pages/MMarketplaceItem";
-import MNewAd from "./mobile/pages/MNewAd";
-import MForum from "./mobile/pages/MForum";
-import MForumGame from "./mobile/pages/MForumGame";
-import MForumPost from "./mobile/pages/MForumPost";
-import MChat from "./mobile/pages/MChat";
-import MChatThread from "./mobile/pages/MChatThread";
-import MProfile from "./mobile/pages/MProfile";
-import MConfig from "./mobile/pages/MConfig";
-import MReview from "./mobile/pages/MReview";
-import MNotFound from "./mobile/pages/MNotFound";
+const PageFallback = () => (
+  <div className="min-h-[40vh] flex items-center justify-center">
+    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+  </div>
+);
 
 const queryClient = new QueryClient();
 
@@ -81,6 +90,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <Suspense fallback={<PageFallback />}>
             <Routes>
               {/* Mobile PWA Routes */}
               <Route path="/m/auth" element={<MAuth />} />
@@ -111,7 +121,6 @@ const App = () => (
                 <Route path="fornecedores" element={<Fornecedores />} />
                 <Route path="categorias" element={<Categorias />} />
                 <Route path="cupons" element={<Cupons />} />
-                
                 <Route path="estoque" element={<Estoque />} />
                 <Route path="pedidos" element={<PedidosOnline />} />
                 <Route path="anuncios" element={<AnunciosAdmin />} />
@@ -126,7 +135,7 @@ const App = () => (
                 <Route path="configuracoes" element={<Configuracoes />} />
               </Route>
 
-              {/* Web E-commerce Routes - explicit list to avoid wildcard collision with /m and /desktop */}
+              {/* Web E-commerce Routes */}
               {([
                 { path: '/', el: <Index /> },
                 { path: '/catalogo', el: <Catalogo /> },
@@ -162,6 +171,7 @@ const App = () => (
                 </div>
               } />
             </Routes>
+            </Suspense>
           </BrowserRouter>
         </CartProvider>
       </AuthProvider>
