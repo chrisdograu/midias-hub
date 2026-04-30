@@ -98,6 +98,7 @@ const App = () => (
                 <Route path="perfil" element={<ProtectedRoute><MProfile /></ProtectedRoute>} />
                 <Route path="perfil/:userId" element={<MProfile />} />
                 <Route path="config" element={<ProtectedRoute><MConfig /></ProtectedRoute>} />
+                <Route path="*" element={<MNotFound />} />
               </Route>
 
               {/* Desktop Backoffice Routes */}
