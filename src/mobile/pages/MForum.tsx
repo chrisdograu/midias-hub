@@ -178,7 +178,7 @@ export default function MForum() {
         <div className="space-y-2.5">
           {sortedReviews.length === 0 ? <p className="text-center py-10 text-sm text-muted-foreground">Nenhuma review no período.</p> :
             sortedReviews.map(r => (
-              <Link key={r.id} to={`/m/forum/jogo/${r.product_id}`} className="block glass rounded-xl p-3 hover:border-accent/40 transition-colors">
+              <Link key={r.id} to={`/m/review/${r.product_id}`} className="block glass rounded-xl p-3 hover:border-accent/40 transition-colors">
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-sm font-bold">{r.product}</span>
                   <span className="text-[10px] text-muted-foreground">{timeAgo(r.created_at)}</span>
