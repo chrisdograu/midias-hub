@@ -10,9 +10,9 @@ import { HalfStarDisplay } from '@/components/HalfStarRating';
 import { getFollowingIds } from '@/mobile/lib/useFollow';
 
 type FeedItem =
-  | { kind: 'forum'; id: string; created_at: string; content: string; author: string; product: string; likes: number; replies: number }
-  | { kind: 'review'; id: string; created_at: string; rating: number; comment: string | null; author: string; product: string; productId: string }
-  | { kind: 'ad'; id: string; created_at: string; title: string; price: number; image: string | null; seller: string };
+  | { kind: 'forum'; id: string; created_at: string; content: string; author: string; authorId: string; product: string; likes: number; replies: number }
+  | { kind: 'review'; id: string; created_at: string; rating: number; comment: string | null; author: string; authorId: string; product: string; productId: string }
+  | { kind: 'ad'; id: string; created_at: string; title: string; price: number; image: string | null; seller: string; authorId: string };
 
 const FILTERS = [
   { id: 'all', label: 'Tudo' },
