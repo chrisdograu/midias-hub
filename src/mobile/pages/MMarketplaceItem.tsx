@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { MobileBadge } from '@/mobile/lib/badge';
 import { HalfStarDisplay } from '@/components/HalfStarRating';
+import { useFollow } from '@/mobile/lib/useFollow';
 import { toast } from 'sonner';
 
 interface Ad {
