@@ -90,6 +90,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <Suspense fallback={<PageFallback />}>
             <Routes>
               {/* Mobile PWA Routes */}
               <Route path="/m/auth" element={<MAuth />} />
@@ -120,7 +121,6 @@ const App = () => (
                 <Route path="fornecedores" element={<Fornecedores />} />
                 <Route path="categorias" element={<Categorias />} />
                 <Route path="cupons" element={<Cupons />} />
-                
                 <Route path="estoque" element={<Estoque />} />
                 <Route path="pedidos" element={<PedidosOnline />} />
                 <Route path="anuncios" element={<AnunciosAdmin />} />
@@ -135,7 +135,7 @@ const App = () => (
                 <Route path="configuracoes" element={<Configuracoes />} />
               </Route>
 
-              {/* Web E-commerce Routes - explicit list to avoid wildcard collision with /m and /desktop */}
+              {/* Web E-commerce Routes */}
               {([
                 { path: '/', el: <Index /> },
                 { path: '/catalogo', el: <Catalogo /> },
@@ -171,6 +171,7 @@ const App = () => (
                 </div>
               } />
             </Routes>
+            </Suspense>
           </BrowserRouter>
         </CartProvider>
       </AuthProvider>
