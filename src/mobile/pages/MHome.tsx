@@ -65,17 +65,18 @@ export default function MHome() {
       const items: FeedItem[] = [];
       posts?.forEach(p => items.push({
         kind: 'forum', id: p.id, created_at: p.created_at || '', content: p.content,
-        author: profileMap.get(p.user_id) || 'Usuário', product: productMap.get(p.product_id) || 'Jogo',
+        author: profileMap.get(p.user_id) || 'Usuário', authorId: p.user_id,
+        product: productMap.get(p.product_id) || 'Jogo',
         likes: p.likes_count, replies: replyCount.get(p.id) || 0,
       }));
       reviews?.forEach(r => items.push({
         kind: 'review', id: r.id, created_at: r.created_at, rating: Number(r.rating),
-        comment: r.comment, author: profileMap.get(r.user_id) || 'Usuário',
+        comment: r.comment, author: profileMap.get(r.user_id) || 'Usuário', authorId: r.user_id,
         product: productMap.get(r.product_id) || 'Jogo', productId: r.product_id,
       }));
       ads?.forEach(a => items.push({
         kind: 'ad', id: a.id, created_at: a.created_at, title: a.title, price: Number(a.price),
-        image: photoMap.get(a.id) || null, seller: profileMap.get(a.seller_id) || 'Vendedor',
+        image: photoMap.get(a.id) || null, seller: profileMap.get(a.seller_id) || 'Vendedor', authorId: a.seller_id,
       }));
 
       items.sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
