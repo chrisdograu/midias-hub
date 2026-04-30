@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, forwardRef } from 'react';
 
 export function MobileBadge({ children, tone = 'primary' }: { children: ReactNode; tone?: 'primary' | 'accent' | 'success' | 'warning' | 'muted' | 'price' }) {
   const tones: Record<string, string> = {
