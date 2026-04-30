@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Loader2, Save, Sun, Moon, Bell, Lock, ShieldCheck, Eye, EyeOff } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Loader2, Save, Sun, Moon, Bell, Lock, ShieldCheck, Eye, EyeOff, Camera, User } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
@@ -10,6 +10,9 @@ export default function MConfig() {
   const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [loading, setLoading] = useState(true);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const avatarRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({
     display_name: '', username: '', bio: '', phone: '', cpf: '',
     push_notifications: true, email_notifications: false, is_private: false,
