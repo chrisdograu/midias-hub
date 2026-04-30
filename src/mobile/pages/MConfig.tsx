@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Loader2, Save, Sun, Moon, Bell, Lock, ShieldCheck, Eye, EyeOff } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Loader2, Save, Sun, Moon, Bell, Lock, ShieldCheck, Eye, EyeOff, Camera, User } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
@@ -10,6 +10,9 @@ export default function MConfig() {
   const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [loading, setLoading] = useState(true);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const avatarRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({
     display_name: '', username: '', bio: '', phone: '', cpf: '',
     push_notifications: true, email_notifications: false, is_private: false,
@@ -25,16 +28,34 @@ export default function MConfig() {
         supabase.from('profiles').select('*').eq('id', user.id).maybeSingle(),
         supabase.from('certificados').select('status').eq('user_id', user.id).order('created_at', { ascending: false }).limit(1),
       ]);
-      if (p) setForm({
-        display_name: p.display_name || '', username: p.username || '', bio: p.bio || '',
-        phone: p.phone || '', cpf: p.cpf || '',
-        push_notifications: p.push_notifications, email_notifications: p.email_notifications, is_private: p.is_private,
-      });
+      if (p) {
+        setForm({
+          display_name: p.display_name || '', username: p.username || '', bio: p.bio || '',
+          phone: p.phone || '', cpf: p.cpf || '',
+          push_notifications: p.push_notifications, email_notifications: p.email_notifications, is_private: p.is_private,
+        });
+        setAvatarUrl(p.avatar_url || null);
+      }
       const last = c?.[0]?.status;
       setHasCert(last === 'ativo' ? 'active' : last === 'pendente' ? 'pending' : 'none');
       setLoading(false);
     })();
   }, [user]);
+
+  const uploadAvatar = async (file: File) => {
+    if (!user) return;
+    if (file.size > 3 * 1024 * 1024) { toast.error('Imagem deve ter no máximo 3MB'); return; }
+    setUploadingAvatar(true);
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+    const path = `${user.id}/avatar-${Date.now()}.${ext}`;
+    const { error: upErr } = await supabase.storage.from('avatars').upload(path, file, { upsert: true });
+    if (upErr) { toast.error('Erro ao enviar imagem'); setUploadingAvatar(false); return; }
+    const { data: pub } = supabase.storage.from('avatars').getPublicUrl(path);
+    const { error } = await supabase.from('profiles').update({ avatar_url: pub.publicUrl }).eq('id', user.id);
+    if (error) toast.error('Erro ao salvar avatar');
+    else { setAvatarUrl(pub.publicUrl); toast.success('Foto atualizada ✨'); }
+    setUploadingAvatar(false);
+  };
 
   const save = async () => {
     if (!user) return;
@@ -60,6 +81,23 @@ export default function MConfig() {
   return (
     <div className="px-4 py-5 space-y-5">
       <h1 className="font-display text-xl font-bold gradient-text">Configurações</h1>
+
+      <div className="flex flex-col items-center gap-3 py-2">
+        <div className="relative">
+          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-accent overflow-hidden flex items-center justify-center text-primary-foreground font-bold text-2xl ring-2 ring-primary/40">
+            {avatarUrl ? <img src={avatarUrl} alt="" className="w-full h-full object-cover" /> : (form.display_name?.[0]?.toUpperCase() || <User className="h-10 w-10" />)}
+          </div>
+          <button
+            onClick={() => avatarRef.current?.click()}
+            disabled={uploadingAvatar}
+            className="absolute -bottom-1 -right-1 w-9 h-9 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg disabled:opacity-50"
+          >
+            {uploadingAvatar ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
+          </button>
+          <input ref={avatarRef} type="file" accept="image/*" hidden onChange={e => e.target.files?.[0] && uploadAvatar(e.target.files[0])} />
+        </div>
+        <p className="text-[11px] text-muted-foreground">Toque na câmera para mudar a foto</p>
+      </div>
 
       <Section title="👤 Conta">
         <Field label="Nome de exibição" value={form.display_name} onChange={v => setForm({ ...form, display_name: v })} />

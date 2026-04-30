@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { MobileBadge } from '@/mobile/lib/badge';
 import { HalfStarDisplay } from '@/components/HalfStarRating';
+import { useFollow } from '@/mobile/lib/useFollow';
 import { toast } from 'sonner';
 
 interface Ad {
@@ -28,6 +29,7 @@ export default function MMarketplaceItem() {
   const [loading, setLoading] = useState(true);
   const [reportOpen, setReportOpen] = useState(false);
   const [reportReason, setReportReason] = useState('');
+  const { isFollowing, loading: followLoading, toggle: toggleFollow } = useFollow(seller?.id);
 
   useEffect(() => {
     if (!id) return;
@@ -139,19 +141,29 @@ export default function MMarketplaceItem() {
         )}
 
         {seller && (
-          <Link to={`/m/perfil/${seller.id}`} className="glass rounded-xl p-3 flex items-center gap-3 hover:border-primary/40 transition-colors">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent overflow-hidden flex items-center justify-center text-primary-foreground font-bold">
-              {seller.avatar_url ? <img src={seller.avatar_url} alt="" className="w-full h-full object-cover" /> : seller.display_name?.[0]?.toUpperCase() || '?'}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-foreground truncate">{seller.display_name || 'Vendedor'}</p>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <HalfStarDisplay rating={seller.rating} size={11} />
-                <span className="text-[11px] text-muted-foreground">{seller.rating > 0 ? seller.rating.toFixed(1) : 'sem avaliações'}</span>
+          <div className="glass rounded-xl p-3 flex items-center gap-3">
+            <Link to={`/m/perfil/${seller.id}`} className="flex items-center gap-3 flex-1 min-w-0">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent overflow-hidden flex items-center justify-center text-primary-foreground font-bold shrink-0">
+                {seller.avatar_url ? <img src={seller.avatar_url} alt="" className="w-full h-full object-cover" /> : seller.display_name?.[0]?.toUpperCase() || '?'}
               </div>
-            </div>
-            <span className="text-xs text-primary font-semibold">Ver perfil →</span>
-          </Link>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground truncate">{seller.display_name || 'Vendedor'}</p>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <HalfStarDisplay rating={seller.rating} size={11} />
+                  <span className="text-[11px] text-muted-foreground">{seller.rating > 0 ? seller.rating.toFixed(1) : 'sem avaliações'}</span>
+                </div>
+              </div>
+            </Link>
+            {user && user.id !== seller.id && (
+              <button
+                onClick={toggleFollow}
+                disabled={followLoading}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50 ${isFollowing ? 'bg-secondary text-foreground border border-border' : 'bg-gradient-to-r from-primary to-accent text-primary-foreground'}`}
+              >
+                {isFollowing ? 'Seguindo' : '+ Seguir'}
+              </button>
+            )}
+          </div>
         )}
 
         {user && user.id !== ad.seller_id && (

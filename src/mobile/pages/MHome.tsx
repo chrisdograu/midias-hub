@@ -10,12 +10,13 @@ import { HalfStarDisplay } from '@/components/HalfStarRating';
 import { getFollowingIds } from '@/mobile/lib/useFollow';
 
 type FeedItem =
-  | { kind: 'forum'; id: string; created_at: string; content: string; author: string; product: string; likes: number; replies: number }
-  | { kind: 'review'; id: string; created_at: string; rating: number; comment: string | null; author: string; product: string; productId: string }
-  | { kind: 'ad'; id: string; created_at: string; title: string; price: number; image: string | null; seller: string };
+  | { kind: 'forum'; id: string; created_at: string; content: string; author: string; authorId: string; product: string; likes: number; replies: number }
+  | { kind: 'review'; id: string; created_at: string; rating: number; comment: string | null; author: string; authorId: string; product: string; productId: string }
+  | { kind: 'ad'; id: string; created_at: string; title: string; price: number; image: string | null; seller: string; authorId: string };
 
 const FILTERS = [
   { id: 'all', label: 'Tudo' },
+  { id: 'following', label: '✨ Seguindo' },
   { id: 'forum', label: 'Fórum' },
   { id: 'review', label: 'Reviews' },
   { id: 'ad', label: 'Marketplace' },
@@ -23,10 +24,17 @@ const FILTERS = [
 type Filter = typeof FILTERS[number]['id'];
 
 export default function MHome() {
+  const { user } = useAuth();
   const [filter, setFilter] = useState<Filter>('all');
   const [topGames, setTopGames] = useState<{ id: string; title: string; image_url: string | null; rating: number | null }[]>([]);
   const [feed, setFeed] = useState<FeedItem[]>([]);
+  const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) { setFollowingIds(new Set()); return; }
+    getFollowingIds(user.id).then(ids => setFollowingIds(new Set(ids)));
+  }, [user?.id]);
 
   useEffect(() => {
     let cancel = false;
@@ -64,17 +72,18 @@ export default function MHome() {
       const items: FeedItem[] = [];
       posts?.forEach(p => items.push({
         kind: 'forum', id: p.id, created_at: p.created_at || '', content: p.content,
-        author: profileMap.get(p.user_id) || 'Usuário', product: productMap.get(p.product_id) || 'Jogo',
+        author: profileMap.get(p.user_id) || 'Usuário', authorId: p.user_id,
+        product: productMap.get(p.product_id) || 'Jogo',
         likes: p.likes_count, replies: replyCount.get(p.id) || 0,
       }));
       reviews?.forEach(r => items.push({
         kind: 'review', id: r.id, created_at: r.created_at, rating: Number(r.rating),
-        comment: r.comment, author: profileMap.get(r.user_id) || 'Usuário',
+        comment: r.comment, author: profileMap.get(r.user_id) || 'Usuário', authorId: r.user_id,
         product: productMap.get(r.product_id) || 'Jogo', productId: r.product_id,
       }));
       ads?.forEach(a => items.push({
         kind: 'ad', id: a.id, created_at: a.created_at, title: a.title, price: Number(a.price),
-        image: photoMap.get(a.id) || null, seller: profileMap.get(a.seller_id) || 'Vendedor',
+        image: photoMap.get(a.id) || null, seller: profileMap.get(a.seller_id) || 'Vendedor', authorId: a.seller_id,
       }));
 
       items.sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
@@ -88,7 +97,11 @@ export default function MHome() {
     return () => { cancel = true; };
   }, []);
 
-  const visible = feed.filter(i => filter === 'all' || i.kind === filter);
+  const visible = feed.filter(i => {
+    if (filter === 'all') return true;
+    if (filter === 'following') return followingIds.has(i.authorId);
+    return i.kind === filter;
+  });
 
   return (
     <div className="px-4 py-5 space-y-6">
@@ -147,7 +160,9 @@ export default function MHome() {
         {loading ? (
           <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
         ) : visible.length === 0 ? (
-          <p className="text-center py-10 text-sm text-muted-foreground">Nada por aqui ainda.</p>
+          <div className="text-center py-10 text-sm text-muted-foreground space-y-2">
+            <p>{filter === 'following' ? (followingIds.size === 0 ? 'Você ainda não segue ninguém. Visite perfis para seguir 👥' : 'Quem você segue não postou nada ainda.') : 'Nada por aqui ainda.'}</p>
+          </div>
         ) : (
           <div className="space-y-3">
             {visible.map(item => <FeedCard key={`${item.kind}-${item.id}`} item={item} />)}
