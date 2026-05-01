@@ -27,6 +27,7 @@ import MProfile from "./mobile/pages/MProfile";
 import MConfig from "./mobile/pages/MConfig";
 import MReview from "./mobile/pages/MReview";
 import MNotFound from "./mobile/pages/MNotFound";
+import NotFound from "./pages/NotFound";
 
 // Web pages — lazy
 const Catalogo = lazy(() => import("./pages/Catalogo"));
@@ -45,7 +46,6 @@ const Contato = lazy(() => import("./pages/Contato"));
 const TermosDeUso = lazy(() => import("./pages/TermosDeUso"));
 const PublicProfile = lazy(() => import("./pages/PublicProfile"));
 const CheckoutSucesso = lazy(() => import("./pages/CheckoutSucesso"));
-const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Desktop Backoffice — lazy
 import { DesktopAuthProvider } from "./hooks/useDesktopAuth";
