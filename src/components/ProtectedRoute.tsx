@@ -3,7 +3,13 @@ import { useAuth } from "@/hooks/useAuth";
 
 const DEV_BYPASS = false; // autenticação ativa
 
-export default function ProtectedRoute({ children }: { children: React.ReactNode }) {
+export default function ProtectedRoute({
+  children,
+  redirectTo = "/auth",
+}: {
+  children: React.ReactNode;
+  redirectTo?: string;
+}) {
   const { user, loading } = useAuth();
 
   if (DEV_BYPASS) return <>{children}</>;
@@ -16,6 +22,6 @@ export default function ProtectedRoute({ children }: { children: React.ReactNode
     );
   }
 
-  if (!user) return <Navigate to="/auth" replace />;
+  if (!user) return <Navigate to={redirectTo} replace />;
   return <>{children}</>;
 }
