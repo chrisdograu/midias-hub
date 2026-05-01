@@ -12,6 +12,21 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Loader2 } from "lucide-react";
 import Index from "./pages/Index";
+import MobileLayout from "./mobile/MobileLayout";
+import MAuth from "./mobile/pages/MAuth";
+import MHome from "./mobile/pages/MHome";
+import MMarketplace from "./mobile/pages/MMarketplace";
+import MMarketplaceItem from "./mobile/pages/MMarketplaceItem";
+import MNewAd from "./mobile/pages/MNewAd";
+import MForum from "./mobile/pages/MForum";
+import MForumGame from "./mobile/pages/MForumGame";
+import MForumPost from "./mobile/pages/MForumPost";
+import MChat from "./mobile/pages/MChat";
+import MChatThread from "./mobile/pages/MChatThread";
+import MProfile from "./mobile/pages/MProfile";
+import MConfig from "./mobile/pages/MConfig";
+import MReview from "./mobile/pages/MReview";
+import MNotFound from "./mobile/pages/MNotFound";
 
 // Web pages — lazy
 const Catalogo = lazy(() => import("./pages/Catalogo"));
@@ -56,23 +71,6 @@ const NotificacoesAdmin = lazy(() => import("./desktop/pages/NotificacoesAdmin")
 const ForumAdmin = lazy(() => import("./desktop/pages/ForumAdmin"));
 const Configuracoes = lazy(() => import("./desktop/pages/Configuracoes"));
 
-// Mobile PWA — lazy
-const MobileLayout = lazy(() => import("./mobile/MobileLayout"));
-const MAuth = lazy(() => import("./mobile/pages/MAuth"));
-const MHome = lazy(() => import("./mobile/pages/MHome"));
-const MMarketplace = lazy(() => import("./mobile/pages/MMarketplace"));
-const MMarketplaceItem = lazy(() => import("./mobile/pages/MMarketplaceItem"));
-const MNewAd = lazy(() => import("./mobile/pages/MNewAd"));
-const MForum = lazy(() => import("./mobile/pages/MForum"));
-const MForumGame = lazy(() => import("./mobile/pages/MForumGame"));
-const MForumPost = lazy(() => import("./mobile/pages/MForumPost"));
-const MChat = lazy(() => import("./mobile/pages/MChat"));
-const MChatThread = lazy(() => import("./mobile/pages/MChatThread"));
-const MProfile = lazy(() => import("./mobile/pages/MProfile"));
-const MConfig = lazy(() => import("./mobile/pages/MConfig"));
-const MReview = lazy(() => import("./mobile/pages/MReview"));
-const MNotFound = lazy(() => import("./mobile/pages/MNotFound"));
-
 const PageFallback = () => (
   <div className="min-h-[40vh] flex items-center justify-center">
     <Loader2 className="h-6 w-6 animate-spin text-primary" />
@@ -97,17 +95,17 @@ const App = () => (
               <Route path="/m" element={<MobileLayout />}>
                 <Route index element={<MHome />} />
                 <Route path="marketplace" element={<MMarketplace />} />
-                <Route path="marketplace/novo" element={<ProtectedRoute><MNewAd /></ProtectedRoute>} />
+                <Route path="marketplace/novo" element={<ProtectedRoute redirectTo="/m/auth"><MNewAd /></ProtectedRoute>} />
                 <Route path="marketplace/:id" element={<MMarketplaceItem />} />
                 <Route path="forum" element={<MForum />} />
                 <Route path="forum/:gameId" element={<MForumGame />} />
                 <Route path="forum/post/:postId" element={<MForumPost />} />
                 <Route path="review/:productId" element={<MReview />} />
-                <Route path="chat" element={<ProtectedRoute><MChat /></ProtectedRoute>} />
-                <Route path="chat/:conversationId" element={<ProtectedRoute><MChatThread /></ProtectedRoute>} />
-                <Route path="perfil" element={<ProtectedRoute><MProfile /></ProtectedRoute>} />
+                <Route path="chat" element={<ProtectedRoute redirectTo="/m/auth"><MChat /></ProtectedRoute>} />
+                <Route path="chat/:conversationId" element={<ProtectedRoute redirectTo="/m/auth"><MChatThread /></ProtectedRoute>} />
+                <Route path="perfil" element={<ProtectedRoute redirectTo="/m/auth"><MProfile /></ProtectedRoute>} />
                 <Route path="perfil/:userId" element={<MProfile />} />
-                <Route path="config" element={<ProtectedRoute><MConfig /></ProtectedRoute>} />
+                <Route path="config" element={<ProtectedRoute redirectTo="/m/auth"><MConfig /></ProtectedRoute>} />
                 <Route path="*" element={<MNotFound />} />
               </Route>
 
