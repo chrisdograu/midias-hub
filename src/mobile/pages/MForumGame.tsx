@@ -15,7 +15,7 @@ interface Post { id: string; content: string; created_at: string; likes_count: n
 interface Review { id: string; rating: number; comment: string | null; created_at: string; user_id: string; author: string; likes: number; dislikes: number; myReaction: 'like' | 'dislike' | null }
 
 export default function MForumGame() {
-  const { id } = useParams();
+  const { gameId } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [game, setGame] = useState<Game | null>(null);
@@ -32,19 +32,25 @@ export default function MForumGame() {
 
   // 1) Carrega o jogo PRIMEIRO (rápido, render imediato)
   useEffect(() => {
-    if (!id) return;
+    if (!gameId) {
+      setGameLoading(false);
+      return;
+    }
     setGameLoading(true);
-    supabase.from('produtos').select('id, title, image_url, description, rating').eq('id', id).maybeSingle()
+    supabase.from('produtos').select('id, title, image_url, description, rating').eq('id', gameId).maybeSingle()
       .then(({ data }) => { setGame(data as Game); setGameLoading(false); });
-  }, [id]);
+  }, [gameId]);
 
   // 2) Carrega feed em paralelo, sem bloquear a renderização do header
   const loadFeed = async () => {
-    if (!id) return;
+    if (!gameId) {
+      setFeedLoading(false);
+      return;
+    }
     setFeedLoading(true);
     const [{ data: ps }, { data: rs }] = await Promise.all([
-      supabase.from('forum_posts').select('*').eq('product_id', id).order('created_at', { ascending: false }).limit(50),
-      supabase.from('avaliacoes').select('*').eq('product_id', id).eq('is_approved', true).order('created_at', { ascending: false }).limit(50),
+      supabase.from('forum_posts').select('id, content, created_at, likes_count, user_id, product_id').eq('product_id', gameId).order('created_at', { ascending: false }).limit(50),
+      supabase.from('avaliacoes').select('id, rating, comment, created_at, user_id').eq('product_id', gameId).eq('is_approved', true).order('created_at', { ascending: false }).limit(50),
     ]);
     const userIds = new Set<string>();
     ps?.forEach(p => userIds.add(p.user_id));
@@ -94,18 +100,18 @@ export default function MForumGame() {
     setFeedLoading(false);
   };
 
-  useEffect(() => { loadFeed(); }, [id, user?.id]);
+  useEffect(() => { loadFeed(); }, [gameId, user?.id]);
 
   const submitPost = async () => {
-    if (!user || !postText.trim() || !id) return;
-    const { error } = await supabase.from('forum_posts').insert({ user_id: user.id, product_id: id, content: postText.trim().slice(0, 2000) });
+    if (!user || !postText.trim() || !gameId) return;
+    const { error } = await supabase.from('forum_posts').insert({ user_id: user.id, product_id: gameId, content: postText.trim().slice(0, 2000) });
     if (error) { toast.error(error.message); return; }
     toast.success('Post criado'); setPostOpen(false); setPostText(''); loadFeed();
   };
   const submitReview = async () => {
-    if (!user || !id) return;
+    if (!user || !gameId) return;
     const existing = reviews.find(r => r.user_id === user.id);
-    const payload = { user_id: user.id, product_id: id, rating: reviewRating, comment: reviewText.trim().slice(0, 1000) || null };
+    const payload = { user_id: user.id, product_id: gameId, rating: reviewRating, comment: reviewText.trim().slice(0, 1000) || null };
     const { error } = existing
       ? await supabase.from('avaliacoes').update(payload).eq('id', existing.id)
       : await supabase.from('avaliacoes').insert(payload);

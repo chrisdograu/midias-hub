@@ -17,7 +17,7 @@ interface Other { id: string; display_name: string | null; avatar_url: string | 
 interface AdInfo { id: string; title: string; price: number; ad_type: string; accepts_counteroffer: boolean; desired_item: string | null }
 
 export default function MChatThread() {
-  const { id } = useParams();
+  const { conversationId } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [conv, setConv] = useState<Conv | null>(null);
@@ -35,14 +35,17 @@ export default function MChatThread() {
   const endRef = useRef<HTMLDivElement>(null);
 
   const load = async () => {
-    if (!id || !user) return;
-    const { data: c } = await supabase.from('conversas').select('*').eq('id', id).maybeSingle();
+    if (!conversationId || !user) {
+      setLoading(false);
+      return;
+    }
+    const { data: c } = await supabase.from('conversas').select('id, participant_1, participant_2, anuncio_id').eq('id', conversationId).maybeSingle();
     if (!c) { setLoading(false); return; }
     const otherId = c.participant_1 === user.id ? c.participant_2 : c.participant_1;
     const [{ data: p }, { data: a }, { data: m }] = await Promise.all([
       supabase.from('profiles').select('id, display_name, avatar_url').eq('id', otherId).maybeSingle(),
       c.anuncio_id ? supabase.from('anuncios').select('id, title, price, ad_type, accepts_counteroffer, desired_item').eq('id', c.anuncio_id).maybeSingle() : Promise.resolve({ data: null }),
-      supabase.from('mensagens').select('*').or(`and(sender_id.eq.${user.id},receiver_id.eq.${otherId}),and(sender_id.eq.${otherId},receiver_id.eq.${user.id})`).order('created_at'),
+      supabase.from('mensagens').select('id, sender_id, receiver_id, content, created_at, is_read, message_type, payload, image_url').or(`and(sender_id.eq.${user.id},receiver_id.eq.${otherId}),and(sender_id.eq.${otherId},receiver_id.eq.${user.id})`).order('created_at'),
     ]);
     setConv(c as Conv);
     setOther(p as Other);
@@ -52,15 +55,38 @@ export default function MChatThread() {
     await supabase.from('mensagens').update({ is_read: true }).eq('receiver_id', user.id).eq('sender_id', otherId).eq('is_read', false);
   };
 
+  const upsertMessage = (message: Msg) => {
+    setMsgs((current) => {
+      const next = [...current];
+      const index = next.findIndex((item) => item.id === message.id);
+      if (index >= 0) next[index] = message;
+      else next.push(message);
+      next.sort((a, b) => +new Date(a.created_at) - +new Date(b.created_at));
+      return next;
+    });
+  };
+
   useEffect(() => {
     load();
-    if (!id || !user) return;
-    const ch = supabase.channel(`thread-${id}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensagens' }, load)
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'mensagens' }, load)
+    if (!conversationId || !user) return;
+    const participantIds = conv ? [conv.participant_1, conv.participant_2].sort() : null;
+    if (!participantIds) return;
+    const ch = supabase.channel(`thread-${conversationId}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensagens' }, (payload) => {
+        const message = payload.new as Msg;
+        const messageParticipants = [message.sender_id, message.receiver_id].sort();
+        if (participantIds[0] !== messageParticipants[0] || participantIds[1] !== messageParticipants[1]) return;
+        upsertMessage(message);
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'mensagens' }, (payload) => {
+        const message = payload.new as Msg;
+        const messageParticipants = [message.sender_id, message.receiver_id].sort();
+        if (participantIds[0] !== messageParticipants[0] || participantIds[1] !== messageParticipants[1]) return;
+        upsertMessage(message);
+      })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, [id, user]);
+  }, [conversationId, user, conv?.participant_1, conv?.participant_2]);
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [msgs.length]);
 
@@ -74,7 +100,20 @@ export default function MChatThread() {
       anuncio_id: conv?.anuncio_id || null, message_type: 'text',
     });
     if (error) toast.error('Erro ao enviar');
-    else if (conv) await supabase.from('conversas').update({ last_message: content, last_message_at: new Date().toISOString() }).eq('id', conv.id);
+    else {
+      setMsgs((current) => [...current, {
+        id: `optimistic-${Date.now()}`,
+        sender_id: user.id,
+        receiver_id: other.id,
+        content,
+        created_at: new Date().toISOString(),
+        is_read: false,
+        message_type: 'text',
+        payload: null,
+        image_url: null,
+      }]);
+      if (conv) await supabase.from('conversas').update({ last_message: content, last_message_at: new Date().toISOString() }).eq('id', conv.id);
+    }
     setSending(false);
   };
 

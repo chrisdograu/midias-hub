@@ -21,21 +21,13 @@ export default function MChat() {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
 
-  const load = async () => {
-    if (!user) return;
-    setLoading(true);
-    const { data: convs } = await supabase
-      .from('conversas').select('*')
-      .or(`participant_1.eq.${user.id},participant_2.eq.${user.id}`)
-      .order('last_message_at', { ascending: false, nullsFirst: false });
-    if (!convs) { setLoading(false); return; }
-
-    const otherIds = convs.map(c => c.participant_1 === user.id ? c.participant_2 : c.participant_1);
+  const applyConversationState = async (convs: any[]) => {
+    const otherIds = convs.map(c => c.participant_1 === user?.id ? c.participant_2 : c.participant_1);
     const adIds = convs.map(c => c.anuncio_id).filter(Boolean) as string[];
     const [{ data: profiles }, { data: ads }, { data: unread }] = await Promise.all([
       otherIds.length ? supabase.from('profiles').select('id, display_name, avatar_url').in('id', otherIds) : Promise.resolve({ data: [] }),
       adIds.length ? supabase.from('anuncios').select('id, title').in('id', adIds) : Promise.resolve({ data: [] }),
-      supabase.from('mensagens').select('sender_id').eq('receiver_id', user.id).eq('is_read', false),
+      user ? supabase.from('mensagens').select('sender_id').eq('receiver_id', user.id).eq('is_read', false) : Promise.resolve({ data: [] }),
     ]);
     const profileMap = new Map((profiles || []).map(p => [p.id, p]));
     const adMap = new Map((ads || []).map(a => [a.id, a.title]));
@@ -43,16 +35,27 @@ export default function MChat() {
     (unread || []).forEach(m => unreadMap.set(m.sender_id, (unreadMap.get(m.sender_id) || 0) + 1));
 
     setConversas(convs.map(c => {
-      const otherId = c.participant_1 === user.id ? c.participant_2 : c.participant_1;
+      const otherId = c.participant_1 === user?.id ? c.participant_2 : c.participant_1;
       const p = profileMap.get(otherId);
       return {
         id: c.id, participant_1: c.participant_1, participant_2: c.participant_2,
         anuncio_id: c.anuncio_id, last_message: c.last_message, last_message_at: c.last_message_at,
-        status: (c as any).status || 'accepted',
+        status: c.status || 'accepted',
         other_id: otherId, other_name: p?.display_name || 'Usuário', other_avatar: p?.avatar_url || null,
         unread: unreadMap.get(otherId) || 0, ad_title: c.anuncio_id ? adMap.get(c.anuncio_id) || null : null,
       };
     }));
+  };
+
+  const load = async () => {
+    if (!user) return;
+    setLoading(true);
+    const { data: convs } = await supabase
+      .from('conversas').select('id, participant_1, participant_2, anuncio_id, last_message, last_message_at, status')
+      .or(`participant_1.eq.${user.id},participant_2.eq.${user.id}`)
+      .order('last_message_at', { ascending: false, nullsFirst: false });
+    if (!convs) { setLoading(false); return; }
+    await applyConversationState(convs as any[]);
     setLoading(false);
   };
 
@@ -60,8 +63,9 @@ export default function MChat() {
     load();
     if (!user) return;
     const ch = supabase.channel('chat-list')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'conversas' }, load)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensagens' }, load)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'conversas', filter: `participant_1=eq.${user.id}` }, load)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'conversas', filter: `participant_2=eq.${user.id}` }, load)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'mensagens', filter: `receiver_id=eq.${user.id}` }, load)
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [user]);
