@@ -45,24 +45,27 @@ export default function MForum() {
       const since = periodSince(period);
       const sinceISO = since ? since.toISOString() : '1970-01-01';
 
-      const [{ data: rawPosts }, { data: rawReviews }, { data: products }] = await Promise.all([
-        supabase.from('forum_posts').select('*').gte('created_at', sinceISO).limit(100),
+      const [{ data: rawPosts }, { data: rawReviews }] = await Promise.all([
+        supabase.from('forum_posts').select('id, content, created_at, likes_count, user_id, product_id').gte('created_at', sinceISO).limit(100),
         supabase.from('avaliacoes').select('id, rating, comment, created_at, user_id, product_id').eq('is_approved', true).gte('created_at', sinceISO).limit(100),
-        supabase.from('produtos').select('id, title, image_url').eq('is_active', true),
       ]);
 
-      const productMap = new Map((products || []).map(p => [p.id, p]));
       const userIds = new Set<string>();
+      const productIds = new Set<string>();
       rawPosts?.forEach(p => userIds.add(p.user_id));
       rawReviews?.forEach(r => userIds.add(r.user_id));
+      rawPosts?.forEach(p => productIds.add(p.product_id));
+      rawReviews?.forEach(r => productIds.add(r.product_id));
       const postIds = rawPosts?.map(p => p.id) || [];
       const reviewIds = rawReviews?.map(r => r.id) || [];
 
-      const [{ data: profiles }, { data: replies }, { data: likes }] = await Promise.all([
+      const [{ data: profiles }, { data: replies }, { data: likes }, { data: products }] = await Promise.all([
         userIds.size ? supabase.from('profiles').select('id, display_name').in('id', [...userIds]) : Promise.resolve({ data: [] }),
         postIds.length ? supabase.from('forum_replies').select('post_id').in('post_id', postIds) : Promise.resolve({ data: [] }),
         reviewIds.length ? supabase.from('review_likes').select('review_id').in('review_id', reviewIds) : Promise.resolve({ data: [] }),
+        productIds.size ? supabase.from('produtos').select('id, title, image_url').in('id', [...productIds]) : Promise.resolve({ data: [] }),
       ]);
+      const productMap = new Map((products || []).map(p => [p.id, p]));
       const profileMap = new Map((profiles || []).map(p => [p.id, p.display_name || 'Usuário']));
       const replyCount = new Map<string, number>();
       (replies || []).forEach(r => replyCount.set(r.post_id, (replyCount.get(r.post_id) || 0) + 1));
@@ -79,8 +82,16 @@ export default function MForum() {
           return { id, title: p?.title || 'Jogo', image_url: p?.image_url || null, postCount: c };
         });
       // Fallback: se não houver posts no período, lista jogos por rating
-      if (top.length === 0 && products?.length) {
-        top.push(...products.slice(0, 10).map(p => ({ id: p.id, title: p.title, image_url: p.image_url, postCount: 0 })));
+      if (top.length === 0) {
+        const { data: fallbackProducts } = await supabase
+          .from('produtos')
+          .select('id, title, image_url')
+          .eq('is_active', true)
+          .order('rating', { ascending: false })
+          .limit(10);
+        if (fallbackProducts?.length) {
+          top.push(...fallbackProducts.map(p => ({ id: p.id, title: p.title, image_url: p.image_url, postCount: 0 })));
+        }
       }
 
       const postsList: ForumPost[] = (rawPosts || []).map(p => ({
