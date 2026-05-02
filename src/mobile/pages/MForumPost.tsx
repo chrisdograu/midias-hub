@@ -14,7 +14,7 @@ interface Reply {
 interface Post { id: string; content: string; created_at: string; likes_count: number; user_id: string; product_id: string; author: string; product: string; iLiked: boolean }
 
 export default function MForumPost() {
-  const { id } = useParams();
+  const { postId } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [post, setPost] = useState<Post | null>(null);
@@ -26,17 +26,20 @@ export default function MForumPost() {
   const [submitting, setSubmitting] = useState(false);
 
   const load = async () => {
-    if (!id) return;
+    if (!postId) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
-    const { data: p } = await supabase.from('forum_posts').select('*').eq('id', id).maybeSingle();
+    const { data: p } = await supabase.from('forum_posts').select('id, content, created_at, likes_count, user_id, product_id').eq('id', postId).maybeSingle();
     if (!p) { setLoading(false); return; }
-    const { data: rs } = await supabase.from('forum_replies').select('*').eq('post_id', id).order('created_at');
+    const { data: rs } = await supabase.from('forum_replies').select('id, content, created_at, user_id, likes_count').eq('post_id', postId).order('created_at');
     const userIds = new Set<string>([p.user_id]); rs?.forEach((r: any) => userIds.add(r.user_id));
     const replyIds = (rs || []).map((r: any) => r.id);
     const [{ data: profiles }, { data: prod }, { data: postLikes }, { data: replyLikes }] = await Promise.all([
       supabase.from('profiles').select('id, display_name').in('id', [...userIds]),
       supabase.from('produtos').select('title').eq('id', p.product_id).maybeSingle(),
-      user ? supabase.from('forum_post_likes').select('post_id').eq('post_id', id).eq('user_id', user.id) : Promise.resolve({ data: [] }),
+      user ? supabase.from('forum_post_likes').select('post_id').eq('post_id', postId).eq('user_id', user.id) : Promise.resolve({ data: [] }),
       user && replyIds.length ? supabase.from('forum_reply_likes').select('reply_id').in('reply_id', replyIds).eq('user_id', user.id) : Promise.resolve({ data: [] }),
     ]);
     const pm = new Map((profiles || []).map((x: any) => [x.id, x.display_name || 'Usuário']));
@@ -57,15 +60,15 @@ export default function MForumPost() {
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, [id, user?.id]);
+  useEffect(() => { load(); }, [postId, user?.id]);
 
   const submitReply = async () => {
     if (!user) { toast.error('Entre para comentar'); navigate('/m/auth'); return; }
-    if (!text.trim() || !id || submitting) return;
+    if (!text.trim() || !postId || submitting) return;
     setSubmitting(true);
     const prefix = replyTo ? `@${replyTo.user} ` : '';
     const content = (prefix + text.trim()).slice(0, 1000);
-    const { error } = await supabase.from('forum_replies').insert({ user_id: user.id, post_id: id, content });
+    const { error } = await supabase.from('forum_replies').insert({ user_id: user.id, post_id: postId, content });
     setSubmitting(false);
     if (error) { toast.error(error.message); return; }
     toast.success('Comentário publicado');
