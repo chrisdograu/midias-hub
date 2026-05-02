@@ -55,15 +55,38 @@ export default function MChatThread() {
     await supabase.from('mensagens').update({ is_read: true }).eq('receiver_id', user.id).eq('sender_id', otherId).eq('is_read', false);
   };
 
+  const upsertMessage = (message: Msg) => {
+    setMsgs((current) => {
+      const next = [...current];
+      const index = next.findIndex((item) => item.id === message.id);
+      if (index >= 0) next[index] = message;
+      else next.push(message);
+      next.sort((a, b) => +new Date(a.created_at) - +new Date(b.created_at));
+      return next;
+    });
+  };
+
   useEffect(() => {
     load();
     if (!conversationId || !user) return;
+    const participantIds = conv ? [conv.participant_1, conv.participant_2].sort() : null;
+    if (!participantIds) return;
     const ch = supabase.channel(`thread-${conversationId}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensagens', filter: `anuncio_id=eq.${conv?.anuncio_id ?? '00000000-0000-0000-0000-000000000000'}` }, load)
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'mensagens', filter: `receiver_id=eq.${user.id}` }, load)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensagens' }, (payload) => {
+        const message = payload.new as Msg;
+        const messageParticipants = [message.sender_id, message.receiver_id].sort();
+        if (participantIds[0] !== messageParticipants[0] || participantIds[1] !== messageParticipants[1]) return;
+        upsertMessage(message);
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'mensagens' }, (payload) => {
+        const message = payload.new as Msg;
+        const messageParticipants = [message.sender_id, message.receiver_id].sort();
+        if (participantIds[0] !== messageParticipants[0] || participantIds[1] !== messageParticipants[1]) return;
+        upsertMessage(message);
+      })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, [conversationId, user, conv?.anuncio_id]);
+  }, [conversationId, user, conv?.participant_1, conv?.participant_2]);
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [msgs.length]);
 
@@ -77,7 +100,20 @@ export default function MChatThread() {
       anuncio_id: conv?.anuncio_id || null, message_type: 'text',
     });
     if (error) toast.error('Erro ao enviar');
-    else if (conv) await supabase.from('conversas').update({ last_message: content, last_message_at: new Date().toISOString() }).eq('id', conv.id);
+    else {
+      setMsgs((current) => [...current, {
+        id: `optimistic-${Date.now()}`,
+        sender_id: user.id,
+        receiver_id: other.id,
+        content,
+        created_at: new Date().toISOString(),
+        is_read: false,
+        message_type: 'text',
+        payload: null,
+        image_url: null,
+      }]);
+      if (conv) await supabase.from('conversas').update({ last_message: content, last_message_at: new Date().toISOString() }).eq('id', conv.id);
+    }
     setSending(false);
   };
 
