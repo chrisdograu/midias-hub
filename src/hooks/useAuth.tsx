@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, FC, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, FC, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { User, Session } from '@supabase/supabase-js';
 
@@ -21,22 +21,25 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<{ display_name: string | null; avatar_url: string | null; banned_until: string | null } | null>(null);
+  const loadedProfileFor = useRef<string | null>(null);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        setTimeout(() => fetchProfile(session.user.id), 0);
+        void fetchProfile(session.user.id);
       } else {
+        loadedProfileFor.current = null;
         setProfile(null);
       }
+      setLoading(false);
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      if (session?.user) fetchProfile(session.user.id);
+      if (session?.user) void fetchProfile(session.user.id);
       setLoading(false);
     });
 
@@ -44,6 +47,8 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
   }, []);
 
   const fetchProfile = async (userId: string) => {
+    if (loadedProfileFor.current === userId) return;
+    loadedProfileFor.current = userId;
     const { data } = await supabase.from('profiles').select('display_name, avatar_url, banned_until').eq('id', userId).single();
     if (data) setProfile(data);
   };
@@ -67,6 +72,7 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    loadedProfileFor.current = null;
     setUser(null);
     setSession(null);
     setProfile(null);
