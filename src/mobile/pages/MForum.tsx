@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { MobileChip, MForumTag, MobileBadge } from '@/mobile/lib/badge';
 import { timeAgo, periodSince, type Period } from '@/mobile/lib/time';
 import { HalfStarDisplay } from '@/components/HalfStarRating';
+import { useDebounce } from '@/hooks/useDebounce';
 
 type Sort = 'popular' | 'recent' | 'commented';
 type Tab = 'posts' | 'reviews';
