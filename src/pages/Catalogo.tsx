@@ -25,9 +25,11 @@ export default function Catalogo() {
 
   const categoryOptions = dbCategories.length > 1 ? dbCategories : ['Todos'];
 
+  const debouncedQuery = useDebounce(query, 200);
   const filtered = useMemo(() => {
+    const q = debouncedQuery.trim().toLowerCase();
     let result = games.filter(g => {
-      const matchQuery = !query || g.title.toLowerCase().includes(query.toLowerCase()) || g.tags.some(t => t.toLowerCase().includes(query.toLowerCase()));
+      const matchQuery = !q || g.title.toLowerCase().includes(q) || g.tags.some(t => t.toLowerCase().includes(q));
       const matchCat = category === 'Todos' || g.category === category;
       const matchPlat = platform === 'Todos' || g.platform.includes(platform);
       return matchQuery && matchCat && matchPlat;
@@ -39,7 +41,7 @@ export default function Catalogo() {
       case 'rating': result.sort((a, b) => b.rating - a.rating); break;
     }
     return result;
-  }, [games, query, category, platform, sortBy]);
+  }, [games, debouncedQuery, category, platform, sortBy]);
 
   return (
     <div className="container mx-auto px-4 py-8">
