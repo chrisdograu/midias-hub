@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { MobileChip } from '@/mobile/lib/badge';
 import { timeAgo } from '@/mobile/lib/time';
+import { useDebounce } from '@/hooks/useDebounce';
 
 interface Ad {
   id: string; title: string; price: number; ad_type: string; condition: string;
@@ -84,9 +85,10 @@ export default function MMarketplace() {
     return () => { cancel = true; };
   }, []);
 
+  const debouncedQuery = useDebounce(query, 200);
   const filtered = useMemo(() => {
+    const q = debouncedQuery.trim().toLowerCase();
     let r = ads.filter(a => {
-      const q = query.trim().toLowerCase();
       if (q && !a.title.toLowerCase().includes(q)) return false;
       if (type !== 'all' && a.ad_type !== type) return false;
       if (onlyProtected && a.certificate_type === 'sem_certificado') return false;
@@ -99,7 +101,7 @@ export default function MMarketplace() {
     if (sort === 'price_asc') r = [...r].sort((a, b) => a.price - b.price);
     else if (sort === 'price_desc') r = [...r].sort((a, b) => b.price - a.price);
     return r;
-  }, [ads, query, type, onlyProtected, category, platform, condition, priceMax, sort]);
+  }, [ads, debouncedQuery, type, onlyProtected, category, platform, condition, priceMax, sort]);
 
   const activeFilters = (category !== 'all' ? 1 : 0) + (platform ? 1 : 0) + (condition !== 'all' ? 1 : 0) + (priceMax > 0 ? 1 : 0) + (sort !== 'recent' ? 1 : 0);
 

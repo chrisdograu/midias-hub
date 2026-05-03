@@ -1,6 +1,6 @@
 import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -161,13 +161,7 @@ const App = () => (
                   </div>
                 } />
               ))}
-              <Route path="*" element={
-                <div className="min-h-screen flex flex-col">
-                  <Header />
-                  <main className="flex-1"><NotFound /></main>
-                  <Footer />
-                </div>
-              } />
+              <Route path="*" element={<GlobalCatchAll />} />
             </Routes>
             </Suspense>
           </BrowserRouter>
@@ -177,5 +171,20 @@ const App = () => (
     </ThemeProvider>
   </QueryClientProvider>
 );
+
+function GlobalCatchAll() {
+  const location = useLocation();
+  // Se o path está sob /m, sempre manda pra home mobile (evita 404 confuso)
+  if (location.pathname.startsWith('/m')) {
+    return <Navigate to="/m" replace />;
+  }
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      <main className="flex-1"><NotFound /></main>
+      <Footer />
+    </div>
+  );
+}
 
 export default App;

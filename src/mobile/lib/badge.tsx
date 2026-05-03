@@ -1,20 +1,22 @@
 import { ReactNode, forwardRef } from 'react';
 
-export function MobileBadge({ children, tone = 'primary' }: { children: ReactNode; tone?: 'primary' | 'accent' | 'success' | 'warning' | 'muted' | 'price' }) {
-  const tones: Record<string, string> = {
-    primary: 'bg-primary/15 text-primary border-primary/30',
-    accent: 'bg-accent/15 text-accent border-accent/30',
-    success: 'bg-success/15 text-success border-success/30',
-    warning: 'bg-warning/15 text-warning border-warning/30',
-    muted: 'bg-muted text-muted-foreground border-border',
-    price: 'bg-price/15 text-price border-price/30',
-  };
-  return (
-    <span className={`inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border ${tones[tone]}`}>
+const TONES: Record<string, string> = {
+  primary: 'bg-primary/15 text-primary border-primary/30',
+  accent: 'bg-accent/15 text-accent border-accent/30',
+  success: 'bg-success/15 text-success border-success/30',
+  warning: 'bg-warning/15 text-warning border-warning/30',
+  muted: 'bg-muted text-muted-foreground border-border',
+  price: 'bg-price/15 text-price border-price/30',
+};
+
+export const MobileBadge = forwardRef<HTMLSpanElement, { children: ReactNode; tone?: 'primary' | 'accent' | 'success' | 'warning' | 'muted' | 'price' }>(
+  ({ children, tone = 'primary' }, ref) => (
+    <span ref={ref} className={`inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border ${TONES[tone]}`}>
       {children}
     </span>
-  );
-}
+  )
+);
+MobileBadge.displayName = 'MobileBadge';
 
 export function MobileChip({ active, children, onClick }: { active?: boolean; children: ReactNode; onClick?: () => void }) {
   return (
