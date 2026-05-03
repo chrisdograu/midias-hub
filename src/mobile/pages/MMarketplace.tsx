@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { MobileChip } from '@/mobile/lib/badge';
 import { timeAgo } from '@/mobile/lib/time';
+import { useDebounce } from '@/hooks/useDebounce';
 
 interface Ad {
   id: string; title: string; price: number; ad_type: string; condition: string;
