@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { platforms } from '@/lib/gameData';
 import { useProdutos } from '@/hooks/useProdutos';
 import { supabase } from '@/integrations/supabase/client';
+import { useDebounce } from '@/hooks/useDebounce';
 import GameCard from '@/components/GameCard';
 import { Search, Loader2 } from 'lucide-react';
 
