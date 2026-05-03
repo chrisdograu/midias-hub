@@ -115,23 +115,23 @@ export default function MForum() {
     return () => { cancel = true; };
   }, [period]);
 
+  const debouncedQuery = useDebounce(query, 200);
   const sortedPosts = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = debouncedQuery.trim().toLowerCase();
     let arr = posts.filter(p => !q || p.content.toLowerCase().includes(q) || p.product.toLowerCase().includes(q));
     if (sort === 'recent') arr = [...arr].sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
     else if (sort === 'commented') arr = [...arr].sort((a, b) => b.replies_count - a.replies_count);
     else arr = [...arr].sort((a, b) => (b.likes_count + b.replies_count * 2) - (a.likes_count + a.replies_count * 2));
     return arr.slice(0, 30);
-  }, [posts, sort, query]);
+  }, [posts, sort, debouncedQuery]);
 
   const sortedReviews = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = debouncedQuery.trim().toLowerCase();
     let arr = reviews.filter(r => !q || (r.comment || '').toLowerCase().includes(q) || r.product.toLowerCase().includes(q));
     if (sort === 'recent') arr = [...arr].sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
-    else if (sort === 'commented') arr = [...arr].sort((a, b) => b.likes - a.likes);
     else arr = [...arr].sort((a, b) => b.likes - a.likes);
     return arr.slice(0, 30);
-  }, [reviews, sort, query]);
+  }, [reviews, sort, debouncedQuery]);
 
   return (
     <div className="px-4 py-5 space-y-4">
