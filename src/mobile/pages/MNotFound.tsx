@@ -1,15 +1,25 @@
+import { useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Home } from 'lucide-react';
 
 export default function MNotFound() {
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Auto-recover: se a rota está sob /m mas não bateu em nada, manda pra home mobile depois de 1.5s
+  useEffect(() => {
+    if (location.pathname.startsWith('/m')) {
+      const t = setTimeout(() => navigate('/m', { replace: true }), 1500);
+      return () => clearTimeout(t);
+    }
+  }, [location.pathname, navigate]);
+
   return (
     <div className="px-6 py-12 flex flex-col items-center text-center space-y-5 min-h-[70vh] justify-center">
       <div className="text-6xl">🎮</div>
-      <h1 className="font-display text-3xl font-bold gradient-text">404</h1>
+      <h1 className="font-display text-3xl font-bold gradient-text">Redirecionando…</h1>
       <p className="text-sm text-muted-foreground max-w-xs">
-        Não encontramos a página <code className="text-foreground">{location.pathname}</code> no app mobile.
+        Não encontramos <code className="text-foreground">{location.pathname}</code>. Voltando ao início mobile.
       </p>
       <div className="flex flex-col gap-2 w-full max-w-xs">
         <button
