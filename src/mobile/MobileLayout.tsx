@@ -70,7 +70,21 @@ export default function MobileLayout() {
         className="fixed bottom-0 inset-x-0 z-40 backdrop-blur-xl bg-background/80 border-t border-border/60"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
-        <div className="grid grid-cols-6 max-w-screen-sm mx-auto">
+        <div className="relative grid grid-cols-6 max-w-screen-sm mx-auto">
+          {/* Indicador LED deslizante */}
+          {(() => {
+            const activeIdx = tabs.findIndex(t => t.end ? location.pathname === t.to : location.pathname.startsWith(t.to));
+            if (activeIdx < 0) return null;
+            return (
+              <motion.div
+                aria-hidden
+                className="pointer-events-none absolute top-0 h-[3px] rounded-b-full bg-gradient-to-r from-primary to-accent shadow-[0_0_10px_hsl(var(--primary)/0.9)]"
+                style={{ width: `calc(100% / 6 - 32px)`, left: 16 }}
+                animate={{ x: `calc((100% + 32px) * ${activeIdx})` }}
+                transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+              />
+            );
+          })()}
           {tabs.map(t => {
             const badge = t.badgeKey === 'chat' ? unreadChat : 0;
             return (
@@ -84,26 +98,15 @@ export default function MobileLayout() {
                   }`
                 }
               >
-                {({ isActive }) => (
-                  <>
-                    {isActive && (
-                      <motion.div
-                        layoutId="active-tab"
-                        className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[3px] rounded-b-full bg-gradient-to-r from-primary to-accent shadow-[0_0_8px_hsl(var(--primary))]"
-                        transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                      />
-                    )}
-                    <div className="relative">
-                      <t.icon className="h-5 w-5" />
-                      {badge > 0 && (
-                        <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">
-                          {badge > 9 ? '9+' : badge}
-                        </span>
-                      )}
-                    </div>
-                    <span>{t.label}</span>
-                  </>
-                )}
+                <div className="relative">
+                  <t.icon className="h-5 w-5" />
+                  {badge > 0 && (
+                    <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">
+                      {badge > 9 ? '9+' : badge}
+                    </span>
+                  )}
+                </div>
+                <span>{t.label}</span>
               </NavLink>
             );
           })}
