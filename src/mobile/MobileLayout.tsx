@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { Home, ShoppingBag, MessagesSquare, Send, User, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -14,7 +15,11 @@ const tabs = [
   { to: '/m/config', icon: Settings, label: 'Config' },
 ];
 
-export default function MobileLayout() {
+type MobileLayoutProps = {
+  children?: ReactNode;
+};
+
+export default function MobileLayout({ children }: MobileLayoutProps) {
   const { user } = useAuth();
   const location = useLocation();
   const [unreadChat, setUnreadChat] = useState(0);
@@ -60,7 +65,7 @@ export default function MobileLayout() {
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.18 }}
           >
-            <Outlet />
+            {children ?? <Outlet />}
           </motion.div>
         </AnimatePresence>
       </main>
