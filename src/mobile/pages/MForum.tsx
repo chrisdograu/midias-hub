@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Loader2, Search, MessagesSquare, TrendingUp, Clock, MessageSquare, ThumbsUp, Star } from 'lucide-react';
+import { Loader2, Search, MessagesSquare, TrendingUp, Clock, MessageSquare, ThumbsUp, Star, Flame, Newspaper, Gamepad2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { MobileChip, MForumTag, MobileBadge } from '@/mobile/lib/badge';
 import { timeAgo, periodSince, type Period } from '@/mobile/lib/time';
@@ -146,13 +146,13 @@ export default function MForum() {
 
       {/* Top 10 M/jogos */}
       <section>
-        <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">🔥 Top 10 M/jogos</h2>
+        <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5"><Flame className="h-3.5 w-3.5 text-primary" /> Top 10 M/jogos</h2>
         <div className="flex gap-2 overflow-x-auto scrollbar-thin -mx-4 px-4 pb-1">
           {topGames.length === 0 && <p className="text-sm text-muted-foreground">Nenhum jogo ativo ainda.</p>}
           {topGames.map((g, i) => (
             <Link key={g.id} to={`/m/forum/${g.id}`} className="shrink-0 w-28 glass rounded-xl overflow-hidden hover:border-accent/40 transition-colors">
               <div className="aspect-[3/4] bg-muted relative">
-                {g.image_url ? <img src={g.image_url} alt={g.title} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-muted-foreground">🎮</div>}
+                {g.image_url ? <img src={g.image_url} alt={g.title} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-muted-foreground"><Gamepad2 className="h-6 w-6" /></div>}
                 <div className="absolute top-1 left-1 bg-accent text-accent-foreground text-[9px] font-bold px-1.5 py-0.5 rounded">#{i + 1}</div>
               </div>
               <div className="p-1.5">
@@ -167,8 +167,8 @@ export default function MForum() {
       {/* Tab + sort + period */}
       <div className="space-y-2">
         <div className="flex p-1 bg-secondary/50 rounded-lg">
-          <button onClick={() => setTab('posts')} className={`flex-1 py-2 rounded-md text-xs font-semibold ${tab === 'posts' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>📰 Posts</button>
-          <button onClick={() => setTab('reviews')} className={`flex-1 py-2 rounded-md text-xs font-semibold ${tab === 'reviews' ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'}`}>⭐ Reviews</button>
+          <button onClick={() => setTab('posts')} className={`flex-1 py-2 rounded-md text-xs font-semibold inline-flex items-center justify-center gap-1.5 ${tab === 'posts' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}><Newspaper className="h-3.5 w-3.5" /> Posts</button>
+          <button onClick={() => setTab('reviews')} className={`flex-1 py-2 rounded-md text-xs font-semibold inline-flex items-center justify-center gap-1.5 ${tab === 'reviews' ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'}`}><Star className="h-3.5 w-3.5" /> Reviews</button>
         </div>
         <div className="flex gap-1.5 overflow-x-auto scrollbar-thin -mx-4 px-4">
           {SORTS.map(s => <MobileChip key={s.id} active={sort === s.id} onClick={() => setSort(s.id)}>{s.label}</MobileChip>)}

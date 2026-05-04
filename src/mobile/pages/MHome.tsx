@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Flame, ShoppingBag, MessagesSquare, Star, Loader2, ArrowRight } from 'lucide-react';
+import { Flame, ShoppingBag, MessagesSquare, Star, Loader2, ArrowRight, ThumbsUp, MessageSquare } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { MobileBadge, MobileChip, MForumTag } from '@/mobile/lib/badge';
@@ -16,7 +16,7 @@ type FeedItem =
 
 const FILTERS = [
   { id: 'all', label: 'Tudo' },
-  { id: 'following', label: '✨ Seguindo' },
+  { id: 'following', label: 'Seguindo' },
   { id: 'forum', label: 'Fórum' },
   { id: 'review', label: 'Reviews' },
   { id: 'ad', label: 'Marketplace' },
@@ -161,7 +161,7 @@ export default function MHome() {
           <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
         ) : visible.length === 0 ? (
           <div className="text-center py-10 text-sm text-muted-foreground space-y-2">
-            <p>{filter === 'following' ? (followingIds.size === 0 ? 'Você ainda não segue ninguém. Visite perfis para seguir 👥' : 'Quem você segue não postou nada ainda.') : 'Nada por aqui ainda.'}</p>
+            <p>{filter === 'following' ? (followingIds.size === 0 ? 'Você ainda não segue ninguém. Visite perfis para seguir.' : 'Quem você segue não postou nada ainda.') : 'Nada por aqui ainda.'}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -187,8 +187,8 @@ function FeedCard({ item }: { item: FeedItem }) {
         <p className="text-sm text-foreground line-clamp-3">{item.content}</p>
         <div className="flex items-center gap-3 mt-2 text-[11px] text-muted-foreground">
           <span>por <b className="text-foreground">{item.author}</b></span>
-          <span>👍 {item.likes}</span>
-          <span>💬 {item.replies}</span>
+          <span className="inline-flex items-center gap-1"><ThumbsUp className="h-3 w-3" />{item.likes}</span>
+          <span className="inline-flex items-center gap-1"><MessageSquare className="h-3 w-3" />{item.replies}</span>
         </div>
       </Link>
     );

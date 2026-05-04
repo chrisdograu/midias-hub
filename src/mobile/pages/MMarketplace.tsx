@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Plus, Loader2, ShieldCheck, ArrowLeftRight, ShoppingBag, SlidersHorizontal, X } from 'lucide-react';
+import { Search, Plus, Loader2, ShieldCheck, ArrowLeftRight, ShoppingBag, SlidersHorizontal, X, Disc3, HardDrive, Gamepad2, Joystick, Sparkles, Package, Clock, TrendingDown, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { MobileChip } from '@/mobile/lib/badge';
@@ -16,28 +16,28 @@ interface Ad {
 
 const TYPE_FILTERS = [
   { id: 'all', label: 'Tudo' },
-  { id: 'venda', label: '💰 Venda' },
-  { id: 'troca', label: '🔄 Troca' },
+  { id: 'venda', label: 'Venda' },
+  { id: 'troca', label: 'Troca' },
 ] as const;
 
 const CATEGORIES = [
   { id: 'all', label: 'Todas' },
-  { id: 'jogo_fisico', label: '💿 Físico' },
-  { id: 'jogo_digital', label: '💾 Digital' },
-  { id: 'acessorio', label: '🎮 Acessório' },
-  { id: 'console', label: '🕹️ Console' },
+  { id: 'jogo_fisico', label: 'Físico' },
+  { id: 'jogo_digital', label: 'Digital' },
+  { id: 'acessorio', label: 'Acessório' },
+  { id: 'console', label: 'Console' },
 ];
 
 const PLATFORMS = ['PS5','PS4','Xbox Series X','Xbox One','Switch','PC','Mobile'];
 const CONDITIONS = [
   { id: 'all', label: 'Qualquer' },
-  { id: 'novo', label: '✨ Novo' },
-  { id: 'usado', label: '📦 Usado' },
+  { id: 'novo', label: 'Novo' },
+  { id: 'usado', label: 'Usado' },
 ];
 const SORTS = [
-  { id: 'recent', label: '🕒 Recentes' },
-  { id: 'price_asc', label: '💸 Mais barato' },
-  { id: 'price_desc', label: '💎 Mais caro' },
+  { id: 'recent', label: 'Recentes' },
+  { id: 'price_asc', label: 'Mais barato' },
+  { id: 'price_desc', label: 'Mais caro' },
 ] as const;
 
 export default function MMarketplace() {
@@ -131,7 +131,9 @@ export default function MMarketplace() {
 
       <div className="flex gap-2 overflow-x-auto scrollbar-thin -mx-4 px-4">
         {TYPE_FILTERS.map(f => <MobileChip key={f.id} active={type === f.id} onClick={() => setType(f.id)}>{f.label}</MobileChip>)}
-        <MobileChip active={onlyProtected} onClick={() => setOnlyProtected(v => !v)}>🛡️ Protegidos</MobileChip>
+        <MobileChip active={onlyProtected} onClick={() => setOnlyProtected(v => !v)}>
+          <ShieldCheck className="h-3 w-3 mr-1 inline" /> Protegidos
+        </MobileChip>
       </div>
 
       {loading ? (
@@ -146,16 +148,18 @@ export default function MMarketplace() {
           {filtered.map((a, i) => (
             <motion.div key={a.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i * 0.02, 0.3) }}>
               <Link to={`/m/marketplace/${a.id}`} className="block glass rounded-xl overflow-hidden hover:border-primary/40 transition-colors">
-                <div className="aspect-square bg-muted relative">
+                <div className="aspect-[3/4] bg-muted relative overflow-hidden">
                   {a.image
                     ? <img src={a.image} alt={a.title} loading="lazy" className="w-full h-full object-cover" />
                     : <div className="w-full h-full flex items-center justify-center"><ShoppingBag className="h-8 w-8 text-muted-foreground" /></div>}
-                  <div className="absolute top-1.5 left-1.5 flex flex-col gap-1">
+                  {/* fade inferior só para legibilidade, sem cobrir arte central */}
+                  <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
+                  <div className="absolute top-1.5 left-1.5 right-1.5 flex flex-wrap gap-1">
                     {a.certificate_type !== 'sem_certificado' && (
-                      <span className="bg-success/90 text-white text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5"><ShieldCheck className="h-2.5 w-2.5" />Protegido</span>
+                      <span className="backdrop-blur-md bg-success/80 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-success/40 flex items-center gap-0.5"><ShieldCheck className="h-2.5 w-2.5" />Protegido</span>
                     )}
                     {a.ad_type === 'troca' && (
-                      <span className="bg-accent/90 text-white text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5"><ArrowLeftRight className="h-2.5 w-2.5" />Troca</span>
+                      <span className="backdrop-blur-md bg-accent/80 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-accent/40 flex items-center gap-0.5"><ArrowLeftRight className="h-2.5 w-2.5" />Troca</span>
                     )}
                   </div>
                 </div>
