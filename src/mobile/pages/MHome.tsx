@@ -161,7 +161,7 @@ export default function MHome() {
           <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
         ) : visible.length === 0 ? (
           <div className="text-center py-10 text-sm text-muted-foreground space-y-2">
-            <p>{filter === 'following' ? (followingIds.size === 0 ? 'Você ainda não segue ninguém. Visite perfis para seguir 👥' : 'Quem você segue não postou nada ainda.') : 'Nada por aqui ainda.'}</p>
+            <p>{filter === 'following' ? (followingIds.size === 0 ? 'Você ainda não segue ninguém. Visite perfis para seguir.' : 'Quem você segue não postou nada ainda.') : 'Nada por aqui ainda.'}</p>
           </div>
         ) : (
           <div className="space-y-3">
