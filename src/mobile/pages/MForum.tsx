@@ -167,8 +167,8 @@ export default function MForum() {
       {/* Tab + sort + period */}
       <div className="space-y-2">
         <div className="flex p-1 bg-secondary/50 rounded-lg">
-          <button onClick={() => setTab('posts')} className={`flex-1 py-2 rounded-md text-xs font-semibold ${tab === 'posts' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>📰 Posts</button>
-          <button onClick={() => setTab('reviews')} className={`flex-1 py-2 rounded-md text-xs font-semibold ${tab === 'reviews' ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'}`}>⭐ Reviews</button>
+          <button onClick={() => setTab('posts')} className={`flex-1 py-2 rounded-md text-xs font-semibold inline-flex items-center justify-center gap-1.5 ${tab === 'posts' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}><Newspaper className="h-3.5 w-3.5" /> Posts</button>
+          <button onClick={() => setTab('reviews')} className={`flex-1 py-2 rounded-md text-xs font-semibold inline-flex items-center justify-center gap-1.5 ${tab === 'reviews' ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'}`}><Star className="h-3.5 w-3.5" /> Reviews</button>
         </div>
         <div className="flex gap-1.5 overflow-x-auto scrollbar-thin -mx-4 px-4">
           {SORTS.map(s => <MobileChip key={s.id} active={sort === s.id} onClick={() => setSort(s.id)}>{s.label}</MobileChip>)}
