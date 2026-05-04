@@ -152,7 +152,7 @@ export default function MForum() {
           {topGames.map((g, i) => (
             <Link key={g.id} to={`/m/forum/${g.id}`} className="shrink-0 w-28 glass rounded-xl overflow-hidden hover:border-accent/40 transition-colors">
               <div className="aspect-[3/4] bg-muted relative">
-                {g.image_url ? <img src={g.image_url} alt={g.title} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-muted-foreground">🎮</div>}
+                {g.image_url ? <img src={g.image_url} alt={g.title} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-muted-foreground"><Gamepad2 className="h-6 w-6" /></div>}
                 <div className="absolute top-1 left-1 bg-accent text-accent-foreground text-[9px] font-bold px-1.5 py-0.5 rounded">#{i + 1}</div>
               </div>
               <div className="p-1.5">
