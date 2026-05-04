@@ -187,8 +187,8 @@ function FeedCard({ item }: { item: FeedItem }) {
         <p className="text-sm text-foreground line-clamp-3">{item.content}</p>
         <div className="flex items-center gap-3 mt-2 text-[11px] text-muted-foreground">
           <span>por <b className="text-foreground">{item.author}</b></span>
-          <span>👍 {item.likes}</span>
-          <span>💬 {item.replies}</span>
+          <span className="inline-flex items-center gap-1"><ThumbsUp className="h-3 w-3" />{item.likes}</span>
+          <span className="inline-flex items-center gap-1"><MessageSquare className="h-3 w-3" />{item.replies}</span>
         </div>
       </Link>
     );
