@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Plus, Loader2, ShieldCheck, ArrowLeftRight, ShoppingBag, SlidersHorizontal, X } from 'lucide-react';
+import { Search, Plus, Loader2, ShieldCheck, ArrowLeftRight, ShoppingBag, SlidersHorizontal, X, Disc3, HardDrive, Gamepad2, Joystick, Sparkles, Package, Clock, TrendingDown, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { MobileChip } from '@/mobile/lib/badge';
@@ -16,28 +16,28 @@ interface Ad {
 
 const TYPE_FILTERS = [
   { id: 'all', label: 'Tudo' },
-  { id: 'venda', label: '💰 Venda' },
-  { id: 'troca', label: '🔄 Troca' },
+  { id: 'venda', label: 'Venda' },
+  { id: 'troca', label: 'Troca' },
 ] as const;
 
 const CATEGORIES = [
   { id: 'all', label: 'Todas' },
-  { id: 'jogo_fisico', label: '💿 Físico' },
-  { id: 'jogo_digital', label: '💾 Digital' },
-  { id: 'acessorio', label: '🎮 Acessório' },
-  { id: 'console', label: '🕹️ Console' },
+  { id: 'jogo_fisico', label: 'Físico' },
+  { id: 'jogo_digital', label: 'Digital' },
+  { id: 'acessorio', label: 'Acessório' },
+  { id: 'console', label: 'Console' },
 ];
 
 const PLATFORMS = ['PS5','PS4','Xbox Series X','Xbox One','Switch','PC','Mobile'];
 const CONDITIONS = [
   { id: 'all', label: 'Qualquer' },
-  { id: 'novo', label: '✨ Novo' },
-  { id: 'usado', label: '📦 Usado' },
+  { id: 'novo', label: 'Novo' },
+  { id: 'usado', label: 'Usado' },
 ];
 const SORTS = [
-  { id: 'recent', label: '🕒 Recentes' },
-  { id: 'price_asc', label: '💸 Mais barato' },
-  { id: 'price_desc', label: '💎 Mais caro' },
+  { id: 'recent', label: 'Recentes' },
+  { id: 'price_asc', label: 'Mais barato' },
+  { id: 'price_desc', label: 'Mais caro' },
 ] as const;
 
 export default function MMarketplace() {
