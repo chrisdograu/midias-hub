@@ -78,11 +78,13 @@ export default function MobileLayout() {
             return (
               <motion.div
                 aria-hidden
-                className="pointer-events-none absolute top-0 h-[3px] rounded-b-full bg-gradient-to-r from-primary to-accent shadow-[0_0_10px_hsl(var(--primary)/0.9)]"
-                style={{ width: `calc(100% / 6 - 32px)`, left: 16 }}
-                animate={{ x: `calc((100% + 32px) * ${activeIdx})` }}
+                className="pointer-events-none absolute top-0 flex justify-center"
+                style={{ width: `${100 / 6}%` }}
+                animate={{ left: `${activeIdx * (100 / 6)}%` }}
                 transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-              />
+              >
+                <span className="block w-8 h-[3px] rounded-b-full bg-gradient-to-r from-primary to-accent shadow-[0_0_10px_hsl(var(--primary)/0.9)]" />
+              </motion.div>
             );
           })()}
           {tabs.map(t => {
