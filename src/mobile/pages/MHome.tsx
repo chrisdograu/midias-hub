@@ -16,7 +16,7 @@ type FeedItem =
 
 const FILTERS = [
   { id: 'all', label: 'Tudo' },
-  { id: 'following', label: '✨ Seguindo' },
+  { id: 'following', label: 'Seguindo' },
   { id: 'forum', label: 'Fórum' },
   { id: 'review', label: 'Reviews' },
   { id: 'ad', label: 'Marketplace' },
