@@ -89,7 +89,7 @@ export default function MobileLayout() {
                     {isActive && (
                       <motion.div
                         layoutId="active-tab"
-                        className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-0.5 rounded-full bg-gradient-to-r from-primary to-accent"
+                        className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[3px] rounded-b-full bg-gradient-to-r from-primary to-accent shadow-[0_0_8px_hsl(var(--primary))]"
                         transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                       />
                     )}
