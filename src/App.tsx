@@ -90,24 +90,22 @@ const App = () => (
           <BrowserRouter>
             <Suspense fallback={<PageFallback />}>
             <Routes>
-              {/* Mobile PWA Routes */}
+              {/* Mobile Routes */}
               <Route path="/m/auth" element={<MAuth />} />
-              <Route path="/m" element={<MobileLayout />}>
-                <Route index element={<MHome />} />
-                <Route path="marketplace" element={<MMarketplace />} />
-                <Route path="marketplace/novo" element={<ProtectedRoute redirectTo="/m/auth"><MNewAd /></ProtectedRoute>} />
-                <Route path="marketplace/:id" element={<MMarketplaceItem />} />
-                <Route path="forum" element={<MForum />} />
-                <Route path="forum/:gameId" element={<MForumGame />} />
-                <Route path="forum/post/:postId" element={<MForumPost />} />
-                <Route path="review/:productId" element={<MReview />} />
-                <Route path="chat" element={<ProtectedRoute redirectTo="/m/auth"><MChat /></ProtectedRoute>} />
-                <Route path="chat/:conversationId" element={<ProtectedRoute redirectTo="/m/auth"><MChatThread /></ProtectedRoute>} />
-                <Route path="perfil" element={<ProtectedRoute redirectTo="/m/auth"><MProfile /></ProtectedRoute>} />
-                <Route path="perfil/:userId" element={<MProfile />} />
-                <Route path="config" element={<ProtectedRoute redirectTo="/m/auth"><MConfig /></ProtectedRoute>} />
-                <Route path="*" element={<MNotFound />} />
-              </Route>
+              <Route path="/m" element={<MobileLayout><MHome /></MobileLayout>} />
+              <Route path="/m/marketplace" element={<MobileLayout><MMarketplace /></MobileLayout>} />
+              <Route path="/m/marketplace/novo" element={<MobileLayout><ProtectedRoute redirectTo="/m/auth"><MNewAd /></ProtectedRoute></MobileLayout>} />
+              <Route path="/m/marketplace/:id" element={<MobileLayout><MMarketplaceItem /></MobileLayout>} />
+              <Route path="/m/forum" element={<MobileLayout><MForum /></MobileLayout>} />
+              <Route path="/m/forum/:gameId" element={<MobileLayout><MForumGame /></MobileLayout>} />
+              <Route path="/m/forum/post/:postId" element={<MobileLayout><MForumPost /></MobileLayout>} />
+              <Route path="/m/review/:productId" element={<MobileLayout><MReview /></MobileLayout>} />
+              <Route path="/m/chat" element={<MobileLayout><ProtectedRoute redirectTo="/m/auth"><MChat /></ProtectedRoute></MobileLayout>} />
+              <Route path="/m/chat/:conversationId" element={<MobileLayout><ProtectedRoute redirectTo="/m/auth"><MChatThread /></ProtectedRoute></MobileLayout>} />
+              <Route path="/m/perfil" element={<MobileLayout><ProtectedRoute redirectTo="/m/auth"><MProfile /></ProtectedRoute></MobileLayout>} />
+              <Route path="/m/perfil/:userId" element={<MobileLayout><MProfile /></MobileLayout>} />
+              <Route path="/m/config" element={<MobileLayout><ProtectedRoute redirectTo="/m/auth"><MConfig /></ProtectedRoute></MobileLayout>} />
+              <Route path="/m/*" element={<MobileLayout><MNotFound /></MobileLayout>} />
 
               {/* Desktop Backoffice Routes */}
               <Route path="/desktop/login" element={<DesktopAuthProvider><DesktopLogin /></DesktopAuthProvider>} />
