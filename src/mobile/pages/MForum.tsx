@@ -146,7 +146,7 @@ export default function MForum() {
 
       {/* Top 10 M/jogos */}
       <section>
-        <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">🔥 Top 10 M/jogos</h2>
+        <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5"><Flame className="h-3.5 w-3.5 text-primary" /> Top 10 M/jogos</h2>
         <div className="flex gap-2 overflow-x-auto scrollbar-thin -mx-4 px-4 pb-1">
           {topGames.length === 0 && <p className="text-sm text-muted-foreground">Nenhum jogo ativo ainda.</p>}
           {topGames.map((g, i) => (
