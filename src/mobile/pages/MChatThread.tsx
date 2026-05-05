@@ -95,23 +95,20 @@ export default function MChatThread() {
     setSending(true);
     const content = text.trim().slice(0, 1000);
     setText('');
-    const { error } = await supabase.from('mensagens').insert({
+    // Anti-duplicação: bloqueia se a última msg do mesmo usuário tem mesmo conteúdo nos últimos 3s
+    const last = msgs[msgs.length - 1];
+    if (last && last.sender_id === user.id && last.content === content && Date.now() - +new Date(last.created_at) < 3000) {
+      setSending(false);
+      toast.info('Mensagem duplicada ignorada');
+      return;
+    }
+    const { data: inserted, error } = await supabase.from('mensagens').insert({
       sender_id: user.id, receiver_id: other.id, content,
       anuncio_id: conv?.anuncio_id || null, message_type: 'text',
-    });
+    }).select('id, sender_id, receiver_id, content, created_at, is_read, message_type, payload, image_url').single();
     if (error) toast.error('Erro ao enviar');
-    else {
-      setMsgs((current) => [...current, {
-        id: `optimistic-${Date.now()}`,
-        sender_id: user.id,
-        receiver_id: other.id,
-        content,
-        created_at: new Date().toISOString(),
-        is_read: false,
-        message_type: 'text',
-        payload: null,
-        image_url: null,
-      }]);
+    else if (inserted) {
+      upsertMessage(inserted as Msg);
       if (conv) await supabase.from('conversas').update({ last_message: content, last_message_at: new Date().toISOString() }).eq('id', conv.id);
     }
     setSending(false);

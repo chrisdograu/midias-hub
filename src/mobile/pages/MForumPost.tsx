@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Loader2, ThumbsUp, ThumbsDown, MessageSquare, Send } from 'lucide-react';
+import { ArrowLeft, Loader2, ThumbsUp, MessageSquare, Send, Flag, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { MForumTag, MobileBadge } from '@/mobile/lib/badge';
 import { timeAgo } from '@/mobile/lib/time';
 import { toast } from 'sonner';
+import { useLoginGate } from '@/components/LoginGate';
+import { ReportDialog } from '@/components/ReportDialog';
 
 interface Reply {
   id: string; content: string; created_at: string; user_id: string; likes_count: number;
