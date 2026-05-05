@@ -293,7 +293,9 @@ export type Database = {
       conversas: {
         Row: {
           anuncio_id: string | null
+          category: string
           created_at: string | null
+          has_active_report: boolean
           id: string
           last_message: string | null
           last_message_at: string | null
@@ -303,7 +305,9 @@ export type Database = {
         }
         Insert: {
           anuncio_id?: string | null
+          category?: string
           created_at?: string | null
+          has_active_report?: boolean
           id?: string
           last_message?: string | null
           last_message_at?: string | null
@@ -313,7 +317,9 @@ export type Database = {
         }
         Update: {
           anuncio_id?: string | null
+          category?: string
           created_at?: string | null
+          has_active_report?: boolean
           id?: string
           last_message?: string | null
           last_message_at?: string | null
@@ -704,6 +710,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      games_catalog: {
+        Row: {
+          cover_url: string | null
+          created_at: string
+          id: string
+          platforms: string[] | null
+          popularity: number
+          publisher: string | null
+          slug: string
+          tags: string[] | null
+          title: string
+        }
+        Insert: {
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          platforms?: string[] | null
+          popularity?: number
+          publisher?: string | null
+          slug: string
+          tags?: string[] | null
+          title: string
+        }
+        Update: {
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          platforms?: string[] | null
+          popularity?: number
+          publisher?: string | null
+          slug?: string
+          tags?: string[] | null
+          title?: string
+        }
+        Relationships: []
       }
       itens_pedido: {
         Row: {
@@ -1278,6 +1320,8 @@ export type Database = {
       is_atendente: { Args: never; Returns: boolean }
       is_staff: { Args: never; Returns: boolean }
       is_user_banned: { Args: { _user_id: string }; Returns: boolean }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
     }
     Enums: {
       app_role: "admin" | "user" | "atendente"
