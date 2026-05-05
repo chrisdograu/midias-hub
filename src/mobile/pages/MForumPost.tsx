@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Loader2, ThumbsUp, ThumbsDown, MessageSquare, Send } from 'lucide-react';
+import { ArrowLeft, Loader2, ThumbsUp, MessageSquare, Send, Flag, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { MForumTag, MobileBadge } from '@/mobile/lib/badge';
 import { timeAgo } from '@/mobile/lib/time';
 import { toast } from 'sonner';
+import { useLoginGate } from '@/components/LoginGate';
+import { ReportDialog } from '@/components/ReportDialog';
 
 interface Reply {
   id: string; content: string; created_at: string; user_id: string; likes_count: number;
@@ -17,6 +19,7 @@ export default function MForumPost() {
   const { postId } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { requireAuth, gate } = useLoginGate();
   const [post, setPost] = useState<Post | null>(null);
   const [replies, setReplies] = useState<Reply[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,6 +27,7 @@ export default function MForumPost() {
   const [replyTo, setReplyTo] = useState<{ id: string; user: string } | null>(null);
   const [sortBy, setSortBy] = useState<'top' | 'recent'>('top');
   const [submitting, setSubmitting] = useState(false);
+  const [reportTarget, setReportTarget] = useState<{ type: 'forum_post' | 'comentario_forum'; id: string; label: string } | null>(null);
 
   const load = async () => {
     if (!postId) {
@@ -63,16 +67,39 @@ export default function MForumPost() {
   useEffect(() => { load(); }, [postId, user?.id]);
 
   const submitReply = async () => {
-    if (!user) { toast.error('Entre para comentar'); navigate('/m/auth'); return; }
-    if (!text.trim() || !postId || submitting) return;
-    setSubmitting(true);
+    if (!requireAuth()) return;
+    if (!text.trim() || !postId || submitting || !user) return;
+    // anti-duplicação: evita mesmo conteúdo do mesmo user em <3s
+    const last = replies[replies.length - 1];
     const prefix = replyTo ? `@${replyTo.user} ` : '';
     const content = (prefix + text.trim()).slice(0, 1000);
+    if (last && last.user_id === user.id && last.content === content && Date.now() - +new Date(last.created_at) < 3000) {
+      toast.info('Comentário duplicado ignorado');
+      return;
+    }
+    setSubmitting(true);
     const { error } = await supabase.from('forum_replies').insert({ user_id: user.id, post_id: postId, content });
     setSubmitting(false);
     if (error) { toast.error(error.message); return; }
     toast.success('Comentário publicado');
     setText(''); setReplyTo(null); load();
+  };
+
+  const deleteReply = async (r: Reply) => {
+    if (!user || r.user_id !== user.id) return;
+    if (!confirm('Excluir este comentário?')) return;
+    const { error } = await supabase.from('forum_replies').delete().eq('id', r.id);
+    if (error) { toast.error('Erro ao excluir'); return; }
+    setReplies(prev => prev.filter(x => x.id !== r.id));
+  };
+
+  const deletePost = async () => {
+    if (!post || !user || post.user_id !== user.id) return;
+    if (!confirm('Excluir este post?')) return;
+    const { error } = await supabase.from('forum_posts').delete().eq('id', post.id);
+    if (error) { toast.error('Erro ao excluir'); return; }
+    toast.success('Post excluído');
+    navigate('/m/forum');
   };
 
   const togglePostLike = async () => {
