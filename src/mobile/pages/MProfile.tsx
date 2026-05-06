@@ -41,26 +41,37 @@ export default function MProfile() {
     let cancel = false;
     (async () => {
       setLoading(true);
-      const [{ data: p }, { data: revs }, { data: adsRaw }, { count: rc }, { count: pc }] = await Promise.all([
-        supabase.from('profiles').select('id, display_name, avatar_url, bio, username').eq('id', targetId).maybeSingle(),
+      const [{ data: p }, { data: revs }, { data: adsRaw }, { data: myReviews }, { data: myPosts }, { data: myLib }] = await Promise.all([
+        supabase.from('profiles').select('id, display_name, avatar_url, bio, username, is_private').eq('id', targetId).maybeSingle(),
         supabase.from('avaliacoes_usuario').select('rating').eq('reviewed_id', targetId),
         supabase.from('anuncios').select('id, title, price').eq('seller_id', targetId).eq('status', 'active').limit(20),
-        supabase.from('avaliacoes').select('id', { count: 'exact', head: true }).eq('user_id', targetId).eq('is_approved', true),
-        supabase.from('forum_posts').select('id', { count: 'exact', head: true }).eq('user_id', targetId),
+        supabase.from('avaliacoes').select('id, product_id, rating, comment, created_at').eq('user_id', targetId).eq('is_approved', true).order('created_at', { ascending: false }).limit(30),
+        supabase.from('forum_posts').select('id, product_id, content, created_at, likes_count').eq('user_id', targetId).order('created_at', { ascending: false }).limit(30),
+        supabase.from('biblioteca_usuario').select('product_id, status').eq('user_id', targetId).limit(50),
       ]);
       const adIds = adsRaw?.map(a => a.id) || [];
-      const { data: photos } = adIds.length
-        ? await supabase.from('fotos_anuncio').select('anuncio_id, image_url, position').in('anuncio_id', adIds).order('position')
-        : { data: [] as any[] };
+      const productIds = new Set<string>([
+        ...(myReviews || []).map(r => r.product_id),
+        ...(myPosts || []).map(p => p.product_id),
+        ...(myLib || []).map(l => l.product_id),
+      ]);
+      const [{ data: photos }, { data: prods }] = await Promise.all([
+        adIds.length ? supabase.from('fotos_anuncio').select('anuncio_id, image_url, position').in('anuncio_id', adIds).order('position') : Promise.resolve({ data: [] as any[] }),
+        productIds.size ? supabase.from('produtos').select('id, title, image_url').in('id', [...productIds]) : Promise.resolve({ data: [] as any[] }),
+      ]);
       const photoMap = new Map<string, string>();
       (photos || []).forEach(ph => { if (!photoMap.has(ph.anuncio_id)) photoMap.set(ph.anuncio_id, ph.image_url); });
+      const prodMap = new Map((prods || []).map((x: any) => [x.id, x]));
       const avg = revs?.length ? revs.reduce((s, r) => s + r.rating, 0) / revs.length : 0;
       if (cancel) return;
       setProfile(p as Profile);
       setRating(avg);
       setAds((adsRaw || []).map(a => ({ id: a.id, title: a.title, price: Number(a.price), image: photoMap.get(a.id) || null })));
-      setReviewsCount(rc || 0);
-      setPostsCount(pc || 0);
+      setReviews((myReviews || []).map(r => ({ id: r.id, product_id: r.product_id, product: (prodMap.get(r.product_id) as any)?.title || 'Jogo', rating: Number(r.rating), comment: r.comment, created_at: r.created_at })));
+      setPosts((myPosts || []).map(p => ({ id: p.id, product_id: p.product_id, product: (prodMap.get(p.product_id) as any)?.title || 'Jogo', content: p.content, created_at: p.created_at || '', likes_count: p.likes_count })));
+      setLibrary((myLib || []).map(l => ({ product_id: l.product_id, title: (prodMap.get(l.product_id) as any)?.title || 'Jogo', image_url: (prodMap.get(l.product_id) as any)?.image_url || null, status: l.status })));
+      setReviewsCount((myReviews || []).length);
+      setPostsCount((myPosts || []).length);
       setLoading(false);
     })();
     return () => { cancel = true; };
