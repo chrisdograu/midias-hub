@@ -28,12 +28,30 @@ export default function MNewAd() {
   const [plataformas, setPlataformas] = useState<string[]>([]);
   const [files, setFiles] = useState<File[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [suggestions, setSuggestions] = useState<{ id: string; title: string; cover_url: string | null }[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   useEffect(() => {
     if (!user) return;
     supabase.from('certificados').select('status').eq('user_id', user.id).eq('status', 'ativo').limit(1)
       .then(({ data }) => setHasCert(!!data?.length));
   }, [user]);
+
+  // Autocomplete a partir do games_catalog
+  useEffect(() => {
+    const q = form.title.trim();
+    if (q.length < 2) { setSuggestions([]); return; }
+    const t = setTimeout(async () => {
+      const { data } = await supabase
+        .from('games_catalog')
+        .select('id, title, cover_url')
+        .ilike('title', `%${q}%`)
+        .order('popularity', { ascending: false })
+        .limit(5);
+      setSuggestions(data || []);
+    }, 250);
+    return () => clearTimeout(t);
+  }, [form.title]);
 
   const togglePlatform = (p: string) =>
     setPlataformas(plataformas.includes(p) ? plataformas.filter(x => x !== p) : [...plataformas, p]);
