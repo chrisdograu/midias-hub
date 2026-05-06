@@ -192,23 +192,55 @@ export default function MForum() {
       ) : (
         <div className="space-y-2.5">
           {sortedReviews.length === 0 ? <p className="text-center py-10 text-sm text-muted-foreground">Nenhuma review no período.</p> :
-            sortedReviews.map(r => (
-              <Link key={r.id} to={`/m/review/${r.product_id}`} className="block glass rounded-xl p-3 hover:border-accent/40 transition-colors">
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-sm font-bold">{r.product}</span>
-                  <span className="text-[10px] text-muted-foreground">{timeAgo(r.created_at)}</span>
-                </div>
-                <div className="flex items-center gap-2 mb-1"><HalfStarDisplay rating={r.rating} size={13} /><span className="text-xs font-semibold text-price">{r.rating.toFixed(1)}</span></div>
-                {r.comment && <p className="text-sm text-foreground line-clamp-3">{r.comment}</p>}
-                <div className="flex items-center gap-3 mt-2 text-[11px] text-muted-foreground">
-                  <span>por <b className="text-foreground">{r.author}</b></span>
-                  <span className="flex items-center gap-1"><ThumbsUp className="h-3 w-3" />{r.likes}</span>
-                </div>
-              </Link>
-            ))}
+            sortedReviews.map(r => <ReviewRow key={r.id} r={r} onChange={(delta) => setReviews(prev => prev.map(x => x.id === r.id ? { ...x, likes: Math.max(0, x.likes + delta) } : x))} />)}
         </div>
       )}
     </div>
+  );
+}
+
+function ReviewRow({ r, onChange }: { r: ReviewItem; onChange: (delta: number) => void }) {
+  const { user } = useAuth();
+  const { requireAuth, gate } = useLoginGate();
+  const [iLiked, setILiked] = useState(false);
+  useEffect(() => {
+    if (!user) return;
+    supabase.from('review_likes').select('id').eq('review_id', r.id).eq('user_id', user.id).maybeSingle()
+      .then(({ data }) => setILiked(!!data));
+  }, [user, r.id]);
+
+  const toggleLike = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!requireAuth() || !user) return;
+    if (iLiked) {
+      setILiked(false); onChange(-1);
+      await supabase.from('review_likes').delete().eq('review_id', r.id).eq('user_id', user.id);
+    } else {
+      setILiked(true); onChange(1);
+      const { error } = await supabase.from('review_likes').insert({ review_id: r.id, user_id: user.id });
+      if (error && !/duplicate/i.test(error.message)) { setILiked(false); onChange(-1); toast.error('Erro ao curtir'); }
+    }
+  };
+
+  return (
+    <>
+      {gate}
+      <Link to={`/m/review/${r.product_id}`} className="block glass rounded-xl p-3 hover:border-accent/40 transition-colors">
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-sm font-bold">{r.product}</span>
+          <span className="text-[10px] text-muted-foreground">{timeAgo(r.created_at)}</span>
+        </div>
+        <div className="flex items-center gap-2 mb-1"><HalfStarDisplay rating={r.rating} size={13} /><span className="text-xs font-semibold text-price">{r.rating.toFixed(1)}</span></div>
+        {r.comment && <p className="text-sm text-foreground line-clamp-3">{r.comment}</p>}
+        <div className="flex items-center gap-3 mt-2 text-[11px] text-muted-foreground">
+          <span>por <b className="text-foreground">{r.author}</b></span>
+          <button onClick={toggleLike} className={`flex items-center gap-1 transition-colors ${iLiked ? 'text-primary' : 'hover:text-primary'}`}>
+            <ThumbsUp className={`h-3 w-3 ${iLiked ? 'fill-current' : ''}`} />{r.likes}
+          </button>
+        </div>
+      </Link>
+    </>
   );
 }
 
