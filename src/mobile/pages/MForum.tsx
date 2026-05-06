@@ -1,11 +1,14 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Loader2, Search, MessagesSquare, TrendingUp, Clock, MessageSquare, ThumbsUp, Star, Flame, Newspaper, Gamepad2 } from 'lucide-react';
+import { Loader2, Search, MessagesSquare, TrendingUp, Clock, MessageSquare, ThumbsUp, ThumbsDown, Star, Flame, Newspaper, Gamepad2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { MobileChip, MForumTag, MobileBadge } from '@/mobile/lib/badge';
 import { timeAgo, periodSince, type Period } from '@/mobile/lib/time';
 import { HalfStarDisplay } from '@/components/HalfStarRating';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useAuth } from '@/hooks/useAuth';
+import { useLoginGate } from '@/components/LoginGate';
+import { toast } from 'sonner';
 
 type Sort = 'popular' | 'recent' | 'commented';
 type Tab = 'posts' | 'reviews';
