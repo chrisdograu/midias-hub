@@ -184,6 +184,12 @@ export default function MForumPost() {
                     <ThumbsUp className={`h-3 w-3 ${r.iLiked ? 'fill-current' : ''}`} />{r.likes_count}
                   </button>
                   {user && <button onClick={() => setReplyTo({ id: r.id, user: r.author })} className="hover:text-foreground">Responder</button>}
+                  {user && user.id === r.user_id && (
+                    <button onClick={() => deleteReply(r)} className="ml-auto hover:text-destructive flex items-center gap-1"><Trash2 className="h-3 w-3" />Excluir</button>
+                  )}
+                  {user && user.id !== r.user_id && (
+                    <button onClick={() => setReportTarget({ type: 'comentario_forum', id: r.id, label: 'comentário' })} className="ml-auto hover:text-destructive flex items-center gap-1"><Flag className="h-3 w-3" />Denunciar</button>
+                  )}
                 </div>
               </div>
             ))}
