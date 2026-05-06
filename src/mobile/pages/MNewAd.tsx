@@ -71,6 +71,16 @@ export default function MNewAd() {
     if (protegido && !hasCert) { toast.error('Você precisa de certificação ativa para anúncio protegido'); return; }
 
     setSubmitting(true);
+
+    // Anti-duplicação: bloqueia se o vendedor já tem anúncio ATIVO com o mesmo título
+    const { data: dup } = await supabase
+      .from('anuncios').select('id').eq('seller_id', user.id).eq('status', 'active')
+      .ilike('title', form.title.trim()).limit(1);
+    if (dup && dup.length) {
+      setSubmitting(false);
+      toast.error('Você já tem um anúncio ativo com esse título. Edite o existente em vez de duplicar.');
+      return;
+    }
     const { data: ad, error } = await supabase.from('anuncios').insert({
       seller_id: user.id, user_id: user.id, title: form.title.trim(),
       description: form.description.trim() || null, price: Number(form.price || 0),
