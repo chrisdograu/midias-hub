@@ -137,7 +137,29 @@ export default function MNewAd() {
         </div>
       </div>
 
-      <input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} maxLength={120} placeholder="Título do anúncio" className="w-full p-3 bg-card border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
+      <div className="relative">
+        <input
+          value={form.title}
+          onChange={e => { setForm({ ...form, title: e.target.value }); setShowSuggestions(true); }}
+          onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+          onFocus={() => setShowSuggestions(true)}
+          maxLength={120}
+          placeholder="Título do anúncio (digite o nome do jogo)"
+          className="w-full p-3 bg-card border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+        />
+        {showSuggestions && suggestions.length > 0 && (
+          <div className="absolute z-20 left-0 right-0 mt-1 bg-card border border-border rounded-lg overflow-hidden shadow-lg">
+            {suggestions.map(s => (
+              <button key={s.id} type="button" onMouseDown={(e) => e.preventDefault()}
+                onClick={() => { setForm({ ...form, title: s.title }); setShowSuggestions(false); }}
+                className="w-full flex items-center gap-2 px-3 py-2 hover:bg-muted/50 text-left">
+                {s.cover_url && <img src={s.cover_url} alt="" className="w-6 h-8 object-cover rounded" />}
+                <span className="text-sm">{s.title}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
       <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} maxLength={2000} rows={4} placeholder="Descrição detalhada..." className="w-full p-3 bg-card border border-border rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/50" />
       <input type="number" step="0.01" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} placeholder="Preço (R$)" className="w-full p-3 bg-card border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
 
