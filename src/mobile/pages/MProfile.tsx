@@ -22,9 +22,13 @@ export default function MProfile() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [rating, setRating] = useState(0);
   const [ads, setAds] = useState<Ad[]>([]);
+  const [reviews, setReviews] = useState<ReviewItem[]>([]);
+  const [posts, setPosts] = useState<PostItem[]>([]);
+  const [library, setLibrary] = useState<LibItem[]>([]);
   const [reviewsCount, setReviewsCount] = useState(0);
   const [postsCount, setPostsCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState<'ads' | 'reviews' | 'posts' | 'lib'>('ads');
   const [reportOpen, setReportOpen] = useState(false);
   const [reportText, setReportText] = useState('');
   const [followersOpen, setFollowersOpen] = useState<'followers' | 'following' | null>(null);
