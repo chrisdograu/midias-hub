@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Loader2, ShoppingBag, Settings, LogOut, Send, Flag, ShieldOff, ArrowLeft, UserPlus, UserCheck, Users } from 'lucide-react';
+import { Loader2, ShoppingBag, Settings, LogOut, Send, Flag, ShieldOff, ArrowLeft, UserPlus, UserCheck, Users, Lock, Star, Newspaper, BookMarked } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { HalfStarDisplay } from '@/components/HalfStarRating';
 import { useFollow } from '@/mobile/lib/useFollow';
 import { toast } from 'sonner';
 
-interface Profile { id: string; display_name: string | null; avatar_url: string | null; bio: string | null; username: string | null }
+interface Profile { id: string; display_name: string | null; avatar_url: string | null; bio: string | null; username: string | null; is_private?: boolean }
 interface Ad { id: string; title: string; price: number; image: string | null }
+interface ReviewItem { id: string; product_id: string; product: string; rating: number; comment: string | null; created_at: string }
+interface PostItem { id: string; product_id: string; product: string; content: string; created_at: string; likes_count: number }
+interface LibItem { product_id: string; title: string; image_url: string | null; status: string }
 
 export default function MProfile() {
   const { userId } = useParams();
