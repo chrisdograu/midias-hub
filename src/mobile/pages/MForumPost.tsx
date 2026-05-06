@@ -220,6 +220,10 @@ export default function MForumPost() {
           </>
         )}
       </div>
+      {gate}
+      {reportTarget && (
+        <ReportDialog open onClose={() => setReportTarget(null)} targetType={reportTarget.type} targetId={reportTarget.id} label={reportTarget.label} />
+      )}
     </div>
   );
 }
