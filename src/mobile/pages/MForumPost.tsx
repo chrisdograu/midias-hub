@@ -146,6 +146,12 @@ export default function MForumPost() {
               <ThumbsUp className={`h-3.5 w-3.5 ${post.iLiked ? 'fill-current' : ''}`} />{post.likes_count}
             </button>
             <span className="flex items-center gap-1"><MessageSquare className="h-3.5 w-3.5" />{replies.length}</span>
+            {user && user.id === post.user_id && (
+              <button onClick={deletePost} className="ml-auto flex items-center gap-1 hover:text-destructive transition-colors"><Trash2 className="h-3.5 w-3.5" />Excluir</button>
+            )}
+            {user && user.id !== post.user_id && (
+              <button onClick={() => setReportTarget({ type: 'forum_post', id: post.id, label: 'post' })} className="ml-auto flex items-center gap-1 hover:text-destructive transition-colors"><Flag className="h-3.5 w-3.5" />Denunciar</button>
+            )}
           </div>
         </div>
 
@@ -178,6 +184,12 @@ export default function MForumPost() {
                     <ThumbsUp className={`h-3 w-3 ${r.iLiked ? 'fill-current' : ''}`} />{r.likes_count}
                   </button>
                   {user && <button onClick={() => setReplyTo({ id: r.id, user: r.author })} className="hover:text-foreground">Responder</button>}
+                  {user && user.id === r.user_id && (
+                    <button onClick={() => deleteReply(r)} className="ml-auto hover:text-destructive flex items-center gap-1"><Trash2 className="h-3 w-3" />Excluir</button>
+                  )}
+                  {user && user.id !== r.user_id && (
+                    <button onClick={() => setReportTarget({ type: 'comentario_forum', id: r.id, label: 'comentário' })} className="ml-auto hover:text-destructive flex items-center gap-1"><Flag className="h-3 w-3" />Denunciar</button>
+                  )}
                 </div>
               </div>
             ))}
@@ -208,6 +220,10 @@ export default function MForumPost() {
           </>
         )}
       </div>
+      {gate}
+      {reportTarget && (
+        <ReportDialog open onClose={() => setReportTarget(null)} targetType={reportTarget.type} targetId={reportTarget.id} label={reportTarget.label} />
+      )}
     </div>
   );
 }

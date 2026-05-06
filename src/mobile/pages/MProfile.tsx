@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Loader2, ShoppingBag, Settings, LogOut, Send, Flag, ShieldOff, ArrowLeft, UserPlus, UserCheck, Users } from 'lucide-react';
+import { Loader2, ShoppingBag, Settings, LogOut, Send, Flag, ShieldOff, ArrowLeft, UserPlus, UserCheck, Users, Lock, Star, Newspaper, BookMarked } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { HalfStarDisplay } from '@/components/HalfStarRating';
 import { useFollow } from '@/mobile/lib/useFollow';
 import { toast } from 'sonner';
 
-interface Profile { id: string; display_name: string | null; avatar_url: string | null; bio: string | null; username: string | null }
+interface Profile { id: string; display_name: string | null; avatar_url: string | null; bio: string | null; username: string | null; is_private?: boolean }
 interface Ad { id: string; title: string; price: number; image: string | null }
+interface ReviewItem { id: string; product_id: string; product: string; rating: number; comment: string | null; created_at: string }
+interface PostItem { id: string; product_id: string; product: string; content: string; created_at: string; likes_count: number }
+interface LibItem { product_id: string; title: string; image_url: string | null; status: string }
 
 export default function MProfile() {
   const { userId } = useParams();
@@ -19,9 +22,13 @@ export default function MProfile() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [rating, setRating] = useState(0);
   const [ads, setAds] = useState<Ad[]>([]);
+  const [reviews, setReviews] = useState<ReviewItem[]>([]);
+  const [posts, setPosts] = useState<PostItem[]>([]);
+  const [library, setLibrary] = useState<LibItem[]>([]);
   const [reviewsCount, setReviewsCount] = useState(0);
   const [postsCount, setPostsCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState<'ads' | 'reviews' | 'posts' | 'lib'>('ads');
   const [reportOpen, setReportOpen] = useState(false);
   const [reportText, setReportText] = useState('');
   const [followersOpen, setFollowersOpen] = useState<'followers' | 'following' | null>(null);
@@ -34,26 +41,37 @@ export default function MProfile() {
     let cancel = false;
     (async () => {
       setLoading(true);
-      const [{ data: p }, { data: revs }, { data: adsRaw }, { count: rc }, { count: pc }] = await Promise.all([
-        supabase.from('profiles').select('id, display_name, avatar_url, bio, username').eq('id', targetId).maybeSingle(),
+      const [{ data: p }, { data: revs }, { data: adsRaw }, { data: myReviews }, { data: myPosts }, { data: myLib }] = await Promise.all([
+        supabase.from('profiles').select('id, display_name, avatar_url, bio, username, is_private').eq('id', targetId).maybeSingle(),
         supabase.from('avaliacoes_usuario').select('rating').eq('reviewed_id', targetId),
         supabase.from('anuncios').select('id, title, price').eq('seller_id', targetId).eq('status', 'active').limit(20),
-        supabase.from('avaliacoes').select('id', { count: 'exact', head: true }).eq('user_id', targetId).eq('is_approved', true),
-        supabase.from('forum_posts').select('id', { count: 'exact', head: true }).eq('user_id', targetId),
+        supabase.from('avaliacoes').select('id, product_id, rating, comment, created_at').eq('user_id', targetId).eq('is_approved', true).order('created_at', { ascending: false }).limit(30),
+        supabase.from('forum_posts').select('id, product_id, content, created_at, likes_count').eq('user_id', targetId).order('created_at', { ascending: false }).limit(30),
+        supabase.from('biblioteca_usuario').select('product_id, status').eq('user_id', targetId).limit(50),
       ]);
       const adIds = adsRaw?.map(a => a.id) || [];
-      const { data: photos } = adIds.length
-        ? await supabase.from('fotos_anuncio').select('anuncio_id, image_url, position').in('anuncio_id', adIds).order('position')
-        : { data: [] as any[] };
+      const productIds = new Set<string>([
+        ...(myReviews || []).map(r => r.product_id),
+        ...(myPosts || []).map(p => p.product_id),
+        ...(myLib || []).map(l => l.product_id),
+      ]);
+      const [{ data: photos }, { data: prods }] = await Promise.all([
+        adIds.length ? supabase.from('fotos_anuncio').select('anuncio_id, image_url, position').in('anuncio_id', adIds).order('position') : Promise.resolve({ data: [] as any[] }),
+        productIds.size ? supabase.from('produtos').select('id, title, image_url').in('id', [...productIds]) : Promise.resolve({ data: [] as any[] }),
+      ]);
       const photoMap = new Map<string, string>();
       (photos || []).forEach(ph => { if (!photoMap.has(ph.anuncio_id)) photoMap.set(ph.anuncio_id, ph.image_url); });
+      const prodMap = new Map((prods || []).map((x: any) => [x.id, x]));
       const avg = revs?.length ? revs.reduce((s, r) => s + r.rating, 0) / revs.length : 0;
       if (cancel) return;
       setProfile(p as Profile);
       setRating(avg);
       setAds((adsRaw || []).map(a => ({ id: a.id, title: a.title, price: Number(a.price), image: photoMap.get(a.id) || null })));
-      setReviewsCount(rc || 0);
-      setPostsCount(pc || 0);
+      setReviews((myReviews || []).map(r => ({ id: r.id, product_id: r.product_id, product: (prodMap.get(r.product_id) as any)?.title || 'Jogo', rating: Number(r.rating), comment: r.comment, created_at: r.created_at })));
+      setPosts((myPosts || []).map(p => ({ id: p.id, product_id: p.product_id, product: (prodMap.get(p.product_id) as any)?.title || 'Jogo', content: p.content, created_at: p.created_at || '', likes_count: p.likes_count })));
+      setLibrary((myLib || []).map(l => ({ product_id: l.product_id, title: (prodMap.get(l.product_id) as any)?.title || 'Jogo', image_url: (prodMap.get(l.product_id) as any)?.image_url || null, status: l.status })));
+      setReviewsCount((myReviews || []).length);
+      setPostsCount((myPosts || []).length);
       setLoading(false);
     })();
     return () => { cancel = true; };
@@ -154,19 +172,93 @@ export default function MProfile() {
         </div>
       )}
 
-      <div>
-        <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Anúncios ativos ({ads.length})</h2>
-        {ads.length === 0 ? <p className="text-sm text-muted-foreground text-center py-6">Nenhum anúncio ativo.</p> : (
-          <div className="grid grid-cols-2 gap-2">
-            {ads.map(a => (
-              <Link key={a.id} to={`/m/marketplace/${a.id}`} className="glass rounded-lg overflow-hidden">
-                <div className="aspect-square bg-muted">{a.image ? <img src={a.image} alt={a.title} loading="lazy" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><ShoppingBag className="h-6 w-6 text-muted-foreground" /></div>}</div>
-                <div className="p-2"><p className="text-[11px] font-semibold line-clamp-1">{a.title}</p><p className="text-xs font-bold text-price">R$ {a.price.toFixed(2)}</p></div>
-              </Link>
+      {profile.is_private && !isOwn ? (
+        <div className="glass rounded-xl p-6 text-center text-muted-foreground">
+          <Lock className="h-8 w-8 mx-auto mb-2 opacity-60" />
+          <p className="text-sm font-semibold text-foreground">Perfil privado</p>
+          <p className="text-xs mt-1">Conteúdo oculto. Apenas anúncios ativos são visíveis.</p>
+          {ads.length > 0 && (
+            <div className="grid grid-cols-2 gap-2 mt-4 text-left">
+              {ads.map(a => (
+                <Link key={a.id} to={`/m/marketplace/${a.id}`} className="glass rounded-lg overflow-hidden">
+                  <div className="aspect-square bg-muted">{a.image ? <img src={a.image} alt={a.title} loading="lazy" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><ShoppingBag className="h-6 w-6 text-muted-foreground" /></div>}</div>
+                  <div className="p-2"><p className="text-[11px] font-semibold line-clamp-1">{a.title}</p><p className="text-xs font-bold text-price">R$ {a.price.toFixed(2)}</p></div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        <>
+          <div className="flex p-1 bg-secondary/40 rounded-lg overflow-x-auto scrollbar-thin">
+            {([
+              { id: 'ads', label: 'Anúncios', icon: ShoppingBag, count: ads.length },
+              { id: 'reviews', label: 'Reviews', icon: Star, count: reviewsCount },
+              { id: 'posts', label: 'Posts', icon: Newspaper, count: postsCount },
+              { id: 'lib', label: 'Biblioteca', icon: BookMarked, count: library.length },
+            ] as const).map(t => (
+              <button key={t.id} onClick={() => setTab(t.id)} className={`flex-1 min-w-[80px] py-2 rounded-md text-[11px] font-semibold inline-flex items-center justify-center gap-1 ${tab === t.id ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>
+                <t.icon className="h-3.5 w-3.5" /> {t.label} <span className="opacity-60">({t.count})</span>
+              </button>
             ))}
           </div>
-        )}
-      </div>
+
+          {tab === 'ads' && (
+            ads.length === 0 ? <p className="text-sm text-muted-foreground text-center py-6">Nenhum anúncio ativo.</p> : (
+              <div className="grid grid-cols-2 gap-2">
+                {ads.map(a => (
+                  <Link key={a.id} to={`/m/marketplace/${a.id}`} className="glass rounded-lg overflow-hidden">
+                    <div className="aspect-square bg-muted">{a.image ? <img src={a.image} alt={a.title} loading="lazy" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><ShoppingBag className="h-6 w-6 text-muted-foreground" /></div>}</div>
+                    <div className="p-2"><p className="text-[11px] font-semibold line-clamp-1">{a.title}</p><p className="text-xs font-bold text-price">R$ {a.price.toFixed(2)}</p></div>
+                  </Link>
+                ))}
+              </div>
+            )
+          )}
+
+          {tab === 'reviews' && (
+            reviews.length === 0 ? <p className="text-sm text-muted-foreground text-center py-6">Sem reviews.</p> : (
+              <div className="space-y-2">
+                {reviews.map(r => (
+                  <Link key={r.id} to={`/m/review/${r.product_id}`} className="block glass rounded-xl p-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-bold">{r.product}</span>
+                      <HalfStarDisplay rating={r.rating} size={12} />
+                    </div>
+                    {r.comment && <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{r.comment}</p>}
+                  </Link>
+                ))}
+              </div>
+            )
+          )}
+
+          {tab === 'posts' && (
+            posts.length === 0 ? <p className="text-sm text-muted-foreground text-center py-6">Sem posts.</p> : (
+              <div className="space-y-2">
+                {posts.map(p => (
+                  <Link key={p.id} to={`/m/forum/post/${p.id}`} className="block glass rounded-xl p-3">
+                    <div className="text-[10px] text-muted-foreground mb-1">em <b className="text-foreground">{p.product}</b></div>
+                    <p className="text-sm line-clamp-2">{p.content}</p>
+                  </Link>
+                ))}
+              </div>
+            )
+          )}
+
+          {tab === 'lib' && (
+            library.length === 0 ? <p className="text-sm text-muted-foreground text-center py-6">Biblioteca vazia.</p> : (
+              <div className="grid grid-cols-3 gap-2">
+                {library.map(l => (
+                  <div key={l.product_id} className="glass rounded-lg overflow-hidden">
+                    <div className="aspect-[3/4] bg-muted">{l.image_url ? <img src={l.image_url} alt={l.title} loading="lazy" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><BookMarked className="h-6 w-6 text-muted-foreground" /></div>}</div>
+                    <p className="text-[10px] font-semibold line-clamp-1 p-1.5">{l.title}</p>
+                  </div>
+                ))}
+              </div>
+            )
+          )}
+        </>
+      )}
 
       {isOwn && (
         <button onClick={async () => { await signOut(); navigate('/m/auth'); }} className="w-full py-2.5 rounded-xl bg-destructive/10 text-destructive text-sm font-semibold flex items-center justify-center gap-1.5"><LogOut className="h-4 w-4" />Sair</button>
