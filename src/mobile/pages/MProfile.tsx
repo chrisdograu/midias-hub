@@ -172,19 +172,93 @@ export default function MProfile() {
         </div>
       )}
 
-      <div>
-        <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Anúncios ativos ({ads.length})</h2>
-        {ads.length === 0 ? <p className="text-sm text-muted-foreground text-center py-6">Nenhum anúncio ativo.</p> : (
-          <div className="grid grid-cols-2 gap-2">
-            {ads.map(a => (
-              <Link key={a.id} to={`/m/marketplace/${a.id}`} className="glass rounded-lg overflow-hidden">
-                <div className="aspect-square bg-muted">{a.image ? <img src={a.image} alt={a.title} loading="lazy" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><ShoppingBag className="h-6 w-6 text-muted-foreground" /></div>}</div>
-                <div className="p-2"><p className="text-[11px] font-semibold line-clamp-1">{a.title}</p><p className="text-xs font-bold text-price">R$ {a.price.toFixed(2)}</p></div>
-              </Link>
+      {profile.is_private && !isOwn ? (
+        <div className="glass rounded-xl p-6 text-center text-muted-foreground">
+          <Lock className="h-8 w-8 mx-auto mb-2 opacity-60" />
+          <p className="text-sm font-semibold text-foreground">Perfil privado</p>
+          <p className="text-xs mt-1">Conteúdo oculto. Apenas anúncios ativos são visíveis.</p>
+          {ads.length > 0 && (
+            <div className="grid grid-cols-2 gap-2 mt-4 text-left">
+              {ads.map(a => (
+                <Link key={a.id} to={`/m/marketplace/${a.id}`} className="glass rounded-lg overflow-hidden">
+                  <div className="aspect-square bg-muted">{a.image ? <img src={a.image} alt={a.title} loading="lazy" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><ShoppingBag className="h-6 w-6 text-muted-foreground" /></div>}</div>
+                  <div className="p-2"><p className="text-[11px] font-semibold line-clamp-1">{a.title}</p><p className="text-xs font-bold text-price">R$ {a.price.toFixed(2)}</p></div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        <>
+          <div className="flex p-1 bg-secondary/40 rounded-lg overflow-x-auto scrollbar-thin">
+            {([
+              { id: 'ads', label: 'Anúncios', icon: ShoppingBag, count: ads.length },
+              { id: 'reviews', label: 'Reviews', icon: Star, count: reviewsCount },
+              { id: 'posts', label: 'Posts', icon: Newspaper, count: postsCount },
+              { id: 'lib', label: 'Biblioteca', icon: BookMarked, count: library.length },
+            ] as const).map(t => (
+              <button key={t.id} onClick={() => setTab(t.id)} className={`flex-1 min-w-[80px] py-2 rounded-md text-[11px] font-semibold inline-flex items-center justify-center gap-1 ${tab === t.id ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>
+                <t.icon className="h-3.5 w-3.5" /> {t.label} <span className="opacity-60">({t.count})</span>
+              </button>
             ))}
           </div>
-        )}
-      </div>
+
+          {tab === 'ads' && (
+            ads.length === 0 ? <p className="text-sm text-muted-foreground text-center py-6">Nenhum anúncio ativo.</p> : (
+              <div className="grid grid-cols-2 gap-2">
+                {ads.map(a => (
+                  <Link key={a.id} to={`/m/marketplace/${a.id}`} className="glass rounded-lg overflow-hidden">
+                    <div className="aspect-square bg-muted">{a.image ? <img src={a.image} alt={a.title} loading="lazy" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><ShoppingBag className="h-6 w-6 text-muted-foreground" /></div>}</div>
+                    <div className="p-2"><p className="text-[11px] font-semibold line-clamp-1">{a.title}</p><p className="text-xs font-bold text-price">R$ {a.price.toFixed(2)}</p></div>
+                  </Link>
+                ))}
+              </div>
+            )
+          )}
+
+          {tab === 'reviews' && (
+            reviews.length === 0 ? <p className="text-sm text-muted-foreground text-center py-6">Sem reviews.</p> : (
+              <div className="space-y-2">
+                {reviews.map(r => (
+                  <Link key={r.id} to={`/m/review/${r.product_id}`} className="block glass rounded-xl p-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-bold">{r.product}</span>
+                      <HalfStarDisplay rating={r.rating} size={12} />
+                    </div>
+                    {r.comment && <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{r.comment}</p>}
+                  </Link>
+                ))}
+              </div>
+            )
+          )}
+
+          {tab === 'posts' && (
+            posts.length === 0 ? <p className="text-sm text-muted-foreground text-center py-6">Sem posts.</p> : (
+              <div className="space-y-2">
+                {posts.map(p => (
+                  <Link key={p.id} to={`/m/forum/post/${p.id}`} className="block glass rounded-xl p-3">
+                    <div className="text-[10px] text-muted-foreground mb-1">em <b className="text-foreground">{p.product}</b></div>
+                    <p className="text-sm line-clamp-2">{p.content}</p>
+                  </Link>
+                ))}
+              </div>
+            )
+          )}
+
+          {tab === 'lib' && (
+            library.length === 0 ? <p className="text-sm text-muted-foreground text-center py-6">Biblioteca vazia.</p> : (
+              <div className="grid grid-cols-3 gap-2">
+                {library.map(l => (
+                  <div key={l.product_id} className="glass rounded-lg overflow-hidden">
+                    <div className="aspect-[3/4] bg-muted">{l.image_url ? <img src={l.image_url} alt={l.title} loading="lazy" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><BookMarked className="h-6 w-6 text-muted-foreground" /></div>}</div>
+                    <p className="text-[10px] font-semibold line-clamp-1 p-1.5">{l.title}</p>
+                  </div>
+                ))}
+              </div>
+            )
+          )}
+        </>
+      )}
 
       {isOwn && (
         <button onClick={async () => { await signOut(); navigate('/m/auth'); }} className="w-full py-2.5 rounded-xl bg-destructive/10 text-destructive text-sm font-semibold flex items-center justify-center gap-1.5"><LogOut className="h-4 w-4" />Sair</button>
