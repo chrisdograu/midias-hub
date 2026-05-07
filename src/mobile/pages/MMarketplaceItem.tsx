@@ -84,6 +84,11 @@ export default function MMarketplaceItem() {
     navigate('/m/marketplace');
   };
 
+  const openEdit = () => {
+    if (!ad) return;
+    navigate(`/m/marketplace/novo?edit=${ad.id}`);
+  };
+
   if (loading) return <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   if (!ad) return <div className="p-6 text-center text-muted-foreground">Anúncio não encontrado.</div>;
 
@@ -175,6 +180,8 @@ export default function MMarketplaceItem() {
             <ItemActionsMenu
               copyText={`${ad.title} — R$ ${ad.price.toFixed(2)}`}
               shareUrl={`/m/marketplace/${ad.id}`}
+              canEdit={user.id === ad.seller_id}
+              onEdit={openEdit}
               canDelete={user.id === ad.seller_id}
               onDelete={deleteAd}
               deleteConfirm="Excluir este anúncio?"
