@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ThumbsUp, ThumbsDown, Loader2, Flame, Calendar, Tag, MessageSquare, Send, Star } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
