@@ -93,7 +93,6 @@ export function ItemActionsMenu({
         <PopoverContent
           align="end"
           sideOffset={4}
-          className="w-44 p-1 rounded-xl"
           onClick={(e) => e.stopPropagation()}
           onOpenAutoFocus={(e) => e.preventDefault()}
           collisionPadding={12}
