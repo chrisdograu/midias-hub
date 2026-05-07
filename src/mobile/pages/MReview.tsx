@@ -10,6 +10,7 @@ import { timeAgo } from '@/mobile/lib/time';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import { ItemActionsMenu } from '@/components/ItemActionsMenu';
 
 interface Produto {
   id: string;
@@ -248,6 +249,14 @@ export default function MReview() {
     load();
   };
 
+  const deleteReview = async (id: string) => {
+    if (!user) return;
+    const { error } = await supabase.from('avaliacoes').delete().eq('id', id).eq('user_id', user.id);
+    if (error) { toast.error('Não foi possível excluir'); return; }
+    toast.success('Review excluída');
+    setReviews(prev => prev.filter(r => r.id !== id));
+  };
+
   const submitSuggestion = async () => {
     if (!user) { toast.error('Entre para sugerir'); navigate('/m/auth'); return; }
     const title = suggestTitle.trim();
@@ -464,6 +473,16 @@ export default function MReview() {
                       <span className="text-[10px] text-muted-foreground">• {timeAgo(r.created_at)}</span>
                     </div>
                   </div>
+                  <ItemActionsMenu
+                    copyText={r.comment || ''}
+                    shareUrl={`/m/review/${productId}?focus=${r.id}`}
+                    canDelete={!!user && user.id === r.user_id}
+                    onDelete={() => deleteReview(r.id)}
+                    deleteConfirm="Excluir esta review?"
+                    reportType={user && user.id !== r.user_id ? 'review' : undefined}
+                    reportTargetId={r.id}
+                    reportLabel="review"
+                  />
                 </header>
                 {r.comment && <p className="text-sm text-foreground whitespace-pre-wrap">{r.comment}</p>}
                 <footer className="flex items-center gap-2 mt-3">

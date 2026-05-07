@@ -8,6 +8,7 @@ import { HalfStarDisplay } from '@/components/HalfStarRating';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useAuth } from '@/hooks/useAuth';
 import { useLoginGate } from '@/components/LoginGate';
+import { ItemActionsMenu } from '@/components/ItemActionsMenu';
 import { toast } from 'sonner';
 
 type Sort = 'popular' | 'recent' | 'commented';
@@ -223,7 +224,7 @@ export default function MForum() {
       ) : tab === 'posts' ? (
         <div className="space-y-2.5">
           {sortedPosts.length === 0 ? <p className="text-center py-10 text-sm text-muted-foreground">Nenhum post no período.</p> :
-            sortedPosts.map(p => <PostCard key={p.id} p={p} />)}
+            sortedPosts.map(p => <PostCard key={p.id} p={p} onDeleted={() => setPosts(prev => prev.filter(x => x.id !== p.id))} />)}
         </div>
       ) : (
         <div className="space-y-2.5">
@@ -290,7 +291,17 @@ function ReviewRow({ r, onChange }: { r: ReviewItem; onChange: (delta: number) =
       <Link to={`/m/review/${r.product_id}?focus=${r.id}`} className="block glass rounded-xl p-3 hover:border-accent/40 transition-colors">
         <div className="flex items-center justify-between mb-1.5">
           <span className="text-sm font-bold">{r.product}</span>
-          <span className="text-[10px] text-muted-foreground">{timeAgo(r.created_at)}</span>
+          <div className="flex items-center gap-1" onClick={e => { e.preventDefault(); e.stopPropagation(); }}>
+            <span className="text-[10px] text-muted-foreground">{timeAgo(r.created_at)}</span>
+            <ItemActionsMenu
+              copyText={r.comment || ''}
+              shareUrl={`/m/review/${r.product_id}?focus=${r.id}`}
+              reportType={user && user.id !== r.user_id ? 'review' : undefined}
+              reportTargetId={r.id}
+              reportLabel="review"
+              iconClassName="h-3.5 w-3.5"
+            />
+          </div>
         </div>
         <div className="flex items-center gap-2 mb-1"><HalfStarDisplay rating={r.rating} size={13} /><span className="text-xs font-semibold text-price">{r.rating.toFixed(1)}</span></div>
         {r.comment && <p className="text-sm text-foreground line-clamp-3">{r.comment}</p>}
@@ -310,8 +321,16 @@ function ReviewRow({ r, onChange }: { r: ReviewItem; onChange: (delta: number) =
 
 
 
-function PostCard({ p }: { p: ForumPost }) {
+function PostCard({ p, onDeleted }: { p: ForumPost; onDeleted?: () => void }) {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const handleDelete = async () => {
+    if (!user || user.id !== p.user_id) return;
+    const { error } = await supabase.from('forum_posts').delete().eq('id', p.id);
+    if (error) { toast.error('Não foi possível excluir'); return; }
+    toast.success('Post excluído');
+    onDeleted?.();
+  };
   return (
     <div
       role="link"
@@ -327,7 +346,20 @@ function PostCard({ p }: { p: ForumPost }) {
         >
           <MForumTag name={p.product.toLowerCase().replace(/\s+/g, '').slice(0, 12)} />
         </button>
-        <span className="text-[10px] text-muted-foreground">{timeAgo(p.created_at)}</span>
+        <div className="flex items-center gap-1">
+          <span className="text-[10px] text-muted-foreground">{timeAgo(p.created_at)}</span>
+          <ItemActionsMenu
+            copyText={p.content}
+            shareUrl={`/m/forum/post/${p.id}`}
+            canDelete={!!user && user.id === p.user_id}
+            onDelete={handleDelete}
+            deleteConfirm="Excluir este post?"
+            reportType={user && user.id !== p.user_id ? 'forum_post' : undefined}
+            reportTargetId={p.id}
+            reportLabel="post"
+            iconClassName="h-3.5 w-3.5"
+          />
+        </div>
       </div>
       <p className="text-sm text-foreground line-clamp-3">{p.content}</p>
       <div className="flex items-center gap-3 mt-2 text-[11px] text-muted-foreground">

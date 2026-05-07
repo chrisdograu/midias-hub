@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, ShieldCheck, ArrowLeftRight, Send, Flag, ChevronLeft, ChevronRight, Loader2, ShoppingBag, Star } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, ArrowLeftRight, Send, ChevronLeft, ChevronRight, Loader2, ShoppingBag, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -8,6 +8,7 @@ import { MobileBadge } from '@/mobile/lib/badge';
 import { HalfStarDisplay } from '@/components/HalfStarRating';
 import { useFollow } from '@/mobile/lib/useFollow';
 import { toast } from 'sonner';
+import { ItemActionsMenu } from '@/components/ItemActionsMenu';
 
 interface Ad {
   id: string; title: string; description: string | null; price: number; ad_type: string;
@@ -27,8 +28,6 @@ export default function MMarketplaceItem() {
   const [seller, setSeller] = useState<Seller | null>(null);
   const [similar, setSimilar] = useState<{ id: string; title: string; price: number; image: string | null }[]>([]);
   const [loading, setLoading] = useState(true);
-  const [reportOpen, setReportOpen] = useState(false);
-  const [reportReason, setReportReason] = useState('');
   const { isFollowing, loading: followLoading, toggle: toggleFollow } = useFollow(seller?.id);
 
   useEffect(() => {
@@ -77,12 +76,12 @@ export default function MMarketplaceItem() {
     navigate(`/m/chat/${conv.id}`);
   };
 
-  const submitReport = async () => {
-    if (!user || !ad || !reportReason.trim()) return;
-    const { error } = await supabase.from('denuncias').insert({
-      reporter_id: user.id, target_type: 'anuncio', target_id: ad.id, reason: reportReason.trim(),
-    });
-    if (error) toast.error('Erro ao denunciar'); else { toast.success('Denúncia enviada'); setReportOpen(false); setReportReason(''); }
+  const deleteAd = async () => {
+    if (!user || !ad || ad.seller_id !== user.id) return;
+    const { error } = await supabase.from('anuncios').delete().eq('id', ad.id);
+    if (error) { toast.error('Não foi possível excluir'); return; }
+    toast.success('Anúncio excluído');
+    navigate('/m/marketplace');
   };
 
   if (loading) return <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
@@ -166,14 +165,25 @@ export default function MMarketplaceItem() {
           </div>
         )}
 
-        {user && user.id !== ad.seller_id && (
-          <div className="flex gap-2">
-            <button onClick={handleMessage} className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold glow-primary">
-              <Send className="h-4 w-4" /> Mandar mensagem
-            </button>
-            <button onClick={() => setReportOpen(true)} className="px-4 rounded-xl bg-card border border-border text-muted-foreground hover:text-destructive hover:border-destructive/40 transition-colors">
-              <Flag className="h-4 w-4" />
-            </button>
+        {user && (
+          <div className="flex gap-2 items-center">
+            {user.id !== ad.seller_id && (
+              <button onClick={handleMessage} className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold glow-primary">
+                <Send className="h-4 w-4" /> Mandar mensagem
+              </button>
+            )}
+            <ItemActionsMenu
+              copyText={`${ad.title} — R$ ${ad.price.toFixed(2)}`}
+              shareUrl={`/m/marketplace/${ad.id}`}
+              canDelete={user.id === ad.seller_id}
+              onDelete={deleteAd}
+              deleteConfirm="Excluir este anúncio?"
+              reportType={user.id !== ad.seller_id ? 'anuncio' : undefined}
+              reportTargetId={ad.id}
+              reportLabel="anúncio"
+              className="px-3 py-3 rounded-xl bg-card border border-border"
+              iconClassName="h-5 w-5"
+            />
           </div>
         )}
 
@@ -196,19 +206,6 @@ export default function MMarketplaceItem() {
           </section>
         )}
       </div>
-
-      {reportOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-end" onClick={() => setReportOpen(false)}>
-          <motion.div initial={{ y: 200 }} animate={{ y: 0 }} className="w-full bg-card rounded-t-2xl p-5 space-y-3" onClick={e => e.stopPropagation()}>
-            <h3 className="font-bold text-base">Denunciar anúncio</h3>
-            <textarea value={reportReason} onChange={e => setReportReason(e.target.value)} maxLength={500} rows={4} placeholder="Descreva o motivo da denúncia..." className="w-full p-3 rounded-lg bg-background border border-border text-sm resize-none focus:outline-none focus:ring-2 focus:ring-destructive/50" />
-            <div className="flex gap-2">
-              <button onClick={() => setReportOpen(false)} className="flex-1 py-2.5 rounded-lg bg-secondary text-secondary-foreground text-sm font-semibold">Cancelar</button>
-              <button onClick={submitReport} className="flex-1 py-2.5 rounded-lg bg-destructive text-destructive-foreground text-sm font-semibold">Enviar denúncia</button>
-            </div>
-          </motion.div>
-        </div>
-      )}
     </div>
   );
 }
