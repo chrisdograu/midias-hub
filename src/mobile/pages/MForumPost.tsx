@@ -27,7 +27,7 @@ export default function MForumPost() {
   const [replyTo, setReplyTo] = useState<{ id: string; user: string } | null>(null);
   const [sortBy, setSortBy] = useState<'top' | 'recent'>('top');
   const [submitting, setSubmitting] = useState(false);
-  const [reportTarget, setReportTarget] = useState<{ type: 'forum_post' | 'comentario_forum'; id: string; label: string } | null>(null);
+  
 
   const load = async () => {
     if (!postId) {
