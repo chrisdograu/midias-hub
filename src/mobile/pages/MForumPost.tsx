@@ -190,12 +190,18 @@ export default function MForumPost() {
                     <ThumbsUp className={`h-3 w-3 ${r.iLiked ? 'fill-current' : ''}`} />{r.likes_count}
                   </button>
                   {user && <button onClick={() => setReplyTo({ id: r.id, user: r.author })} className="hover:text-foreground">Responder</button>}
-                  {user && user.id === r.user_id && (
-                    <button onClick={() => deleteReply(r)} className="ml-auto hover:text-destructive flex items-center gap-1"><Trash2 className="h-3 w-3" />Excluir</button>
-                  )}
-                  {user && user.id !== r.user_id && (
-                    <button onClick={() => setReportTarget({ type: 'comentario_forum', id: r.id, label: 'comentário' })} className="ml-auto hover:text-destructive flex items-center gap-1"><Flag className="h-3 w-3" />Denunciar</button>
-                  )}
+                  <div className="ml-auto">
+                    <ItemActionsMenu
+                      copyText={r.content.replace(/^@\S+\s/, '')}
+                      canDelete={!!user && user.id === r.user_id}
+                      onDelete={() => deleteReply(r)}
+                      deleteConfirm="Excluir este comentário?"
+                      reportType={user && user.id !== r.user_id ? 'comentario_forum' : undefined}
+                      reportTargetId={r.id}
+                      reportLabel="comentário"
+                      iconClassName="h-3.5 w-3.5"
+                    />
+                  </div>
                 </div>
               </div>
             ))}
