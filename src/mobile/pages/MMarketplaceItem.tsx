@@ -76,12 +76,12 @@ export default function MMarketplaceItem() {
     navigate(`/m/chat/${conv.id}`);
   };
 
-  const submitReport = async () => {
-    if (!user || !ad || !reportReason.trim()) return;
-    const { error } = await supabase.from('denuncias').insert({
-      reporter_id: user.id, target_type: 'anuncio', target_id: ad.id, reason: reportReason.trim(),
-    });
-    if (error) toast.error('Erro ao denunciar'); else { toast.success('Denúncia enviada'); setReportOpen(false); setReportReason(''); }
+  const deleteAd = async () => {
+    if (!user || !ad || ad.seller_id !== user.id) return;
+    const { error } = await supabase.from('anuncios').delete().eq('id', ad.id);
+    if (error) { toast.error('Não foi possível excluir'); return; }
+    toast.success('Anúncio excluído');
+    navigate('/m/marketplace');
   };
 
   if (loading) return <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
