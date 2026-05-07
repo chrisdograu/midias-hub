@@ -441,10 +441,11 @@ export default function MReview() {
             {sortedReviews.map((r, idx) => (
               <motion.article
                 key={r.id}
+                id={`review-${r.id}`}
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: Math.min(idx * 0.03, 0.2) }}
-                className="glass rounded-xl p-4"
+                className={`glass rounded-xl p-4 ${focusId === r.id ? 'ring-2 ring-primary glow-primary' : ''}`}
               >
                 <header className="flex items-center gap-2 mb-2">
                   <Link to={`/m/perfil/${r.user_id}`} className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-accent overflow-hidden flex items-center justify-center text-primary-foreground font-bold text-sm">
