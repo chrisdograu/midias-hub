@@ -203,30 +203,55 @@ function ReviewRow({ r, onChange }: { r: ReviewItem; onChange: (delta: number) =
   const { user } = useAuth();
   const { requireAuth, gate } = useLoginGate();
   const [iLiked, setILiked] = useState(false);
+  const [iDisliked, setIDisliked] = useState(false);
+  const [dislikes, setDislikes] = useState(0);
   useEffect(() => {
+    supabase.from('review_comments').select('user_id').eq('review_id', r.id).eq('content', '__dislike__')
+      .then(({ data }) => {
+        setDislikes((data || []).length);
+        if (user) setIDisliked((data || []).some((d: any) => d.user_id === user.id));
+      });
     if (!user) return;
     supabase.from('review_likes').select('id').eq('review_id', r.id).eq('user_id', user.id).maybeSingle()
       .then(({ data }) => setILiked(!!data));
   }, [user, r.id]);
 
   const toggleLike = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault(); e.stopPropagation();
     if (!requireAuth() || !user) return;
     if (iLiked) {
       setILiked(false); onChange(-1);
       await supabase.from('review_likes').delete().eq('review_id', r.id).eq('user_id', user.id);
     } else {
+      if (iDisliked) {
+        setIDisliked(false); setDislikes(d => Math.max(0, d - 1));
+        await supabase.from('review_comments').delete().eq('review_id', r.id).eq('user_id', user.id).eq('content', '__dislike__');
+      }
       setILiked(true); onChange(1);
       const { error } = await supabase.from('review_likes').insert({ review_id: r.id, user_id: user.id });
       if (error && !/duplicate/i.test(error.message)) { setILiked(false); onChange(-1); toast.error('Erro ao curtir'); }
+    }
+  };
+  const toggleDislike = async (e: React.MouseEvent) => {
+    e.preventDefault(); e.stopPropagation();
+    if (!requireAuth() || !user) return;
+    if (iDisliked) {
+      setIDisliked(false); setDislikes(d => Math.max(0, d - 1));
+      await supabase.from('review_comments').delete().eq('review_id', r.id).eq('user_id', user.id).eq('content', '__dislike__');
+    } else {
+      if (iLiked) {
+        setILiked(false); onChange(-1);
+        await supabase.from('review_likes').delete().eq('review_id', r.id).eq('user_id', user.id);
+      }
+      setIDisliked(true); setDislikes(d => d + 1);
+      await supabase.from('review_comments').insert({ review_id: r.id, user_id: user.id, content: '__dislike__' });
     }
   };
 
   return (
     <>
       {gate}
-      <Link to={`/m/review/${r.product_id}`} className="block glass rounded-xl p-3 hover:border-accent/40 transition-colors">
+      <Link to={`/m/review/${r.product_id}?focus=${r.id}`} className="block glass rounded-xl p-3 hover:border-accent/40 transition-colors">
         <div className="flex items-center justify-between mb-1.5">
           <span className="text-sm font-bold">{r.product}</span>
           <span className="text-[10px] text-muted-foreground">{timeAgo(r.created_at)}</span>
@@ -234,9 +259,12 @@ function ReviewRow({ r, onChange }: { r: ReviewItem; onChange: (delta: number) =
         <div className="flex items-center gap-2 mb-1"><HalfStarDisplay rating={r.rating} size={13} /><span className="text-xs font-semibold text-price">{r.rating.toFixed(1)}</span></div>
         {r.comment && <p className="text-sm text-foreground line-clamp-3">{r.comment}</p>}
         <div className="flex items-center gap-3 mt-2 text-[11px] text-muted-foreground">
-          <span>por <b className="text-foreground">{r.author}</b></span>
+          <Link to={`/m/perfil/${r.user_id}`} onClick={e => e.stopPropagation()} className="hover:text-foreground">por <b className="text-foreground">{r.author}</b></Link>
           <button onClick={toggleLike} className={`flex items-center gap-1 transition-colors ${iLiked ? 'text-primary' : 'hover:text-primary'}`}>
             <ThumbsUp className={`h-3 w-3 ${iLiked ? 'fill-current' : ''}`} />{r.likes}
+          </button>
+          <button onClick={toggleDislike} className={`flex items-center gap-1 transition-colors ${iDisliked ? 'text-destructive' : 'hover:text-destructive'}`}>
+            <ThumbsDown className={`h-3 w-3 ${iDisliked ? 'fill-current' : ''}`} />{dislikes}
           </button>
         </div>
       </Link>
