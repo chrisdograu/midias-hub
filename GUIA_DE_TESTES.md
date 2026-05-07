@@ -17,7 +17,7 @@ Este documento descreve como testar **todas as funcionalidades** do sistema (Web
 | `cliente3@teste.com` | `Teste@123` | Avaliador (escreve reviews, comenta) |
 | `banido@teste.com`   | `Teste@123` | **Conta suspensa por 7 dias** — para testar o banner global e bloqueio de RLS |
 
-### 🛠️ Funcionários (já existem no banco — senha definida na criação original)
+### 🛠️ Funcionários
 
 | E-mail / Nome | Cargo | Acesso desktop |
 |---|---|---|
@@ -28,7 +28,13 @@ Este documento descreve como testar **todas as funcionalidades** do sistema (Web
 | Paulo / 67 | **estoquista** | Estoque, produtos, fornecedores |
 | Carla Atendente | **atendente** | Pedidos, mensagens, clientes |
 
-> Se você não souber a senha de algum funcionário, faça login como admin e use `/desktop/funcionarios` para resetar.
+#### 🔐 Conta admin principal do desktop
+
+- **Login:** `admin2@midias.com`
+- **Senha:** `Teste@123`
+- **URL de acesso:** `/desktop/login`
+- **Permissões:** acesso total ao backoffice, incluindo produtos, funcionários, moderação, certificados, relatórios e configurações.
+- **Observações importantes:** use essa conta para validar RBAC, resetar senha de outros funcionários em `/desktop/funcionarios` e revisar pendências gerais do sistema.
 
 ---
 
