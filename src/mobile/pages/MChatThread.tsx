@@ -168,6 +168,10 @@ export default function MChatThread() {
     toast.success('Mensagem excluída');
   };
 
+  const editMessage = () => {
+    toast.info('Edição de mensagem ainda não está disponível.');
+  };
+
   if (loading) return <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   if (!conv || !other) return <div className="p-6 text-center text-muted-foreground">Conversa não encontrada.</div>;
 
@@ -223,6 +227,8 @@ export default function MChatThread() {
               {own && (
                 <ItemActionsMenu
                   copyText={m.image_url ? undefined : m.content}
+                  canEdit={!m.image_url}
+                  onEdit={editMessage}
                   canDelete
                   onDelete={() => deleteMessage(m)}
                   deleteConfirm="Excluir esta mensagem?"
