@@ -220,7 +220,7 @@ export default function MProfile() {
             reviews.length === 0 ? <p className="text-sm text-muted-foreground text-center py-6">Sem reviews.</p> : (
               <div className="space-y-2">
                 {reviews.map(r => (
-                  <Link key={r.id} to={`/m/review/${r.product_id}`} className="block glass rounded-xl p-3">
+                  <Link key={r.id} to={`/m/review/${r.product_id}?focus=${r.id}`} className="block glass rounded-xl p-3">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-bold">{r.product}</span>
                       <HalfStarDisplay rating={r.rating} size={12} />
