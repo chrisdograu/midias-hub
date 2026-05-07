@@ -210,6 +210,9 @@ function PostCard({ p, onDeleted }: { p: ForumPost; onDeleted?: () => void }) {
     toast.success('Post excluído');
     onDeleted?.();
   };
+  const handleEdit = () => {
+    toast.info('Edição de post será disponibilizada na próxima etapa do fórum.');
+  };
   return (
     <div
       role="link"
@@ -230,6 +233,8 @@ function PostCard({ p, onDeleted }: { p: ForumPost; onDeleted?: () => void }) {
           <ItemActionsMenu
             copyText={p.content}
             shareUrl={`/m/forum/post/${p.id}`}
+            canEdit={!!user && user.id === p.user_id}
+            onEdit={handleEdit}
             canDelete={!!user && user.id === p.user_id}
             onDelete={handleDelete}
             deleteConfirm="Excluir este post?"
