@@ -41,6 +41,8 @@ export default function MForum() {
   const [posts, setPosts] = useState<ForumPost[]>([]);
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [communityHits, setCommunityHits] = useState<{ id: string; title: string; image_url: string | null }[]>([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     let cancel = false;
