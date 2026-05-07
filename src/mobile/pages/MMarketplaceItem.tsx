@@ -206,19 +206,6 @@ export default function MMarketplaceItem() {
           </section>
         )}
       </div>
-
-      {reportOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-end" onClick={() => setReportOpen(false)}>
-          <motion.div initial={{ y: 200 }} animate={{ y: 0 }} className="w-full bg-card rounded-t-2xl p-5 space-y-3" onClick={e => e.stopPropagation()}>
-            <h3 className="font-bold text-base">Denunciar anúncio</h3>
-            <textarea value={reportReason} onChange={e => setReportReason(e.target.value)} maxLength={500} rows={4} placeholder="Descreva o motivo da denúncia..." className="w-full p-3 rounded-lg bg-background border border-border text-sm resize-none focus:outline-none focus:ring-2 focus:ring-destructive/50" />
-            <div className="flex gap-2">
-              <button onClick={() => setReportOpen(false)} className="flex-1 py-2.5 rounded-lg bg-secondary text-secondary-foreground text-sm font-semibold">Cancelar</button>
-              <button onClick={submitReport} className="flex-1 py-2.5 rounded-lg bg-destructive text-destructive-foreground text-sm font-semibold">Enviar denúncia</button>
-            </div>
-          </motion.div>
-        </div>
-      )}
     </div>
   );
 }
