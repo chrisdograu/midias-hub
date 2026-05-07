@@ -473,6 +473,16 @@ export default function MReview() {
                       <span className="text-[10px] text-muted-foreground">• {timeAgo(r.created_at)}</span>
                     </div>
                   </div>
+                  <ItemActionsMenu
+                    copyText={r.comment || ''}
+                    shareUrl={`/m/review/${productId}?focus=${r.id}`}
+                    canDelete={!!user && user.id === r.user_id}
+                    onDelete={() => deleteReview(r.id)}
+                    deleteConfirm="Excluir esta review?"
+                    reportType={user && user.id !== r.user_id ? 'review' : undefined}
+                    reportTargetId={r.id}
+                    reportLabel="review"
+                  />
                 </header>
                 {r.comment && <p className="text-sm text-foreground whitespace-pre-wrap">{r.comment}</p>}
                 <footer className="flex items-center gap-2 mt-3">
