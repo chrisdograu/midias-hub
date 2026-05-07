@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { MobileBadge } from '@/mobile/lib/badge';
+import { ItemActionsMenu } from '@/components/ItemActionsMenu';
 
 interface Msg {
   id: string; sender_id: string; receiver_id: string; content: string;
