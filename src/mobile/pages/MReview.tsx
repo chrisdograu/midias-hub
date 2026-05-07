@@ -48,6 +48,8 @@ export default function MReview() {
   const { productId } = useParams<{ productId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const focusId = searchParams.get('focus');
 
   const [produto, setProduto] = useState<Produto | null>(null);
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
