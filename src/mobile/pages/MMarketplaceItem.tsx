@@ -165,14 +165,25 @@ export default function MMarketplaceItem() {
           </div>
         )}
 
-        {user && user.id !== ad.seller_id && (
-          <div className="flex gap-2">
-            <button onClick={handleMessage} className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold glow-primary">
-              <Send className="h-4 w-4" /> Mandar mensagem
-            </button>
-            <button onClick={() => setReportOpen(true)} className="px-4 rounded-xl bg-card border border-border text-muted-foreground hover:text-destructive hover:border-destructive/40 transition-colors">
-              <Flag className="h-4 w-4" />
-            </button>
+        {user && (
+          <div className="flex gap-2 items-center">
+            {user.id !== ad.seller_id && (
+              <button onClick={handleMessage} className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold glow-primary">
+                <Send className="h-4 w-4" /> Mandar mensagem
+              </button>
+            )}
+            <ItemActionsMenu
+              copyText={`${ad.title} — R$ ${ad.price.toFixed(2)}`}
+              shareUrl={`/m/marketplace/${ad.id}`}
+              canDelete={user.id === ad.seller_id}
+              onDelete={deleteAd}
+              deleteConfirm="Excluir este anúncio?"
+              reportType={user.id !== ad.seller_id ? 'anuncio' : undefined}
+              reportTargetId={ad.id}
+              reportLabel="anúncio"
+              className="px-3 py-3 rounded-xl bg-card border border-border"
+              iconClassName="h-5 w-5"
+            />
           </div>
         )}
 
