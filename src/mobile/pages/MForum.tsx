@@ -224,7 +224,7 @@ export default function MForum() {
       ) : tab === 'posts' ? (
         <div className="space-y-2.5">
           {sortedPosts.length === 0 ? <p className="text-center py-10 text-sm text-muted-foreground">Nenhum post no período.</p> :
-            sortedPosts.map(p => <PostCard key={p.id} p={p} />)}
+            sortedPosts.map(p => <PostCard key={p.id} p={p} onDeleted={() => setPosts(prev => prev.filter(x => x.id !== p.id))} />)}
         </div>
       ) : (
         <div className="space-y-2.5">
