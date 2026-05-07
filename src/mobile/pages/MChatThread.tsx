@@ -160,7 +160,13 @@ export default function MChatThread() {
     });
   };
 
-  if (loading) return <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+  const deleteMessage = async (m: Msg) => {
+    if (!user || m.sender_id !== user.id) return;
+    const { error } = await supabase.from('mensagens').delete().eq('id', m.id);
+    if (error) { toast.error('Não foi possível excluir'); return; }
+    setMsgs(prev => prev.filter(x => x.id !== m.id));
+    toast.success('Mensagem excluída');
+  };
   if (!conv || !other) return <div className="p-6 text-center text-muted-foreground">Conversa não encontrada.</div>;
 
   const canCounteroffer = ad && (ad.accepts_counteroffer || ad.ad_type === 'troca');
