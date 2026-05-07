@@ -10,6 +10,7 @@ import { timeAgo } from '@/mobile/lib/time';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import { ItemActionsMenu } from '@/components/ItemActionsMenu';
 
 interface Produto {
   id: string;
