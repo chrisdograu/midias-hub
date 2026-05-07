@@ -249,7 +249,13 @@ export default function MReview() {
     load();
   };
 
-  const submitSuggestion = async () => {
+  const deleteReview = async (id: string) => {
+    if (!user) return;
+    const { error } = await supabase.from('avaliacoes').delete().eq('id', id).eq('user_id', user.id);
+    if (error) { toast.error('Não foi possível excluir'); return; }
+    toast.success('Review excluída');
+    setReviews(prev => prev.filter(r => r.id !== id));
+  };
     if (!user) { toast.error('Entre para sugerir'); navigate('/m/auth'); return; }
     const title = suggestTitle.trim();
     if (title.length < 2) { toast.error('Título muito curto'); return; }
