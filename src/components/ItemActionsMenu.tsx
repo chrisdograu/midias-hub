@@ -1,5 +1,5 @@
 import { useState, ReactNode } from 'react';
-import { MoreVertical, Copy, Flag, Trash2, Link as LinkIcon, Check } from 'lucide-react';
+import { MoreVertical, Copy, Flag, Trash2, Link as LinkIcon, Check, Pencil } from 'lucide-react';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { toast } from 'sonner';
 import { ReportDialog } from '@/components/ReportDialog';
@@ -23,6 +23,8 @@ interface Props {
   canDelete?: boolean;
   onDelete?: () => void | Promise<void>;
   deleteConfirm?: string;
+  canEdit?: boolean;
+  onEdit?: () => void;
   /** Se setado, mostra a opção "Denunciar" e abre o ReportDialog. */
   reportType?: ReportType;
   reportTargetId?: string;
@@ -40,6 +42,8 @@ export function ItemActionsMenu({
   canDelete,
   onDelete,
   deleteConfirm = 'Tem certeza que deseja excluir?',
+  canEdit,
+  onEdit,
   reportType,
   reportTargetId,
   reportLabel,
@@ -77,8 +81,10 @@ export function ItemActionsMenu({
         <PopoverTrigger asChild>
           <button
             type="button"
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
             aria-label="Mais ações"
+            data-item-actions-trigger="true"
             className={`p-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors ${className}`}
           >
             <MoreVertical className={iconClassName} />
@@ -87,10 +93,14 @@ export function ItemActionsMenu({
         <PopoverContent
           align="end"
           sideOffset={4}
-          className="w-44 p-1 rounded-xl"
           onClick={(e) => e.stopPropagation()}
           onOpenAutoFocus={(e) => e.preventDefault()}
+          collisionPadding={12}
+          className="z-[120] w-48 p-1 rounded-xl border border-border bg-popover/95 backdrop-blur-xl shadow-2xl"
         >
+          {canEdit && onEdit && (
+            <MenuItem icon={Pencil} label="Editar" onClick={() => { close(); onEdit(); }} />
+          )}
           {copyText && (
             <MenuItem icon={copied ? Check : Copy} label="Copiar texto" onClick={() => doCopy(copyText, 'Texto copiado')} />
           )}

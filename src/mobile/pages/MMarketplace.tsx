@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Search, Plus, Loader2, ShieldCheck, ArrowLeftRight, ShoppingBag, SlidersHorizontal, X, Disc3, HardDrive, Gamepad2, Joystick, Sparkles, Package, Clock, TrendingDown, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,7 +11,7 @@ interface Ad {
   id: string; title: string; price: number; ad_type: string; condition: string;
   certificate_type: string; created_at: string; seller_id: string;
   category: string; plataformas: string[] | null; image: string | null;
-  seller_name: string;
+  seller_name: string; description: string | null; game_title: string | null;
 }
 
 const TYPE_FILTERS = [
@@ -41,6 +41,7 @@ const SORTS = [
 ] as const;
 
 export default function MMarketplace() {
+  const [searchParams] = useSearchParams();
   const [ads, setAds] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
@@ -54,12 +55,26 @@ export default function MMarketplace() {
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   useEffect(() => {
+    const qParam = searchParams.get('q') || '';
+    const tagParam = searchParams.get('tag') || '';
+    if (qParam && !query) setQuery(qParam);
+    if (tagParam && !query) setQuery(tagParam.replace(/-/g, ' '));
+  }, [searchParams]);
+
+  useEffect(() => {
     let cancel = false;
     (async () => {
       setLoading(true);
-      const { data: list } = await supabase
+      const { data: list, error } = await supabase
         .from('anuncios').select('*').eq('status', 'active')
         .order('created_at', { ascending: false }).limit(80);
+      if (error) {
+        if (!cancel) {
+          setAds([]);
+          setLoading(false);
+        }
+        return;
+      }
       if (!list) { if (!cancel) { setAds([]); setLoading(false); } return; }
 
       const ids = list.map(a => a.id);
@@ -78,6 +93,7 @@ export default function MMarketplace() {
           condition: a.condition, certificate_type: a.certificate_type, created_at: a.created_at,
           seller_id: a.seller_id, category: a.category, plataformas: a.plataformas,
           image: photo.get(a.id) || null, seller_name: seller.get(a.seller_id) || 'Vendedor',
+          description: a.description || null, game_title: a.game_title || null,
         })));
         setLoading(false);
       }
@@ -89,7 +105,14 @@ export default function MMarketplace() {
   const filtered = useMemo(() => {
     const q = debouncedQuery.trim().toLowerCase();
     let r = ads.filter(a => {
-      if (q && !a.title.toLowerCase().includes(q)) return false;
+      if (q) {
+        const haystack = [a.title, a.game_title, a.description, a.category, ...(a.plataformas || [])]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase();
+        const qTag = q.replace(/[:_]+/g, ' ').replace(/-/g, ' ');
+        if (!haystack.includes(qTag)) return false;
+      }
       if (type !== 'all' && a.ad_type !== type) return false;
       if (onlyProtected && a.certificate_type === 'sem_certificado') return false;
       if (category !== 'all' && a.category !== category) return false;

@@ -95,7 +95,6 @@ export default function MForumPost() {
 
   const deletePost = async () => {
     if (!post || !user || post.user_id !== user.id) return;
-    if (!confirm('Excluir este post?')) return;
     const { error } = await supabase.from('forum_posts').delete().eq('id', post.id);
     if (error) { toast.error('Erro ao excluir'); return; }
     toast.success('Post excluído');
@@ -121,6 +120,10 @@ export default function MForumPost() {
     } else {
       await supabase.from('forum_reply_likes').insert({ reply_id: r.id, user_id: user.id });
     }
+  };
+
+  const editPost = () => {
+    toast.info('Edição de post será disponibilizada na próxima etapa do fórum.');
   };
 
   const sortedReplies = [...replies].sort((a, b) => sortBy === 'top' ? b.likes_count - a.likes_count : +new Date(a.created_at) - +new Date(b.created_at));
@@ -150,6 +153,8 @@ export default function MForumPost() {
               <ItemActionsMenu
                 copyText={post.content}
                 shareUrl={`/m/forum/post/${post.id}`}
+                canEdit={!!user && user.id === post.user_id}
+                onEdit={editPost}
                 canDelete={!!user && user.id === post.user_id}
                 onDelete={deletePost}
                 deleteConfirm="Excluir este post?"

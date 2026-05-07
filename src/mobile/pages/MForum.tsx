@@ -12,7 +12,7 @@ import { ItemActionsMenu } from '@/components/ItemActionsMenu';
 import { toast } from 'sonner';
 
 type Sort = 'popular' | 'recent' | 'commented';
-type Tab = 'posts' | 'reviews';
+type Tab = 'posts';
 const SORTS: { id: Sort; label: string; icon: any }[] = [
   { id: 'popular', label: 'Populares', icon: TrendingUp },
   { id: 'recent', label: 'Recentes', icon: Clock },
@@ -28,11 +28,6 @@ interface ForumPost {
   id: string; content: string; created_at: string; likes_count: number; user_id: string;
   product_id: string; replies_count: number; author: string; product: string;
 }
-interface ReviewItem {
-  id: string; rating: number; comment: string | null; created_at: string;
-  user_id: string; product_id: string; author: string; product: string; likes: number;
-}
-
 export default function MForum() {
   const [tab, setTab] = useState<Tab>('posts');
   const [sort, setSort] = useState<Sort>('popular');
@@ -40,7 +35,6 @@ export default function MForum() {
   const [query, setQuery] = useState('');
   const [topGames, setTopGames] = useState<TopGame[]>([]);
   const [posts, setPosts] = useState<ForumPost[]>([]);
-  const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [communityHits, setCommunityHits] = useState<{ id: string; title: string; image_url: string | null }[]>([]);
   const navigate = useNavigate();
@@ -52,32 +46,25 @@ export default function MForum() {
       const since = periodSince(period);
       const sinceISO = since ? since.toISOString() : '1970-01-01';
 
-      const [{ data: rawPosts }, { data: rawReviews }] = await Promise.all([
+      const [{ data: rawPosts }] = await Promise.all([
         supabase.from('forum_posts').select('id, content, created_at, likes_count, user_id, product_id').gte('created_at', sinceISO).limit(100),
-        supabase.from('avaliacoes').select('id, rating, comment, created_at, user_id, product_id').eq('is_approved', true).gte('created_at', sinceISO).limit(100),
       ]);
 
       const userIds = new Set<string>();
       const productIds = new Set<string>();
       rawPosts?.forEach(p => userIds.add(p.user_id));
-      rawReviews?.forEach(r => userIds.add(r.user_id));
       rawPosts?.forEach(p => productIds.add(p.product_id));
-      rawReviews?.forEach(r => productIds.add(r.product_id));
       const postIds = rawPosts?.map(p => p.id) || [];
-      const reviewIds = rawReviews?.map(r => r.id) || [];
 
-      const [{ data: profiles }, { data: replies }, { data: likes }, { data: products }] = await Promise.all([
+      const [{ data: profiles }, { data: replies }, { data: products }] = await Promise.all([
         userIds.size ? supabase.from('profiles').select('id, display_name').in('id', [...userIds]) : Promise.resolve({ data: [] }),
         postIds.length ? supabase.from('forum_replies').select('post_id').in('post_id', postIds) : Promise.resolve({ data: [] }),
-        reviewIds.length ? supabase.from('review_likes').select('review_id').in('review_id', reviewIds) : Promise.resolve({ data: [] }),
         productIds.size ? supabase.from('produtos').select('id, title, image_url').in('id', [...productIds]) : Promise.resolve({ data: [] }),
       ]);
       const productMap = new Map((products || []).map(p => [p.id, p]));
       const profileMap = new Map((profiles || []).map(p => [p.id, p.display_name || 'Usuário']));
       const replyCount = new Map<string, number>();
       (replies || []).forEach(r => replyCount.set(r.post_id, (replyCount.get(r.post_id) || 0) + 1));
-      const likeCount = new Map<string, number>();
-      (likes || []).forEach(l => likeCount.set(l.review_id, (likeCount.get(l.review_id) || 0) + 1));
 
       // Top 10 games (by post count in period)
       const countByGame = new Map<string, number>();
@@ -108,15 +95,7 @@ export default function MForum() {
         author: profileMap.get(p.user_id) || 'Usuário',
         product: productMap.get(p.product_id)?.title || 'Jogo',
       }));
-      const revList: ReviewItem[] = (rawReviews || []).map(r => ({
-        id: r.id, rating: Number(r.rating), comment: r.comment, created_at: r.created_at,
-        user_id: r.user_id, product_id: r.product_id,
-        author: profileMap.get(r.user_id) || 'Usuário',
-        product: productMap.get(r.product_id)?.title || 'Jogo',
-        likes: likeCount.get(r.id) || 0,
-      }));
-
-      if (!cancel) { setTopGames(top); setPosts(postsList); setReviews(revList); setLoading(false); }
+      if (!cancel) { setTopGames(top); setPosts(postsList); setLoading(false); }
     })();
     return () => { cancel = true; };
   }, [period]);
@@ -141,14 +120,6 @@ export default function MForum() {
     else arr = [...arr].sort((a, b) => (b.likes_count + b.replies_count * 2) - (a.likes_count + a.replies_count * 2));
     return arr.slice(0, 30);
   }, [posts, sort, debouncedQuery]);
-
-  const sortedReviews = useMemo(() => {
-    const q = debouncedQuery.trim().toLowerCase();
-    let arr = reviews.filter(r => !q || (r.comment || '').toLowerCase().includes(q) || r.product.toLowerCase().includes(q));
-    if (sort === 'recent') arr = [...arr].sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
-    else arr = [...arr].sort((a, b) => b.likes - a.likes);
-    return arr.slice(0, 30);
-  }, [reviews, sort, debouncedQuery]);
 
   return (
     <div className="px-4 py-5 space-y-4">
@@ -204,12 +175,8 @@ export default function MForum() {
         </div>
       </section>
 
-      {/* Tab + sort + period */}
+      {/* Filtros + período */}
       <div className="space-y-2">
-        <div className="flex p-1 bg-secondary/50 rounded-lg">
-          <button onClick={() => setTab('posts')} className={`flex-1 py-2 rounded-md text-xs font-semibold inline-flex items-center justify-center gap-1.5 ${tab === 'posts' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}><Newspaper className="h-3.5 w-3.5" /> Posts</button>
-          <button onClick={() => setTab('reviews')} className={`flex-1 py-2 rounded-md text-xs font-semibold inline-flex items-center justify-center gap-1.5 ${tab === 'reviews' ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'}`}><Star className="h-3.5 w-3.5" /> Reviews</button>
-        </div>
         <div className="flex gap-1.5 overflow-x-auto scrollbar-thin -mx-4 px-4">
           {SORTS.map(s => <MobileChip key={s.id} active={sort === s.id} onClick={() => setSort(s.id)}>{s.label}</MobileChip>)}
         </div>
@@ -221,101 +188,13 @@ export default function MForum() {
       {/* Feed */}
       {loading ? (
         <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
-      ) : tab === 'posts' ? (
+      ) : (
         <div className="space-y-2.5">
           {sortedPosts.length === 0 ? <p className="text-center py-10 text-sm text-muted-foreground">Nenhum post no período.</p> :
             sortedPosts.map(p => <PostCard key={p.id} p={p} onDeleted={() => setPosts(prev => prev.filter(x => x.id !== p.id))} />)}
         </div>
-      ) : (
-        <div className="space-y-2.5">
-          {sortedReviews.length === 0 ? <p className="text-center py-10 text-sm text-muted-foreground">Nenhuma review no período.</p> :
-            sortedReviews.map(r => <ReviewRow key={r.id} r={r} onChange={(delta) => setReviews(prev => prev.map(x => x.id === r.id ? { ...x, likes: Math.max(0, x.likes + delta) } : x))} />)}
-        </div>
       )}
     </div>
-  );
-}
-
-function ReviewRow({ r, onChange }: { r: ReviewItem; onChange: (delta: number) => void }) {
-  const { user } = useAuth();
-  const { requireAuth, gate } = useLoginGate();
-  const [iLiked, setILiked] = useState(false);
-  const [iDisliked, setIDisliked] = useState(false);
-  const [dislikes, setDislikes] = useState(0);
-  useEffect(() => {
-    supabase.from('review_comments').select('user_id').eq('review_id', r.id).eq('content', '__dislike__')
-      .then(({ data }) => {
-        setDislikes((data || []).length);
-        if (user) setIDisliked((data || []).some((d: any) => d.user_id === user.id));
-      });
-    if (!user) return;
-    supabase.from('review_likes').select('id').eq('review_id', r.id).eq('user_id', user.id).maybeSingle()
-      .then(({ data }) => setILiked(!!data));
-  }, [user, r.id]);
-
-  const toggleLike = async (e: React.MouseEvent) => {
-    e.preventDefault(); e.stopPropagation();
-    if (!requireAuth() || !user) return;
-    if (iLiked) {
-      setILiked(false); onChange(-1);
-      await supabase.from('review_likes').delete().eq('review_id', r.id).eq('user_id', user.id);
-    } else {
-      if (iDisliked) {
-        setIDisliked(false); setDislikes(d => Math.max(0, d - 1));
-        await supabase.from('review_comments').delete().eq('review_id', r.id).eq('user_id', user.id).eq('content', '__dislike__');
-      }
-      setILiked(true); onChange(1);
-      const { error } = await supabase.from('review_likes').insert({ review_id: r.id, user_id: user.id });
-      if (error && !/duplicate/i.test(error.message)) { setILiked(false); onChange(-1); toast.error('Erro ao curtir'); }
-    }
-  };
-  const toggleDislike = async (e: React.MouseEvent) => {
-    e.preventDefault(); e.stopPropagation();
-    if (!requireAuth() || !user) return;
-    if (iDisliked) {
-      setIDisliked(false); setDislikes(d => Math.max(0, d - 1));
-      await supabase.from('review_comments').delete().eq('review_id', r.id).eq('user_id', user.id).eq('content', '__dislike__');
-    } else {
-      if (iLiked) {
-        setILiked(false); onChange(-1);
-        await supabase.from('review_likes').delete().eq('review_id', r.id).eq('user_id', user.id);
-      }
-      setIDisliked(true); setDislikes(d => d + 1);
-      await supabase.from('review_comments').insert({ review_id: r.id, user_id: user.id, content: '__dislike__' });
-    }
-  };
-
-  return (
-    <>
-      {gate}
-      <Link to={`/m/review/${r.product_id}?focus=${r.id}`} className="block glass rounded-xl p-3 hover:border-accent/40 transition-colors">
-        <div className="flex items-center justify-between mb-1.5">
-          <span className="text-sm font-bold">{r.product}</span>
-          <div className="flex items-center gap-1" onClick={e => { e.preventDefault(); e.stopPropagation(); }}>
-            <span className="text-[10px] text-muted-foreground">{timeAgo(r.created_at)}</span>
-            <ItemActionsMenu
-              copyText={r.comment || ''}
-              shareUrl={`/m/review/${r.product_id}?focus=${r.id}`}
-              reportType={user && user.id !== r.user_id ? 'review' : undefined}
-              reportTargetId={r.id}
-              reportLabel="review"
-              iconClassName="h-3.5 w-3.5"
-            />
-          </div>
-        </div>
-        <div className="flex items-center gap-2 mb-1"><HalfStarDisplay rating={r.rating} size={13} /><span className="text-xs font-semibold text-price">{r.rating.toFixed(1)}</span></div>
-        {r.comment && <p className="text-sm text-foreground line-clamp-3">{r.comment}</p>}
-        <div className="flex items-center gap-3 mt-2 text-[11px] text-muted-foreground">
-          <Link to={`/m/perfil/${r.user_id}`} onClick={e => e.stopPropagation()} className="hover:text-foreground">por <b className="text-foreground">{r.author}</b></Link>
-          <button onClick={toggleLike} className={`flex items-center gap-1 transition-colors ${iLiked ? 'text-primary' : 'hover:text-primary'}`}>
-            <ThumbsUp className={`h-3 w-3 ${iLiked ? 'fill-current' : ''}`} />{r.likes}
-          </button>
-          <button onClick={toggleDislike} className={`flex items-center gap-1 transition-colors ${iDisliked ? 'text-destructive' : 'hover:text-destructive'}`}>
-            <ThumbsDown className={`h-3 w-3 ${iDisliked ? 'fill-current' : ''}`} />{dislikes}
-          </button>
-        </div>
-      </Link>
-    </>
   );
 }
 
@@ -330,6 +209,9 @@ function PostCard({ p, onDeleted }: { p: ForumPost; onDeleted?: () => void }) {
     if (error) { toast.error('Não foi possível excluir'); return; }
     toast.success('Post excluído');
     onDeleted?.();
+  };
+  const handleEdit = () => {
+    toast.info('Edição de post será disponibilizada na próxima etapa do fórum.');
   };
   return (
     <div
@@ -351,6 +233,8 @@ function PostCard({ p, onDeleted }: { p: ForumPost; onDeleted?: () => void }) {
           <ItemActionsMenu
             copyText={p.content}
             shareUrl={`/m/forum/post/${p.id}`}
+            canEdit={!!user && user.id === p.user_id}
+            onEdit={handleEdit}
             canDelete={!!user && user.id === p.user_id}
             onDelete={handleDelete}
             deleteConfirm="Excluir este post?"

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, ThumbsUp, ThumbsDown, Loader2, Flame, Calendar, Tag, MessageSquare, Send, Star } from 'lucide-react';
+import { ArrowLeft, ThumbsUp, ThumbsDown, Loader2, Flame, Calendar, Tag, MessageSquare, Send, Star, Filter } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { HalfStarDisplay, InteractiveHalfStar } from '@/components/HalfStarRating';
@@ -39,6 +39,7 @@ interface ReviewItem {
 }
 
 type Sort = 'popular' | 'recent' | 'top';
+type FilterRating = 'all' | '4+' | '3+';
 
 const reviewSchema = z.object({
   rating: z.number().min(0.5, 'Avalie de 0.5 a 5').max(5),
@@ -56,6 +57,8 @@ export default function MReview() {
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [sort, setSort] = useState<Sort>('popular');
+  const [onlyWithText, setOnlyWithText] = useState(false);
+  const [ratingFilter, setRatingFilter] = useState<FilterRating>('all');
 
   const [suggestTitle, setSuggestTitle] = useState('');
 
@@ -163,7 +166,12 @@ export default function MReview() {
   }, [focusId, loading, reviews.length]);
 
   const sortedReviews = useMemo(() => {
-    const copy = [...reviews];
+    const copy = [...reviews].filter((review) => {
+      if (onlyWithText && !review.comment?.trim()) return false;
+      if (ratingFilter === '4+' && review.rating < 4) return false;
+      if (ratingFilter === '3+' && review.rating < 3) return false;
+      return true;
+    });
     if (sort === 'popular') {
       copy.sort((a, b) => (b.likes - b.dislikes) - (a.likes - a.dislikes) || +new Date(b.created_at) - +new Date(a.created_at));
     } else if (sort === 'top') {
@@ -172,7 +180,17 @@ export default function MReview() {
       copy.sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
     }
     return copy;
-  }, [reviews, sort]);
+  }, [reviews, sort, onlyWithText, ratingFilter]);
+
+  const reviewTag = useMemo(() => {
+    if (!produto?.title) return '';
+    return produto.title
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+  }, [produto?.title]);
 
   const avg = useMemo(() => {
     if (!reviews.length) return Number(produto?.rating || 0);
@@ -368,7 +386,7 @@ export default function MReview() {
                 Ver na loja →
               </Link>
             )}
-            <Link to={`/m/marketplace?q=${encodeURIComponent(produto.title)}`} className="text-xs font-semibold text-accent hover:underline">
+            <Link to={`/m/marketplace?tag=${encodeURIComponent(reviewTag || produto.title)}`} className="text-xs font-semibold text-accent hover:underline">
               Ver no Marketplace →
             </Link>
           </div>
@@ -430,8 +448,11 @@ export default function MReview() {
       <section className="px-4 mt-5">
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-sm font-bold flex items-center gap-1.5"><MessageSquare className="h-4 w-4 text-primary" /> Reviews da comunidade</h3>
+          <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+            <Filter className="h-3.5 w-3.5" /> {sortedReviews.length} visíveis
+          </div>
         </div>
-        <div className="flex gap-1.5 mb-3">
+        <div className="flex gap-1.5 mb-2 overflow-x-auto scrollbar-thin pb-1">
           {([
             { id: 'popular', label: '🔥 Populares' },
             { id: 'top', label: '⭐ Melhores' },
@@ -447,6 +468,31 @@ export default function MReview() {
               {s.label}
             </button>
           ))}
+        </div>
+        <div className="flex gap-1.5 mb-3 overflow-x-auto scrollbar-thin pb-1">
+          {([
+            { id: 'all', label: 'Todas' },
+            { id: '4+', label: '4★+' },
+            { id: '3+', label: '3★+' },
+          ] as { id: FilterRating; label: string }[]).map(option => (
+            <button
+              key={option.id}
+              onClick={() => setRatingFilter(option.id)}
+              className={`px-3 py-1.5 rounded-full text-[11px] font-semibold transition-colors ${
+                ratingFilter === option.id ? 'bg-accent text-accent-foreground' : 'bg-card border border-border text-muted-foreground'
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+          <button
+            onClick={() => setOnlyWithText((value) => !value)}
+            className={`px-3 py-1.5 rounded-full text-[11px] font-semibold transition-colors ${
+              onlyWithText ? 'bg-primary text-primary-foreground' : 'bg-card border border-border text-muted-foreground'
+            }`}
+          >
+            Com texto
+          </button>
         </div>
 
         {sortedReviews.length === 0 ? (
