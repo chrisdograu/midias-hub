@@ -311,8 +311,16 @@ function ReviewRow({ r, onChange }: { r: ReviewItem; onChange: (delta: number) =
 
 
 
-function PostCard({ p }: { p: ForumPost }) {
+function PostCard({ p, onDeleted }: { p: ForumPost; onDeleted?: () => void }) {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const handleDelete = async () => {
+    if (!user || user.id !== p.user_id) return;
+    const { error } = await supabase.from('forum_posts').delete().eq('id', p.id);
+    if (error) { toast.error('Não foi possível excluir'); return; }
+    toast.success('Post excluído');
+    onDeleted?.();
+  };
   return (
     <div
       role="link"
@@ -328,7 +336,20 @@ function PostCard({ p }: { p: ForumPost }) {
         >
           <MForumTag name={p.product.toLowerCase().replace(/\s+/g, '').slice(0, 12)} />
         </button>
-        <span className="text-[10px] text-muted-foreground">{timeAgo(p.created_at)}</span>
+        <div className="flex items-center gap-1">
+          <span className="text-[10px] text-muted-foreground">{timeAgo(p.created_at)}</span>
+          <ItemActionsMenu
+            copyText={p.content}
+            shareUrl={`/m/forum/post/${p.id}`}
+            canDelete={!!user && user.id === p.user_id}
+            onDelete={handleDelete}
+            deleteConfirm="Excluir este post?"
+            reportType={user && user.id !== p.user_id ? 'forum_post' : undefined}
+            reportTargetId={p.id}
+            reportLabel="post"
+            iconClassName="h-3.5 w-3.5"
+          />
+        </div>
       </div>
       <p className="text-sm text-foreground line-clamp-3">{p.content}</p>
       <div className="flex items-center gap-3 mt-2 text-[11px] text-muted-foreground">
