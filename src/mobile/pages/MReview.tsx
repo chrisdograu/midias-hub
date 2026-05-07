@@ -347,12 +347,14 @@ export default function MReview() {
             <p className="text-sm text-muted-foreground mt-3 line-clamp-3">{produto.description}</p>
           )}
 
-          <div className="mt-3">
-            <Link
-              to={`/jogo/${produto.id}`}
-              className="text-xs font-semibold text-primary hover:underline"
-            >
-              Ver na loja →
+          <div className="mt-3 flex flex-wrap gap-2">
+            {produto && (
+              <Link to={`/jogo/${produto.id}`} className="text-xs font-semibold text-primary hover:underline">
+                Ver na loja →
+              </Link>
+            )}
+            <Link to={`/m/marketplace?q=${encodeURIComponent(produto.title)}`} className="text-xs font-semibold text-accent hover:underline">
+              Ver no Marketplace →
             </Link>
           </div>
         </div>
