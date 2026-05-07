@@ -155,6 +155,12 @@ export default function MReview() {
     return () => { supabase.removeChannel(ch); };
   }, [productId, user?.id]);
 
+  useEffect(() => {
+    if (!focusId || loading) return;
+    const el = document.getElementById(`review-${focusId}`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [focusId, loading, reviews.length]);
+
   const sortedReviews = useMemo(() => {
     const copy = [...reviews];
     if (sort === 'popular') {
