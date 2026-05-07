@@ -28,8 +28,6 @@ export default function MMarketplaceItem() {
   const [seller, setSeller] = useState<Seller | null>(null);
   const [similar, setSimilar] = useState<{ id: string; title: string; price: number; image: string | null }[]>([]);
   const [loading, setLoading] = useState(true);
-  const [reportOpen, setReportOpen] = useState(false);
-  const [reportReason, setReportReason] = useState('');
   const { isFollowing, loading: followLoading, toggle: toggleFollow } = useFollow(seller?.id);
 
   useEffect(() => {
