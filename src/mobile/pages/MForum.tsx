@@ -160,8 +160,31 @@ export default function MForum() {
         <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Buscar posts, reviews, jogos..." className="w-full pl-10 pr-3 py-2.5 bg-card border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
       </div>
 
+
+      {/* Comunidades correspondentes (prioridade na busca) */}
+      {communityHits.length > 0 && (
+        <section>
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5"><Users className="h-3.5 w-3.5 text-accent" /> Comunidades</h2>
+          <div className="space-y-1.5">
+            {communityHits.map(g => (
+              <Link key={g.id} to={`/m/forum/${g.id}`} className="flex items-center gap-2.5 glass rounded-lg p-2 hover:border-primary/40">
+                <div className="w-10 h-12 rounded bg-muted overflow-hidden shrink-0">
+                  {g.image_url ? <img src={g.image_url} alt={g.title} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-muted-foreground"><Gamepad2 className="h-4 w-4" /></div>}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <MForumTag name={g.title.toLowerCase().replace(/\s+/g, '').slice(0, 14)} />
+                  <p className="text-xs font-semibold truncate mt-0.5">{g.title}</p>
+                </div>
+                <span className="text-[10px] text-primary font-semibold">Abrir →</span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Top 10 M/jogos */}
       <section>
+
         <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5"><Flame className="h-3.5 w-3.5 text-primary" /> Top 10 M/jogos</h2>
         <div className="flex gap-2 overflow-x-auto scrollbar-thin -mx-4 px-4 pb-1">
           {topGames.length === 0 && <p className="text-sm text-muted-foreground">Nenhum jogo ativo ainda.</p>}
