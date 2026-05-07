@@ -167,6 +167,8 @@ export default function MChatThread() {
     setMsgs(prev => prev.filter(x => x.id !== m.id));
     toast.success('Mensagem excluída');
   };
+
+  if (loading) return <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   if (!conv || !other) return <div className="p-6 text-center text-muted-foreground">Conversa não encontrada.</div>;
 
   const canCounteroffer = ad && (ad.accepts_counteroffer || ad.ad_type === 'troca');
