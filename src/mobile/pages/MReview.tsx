@@ -256,6 +256,8 @@ export default function MReview() {
     toast.success('Review excluída');
     setReviews(prev => prev.filter(r => r.id !== id));
   };
+
+  const submitSuggestion = async () => {
     if (!user) { toast.error('Entre para sugerir'); navigate('/m/auth'); return; }
     const title = suggestTitle.trim();
     if (title.length < 2) { toast.error('Título muito curto'); return; }
