@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ThumbsUp, ThumbsDown, Loader2, Flame, Calendar, Tag, MessageSquare, Send, Star } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -48,6 +48,8 @@ export default function MReview() {
   const { productId } = useParams<{ productId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const focusId = searchParams.get('focus');
 
   const [produto, setProduto] = useState<Produto | null>(null);
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
@@ -152,6 +154,12 @@ export default function MReview() {
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [productId, user?.id]);
+
+  useEffect(() => {
+    if (!focusId || loading) return;
+    const el = document.getElementById(`review-${focusId}`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [focusId, loading, reviews.length]);
 
   const sortedReviews = useMemo(() => {
     const copy = [...reviews];
@@ -345,12 +353,14 @@ export default function MReview() {
             <p className="text-sm text-muted-foreground mt-3 line-clamp-3">{produto.description}</p>
           )}
 
-          <div className="mt-3">
-            <Link
-              to={`/jogo/${produto.id}`}
-              className="text-xs font-semibold text-primary hover:underline"
-            >
-              Ver na loja →
+          <div className="mt-3 flex flex-wrap gap-2">
+            {produto && (
+              <Link to={`/jogo/${produto.id}`} className="text-xs font-semibold text-primary hover:underline">
+                Ver na loja →
+              </Link>
+            )}
+            <Link to={`/m/marketplace?q=${encodeURIComponent(produto.title)}`} className="text-xs font-semibold text-accent hover:underline">
+              Ver no Marketplace →
             </Link>
           </div>
         </div>
@@ -437,10 +447,11 @@ export default function MReview() {
             {sortedReviews.map((r, idx) => (
               <motion.article
                 key={r.id}
+                id={`review-${r.id}`}
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: Math.min(idx * 0.03, 0.2) }}
-                className="glass rounded-xl p-4"
+                className={`glass rounded-xl p-4 ${focusId === r.id ? 'ring-2 ring-primary glow-primary' : ''}`}
               >
                 <header className="flex items-center gap-2 mb-2">
                   <Link to={`/m/perfil/${r.user_id}`} className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-accent overflow-hidden flex items-center justify-center text-primary-foreground font-bold text-sm">

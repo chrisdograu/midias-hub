@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
-import { Loader2, Search, MessagesSquare, TrendingUp, Clock, MessageSquare, ThumbsUp, ThumbsDown, Star, Flame, Newspaper, Gamepad2 } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Loader2, Search, MessagesSquare, TrendingUp, Clock, MessageSquare, ThumbsUp, ThumbsDown, Star, Flame, Newspaper, Gamepad2, Users } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { MobileChip, MForumTag, MobileBadge } from '@/mobile/lib/badge';
 import { timeAgo, periodSince, type Period } from '@/mobile/lib/time';
@@ -41,6 +41,8 @@ export default function MForum() {
   const [posts, setPosts] = useState<ForumPost[]>([]);
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [communityHits, setCommunityHits] = useState<{ id: string; title: string; image_url: string | null }[]>([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     let cancel = false;
@@ -118,7 +120,18 @@ export default function MForum() {
     return () => { cancel = true; };
   }, [period]);
 
-  const debouncedQuery = useDebounce(query, 200);
+  const debouncedQuery = useDebounce(query, 250);
+
+  // Busca priorizando comunidades de jogos (produtos por título)
+  useEffect(() => {
+    const q = debouncedQuery.trim();
+    if (q.length < 2) { setCommunityHits([]); return; }
+    let cancel = false;
+    supabase.from('produtos').select('id, title, image_url').eq('is_active', true).ilike('title', `%${q}%`).limit(6)
+      .then(({ data }) => { if (!cancel) setCommunityHits(data || []); });
+    return () => { cancel = true; };
+  }, [debouncedQuery]);
+
   const sortedPosts = useMemo(() => {
     const q = debouncedQuery.trim().toLowerCase();
     let arr = posts.filter(p => !q || p.content.toLowerCase().includes(q) || p.product.toLowerCase().includes(q));
@@ -147,8 +160,31 @@ export default function MForum() {
         <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Buscar posts, reviews, jogos..." className="w-full pl-10 pr-3 py-2.5 bg-card border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
       </div>
 
+
+      {/* Comunidades correspondentes (prioridade na busca) */}
+      {communityHits.length > 0 && (
+        <section>
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5"><Users className="h-3.5 w-3.5 text-accent" /> Comunidades</h2>
+          <div className="space-y-1.5">
+            {communityHits.map(g => (
+              <Link key={g.id} to={`/m/forum/${g.id}`} className="flex items-center gap-2.5 glass rounded-lg p-2 hover:border-primary/40">
+                <div className="w-10 h-12 rounded bg-muted overflow-hidden shrink-0">
+                  {g.image_url ? <img src={g.image_url} alt={g.title} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-muted-foreground"><Gamepad2 className="h-4 w-4" /></div>}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <MForumTag name={g.title.toLowerCase().replace(/\s+/g, '').slice(0, 14)} />
+                  <p className="text-xs font-semibold truncate mt-0.5">{g.title}</p>
+                </div>
+                <span className="text-[10px] text-primary font-semibold">Abrir →</span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Top 10 M/jogos */}
       <section>
+
         <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5"><Flame className="h-3.5 w-3.5 text-primary" /> Top 10 M/jogos</h2>
         <div className="flex gap-2 overflow-x-auto scrollbar-thin -mx-4 px-4 pb-1">
           {topGames.length === 0 && <p className="text-sm text-muted-foreground">Nenhum jogo ativo ainda.</p>}
@@ -203,30 +239,55 @@ function ReviewRow({ r, onChange }: { r: ReviewItem; onChange: (delta: number) =
   const { user } = useAuth();
   const { requireAuth, gate } = useLoginGate();
   const [iLiked, setILiked] = useState(false);
+  const [iDisliked, setIDisliked] = useState(false);
+  const [dislikes, setDislikes] = useState(0);
   useEffect(() => {
+    supabase.from('review_comments').select('user_id').eq('review_id', r.id).eq('content', '__dislike__')
+      .then(({ data }) => {
+        setDislikes((data || []).length);
+        if (user) setIDisliked((data || []).some((d: any) => d.user_id === user.id));
+      });
     if (!user) return;
     supabase.from('review_likes').select('id').eq('review_id', r.id).eq('user_id', user.id).maybeSingle()
       .then(({ data }) => setILiked(!!data));
   }, [user, r.id]);
 
   const toggleLike = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault(); e.stopPropagation();
     if (!requireAuth() || !user) return;
     if (iLiked) {
       setILiked(false); onChange(-1);
       await supabase.from('review_likes').delete().eq('review_id', r.id).eq('user_id', user.id);
     } else {
+      if (iDisliked) {
+        setIDisliked(false); setDislikes(d => Math.max(0, d - 1));
+        await supabase.from('review_comments').delete().eq('review_id', r.id).eq('user_id', user.id).eq('content', '__dislike__');
+      }
       setILiked(true); onChange(1);
       const { error } = await supabase.from('review_likes').insert({ review_id: r.id, user_id: user.id });
       if (error && !/duplicate/i.test(error.message)) { setILiked(false); onChange(-1); toast.error('Erro ao curtir'); }
+    }
+  };
+  const toggleDislike = async (e: React.MouseEvent) => {
+    e.preventDefault(); e.stopPropagation();
+    if (!requireAuth() || !user) return;
+    if (iDisliked) {
+      setIDisliked(false); setDislikes(d => Math.max(0, d - 1));
+      await supabase.from('review_comments').delete().eq('review_id', r.id).eq('user_id', user.id).eq('content', '__dislike__');
+    } else {
+      if (iLiked) {
+        setILiked(false); onChange(-1);
+        await supabase.from('review_likes').delete().eq('review_id', r.id).eq('user_id', user.id);
+      }
+      setIDisliked(true); setDislikes(d => d + 1);
+      await supabase.from('review_comments').insert({ review_id: r.id, user_id: user.id, content: '__dislike__' });
     }
   };
 
   return (
     <>
       {gate}
-      <Link to={`/m/review/${r.product_id}`} className="block glass rounded-xl p-3 hover:border-accent/40 transition-colors">
+      <Link to={`/m/review/${r.product_id}?focus=${r.id}`} className="block glass rounded-xl p-3 hover:border-accent/40 transition-colors">
         <div className="flex items-center justify-between mb-1.5">
           <span className="text-sm font-bold">{r.product}</span>
           <span className="text-[10px] text-muted-foreground">{timeAgo(r.created_at)}</span>
@@ -234,9 +295,12 @@ function ReviewRow({ r, onChange }: { r: ReviewItem; onChange: (delta: number) =
         <div className="flex items-center gap-2 mb-1"><HalfStarDisplay rating={r.rating} size={13} /><span className="text-xs font-semibold text-price">{r.rating.toFixed(1)}</span></div>
         {r.comment && <p className="text-sm text-foreground line-clamp-3">{r.comment}</p>}
         <div className="flex items-center gap-3 mt-2 text-[11px] text-muted-foreground">
-          <span>por <b className="text-foreground">{r.author}</b></span>
+          <Link to={`/m/perfil/${r.user_id}`} onClick={e => e.stopPropagation()} className="hover:text-foreground">por <b className="text-foreground">{r.author}</b></Link>
           <button onClick={toggleLike} className={`flex items-center gap-1 transition-colors ${iLiked ? 'text-primary' : 'hover:text-primary'}`}>
             <ThumbsUp className={`h-3 w-3 ${iLiked ? 'fill-current' : ''}`} />{r.likes}
+          </button>
+          <button onClick={toggleDislike} className={`flex items-center gap-1 transition-colors ${iDisliked ? 'text-destructive' : 'hover:text-destructive'}`}>
+            <ThumbsDown className={`h-3 w-3 ${iDisliked ? 'fill-current' : ''}`} />{dislikes}
           </button>
         </div>
       </Link>
@@ -244,7 +308,7 @@ function ReviewRow({ r, onChange }: { r: ReviewItem; onChange: (delta: number) =
   );
 }
 
-import { useNavigate } from 'react-router-dom';
+
 
 function PostCard({ p }: { p: ForumPost }) {
   const navigate = useNavigate();
