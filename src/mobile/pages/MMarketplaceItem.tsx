@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, ShieldCheck, ArrowLeftRight, Send, Flag, ChevronLeft, ChevronRight, Loader2, ShoppingBag, Star } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, ArrowLeftRight, Send, ChevronLeft, ChevronRight, Loader2, ShoppingBag, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -8,6 +8,7 @@ import { MobileBadge } from '@/mobile/lib/badge';
 import { HalfStarDisplay } from '@/components/HalfStarRating';
 import { useFollow } from '@/mobile/lib/useFollow';
 import { toast } from 'sonner';
+import { ItemActionsMenu } from '@/components/ItemActionsMenu';
 
 interface Ad {
   id: string; title: string; description: string | null; price: number; ad_type: string;
