@@ -8,6 +8,7 @@ import { HalfStarDisplay } from '@/components/HalfStarRating';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useAuth } from '@/hooks/useAuth';
 import { useLoginGate } from '@/components/LoginGate';
+import { ItemActionsMenu } from '@/components/ItemActionsMenu';
 import { toast } from 'sonner';
 
 type Sort = 'popular' | 'recent' | 'commented';
