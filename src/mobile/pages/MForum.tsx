@@ -120,7 +120,18 @@ export default function MForum() {
     return () => { cancel = true; };
   }, [period]);
 
-  const debouncedQuery = useDebounce(query, 200);
+  const debouncedQuery = useDebounce(query, 250);
+
+  // Busca priorizando comunidades de jogos (produtos por título)
+  useEffect(() => {
+    const q = debouncedQuery.trim();
+    if (q.length < 2) { setCommunityHits([]); return; }
+    let cancel = false;
+    supabase.from('produtos').select('id, title, image_url').eq('is_active', true).ilike('title', `%${q}%`).limit(6)
+      .then(({ data }) => { if (!cancel) setCommunityHits(data || []); });
+    return () => { cancel = true; };
+  }, [debouncedQuery]);
+
   const sortedPosts = useMemo(() => {
     const q = debouncedQuery.trim().toLowerCase();
     let arr = posts.filter(p => !q || p.content.toLowerCase().includes(q) || p.product.toLowerCase().includes(q));
