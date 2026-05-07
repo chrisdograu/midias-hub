@@ -195,7 +195,7 @@ function FeedCard({ item }: { item: FeedItem }) {
   }
   if (item.kind === 'review') {
     return (
-      <Link to={`/m/review/${item.productId}`} className="block glass rounded-xl p-4 hover:border-accent/40 transition-colors">
+      <Link to={`/m/review/${item.productId}?focus=${item.id}`} className="block glass rounded-xl p-4 hover:border-accent/40 transition-colors">
         <div className="flex items-center justify-between mb-1.5">
           <MobileBadge tone="price">Review</MobileBadge>
           <span className="text-[10px] text-muted-foreground">{timeAgo(item.created_at)}</span>
