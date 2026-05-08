@@ -65,6 +65,8 @@ export default function MReview() {
   const [myRating, setMyRating] = useState(0);
   const [myComment, setMyComment] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const canDeleteReview = (reviewUserId: string) => !!user && user.id === reviewUserId;
+  const canReportReview = (reviewUserId: string) => !user || user.id !== reviewUserId;
 
   const load = async () => {
     if (!productId) return;
@@ -522,10 +524,10 @@ export default function MReview() {
                   <ItemActionsMenu
                     copyText={r.comment || ''}
                     shareUrl={`/m/review/${productId}?focus=${r.id}`}
-                    canDelete={!!user && user.id === r.user_id}
+                    canDelete={canDeleteReview(r.user_id)}
                     onDelete={() => deleteReview(r.id)}
                     deleteConfirm="Excluir esta review?"
-                    reportType={user && user.id !== r.user_id ? 'review' : undefined}
+                    reportType={canReportReview(r.user_id) ? 'review' : undefined}
                     reportTargetId={r.id}
                     reportLabel="review"
                   />

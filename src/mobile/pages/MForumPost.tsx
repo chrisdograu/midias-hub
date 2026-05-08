@@ -126,6 +126,9 @@ export default function MForumPost() {
     toast.info('Edição de post será disponibilizada na próxima etapa do fórum.');
   };
 
+  const canDeletePost = !!user && !!post && user.id === post.user_id;
+  const canReportPost = !!post && (!user || user.id !== post.user_id);
+
   const sortedReplies = [...replies].sort((a, b) => sortBy === 'top' ? b.likes_count - a.likes_count : +new Date(a.created_at) - +new Date(b.created_at));
   const topReply = replies.length > 0 ? [...replies].sort((a, b) => b.likes_count - a.likes_count)[0] : null;
 
@@ -153,12 +156,12 @@ export default function MForumPost() {
               <ItemActionsMenu
                 copyText={post.content}
                 shareUrl={`/m/forum/post/${post.id}`}
-                canEdit={!!user && user.id === post.user_id}
+                canEdit={canDeletePost}
                 onEdit={editPost}
-                canDelete={!!user && user.id === post.user_id}
+                canDelete={canDeletePost}
                 onDelete={deletePost}
                 deleteConfirm="Excluir este post?"
-                reportType={user && user.id !== post.user_id ? 'forum_post' : undefined}
+                reportType={canReportPost ? 'forum_post' : undefined}
                 reportTargetId={post.id}
                 reportLabel="post"
               />
@@ -181,6 +184,10 @@ export default function MForumPost() {
         <div className="space-y-2">
           {sortedReplies.length === 0 ? <p className="text-center py-6 text-sm text-muted-foreground">Seja o primeiro a comentar.</p> :
             sortedReplies.map(r => (
+              (() => {
+                const canDeleteReply = !!user && user.id === r.user_id;
+                const canReportReply = !user || user.id !== r.user_id;
+                return (
               <div key={r.id} className="glass rounded-xl p-3">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-xs font-semibold">{r.author}</span>
@@ -198,10 +205,10 @@ export default function MForumPost() {
                   <div className="ml-auto">
                     <ItemActionsMenu
                       copyText={r.content.replace(/^@\S+\s/, '')}
-                      canDelete={!!user && user.id === r.user_id}
+                      canDelete={canDeleteReply}
                       onDelete={() => deleteReply(r)}
                       deleteConfirm="Excluir este comentário?"
-                      reportType={user && user.id !== r.user_id ? 'comentario_forum' : undefined}
+                      reportType={canReportReply ? 'comentario_forum' : undefined}
                       reportTargetId={r.id}
                       reportLabel="comentário"
                       iconClassName="h-3.5 w-3.5"
@@ -209,6 +216,8 @@ export default function MForumPost() {
                   </div>
                 </div>
               </div>
+                );
+              })()
             ))}
         </div>
       </div>

@@ -203,6 +203,8 @@ export default function MForum() {
 function PostCard({ p, onDeleted }: { p: ForumPost; onDeleted?: () => void }) {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const canDelete = !!user && user.id === p.user_id;
+  const canReport = !user || user.id !== p.user_id;
   const handleDelete = async () => {
     if (!user || user.id !== p.user_id) return;
     const { error } = await supabase.from('forum_posts').delete().eq('id', p.id);
@@ -233,12 +235,12 @@ function PostCard({ p, onDeleted }: { p: ForumPost; onDeleted?: () => void }) {
           <ItemActionsMenu
             copyText={p.content}
             shareUrl={`/m/forum/post/${p.id}`}
-            canEdit={!!user && user.id === p.user_id}
+            canEdit={canDelete}
             onEdit={handleEdit}
-            canDelete={!!user && user.id === p.user_id}
+            canDelete={canDelete}
             onDelete={handleDelete}
             deleteConfirm="Excluir este post?"
-            reportType={user && user.id !== p.user_id ? 'forum_post' : undefined}
+            reportType={canReport ? 'forum_post' : undefined}
             reportTargetId={p.id}
             reportLabel="post"
             iconClassName="h-3.5 w-3.5"
