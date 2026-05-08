@@ -29,6 +29,8 @@ export default function MMarketplaceItem() {
   const [similar, setSimilar] = useState<{ id: string; title: string; price: number; image: string | null }[]>([]);
   const [loading, setLoading] = useState(true);
   const { isFollowing, loading: followLoading, toggle: toggleFollow } = useFollow(seller?.id);
+  const canDeleteAd = !!user && !!ad && user.id === ad.seller_id;
+  const canReportAd = !!ad && (!user || user.id !== ad.seller_id);
 
   useEffect(() => {
     if (!id) return;
@@ -179,12 +181,12 @@ export default function MMarketplaceItem() {
           <ItemActionsMenu
             copyText={`${ad.title} — R$ ${ad.price.toFixed(2)}`}
             shareUrl={`/m/marketplace/${ad.id}`}
-            canEdit={!!user && user.id === ad.seller_id}
+            canEdit={canDeleteAd}
             onEdit={openEdit}
-            canDelete={!!user && user.id === ad.seller_id}
+            canDelete={canDeleteAd}
             onDelete={deleteAd}
             deleteConfirm="Excluir este anúncio?"
-            reportType={user && user.id !== ad.seller_id ? 'anuncio' : undefined}
+            reportType={canReportAd ? 'anuncio' : undefined}
             reportTargetId={ad.id}
             reportLabel="anúncio"
             className="px-3 py-3 rounded-xl bg-card border border-border"
