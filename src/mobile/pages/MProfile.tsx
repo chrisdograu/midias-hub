@@ -190,15 +190,16 @@ export default function MProfile() {
         </div>
       ) : (
         <>
-          <div className="flex p-1 bg-secondary/40 rounded-lg overflow-x-auto scrollbar-thin">
+          <div className="grid grid-cols-4 gap-1 p-1 bg-secondary/40 rounded-lg">
             {([
               { id: 'ads', label: 'Anúncios', icon: ShoppingBag, count: ads.length },
               { id: 'reviews', label: 'Reviews', icon: Star, count: reviewsCount },
               { id: 'posts', label: 'Posts', icon: Newspaper, count: postsCount },
-              { id: 'lib', label: 'Biblioteca', icon: BookMarked, count: library.length },
+              { id: 'lib', label: 'Lib.', icon: BookMarked, count: library.length },
             ] as const).map(t => (
-              <button key={t.id} onClick={() => setTab(t.id)} className={`flex-1 min-w-[80px] py-2 rounded-md text-[11px] font-semibold inline-flex items-center justify-center gap-1 ${tab === t.id ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>
-                <t.icon className="h-3.5 w-3.5" /> {t.label} <span className="opacity-60">({t.count})</span>
+              <button key={t.id} onClick={() => setTab(t.id)} className={`py-2 px-1 rounded-md text-[10px] font-semibold inline-flex flex-col items-center justify-center gap-0.5 ${tab === t.id ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>
+                <t.icon className="h-3.5 w-3.5" />
+                <span className="truncate max-w-full">{t.label} <span className="opacity-60">({t.count})</span></span>
               </button>
             ))}
           </div>
