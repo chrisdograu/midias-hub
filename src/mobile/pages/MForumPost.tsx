@@ -220,10 +220,15 @@ export default function MForumPost() {
                   <span className="text-xs font-semibold">{r.author}</span>
                   <span className="text-[10px] text-muted-foreground">{timeAgo(r.created_at)}</span>
                 </div>
-                <p className="text-sm">
-                  {r.reply_to_user && <span className="text-accent font-semibold">@{r.reply_to_user} </span>}
-                  {r.content.replace(/^@\S+\s/, '')}
-                </p>
+                {(() => {
+                  const parsed = parseContent(r.content.replace(/^@\S+\s/, ''));
+                  return (
+                    <>
+                      {parsed.text && <p className="text-sm">{r.reply_to_user && <span className="text-accent font-semibold">@{r.reply_to_user} </span>}{parsed.text}</p>}
+                      {parsed.image && <img src={parsed.image} alt="" className="mt-1.5 rounded-lg max-h-60 object-cover" loading="lazy" />}
+                    </>
+                  );
+                })()}
                 <div className="flex items-center gap-3 mt-1.5 text-[11px] text-muted-foreground">
                   <button onClick={() => toggleReplyLike(r)} className={`flex items-center gap-1 hover:text-primary transition-colors ${r.iLiked ? 'text-primary' : ''}`}>
                     <ThumbsUp className={`h-3 w-3 ${r.iLiked ? 'fill-current' : ''}`} />{r.likes_count}
@@ -262,7 +267,10 @@ export default function MForumPost() {
                 <button onClick={() => setReplyTo(null)} className="text-destructive">cancelar</button>
               </div>
             )}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
+              <input ref={fileRef} type="file" accept="image/*,image/gif" hidden onChange={e => e.target.files?.[0] && uploadImage(e.target.files[0])} />
+              <button onClick={() => fileRef.current?.click()} className="p-2 rounded-full bg-secondary text-muted-foreground" title="Imagem"><ImageIcon className="h-4 w-4" /></button>
+              <button onClick={() => setGifOpen(true)} className="p-2 rounded-full bg-secondary text-muted-foreground" title="GIF"><Sticker className="h-4 w-4" /></button>
               <input value={text} onChange={e => setText(e.target.value)} placeholder="Adicione um comentário..." maxLength={1000}
                 onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), submitReply())}
                 className="flex-1 px-3 py-2.5 bg-card border border-border rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
