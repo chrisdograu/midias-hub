@@ -35,7 +35,26 @@ export default function MForumPost() {
   const [replyTo, setReplyTo] = useState<{ id: string; user: string } | null>(null);
   const [sortBy, setSortBy] = useState<'top' | 'recent'>('top');
   const [submitting, setSubmitting] = useState(false);
-  
+  const [gifOpen, setGifOpen] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const sendAttachment = async (url: string) => {
+    if (!user || !postId) return;
+    const prefix = replyTo ? `@${replyTo.user} ` : '';
+    const content = `${prefix}[img:${url}] ${text.trim()}`.slice(0, 1000);
+    const { error } = await supabase.from('forum_replies').insert({ user_id: user.id, post_id: postId, content });
+    if (error) { toast.error(error.message); return; }
+    setText(''); setReplyTo(null); load();
+  };
+  const uploadImage = async (file: File) => {
+    if (!user) return;
+    if (file.size > 5 * 1024 * 1024) { toast.error('Imagem deve ter no máximo 5MB'); return; }
+    const path = `forum/${user.id}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '')}`;
+    const { error } = await supabase.storage.from('chat-images').upload(path, file);
+    if (error) { toast.error('Erro ao enviar'); return; }
+    const { data: pub } = supabase.storage.from('chat-images').getPublicUrl(path);
+    sendAttachment(pub.publicUrl);
+  };
 
   const load = async () => {
     if (!postId) {
