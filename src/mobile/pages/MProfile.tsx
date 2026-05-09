@@ -53,7 +53,7 @@ export default function MProfile() {
         supabase.from('anuncios').select('id, title, price').eq('seller_id', targetId).eq('status', 'active').limit(20),
         supabase.from('avaliacoes').select('id, product_id, rating, comment, created_at').eq('user_id', targetId).eq('is_approved', true).order('created_at', { ascending: false }).limit(30),
         supabase.from('forum_posts').select('id, product_id, content, created_at, likes_count').eq('user_id', targetId).order('created_at', { ascending: false }).limit(30),
-        supabase.from('biblioteca_usuario').select('product_id, status').eq('user_id', targetId).limit(50),
+        supabase.from('biblioteca_usuario').select('product_id, status').eq('user_id', targetId).order('acquired_at', { ascending: false }).limit(500),
       ]);
       const adIds = adsRaw?.map(a => a.id) || [];
       const productIds = new Set<string>([
