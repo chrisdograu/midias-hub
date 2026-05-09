@@ -29,7 +29,12 @@ export default function MProfile() {
   const [postsCount, setPostsCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<'ads' | 'reviews' | 'posts' | 'lib'>('ads');
-  const [libFilter, setLibFilter] = useState<'all' | 'quero_jogar' | 'ja_joguei'>('all');
+  const [libFilter, setLibFilter] = useState<'all' | 'quero_jogar' | 'ja_joguei'>(() => {
+    try { return (localStorage.getItem('m:libFilter') as any) || 'all'; } catch { return 'all'; }
+  });
+  const [libPage, setLibPage] = useState(1);
+  const LIB_PAGE_SIZE = 18;
+  useEffect(() => { try { localStorage.setItem('m:libFilter', libFilter); } catch {} setLibPage(1); }, [libFilter]);
   const [reportOpen, setReportOpen] = useState(false);
   const [reportText, setReportText] = useState('');
   const [followersOpen, setFollowersOpen] = useState<'followers' | 'following' | null>(null);
