@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Send, Image as ImageIcon, ArrowLeftRight, Loader2, Check, X, User } from 'lucide-react';
+import { ArrowLeft, Send, Image as ImageIcon, ArrowLeftRight, Loader2, Check, X, User, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { MobileBadge } from '@/mobile/lib/badge';
 import { ItemActionsMenu } from '@/components/ItemActionsMenu';
+import { GifPicker } from '@/components/GifPicker';
 
 interface Msg {
   id: string; sender_id: string; receiver_id: string; content: string;
@@ -34,6 +35,7 @@ export default function MChatThread() {
   const [offerDesc, setOfferDesc] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
+  const [gifOpen, setGifOpen] = useState(false);
 
   const load = async () => {
     if (!conversationId || !user) {
@@ -128,6 +130,18 @@ export default function MChatThread() {
       anuncio_id: conv?.anuncio_id || null, message_type: 'image',
     });
     if (conv) await supabase.from('conversas').update({ last_message: '📷 Imagem', last_message_at: new Date().toISOString() }).eq('id', conv.id);
+    setSending(false);
+  };
+
+  const sendGif = async (url: string) => {
+    if (!user || !other) return;
+    setGifOpen(false);
+    setSending(true);
+    await supabase.from('mensagens').insert({
+      sender_id: user.id, receiver_id: other.id, content: '[gif]', image_url: url,
+      anuncio_id: conv?.anuncio_id || null, message_type: 'image',
+    });
+    if (conv) await supabase.from('conversas').update({ last_message: '🎞️ GIF', last_message_at: new Date().toISOString() }).eq('id', conv.id);
     setSending(false);
   };
 
@@ -265,6 +279,9 @@ export default function MChatThread() {
         <div className="flex items-center gap-1.5">
           <input ref={fileRef} type="file" accept="image/*" hidden onChange={e => e.target.files?.[0] && sendImage(e.target.files[0])} />
           <button onClick={() => fileRef.current?.click()} disabled={sending} className="p-2.5 rounded-full bg-secondary text-muted-foreground"><ImageIcon className="h-4 w-4" /></button>
+          {!ad && (
+            <button onClick={() => setGifOpen(true)} disabled={sending} className="p-2.5 rounded-full bg-secondary text-accent" title="Enviar GIF"><Sparkles className="h-4 w-4" /></button>
+          )}
           <input
             value={text} onChange={e => setText(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendText())}
@@ -297,6 +314,8 @@ export default function MChatThread() {
           </motion.div>
         </div>
       )}
+
+      {gifOpen && <GifPicker onSelect={sendGif} onClose={() => setGifOpen(false)} />}
     </div>
   );
 }
