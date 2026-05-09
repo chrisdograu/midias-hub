@@ -35,6 +35,7 @@ export default function MChatThread() {
   const [offerDesc, setOfferDesc] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
+  const [gifOpen, setGifOpen] = useState(false);
 
   const load = async () => {
     if (!conversationId || !user) {
