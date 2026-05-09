@@ -272,9 +272,14 @@ export default function MForumGame() {
           </div>
         </div>
 
-        {user && (
-          <button onClick={() => tab === 'forum' ? setPostOpen(true) : setReviewOpen(true)} className="w-full mt-3 py-2.5 rounded-xl bg-gradient-to-r from-primary to-accent text-primary-foreground text-sm font-semibold flex items-center justify-center gap-1.5">
-            <Plus className="h-4 w-4" /> {tab === 'forum' ? 'Criar post' : 'Escrever review'}
+        {tab === 'reviews' && (
+          <Link to={`/m/review/${gameId}`} className="w-full mt-3 py-2.5 rounded-xl bg-gradient-to-r from-primary to-accent text-primary-foreground text-sm font-semibold flex items-center justify-center gap-1.5">
+            <Plus className="h-4 w-4" /> Escrever / ver reviews completas
+          </Link>
+        )}
+        {tab === 'forum' && user && (
+          <button onClick={() => setPostOpen(true)} className="w-full mt-3 py-2.5 rounded-xl bg-gradient-to-r from-primary to-accent text-primary-foreground text-sm font-semibold flex items-center justify-center gap-1.5">
+            <Plus className="h-4 w-4" /> Criar post
           </button>
         )}
 
