@@ -279,6 +279,9 @@ export default function MChatThread() {
         <div className="flex items-center gap-1.5">
           <input ref={fileRef} type="file" accept="image/*" hidden onChange={e => e.target.files?.[0] && sendImage(e.target.files[0])} />
           <button onClick={() => fileRef.current?.click()} disabled={sending} className="p-2.5 rounded-full bg-secondary text-muted-foreground"><ImageIcon className="h-4 w-4" /></button>
+          {!ad && (
+            <button onClick={() => setGifOpen(true)} disabled={sending} className="p-2.5 rounded-full bg-secondary text-accent" title="Enviar GIF"><Sparkles className="h-4 w-4" /></button>
+          )}
           <input
             value={text} onChange={e => setText(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendText())}
