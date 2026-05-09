@@ -282,6 +282,7 @@ export default function MForumPost() {
         )}
       </div>
       {gate}
+      {gifOpen && <GifPicker onSelect={(url) => { setGifOpen(false); sendAttachment(url); }} onClose={() => setGifOpen(false)} />}
     </div>
   );
 }
