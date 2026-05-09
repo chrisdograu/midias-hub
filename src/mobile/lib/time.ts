@@ -16,17 +16,28 @@ export function timeAgo(dateStr: string | null | undefined) {
   return `${Math.floor(day / 365)}a`;
 }
 
-export type Period = 'day' | 'week' | 'month' | 'year' | 'all';
+export type Period = 'day' | 'week' | 'month' | 'bimester' | 'semester' | 'year' | 'all';
+
+export const PERIOD_OPTIONS: { id: Period; label: string }[] = [
+  { id: 'day', label: 'Hoje' },
+  { id: 'week', label: 'Semana' },
+  { id: 'month', label: 'Mês' },
+  { id: 'bimester', label: 'Bimestre' },
+  { id: 'semester', label: 'Semestre' },
+  { id: 'year', label: 'Ano' },
+  { id: 'all', label: 'Todos' },
+];
 
 export function periodSince(p: Period): Date | null {
-  const now = Date.now();
-  const map: Record<Period, number> = {
-    day: 24 * 3600e3,
-    week: 7 * 24 * 3600e3,
-    month: 30 * 24 * 3600e3,
-    year: 365 * 24 * 3600e3,
-    all: 0,
-  };
   if (p === 'all') return null;
-  return new Date(now - map[p]);
+  const D = 24 * 3600e3;
+  const map: Record<Exclude<Period, 'all'>, number> = {
+    day: D,
+    week: 7 * D,
+    month: 30 * D,
+    bimester: 60 * D,
+    semester: 180 * D,
+    year: 365 * D,
+  };
+  return new Date(Date.now() - map[p]);
 }

@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Loader2, ThumbsUp, MessageSquare, Send } from 'lucide-react';
+import { ArrowLeft, Loader2, ThumbsUp, MessageSquare, Send, Image as ImageIcon, Sticker } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { MForumTag, MobileBadge } from '@/mobile/lib/badge';
@@ -8,6 +8,14 @@ import { timeAgo } from '@/mobile/lib/time';
 import { toast } from 'sonner';
 import { useLoginGate } from '@/components/LoginGate';
 import { ItemActionsMenu } from '@/components/ItemActionsMenu';
+import { GifPicker } from '@/components/GifPicker';
+
+const IMG_RE = /\[img:(https?:\/\/[^\]\s]+)\]/;
+function parseContent(raw: string): { text: string; image: string | null } {
+  const m = raw.match(IMG_RE);
+  if (!m) return { text: raw, image: null };
+  return { text: raw.replace(IMG_RE, '').trim(), image: m[1] };
+}
 
 interface Reply {
   id: string; content: string; created_at: string; user_id: string; likes_count: number;
@@ -27,7 +35,26 @@ export default function MForumPost() {
   const [replyTo, setReplyTo] = useState<{ id: string; user: string } | null>(null);
   const [sortBy, setSortBy] = useState<'top' | 'recent'>('top');
   const [submitting, setSubmitting] = useState(false);
-  
+  const [gifOpen, setGifOpen] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const sendAttachment = async (url: string) => {
+    if (!user || !postId) return;
+    const prefix = replyTo ? `@${replyTo.user} ` : '';
+    const content = `${prefix}[img:${url}] ${text.trim()}`.slice(0, 1000);
+    const { error } = await supabase.from('forum_replies').insert({ user_id: user.id, post_id: postId, content });
+    if (error) { toast.error(error.message); return; }
+    setText(''); setReplyTo(null); load();
+  };
+  const uploadImage = async (file: File) => {
+    if (!user) return;
+    if (file.size > 5 * 1024 * 1024) { toast.error('Imagem deve ter no máximo 5MB'); return; }
+    const path = `forum/${user.id}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '')}`;
+    const { error } = await supabase.storage.from('chat-images').upload(path, file);
+    if (error) { toast.error('Erro ao enviar'); return; }
+    const { data: pub } = supabase.storage.from('chat-images').getPublicUrl(path);
+    sendAttachment(pub.publicUrl);
+  };
 
   const load = async () => {
     if (!postId) {
@@ -193,10 +220,15 @@ export default function MForumPost() {
                   <span className="text-xs font-semibold">{r.author}</span>
                   <span className="text-[10px] text-muted-foreground">{timeAgo(r.created_at)}</span>
                 </div>
-                <p className="text-sm">
-                  {r.reply_to_user && <span className="text-accent font-semibold">@{r.reply_to_user} </span>}
-                  {r.content.replace(/^@\S+\s/, '')}
-                </p>
+                {(() => {
+                  const parsed = parseContent(r.content.replace(/^@\S+\s/, ''));
+                  return (
+                    <>
+                      {parsed.text && <p className="text-sm">{r.reply_to_user && <span className="text-accent font-semibold">@{r.reply_to_user} </span>}{parsed.text}</p>}
+                      {parsed.image && <img src={parsed.image} alt="" className="mt-1.5 rounded-lg max-h-60 object-cover" loading="lazy" />}
+                    </>
+                  );
+                })()}
                 <div className="flex items-center gap-3 mt-1.5 text-[11px] text-muted-foreground">
                   <button onClick={() => toggleReplyLike(r)} className={`flex items-center gap-1 hover:text-primary transition-colors ${r.iLiked ? 'text-primary' : ''}`}>
                     <ThumbsUp className={`h-3 w-3 ${r.iLiked ? 'fill-current' : ''}`} />{r.likes_count}
@@ -235,7 +267,10 @@ export default function MForumPost() {
                 <button onClick={() => setReplyTo(null)} className="text-destructive">cancelar</button>
               </div>
             )}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
+              <input ref={fileRef} type="file" accept="image/*,image/gif" hidden onChange={e => e.target.files?.[0] && uploadImage(e.target.files[0])} />
+              <button onClick={() => fileRef.current?.click()} className="p-2 rounded-full bg-secondary text-muted-foreground" title="Imagem"><ImageIcon className="h-4 w-4" /></button>
+              <button onClick={() => setGifOpen(true)} className="p-2 rounded-full bg-secondary text-muted-foreground" title="GIF"><Sticker className="h-4 w-4" /></button>
               <input value={text} onChange={e => setText(e.target.value)} placeholder="Adicione um comentário..." maxLength={1000}
                 onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), submitReply())}
                 className="flex-1 px-3 py-2.5 bg-card border border-border rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
@@ -247,6 +282,7 @@ export default function MForumPost() {
         )}
       </div>
       {gate}
+      {gifOpen && <GifPicker onSelect={(url) => { setGifOpen(false); sendAttachment(url); }} onClose={() => setGifOpen(false)} />}
     </div>
   );
 }
