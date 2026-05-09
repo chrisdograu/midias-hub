@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { HalfStarDisplay, InteractiveHalfStar } from '@/components/HalfStarRating';
 import { MobileBadge } from '@/mobile/lib/badge';
-import { timeAgo } from '@/mobile/lib/time';
+import { timeAgo, periodSince, type Period, PERIOD_OPTIONS } from '@/mobile/lib/time';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -59,6 +59,7 @@ export default function MReview() {
   const [sort, setSort] = useState<Sort>('popular');
   const [onlyWithText, setOnlyWithText] = useState(false);
   const [ratingFilter, setRatingFilter] = useState<FilterRating>('all');
+  const [period, setPeriod] = useState<Period>('all');
 
   const [suggestTitle, setSuggestTitle] = useState('');
 
@@ -168,10 +169,12 @@ export default function MReview() {
   }, [focusId, loading, reviews.length]);
 
   const sortedReviews = useMemo(() => {
+    const since = periodSince(period);
     const copy = [...reviews].filter((review) => {
       if (onlyWithText && !review.comment?.trim()) return false;
       if (ratingFilter === '4+' && review.rating < 4) return false;
       if (ratingFilter === '3+' && review.rating < 3) return false;
+      if (since && new Date(review.created_at) < since) return false;
       return true;
     });
     if (sort === 'popular') {
@@ -264,7 +267,10 @@ export default function MReview() {
     setSubmitting(false);
 
     if (error) { toast.error(error.message); return; }
-    toast.success(existing ? '✏️ Review atualizada' : '⭐ Review publicada');
+    // Auto-marca o jogo como "já joguei" na biblioteca
+    await supabase.from('biblioteca_usuario')
+      .upsert({ user_id: user.id, product_id: productId, status: 'ja_joguei' }, { onConflict: 'user_id,product_id' });
+    toast.success(existing ? '✏️ Review atualizada' : '⭐ Review publicada — adicionada como "já joguei"');
     setMyComment('');
     load();
   };
