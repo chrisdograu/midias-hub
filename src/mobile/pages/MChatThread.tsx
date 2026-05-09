@@ -314,6 +314,8 @@ export default function MChatThread() {
           </motion.div>
         </div>
       )}
+
+      {gifOpen && <GifPicker onSelect={sendGif} onClose={() => setGifOpen(false)} />}
     </div>
   );
 }
