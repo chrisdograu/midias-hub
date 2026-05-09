@@ -502,6 +502,16 @@ export default function MReview() {
             Com texto
           </button>
         </div>
+        <div className="flex gap-1.5 mb-3 overflow-x-auto scrollbar-thin pb-1">
+          {PERIOD_OPTIONS.map(p => (
+            <button key={p.id} onClick={() => setPeriod(p.id)}
+              className={`px-3 py-1.5 rounded-full text-[11px] font-semibold transition-colors whitespace-nowrap ${
+                period === p.id ? 'bg-primary text-primary-foreground' : 'bg-card border border-border text-muted-foreground'
+              }`}>
+              {p.label}
+            </button>
+          ))}
+        </div>
 
         {sortedReviews.length === 0 ? (
           <p className="text-center py-10 text-sm text-muted-foreground">Seja o primeiro a avaliar.</p>
