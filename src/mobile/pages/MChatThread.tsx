@@ -133,6 +133,18 @@ export default function MChatThread() {
     setSending(false);
   };
 
+  const sendGif = async (url: string) => {
+    if (!user || !other) return;
+    setGifOpen(false);
+    setSending(true);
+    await supabase.from('mensagens').insert({
+      sender_id: user.id, receiver_id: other.id, content: '[gif]', image_url: url,
+      anuncio_id: conv?.anuncio_id || null, message_type: 'image',
+    });
+    if (conv) await supabase.from('conversas').update({ last_message: '🎞️ GIF', last_message_at: new Date().toISOString() }).eq('id', conv.id);
+    setSending(false);
+  };
+
   const sendOffer = async () => {
     if (!user || !other) return;
     const payload = offerType === 'money'
