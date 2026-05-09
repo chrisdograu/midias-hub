@@ -29,6 +29,7 @@ export default function MProfile() {
   const [postsCount, setPostsCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<'ads' | 'reviews' | 'posts' | 'lib'>('ads');
+  const [libFilter, setLibFilter] = useState<'all' | 'quero_jogar' | 'ja_joguei'>('all');
   const [reportOpen, setReportOpen] = useState(false);
   const [reportText, setReportText] = useState('');
   const [followersOpen, setFollowersOpen] = useState<'followers' | 'following' | null>(null);
