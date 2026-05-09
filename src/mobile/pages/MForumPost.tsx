@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Loader2, ThumbsUp, MessageSquare, Send } from 'lucide-react';
+import { ArrowLeft, Loader2, ThumbsUp, MessageSquare, Send, Image as ImageIcon, Sticker } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { MForumTag, MobileBadge } from '@/mobile/lib/badge';
@@ -8,6 +8,14 @@ import { timeAgo } from '@/mobile/lib/time';
 import { toast } from 'sonner';
 import { useLoginGate } from '@/components/LoginGate';
 import { ItemActionsMenu } from '@/components/ItemActionsMenu';
+import { GifPicker } from '@/components/GifPicker';
+
+const IMG_RE = /\[img:(https?:\/\/[^\]\s]+)\]/;
+function parseContent(raw: string): { text: string; image: string | null } {
+  const m = raw.match(IMG_RE);
+  if (!m) return { text: raw, image: null };
+  return { text: raw.replace(IMG_RE, '').trim(), image: m[1] };
+}
 
 interface Reply {
   id: string; content: string; created_at: string; user_id: string; likes_count: number;
