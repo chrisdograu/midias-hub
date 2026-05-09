@@ -267,20 +267,32 @@ export default function MProfile() {
                 {(() => {
                   const filtered = libFilter === 'all' ? library : library.filter(l => l.status === libFilter);
                   if (filtered.length === 0) return <p className="text-sm text-muted-foreground text-center py-6">Nada por aqui.</p>;
+                  const totalPages = Math.max(1, Math.ceil(filtered.length / LIB_PAGE_SIZE));
+                  const page = Math.min(libPage, totalPages);
+                  const slice = filtered.slice((page - 1) * LIB_PAGE_SIZE, page * LIB_PAGE_SIZE);
                   return (
-                    <div className="grid grid-cols-3 gap-2">
-                      {filtered.map(l => (
-                        <Link key={l.product_id} to={`/m/forum/jogo/${l.product_id}`} className="glass rounded-lg overflow-hidden">
-                          <div className="aspect-[3/4] bg-muted relative">
-                            {l.image_url ? <img src={l.image_url} alt={l.title} loading="lazy" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><BookMarked className="h-6 w-6 text-muted-foreground" /></div>}
-                            <span className={`absolute top-1 right-1 text-[8px] px-1.5 py-0.5 rounded-full font-bold ${l.status === 'ja_joguei' ? 'bg-success/90 text-success-foreground' : 'bg-accent/90 text-accent-foreground'}`}>
-                              {l.status === 'ja_joguei' ? 'JOGUEI' : 'QUERO'}
-                            </span>
-                          </div>
-                          <p className="text-[10px] font-semibold line-clamp-1 p-1.5">{l.title}</p>
-                        </Link>
-                      ))}
-                    </div>
+                    <>
+                      <div className="grid grid-cols-3 gap-2">
+                        {slice.map(l => (
+                          <Link key={l.product_id} to={`/m/forum/jogo/${l.product_id}`} className="glass rounded-lg overflow-hidden">
+                            <div className="aspect-[3/4] bg-muted relative">
+                              {l.image_url ? <img src={l.image_url} alt={l.title} loading="lazy" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><BookMarked className="h-6 w-6 text-muted-foreground" /></div>}
+                              <span className={`absolute top-1 right-1 text-[8px] px-1.5 py-0.5 rounded-full font-bold ${l.status === 'ja_joguei' ? 'bg-success/90 text-success-foreground' : 'bg-accent/90 text-accent-foreground'}`}>
+                                {l.status === 'ja_joguei' ? 'JOGUEI' : 'QUERO'}
+                              </span>
+                            </div>
+                            <p className="text-[10px] font-semibold line-clamp-1 p-1.5">{l.title}</p>
+                          </Link>
+                        ))}
+                      </div>
+                      {totalPages > 1 && (
+                        <div className="flex items-center justify-center gap-2 pt-3">
+                          <button disabled={page <= 1} onClick={() => setLibPage(p => Math.max(1, p - 1))} className="px-3 py-1.5 rounded-lg bg-secondary text-xs font-semibold disabled:opacity-40">‹ Anterior</button>
+                          <span className="text-[11px] text-muted-foreground">{page} / {totalPages}</span>
+                          <button disabled={page >= totalPages} onClick={() => setLibPage(p => Math.min(totalPages, p + 1))} className="px-3 py-1.5 rounded-lg bg-secondary text-xs font-semibold disabled:opacity-40">Próxima ›</button>
+                        </div>
+                      )}
+                    </>
                   );
                 })()}
               </div>
