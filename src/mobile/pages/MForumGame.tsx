@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Loader2, Plus, ThumbsUp, ThumbsDown, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Loader2, Plus, ThumbsUp, ThumbsDown, MessageSquare, BookMarked, Check, Gamepad2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { MForumTag } from '@/mobile/lib/badge';
-import { timeAgo } from '@/mobile/lib/time';
+import { timeAgo, periodSince, type Period, PERIOD_OPTIONS } from '@/mobile/lib/time';
 import { HalfStarDisplay, InteractiveHalfStar } from '@/components/HalfStarRating';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
@@ -13,6 +13,8 @@ import { toast } from 'sonner';
 interface Game { id: string; title: string; image_url: string | null; description: string | null; rating: number | null }
 interface Post { id: string; content: string; created_at: string; likes_count: number; user_id: string; replies: number; author: string; iLiked: boolean }
 interface Review { id: string; rating: number; comment: string | null; created_at: string; user_id: string; author: string; likes: number; dislikes: number; myReaction: 'like' | 'dislike' | null }
+
+type Sort = 'popular' | 'recent';
 
 export default function MForumGame() {
   const { gameId } = useParams();
@@ -29,28 +31,39 @@ export default function MForumGame() {
   const [postText, setPostText] = useState('');
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewText, setReviewText] = useState('');
+  const [sort, setSort] = useState<Sort>('popular');
+  const [period, setPeriod] = useState<Period>('all');
+  const [libStatus, setLibStatus] = useState<'none' | 'quero_jogar' | 'ja_joguei'>('none');
 
-  // 1) Carrega o jogo PRIMEIRO (rápido, render imediato)
   useEffect(() => {
-    if (!gameId) {
-      setGameLoading(false);
-      return;
-    }
+    if (!gameId) { setGameLoading(false); return; }
     setGameLoading(true);
     supabase.from('produtos').select('id, title, image_url, description, rating').eq('id', gameId).maybeSingle()
       .then(({ data }) => { setGame(data as Game); setGameLoading(false); });
   }, [gameId]);
 
-  // 2) Carrega feed em paralelo, sem bloquear a renderização do header
+  useEffect(() => {
+    if (!user || !gameId) { setLibStatus('none'); return; }
+    supabase.from('biblioteca_usuario').select('status').eq('user_id', user.id).eq('product_id', gameId).maybeSingle()
+      .then(({ data }) => setLibStatus((data?.status as any) || 'none'));
+  }, [user?.id, gameId]);
+
+  const setLibrary = async (status: 'quero_jogar' | 'ja_joguei') => {
+    if (!user) { toast.error('Entre para usar a biblioteca'); navigate('/m/auth'); return; }
+    if (!gameId) return;
+    const { error } = await supabase.from('biblioteca_usuario')
+      .upsert({ user_id: user.id, product_id: gameId, status }, { onConflict: 'user_id,product_id' });
+    if (error) { toast.error('Erro ao atualizar biblioteca'); return; }
+    setLibStatus(status);
+    toast.success(status === 'ja_joguei' ? '🎮 Marcado como já joguei' : '⭐ Adicionado a "quero jogar"');
+  };
+
   const loadFeed = async () => {
-    if (!gameId) {
-      setFeedLoading(false);
-      return;
-    }
+    if (!gameId) { setFeedLoading(false); return; }
     setFeedLoading(true);
     const [{ data: ps }, { data: rs }] = await Promise.all([
-      supabase.from('forum_posts').select('id, content, created_at, likes_count, user_id, product_id').eq('product_id', gameId).order('created_at', { ascending: false }).limit(50),
-      supabase.from('avaliacoes').select('id, rating, comment, created_at, user_id').eq('product_id', gameId).eq('is_approved', true).order('created_at', { ascending: false }).limit(50),
+      supabase.from('forum_posts').select('id, content, created_at, likes_count, user_id, product_id').eq('product_id', gameId).order('created_at', { ascending: false }).limit(100),
+      supabase.from('avaliacoes').select('id, rating, comment, created_at, user_id').eq('product_id', gameId).eq('is_approved', true).order('created_at', { ascending: false }).limit(100),
     ]);
     const userIds = new Set<string>();
     ps?.forEach(p => userIds.add(p.user_id));
@@ -102,6 +115,22 @@ export default function MForumGame() {
 
   useEffect(() => { loadFeed(); }, [gameId, user?.id]);
 
+  const filteredPosts = useMemo(() => {
+    const since = periodSince(period);
+    let arr = posts.filter(p => !since || new Date(p.created_at) >= since);
+    if (sort === 'popular') arr = [...arr].sort((a, b) => (b.likes_count + b.replies * 2) - (a.likes_count + a.replies * 2));
+    else arr = [...arr].sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
+    return arr;
+  }, [posts, sort, period]);
+
+  const filteredReviews = useMemo(() => {
+    const since = periodSince(period);
+    let arr = reviews.filter(r => !since || new Date(r.created_at) >= since);
+    if (sort === 'popular') arr = [...arr].sort((a, b) => (b.likes - b.dislikes) - (a.likes - a.dislikes));
+    else arr = [...arr].sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
+    return arr;
+  }, [reviews, sort, period]);
+
   const submitPost = async () => {
     if (!user || !postText.trim() || !gameId) return;
     const { error } = await supabase.from('forum_posts').insert({ user_id: user.id, product_id: gameId, content: postText.trim().slice(0, 2000) });
@@ -116,7 +145,11 @@ export default function MForumGame() {
       ? await supabase.from('avaliacoes').update(payload).eq('id', existing.id)
       : await supabase.from('avaliacoes').insert(payload);
     if (error) { toast.error(error.message); return; }
-    toast.success(existing ? 'Review atualizada' : 'Review publicada');
+    // Auto: já joguei
+    await supabase.from('biblioteca_usuario')
+      .upsert({ user_id: user.id, product_id: gameId, status: 'ja_joguei' }, { onConflict: 'user_id,product_id' });
+    setLibStatus('ja_joguei');
+    toast.success(existing ? 'Review atualizada' : 'Review publicada — adicionada como "já joguei"');
     setReviewOpen(false); setReviewText(''); loadFeed();
   };
 
@@ -193,12 +226,50 @@ export default function MForumGame() {
               <HalfStarDisplay rating={Number(game.rating || 0)} size={14} />
               <span className="text-xs text-muted-foreground">{(game.rating || 0).toString()} média · {posts.length} posts · {reviews.length} reviews</span>
             </div>
+
+            {/* Biblioteca quick-add */}
+            <div className="flex gap-2 mt-3">
+              <button onClick={() => setLibrary('quero_jogar')}
+                className={`flex-1 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors ${
+                  libStatus === 'quero_jogar' ? 'bg-primary text-primary-foreground' : 'bg-card border border-border text-foreground hover:border-primary/40'
+                }`}>
+                {libStatus === 'quero_jogar' ? <Check className="h-3.5 w-3.5" /> : <BookMarked className="h-3.5 w-3.5" />}
+                Quero jogar
+              </button>
+              <button onClick={() => setLibrary('ja_joguei')}
+                className={`flex-1 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors ${
+                  libStatus === 'ja_joguei' ? 'bg-accent text-accent-foreground' : 'bg-card border border-border text-foreground hover:border-accent/40'
+                }`}>
+                {libStatus === 'ja_joguei' ? <Check className="h-3.5 w-3.5" /> : <Gamepad2 className="h-3.5 w-3.5" />}
+                Já joguei
+              </button>
+            </div>
           </div>
         </div>
 
         <div className="flex p-1 bg-secondary/50 rounded-lg mt-4">
           <button onClick={() => setTab('forum')} className={`flex-1 py-2 rounded-md text-xs font-semibold ${tab === 'forum' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>💬 Fórum</button>
           <button onClick={() => setTab('reviews')} className={`flex-1 py-2 rounded-md text-xs font-semibold ${tab === 'reviews' ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'}`}>⭐ Reviews</button>
+        </div>
+
+        {/* Filtros: ordem + período */}
+        <div className="mt-3 space-y-2">
+          <div className="flex gap-1.5 overflow-x-auto scrollbar-thin">
+            {(['popular', 'recent'] as Sort[]).map(s => (
+              <button key={s} onClick={() => setSort(s)}
+                className={`px-3 py-1.5 rounded-full text-[11px] font-semibold whitespace-nowrap ${sort === s ? 'bg-primary text-primary-foreground' : 'bg-card border border-border text-muted-foreground'}`}>
+                {s === 'popular' ? '🔥 Populares' : '🕒 Recentes'}
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-1.5 overflow-x-auto scrollbar-thin">
+            {PERIOD_OPTIONS.map(p => (
+              <button key={p.id} onClick={() => setPeriod(p.id)}
+                className={`px-3 py-1.5 rounded-full text-[11px] font-semibold whitespace-nowrap ${period === p.id ? 'bg-accent text-accent-foreground' : 'bg-card border border-border text-muted-foreground'}`}>
+                {p.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {user && (
@@ -211,18 +282,15 @@ export default function MForumGame() {
           {feedLoading ? (
             <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
           ) : tab === 'forum' ? (
-            posts.length === 0 ? <p className="text-center py-10 text-sm text-muted-foreground">Nenhum post ainda.</p> :
-              posts.map(p => (
+            filteredPosts.length === 0 ? <p className="text-center py-10 text-sm text-muted-foreground">Nenhum post no período.</p> :
+              filteredPosts.map(p => (
                 <div key={p.id} className="glass rounded-xl p-3 hover:border-primary/40 transition-colors">
                   <Link to={`/m/forum/post/${p.id}`} className="block">
                     <div className="flex items-center justify-between text-[10px] text-muted-foreground"><b className="text-foreground">{p.author}</b><span>{timeAgo(p.created_at)}</span></div>
                     <p className="text-sm mt-1.5 line-clamp-3">{p.content}</p>
                   </Link>
                   <div className="flex items-center gap-3 mt-2 text-[11px] text-muted-foreground">
-                    <button
-                      onClick={() => togglePostLike(p)}
-                      className={`flex items-center gap-1 hover:text-primary ${p.iLiked ? 'text-primary' : ''}`}
-                    >
+                    <button onClick={() => togglePostLike(p)} className={`flex items-center gap-1 hover:text-primary ${p.iLiked ? 'text-primary' : ''}`}>
                       <ThumbsUp className={`h-3 w-3 ${p.iLiked ? 'fill-current' : ''}`} />{p.likes_count}
                     </button>
                     <Link to={`/m/forum/post/${p.id}`} className="flex items-center gap-1 hover:text-foreground">
@@ -232,9 +300,9 @@ export default function MForumGame() {
                 </div>
               ))
           ) : (
-            reviews.length === 0 ? <p className="text-center py-10 text-sm text-muted-foreground">Nenhuma review ainda.</p> :
-              reviews.map(r => (
-                <div key={r.id} className="glass rounded-xl p-3">
+            filteredReviews.length === 0 ? <p className="text-center py-10 text-sm text-muted-foreground">Nenhuma review no período.</p> :
+              filteredReviews.map(r => (
+                <Link key={r.id} to={`/m/review/${gameId}?focus=${r.id}`} className="block glass rounded-xl p-3">
                   <div className="flex items-center justify-between mb-1.5">
                     <span className="text-sm font-semibold">{r.author}</span>
                     <span className="text-[10px] text-muted-foreground">{timeAgo(r.created_at)}</span>
@@ -242,14 +310,14 @@ export default function MForumGame() {
                   <div className="flex items-center gap-2 mb-1"><HalfStarDisplay rating={r.rating} size={13} /><span className="text-xs font-semibold text-price">{r.rating.toFixed(1)}</span></div>
                   {r.comment && <p className="text-sm">{r.comment}</p>}
                   <div className="flex items-center gap-3 mt-2 text-[11px] text-muted-foreground">
-                    <button onClick={() => reactReview(r, 'like')} className={`flex items-center gap-1 hover:text-primary ${r.myReaction === 'like' ? 'text-primary' : ''}`}>
+                    <button onClick={(e) => { e.preventDefault(); reactReview(r, 'like'); }} className={`flex items-center gap-1 hover:text-primary ${r.myReaction === 'like' ? 'text-primary' : ''}`}>
                       <ThumbsUp className={`h-3 w-3 ${r.myReaction === 'like' ? 'fill-current' : ''}`} />{r.likes}
                     </button>
-                    <button onClick={() => reactReview(r, 'dislike')} className={`flex items-center gap-1 hover:text-destructive ${r.myReaction === 'dislike' ? 'text-destructive' : ''}`}>
+                    <button onClick={(e) => { e.preventDefault(); reactReview(r, 'dislike'); }} className={`flex items-center gap-1 hover:text-destructive ${r.myReaction === 'dislike' ? 'text-destructive' : ''}`}>
                       <ThumbsDown className={`h-3 w-3 ${r.myReaction === 'dislike' ? 'fill-current' : ''}`} />{r.dislikes}
                     </button>
                   </div>
-                </div>
+                </Link>
               ))
           )}
         </div>
