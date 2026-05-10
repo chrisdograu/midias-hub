@@ -711,6 +711,51 @@ export type Database = {
           },
         ]
       }
+      game_suggestions: {
+        Row: {
+          admin_notes: string | null
+          cover_url: string | null
+          created_at: string
+          created_product_id: string | null
+          description: string | null
+          id: string
+          requested_by: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["suggestion_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          cover_url?: string | null
+          created_at?: string
+          created_product_id?: string | null
+          description?: string | null
+          id?: string
+          requested_by: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["suggestion_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          cover_url?: string | null
+          created_at?: string
+          created_product_id?: string | null
+          description?: string | null
+          id?: string
+          requested_by?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["suggestion_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       games_catalog: {
         Row: {
           cover_url: string | null
@@ -1356,6 +1401,7 @@ export type Database = {
         | "cancelled"
       product_type: "digital" | "physical" | "subscription"
       stock_movement_type: "entrada" | "saida" | "ajuste"
+      suggestion_status: "pendente" | "aprovado" | "rejeitado"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1519,6 +1565,7 @@ export const Constants = {
       ],
       product_type: ["digital", "physical", "subscription"],
       stock_movement_type: ["entrada", "saida", "ajuste"],
+      suggestion_status: ["pendente", "aprovado", "rejeitado"],
     },
   },
 } as const
