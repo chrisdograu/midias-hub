@@ -4,7 +4,7 @@ import {
   Warehouse, ClipboardList, Shield, BarChart3,
   Award, LogOut, Gamepad2, ChevronLeft, ChevronRight,
   Megaphone, ArrowLeftRight, MessageSquare, Star, Bell, MessageCircle,
-  Sun, Moon, Settings, Loader2, Ticket,
+  Sun, Moon, Settings, Loader2, Ticket, Lightbulb,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useTheme } from '@/hooks/useTheme';
@@ -57,6 +57,7 @@ const navSections: {
       { title: 'Avaliações Usuários', url: '/desktop/avaliacoes-usuario', icon: Star, route: 'avaliacoes-usuario' },
       { title: 'Notificações', url: '/desktop/notificacoes', icon: Bell, route: 'notificacoes' },
       { title: 'Fórum', url: '/desktop/forum', icon: MessageCircle, route: 'forum' },
+      { title: 'Sugestões de Jogos', url: '/desktop/sugestoes', icon: Lightbulb, route: 'sugestoes', pendingKey: 'sugestoes' },
     ],
   },
   {

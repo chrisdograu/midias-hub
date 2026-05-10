@@ -287,12 +287,9 @@ export default function MReview() {
     if (!user) { toast.error('Entre para sugerir'); navigate('/m/auth'); return; }
     const title = suggestTitle.trim();
     if (title.length < 2) { toast.error('Título muito curto'); return; }
-    const { error } = await supabase.from('denuncias').insert({
-      reporter_id: user.id,
-      target_type: 'sugestao_jogo',
-      target_id: user.id,
-      reason: 'sugestao_jogo',
-      description: `Sugestão de jogo para catálogo: ${title}`,
+    const { error } = await supabase.from('game_suggestions').insert({
+      requested_by: user.id,
+      title,
     });
     if (error) { toast.error('Erro ao enviar sugestão'); return; }
     toast.success('🎮 Sugestão enviada para revisão da equipe!');

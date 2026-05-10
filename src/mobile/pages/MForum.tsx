@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Loader2, Search, MessagesSquare, TrendingUp, Clock, MessageSquare, ThumbsUp, Star, Flame, Gamepad2, Users, Newspaper } from 'lucide-react';
+import { Loader2, Search, MessagesSquare, TrendingUp, Clock, MessageSquare, ThumbsUp, Star, Flame, Gamepad2, Users, Newspaper, Lightbulb, Send, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { MobileChip, MForumTag, MobileBadge } from '@/mobile/lib/badge';
 import { timeAgo, periodSince, type Period, PERIOD_OPTIONS } from '@/mobile/lib/time';
@@ -39,6 +39,27 @@ export default function MForum() {
   const [loading, setLoading] = useState(true);
   const [communityHits, setCommunityHits] = useState<{ id: string; title: string; image_url: string | null }[]>([]);
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [suggestOpen, setSuggestOpen] = useState(false);
+  const [suggestTitle, setSuggestTitle] = useState('');
+  const [suggestDesc, setSuggestDesc] = useState('');
+  const [suggesting, setSuggesting] = useState(false);
+
+  const submitSuggestion = async () => {
+    if (!user) { toast.error('Entre para sugerir'); navigate('/m/auth'); return; }
+    const title = suggestTitle.trim();
+    if (title.length < 2) { toast.error('Título muito curto'); return; }
+    setSuggesting(true);
+    const { error } = await supabase.from('game_suggestions').insert({
+      requested_by: user.id,
+      title,
+      description: suggestDesc.trim() || null,
+    });
+    setSuggesting(false);
+    if (error) { toast.error('Erro ao enviar sugestão'); return; }
+    toast.success('🎮 Sugestão enviada para revisão da equipe!');
+    setSuggestTitle(''); setSuggestDesc(''); setSuggestOpen(false);
+  };
 
   useEffect(() => {
     let cancel = false;
@@ -184,6 +205,11 @@ export default function MForum() {
         </div>
       </section>
 
+      <button onClick={() => setSuggestOpen(true)} className="w-full glass rounded-xl p-3 flex items-center justify-center gap-2 text-sm font-semibold hover:border-accent/40 transition-colors">
+        <Lightbulb className="h-4 w-4 text-accent" />
+        Não achou seu jogo? <span className="gradient-text">Sugerir adição</span>
+      </button>
+
       {/* Tabs Posts / Reviews */}
       <div className="flex p-1 bg-secondary/50 rounded-lg">
         <button onClick={() => setTab('posts')} className={`flex-1 py-2 rounded-md text-xs font-semibold flex items-center justify-center gap-1 ${tab === 'posts' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>
@@ -214,6 +240,27 @@ export default function MForum() {
         <div className="space-y-2.5">
           {sortedReviews.length === 0 ? <p className="text-center py-10 text-sm text-muted-foreground">Nenhuma review no período.</p> :
             sortedReviews.map(r => <ReviewCard key={r.id} r={r} />)}
+        </div>
+      )}
+
+      {suggestOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-end" onClick={() => setSuggestOpen(false)}>
+          <div className="w-full bg-card rounded-t-2xl p-5 space-y-3" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold flex items-center gap-2"><Lightbulb className="h-4 w-4 text-accent" />Sugerir jogo</h3>
+              <button onClick={() => setSuggestOpen(false)} className="p-1 rounded-lg bg-secondary"><X className="h-4 w-4" /></button>
+            </div>
+            <p className="text-xs text-muted-foreground">Sua sugestão será revisada por um administrador. Você receberá uma notificação quando for aprovada ou rejeitada.</p>
+            <input value={suggestTitle} onChange={e => setSuggestTitle(e.target.value)} placeholder="Nome do jogo (ex: Hollow Knight Silksong)" maxLength={120}
+              className="w-full p-3 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
+            <textarea value={suggestDesc} onChange={e => setSuggestDesc(e.target.value)} placeholder="Por que esse jogo? (opcional)" rows={3} maxLength={500}
+              className="w-full p-3 bg-background border border-border rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/50" />
+            <button onClick={submitSuggestion} disabled={suggesting || suggestTitle.trim().length < 2}
+              className="w-full py-3 rounded-lg bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50">
+              {suggesting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              Enviar sugestão
+            </button>
+          </div>
         </div>
       )}
     </div>

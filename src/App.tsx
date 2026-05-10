@@ -69,6 +69,7 @@ const MensagensAdmin = lazy(() => import("./desktop/pages/MensagensAdmin"));
 const AvaliacoesUsuario = lazy(() => import("./desktop/pages/AvaliacoesUsuario"));
 const NotificacoesAdmin = lazy(() => import("./desktop/pages/NotificacoesAdmin"));
 const ForumAdmin = lazy(() => import("./desktop/pages/ForumAdmin"));
+const SugestoesJogos = lazy(() => import("./desktop/pages/SugestoesJogos"));
 const Configuracoes = lazy(() => import("./desktop/pages/Configuracoes"));
 
 const PageFallback = () => (
@@ -125,6 +126,7 @@ const App = () => (
                 <Route path="avaliacoes-usuario" element={<AvaliacoesUsuario />} />
                 <Route path="notificacoes" element={<NotificacoesAdmin />} />
                 <Route path="forum" element={<ForumAdmin />} />
+                <Route path="sugestoes" element={<SugestoesJogos />} />
                 <Route path="moderacao" element={<Moderacao />} />
                 <Route path="relatorios" element={<Relatorios />} />
                 <Route path="certificados" element={<Certificados />} />
