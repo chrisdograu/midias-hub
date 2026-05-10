@@ -242,6 +242,27 @@ export default function MForum() {
             sortedReviews.map(r => <ReviewCard key={r.id} r={r} />)}
         </div>
       )}
+
+      {suggestOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-end" onClick={() => setSuggestOpen(false)}>
+          <div className="w-full bg-card rounded-t-2xl p-5 space-y-3" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold flex items-center gap-2"><Lightbulb className="h-4 w-4 text-accent" />Sugerir jogo</h3>
+              <button onClick={() => setSuggestOpen(false)} className="p-1 rounded-lg bg-secondary"><X className="h-4 w-4" /></button>
+            </div>
+            <p className="text-xs text-muted-foreground">Sua sugestão será revisada por um administrador. Você receberá uma notificação quando for aprovada ou rejeitada.</p>
+            <input value={suggestTitle} onChange={e => setSuggestTitle(e.target.value)} placeholder="Nome do jogo (ex: Hollow Knight Silksong)" maxLength={120}
+              className="w-full p-3 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
+            <textarea value={suggestDesc} onChange={e => setSuggestDesc(e.target.value)} placeholder="Por que esse jogo? (opcional)" rows={3} maxLength={500}
+              className="w-full p-3 bg-background border border-border rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/50" />
+            <button onClick={submitSuggestion} disabled={suggesting || suggestTitle.trim().length < 2}
+              className="w-full py-3 rounded-lg bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 disabled:opacity-50">
+              {suggesting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              Enviar sugestão
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
