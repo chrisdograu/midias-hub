@@ -6,9 +6,10 @@ export interface PendingCounts {
   certificados: number;
   pedidos: number;
   propostas: number;
+  sugestoes: number;
 }
 
-const initial: PendingCounts = { denuncias: 0, certificados: 0, pedidos: 0, propostas: 0 };
+const initial: PendingCounts = { denuncias: 0, certificados: 0, pedidos: 0, propostas: 0, sugestoes: 0 };
 
 /**
  * Consulta contagens de itens pendentes para mostrar como badges no menu lateral.
@@ -23,11 +24,12 @@ export function useDesktopPending(enabled: boolean) {
     let active = true;
 
     const fetchAll = async () => {
-      const [denuncias, certificados, pedidos, propostas] = await Promise.all([
+      const [denuncias, certificados, pedidos, propostas, sugestoes] = await Promise.all([
         supabase.from('denuncias').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
         supabase.from('certificados').select('id', { count: 'exact', head: true }).eq('status', 'pendente'),
         supabase.from('pedidos').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
         supabase.from('trade_proposals').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+        supabase.from('game_suggestions').select('id', { count: 'exact', head: true }).eq('status', 'pendente'),
       ]);
       if (!active) return;
       setCounts({
@@ -35,21 +37,21 @@ export function useDesktopPending(enabled: boolean) {
         certificados: certificados.count || 0,
         pedidos: pedidos.count || 0,
         propostas: propostas.count || 0,
+        sugestoes: sugestoes.count || 0,
       });
     };
 
     fetchAll();
 
-    // Realtime: refetch quando qualquer uma das tabelas mudar
     const channel = supabase
       .channel('desktop-pending-counts')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'denuncias' }, fetchAll)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'certificados' }, fetchAll)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'pedidos' }, fetchAll)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'trade_proposals' }, fetchAll)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'game_suggestions' }, fetchAll)
       .subscribe();
 
-    // Refresh a cada 60s como fallback caso Realtime não esteja habilitado
     const interval = setInterval(fetchAll, 60_000);
 
     return () => {
