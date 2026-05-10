@@ -69,6 +69,7 @@ const MensagensAdmin = lazy(() => import("./desktop/pages/MensagensAdmin"));
 const AvaliacoesUsuario = lazy(() => import("./desktop/pages/AvaliacoesUsuario"));
 const NotificacoesAdmin = lazy(() => import("./desktop/pages/NotificacoesAdmin"));
 const ForumAdmin = lazy(() => import("./desktop/pages/ForumAdmin"));
+const SugestoesJogos = lazy(() => import("./desktop/pages/SugestoesJogos"));
 const Configuracoes = lazy(() => import("./desktop/pages/Configuracoes"));
 
 const PageFallback = () => (
