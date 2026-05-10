@@ -205,6 +205,11 @@ export default function MForum() {
         </div>
       </section>
 
+      <button onClick={() => setSuggestOpen(true)} className="w-full glass rounded-xl p-3 flex items-center justify-center gap-2 text-sm font-semibold hover:border-accent/40 transition-colors">
+        <Lightbulb className="h-4 w-4 text-accent" />
+        Não achou seu jogo? <span className="gradient-text">Sugerir adição</span>
+      </button>
+
       {/* Tabs Posts / Reviews */}
       <div className="flex p-1 bg-secondary/50 rounded-lg">
         <button onClick={() => setTab('posts')} className={`flex-1 py-2 rounded-md text-xs font-semibold flex items-center justify-center gap-1 ${tab === 'posts' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>
