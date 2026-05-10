@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Loader2, Search, MessagesSquare, TrendingUp, Clock, MessageSquare, ThumbsUp, Star, Flame, Gamepad2, Users, Newspaper } from 'lucide-react';
+import { Loader2, Search, MessagesSquare, TrendingUp, Clock, MessageSquare, ThumbsUp, Star, Flame, Gamepad2, Users, Newspaper, Lightbulb, Send, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { MobileChip, MForumTag, MobileBadge } from '@/mobile/lib/badge';
 import { timeAgo, periodSince, type Period, PERIOD_OPTIONS } from '@/mobile/lib/time';
