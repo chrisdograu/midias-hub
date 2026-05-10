@@ -126,6 +126,7 @@ const App = () => (
                 <Route path="avaliacoes-usuario" element={<AvaliacoesUsuario />} />
                 <Route path="notificacoes" element={<NotificacoesAdmin />} />
                 <Route path="forum" element={<ForumAdmin />} />
+                <Route path="sugestoes" element={<SugestoesJogos />} />
                 <Route path="moderacao" element={<Moderacao />} />
                 <Route path="relatorios" element={<Relatorios />} />
                 <Route path="certificados" element={<Certificados />} />
