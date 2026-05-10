@@ -57,6 +57,7 @@ const navSections: {
       { title: 'Avaliações Usuários', url: '/desktop/avaliacoes-usuario', icon: Star, route: 'avaliacoes-usuario' },
       { title: 'Notificações', url: '/desktop/notificacoes', icon: Bell, route: 'notificacoes' },
       { title: 'Fórum', url: '/desktop/forum', icon: MessageCircle, route: 'forum' },
+      { title: 'Sugestões de Jogos', url: '/desktop/sugestoes', icon: Lightbulb, route: 'sugestoes', pendingKey: 'sugestoes' },
     ],
   },
   {
