@@ -4,6 +4,8 @@ import { Loader2, ShoppingBag, Settings, LogOut, Send, Flag, ShieldOff, ArrowLef
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { HalfStarDisplay } from '@/components/HalfStarRating';
+import LevelBadge from '@/components/LevelBadge';
+import UserBadges from '@/components/UserBadges';
 import { useFollow } from '@/mobile/lib/useFollow';
 import { toast } from 'sonner';
 
