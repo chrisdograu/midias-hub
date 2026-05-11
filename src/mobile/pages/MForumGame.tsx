@@ -310,7 +310,7 @@ export default function MForumGame() {
               filteredReviews.map(r => (
                 <Link key={r.id} to={`/m/review/${gameId}?focus=${r.id}`} className="block glass rounded-xl p-3">
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-sm font-semibold">{r.author}</span>
+                    <span className="flex items-center gap-1.5"><span className="text-sm font-semibold">{r.author}</span><LevelBadge userId={r.user_id} size="sm" /></span>
                     <span className="text-[10px] text-muted-foreground">{timeAgo(r.created_at)}</span>
                   </div>
                   <div className="flex items-center gap-2 mb-1"><HalfStarDisplay rating={r.rating} size={13} /><span className="text-xs font-semibold text-price">{r.rating.toFixed(1)}</span></div>
