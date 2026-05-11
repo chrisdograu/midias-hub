@@ -192,7 +192,7 @@ export default function MChatThread() {
   const canCounteroffer = ad && (ad.accepts_counteroffer || ad.ad_type === 'troca');
 
   return (
-    <div className="flex flex-col" style={{ minHeight: 'calc(100vh - 80px)' }}>
+    <div className="flex flex-col bg-background" style={{ minHeight: 'calc(100vh - 80px)' }}>
       <header className="sticky top-[57px] z-20 backdrop-blur-xl bg-background/80 border-b border-border/50 px-3 py-2 flex items-center gap-3">
         <button onClick={() => navigate('/m/chat')} className="p-1"><ArrowLeft className="h-5 w-5" /></button>
         <Link to={`/m/perfil/${other.id}`} className="flex items-center gap-2 flex-1 min-w-0">

@@ -67,13 +67,19 @@ export default function Categorias() {
     const { data: cats } = await supabase.from('categorias').select('*').order('name');
     if (!cats) { setLoading(false); return; }
 
-    const { data: produtos } = await supabase.from('produtos').select('category_id');
-    const countMap = new Map<string, number>();
+    // Conta tanto por category_id (FK) quanto por category (texto legado), pois produtos antigos podem usar só o nome.
+    const { data: produtos } = await supabase.from('produtos').select('category_id, category').limit(10000);
+    const byId = new Map<string, number>();
+    const byName = new Map<string, number>();
     produtos?.forEach(p => {
-      if (p.category_id) countMap.set(p.category_id, (countMap.get(p.category_id) || 0) + 1);
+      if (p.category_id) byId.set(p.category_id, (byId.get(p.category_id) || 0) + 1);
+      else if (p.category) byName.set(p.category.toLowerCase().trim(), (byName.get(p.category.toLowerCase().trim()) || 0) + 1);
     });
 
-    setCategorias(cats.map(c => ({ ...c, produtos_count: countMap.get(c.id) || 0 })));
+    setCategorias(cats.map(c => ({
+      ...c,
+      produtos_count: (byId.get(c.id) || 0) + (byName.get(c.name.toLowerCase().trim()) || 0),
+    })));
     setLoading(false);
   };
 
@@ -93,10 +99,10 @@ export default function Categorias() {
     setLoadingProdutos(true);
     const { data } = await supabase
       .from('produtos')
-      .select('id, title, price, stock, image_url, is_active')
-      .eq('category_id', c.id)
+      .select('id, title, price, stock, image_url, is_active, category_id, category')
+      .or(`category_id.eq.${c.id},category.ilike.${c.name}`)
       .order('title');
-    setCategoriaProdutos(data || []);
+    setCategoriaProdutos((data || []) as ProdutoSimple[]);
     setLoadingProdutos(false);
   };
 
