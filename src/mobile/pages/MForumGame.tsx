@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { MForumTag } from '@/mobile/lib/badge';
 import { timeAgo, periodSince, type Period, PERIOD_OPTIONS } from '@/mobile/lib/time';
 import { HalfStarDisplay, InteractiveHalfStar } from '@/components/HalfStarRating';
+import LevelBadge from '@/components/LevelBadge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 
