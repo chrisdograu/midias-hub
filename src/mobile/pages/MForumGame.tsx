@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { MForumTag } from '@/mobile/lib/badge';
 import { timeAgo, periodSince, type Period, PERIOD_OPTIONS } from '@/mobile/lib/time';
 import { HalfStarDisplay, InteractiveHalfStar } from '@/components/HalfStarRating';
+import LevelBadge from '@/components/LevelBadge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 
@@ -291,7 +292,7 @@ export default function MForumGame() {
               filteredPosts.map(p => (
                 <div key={p.id} className="glass rounded-xl p-3 hover:border-primary/40 transition-colors">
                   <Link to={`/m/forum/post/${p.id}`} className="block">
-                    <div className="flex items-center justify-between text-[10px] text-muted-foreground"><b className="text-foreground">{p.author}</b><span>{timeAgo(p.created_at)}</span></div>
+                    <div className="flex items-center justify-between text-[10px] text-muted-foreground"><span className="flex items-center gap-1.5"><b className="text-foreground">{p.author}</b><LevelBadge userId={p.user_id} size="sm" /></span><span>{timeAgo(p.created_at)}</span></div>
                     <p className="text-sm mt-1.5 line-clamp-3">{p.content}</p>
                   </Link>
                   <div className="flex items-center gap-3 mt-2 text-[11px] text-muted-foreground">
@@ -309,7 +310,7 @@ export default function MForumGame() {
               filteredReviews.map(r => (
                 <Link key={r.id} to={`/m/review/${gameId}?focus=${r.id}`} className="block glass rounded-xl p-3">
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-sm font-semibold">{r.author}</span>
+                    <span className="flex items-center gap-1.5"><span className="text-sm font-semibold">{r.author}</span><LevelBadge userId={r.user_id} size="sm" /></span>
                     <span className="text-[10px] text-muted-foreground">{timeAgo(r.created_at)}</span>
                   </div>
                   <div className="flex items-center gap-2 mb-1"><HalfStarDisplay rating={r.rating} size={13} /><span className="text-xs font-semibold text-price">{r.rating.toFixed(1)}</span></div>

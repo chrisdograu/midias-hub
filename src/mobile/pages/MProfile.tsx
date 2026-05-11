@@ -4,6 +4,8 @@ import { Loader2, ShoppingBag, Settings, LogOut, Send, Flag, ShieldOff, ArrowLef
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { HalfStarDisplay } from '@/components/HalfStarRating';
+import LevelBadge from '@/components/LevelBadge';
+import UserBadges from '@/components/UserBadges';
 import { useFollow } from '@/mobile/lib/useFollow';
 import { toast } from 'sonner';
 
@@ -137,6 +139,8 @@ export default function MProfile() {
         <h1 className="font-display text-lg font-bold">{profile.display_name || 'Usuário'}</h1>
         {profile.username && <p className="text-xs text-muted-foreground">@{profile.username}</p>}
         <div className="flex items-center justify-center gap-1.5 mt-2"><HalfStarDisplay rating={rating} size={14} /><span className="text-xs text-muted-foreground">{rating > 0 ? rating.toFixed(1) : 'sem avaliações'}</span></div>
+        <div className="mt-2 flex justify-center"><LevelBadge userId={targetId} size="md" showXp /></div>
+        <UserBadges userId={targetId} max={8} className="mt-3" />
         {profile.bio && <p className="text-sm text-muted-foreground mt-3">{profile.bio}</p>}
 
         {/* Stats */}

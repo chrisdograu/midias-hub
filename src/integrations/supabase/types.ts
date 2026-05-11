@@ -156,6 +156,33 @@ export type Database = {
           },
         ]
       }
+      badge_catalog: {
+        Row: {
+          category: string
+          created_at: string
+          description: string
+          icon: string
+          id: string
+          name: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description: string
+          icon?: string
+          id: string
+          name: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string
+          icon?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       biblioteca_usuario: {
         Row: {
           acquired_at: string
@@ -881,6 +908,42 @@ export type Database = {
           },
         ]
       }
+      moderation_history: {
+        Row: {
+          action: string
+          created_at: string
+          duration_days: number | null
+          id: string
+          moderator_id: string
+          reason: string | null
+          reference_id: string | null
+          reference_type: string | null
+          target_user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          duration_days?: number | null
+          id?: string
+          moderator_id: string
+          reason?: string | null
+          reference_id?: string | null
+          reference_type?: string | null
+          target_user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          duration_days?: number | null
+          id?: string
+          moderator_id?: string
+          reason?: string | null
+          reference_id?: string | null
+          reference_type?: string | null
+          target_user_id?: string
+        }
+        Relationships: []
+      }
       movimentacoes_estoque: {
         Row: {
           created_at: string
@@ -1295,6 +1358,35 @@ export type Database = {
           },
         ]
       }
+      user_badges: {
+        Row: {
+          awarded_at: string
+          badge_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          awarded_at?: string
+          badge_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          awarded_at?: string
+          badge_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badge_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_follows: {
         Row: {
           created_at: string
@@ -1337,11 +1429,62 @@ export type Database = {
         }
         Relationships: []
       }
+      user_xp_log: {
+        Row: {
+          action: string
+          awarded_date: string
+          created_at: string
+          id: string
+          reference_id: string | null
+          reference_type: string | null
+          user_id: string
+          xp: number
+        }
+        Insert: {
+          action: string
+          awarded_date?: string
+          created_at?: string
+          id?: string
+          reference_id?: string | null
+          reference_type?: string | null
+          user_id: string
+          xp: number
+        }
+        Update: {
+          action?: string
+          awarded_date?: string
+          created_at?: string
+          id?: string
+          reference_id?: string | null
+          reference_type?: string | null
+          user_id?: string
+          xp?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      user_xp_totals: {
+        Row: {
+          actions_count: number | null
+          total_xp: number | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      award_xp: {
+        Args: {
+          _action: string
+          _ref_id?: string
+          _ref_type?: string
+          _user_id: string
+          _xp: number
+        }
+        Returns: undefined
+      }
+      check_and_award_badges: { Args: { _user_id: string }; Returns: undefined }
       get_employee_position: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["employee_position"]
