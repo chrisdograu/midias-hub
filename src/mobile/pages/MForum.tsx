@@ -224,6 +224,28 @@ export default function MForum() {
         Não achou seu jogo? <span className="gradient-text">Sugerir adição</span>
       </button>
 
+      {mySuggestions.length > 0 && (
+        <div className="space-y-1.5">
+          <p className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold px-1">Minhas sugestões</p>
+          {mySuggestions.map(s => (
+            <div key={s.id} className="glass rounded-lg p-2.5 text-xs space-y-1">
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-semibold truncate">{s.title}</span>
+                <MobileBadge tone={s.status === 'aprovado' ? 'success' : s.status === 'rejeitado' ? 'destructive' : 'muted'}>
+                  {s.status === 'aprovado' ? '✅ Aprovada' : s.status === 'rejeitado' ? '❌ Rejeitada' : '⏳ Pendente'}
+                </MobileBadge>
+              </div>
+              {s.status === 'rejeitado' && s.admin_notes && (
+                <p className="text-[11px] text-muted-foreground"><span className="font-semibold text-destructive">Motivo:</span> {s.admin_notes}</p>
+              )}
+              {s.status === 'aprovado' && s.created_product_id && (
+                <Link to={`/m/forum/${s.created_product_id}`} className="text-[11px] text-accent underline">Ver fórum do jogo →</Link>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Tabs Posts / Reviews */}
       <div className="flex p-1 bg-secondary/50 rounded-lg">
         <button onClick={() => setTab('posts')} className={`flex-1 py-2 rounded-md text-xs font-semibold flex items-center justify-center gap-1 ${tab === 'posts' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>
