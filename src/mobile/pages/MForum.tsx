@@ -44,6 +44,19 @@ export default function MForum() {
   const [suggestTitle, setSuggestTitle] = useState('');
   const [suggestDesc, setSuggestDesc] = useState('');
   const [suggesting, setSuggesting] = useState(false);
+  const [mySuggestions, setMySuggestions] = useState<{ id: string; title: string; status: string; admin_notes: string | null; created_product_id: string | null }[]>([]);
+
+  const loadMySuggestions = async (uid: string) => {
+    const { data } = await supabase
+      .from('game_suggestions')
+      .select('id, title, status, admin_notes, created_product_id')
+      .eq('requested_by', uid)
+      .order('created_at', { ascending: false })
+      .limit(10);
+    setMySuggestions(data || []);
+  };
+
+  useEffect(() => { if (user) loadMySuggestions(user.id); else setMySuggestions([]); }, [user?.id]);
 
   const submitSuggestion = async () => {
     if (!user) { toast.error('Entre para sugerir'); navigate('/m/auth'); return; }
@@ -59,6 +72,7 @@ export default function MForum() {
     if (error) { toast.error('Erro ao enviar sugestão'); return; }
     toast.success('🎮 Sugestão enviada para revisão da equipe!');
     setSuggestTitle(''); setSuggestDesc(''); setSuggestOpen(false);
+    loadMySuggestions(user.id);
   };
 
   useEffect(() => {
