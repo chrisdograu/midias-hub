@@ -99,10 +99,10 @@ export default function Categorias() {
     setLoadingProdutos(true);
     const { data } = await supabase
       .from('produtos')
-      .select('id, title, price, stock, image_url, is_active')
-      .eq('category_id', c.id)
+      .select('id, title, price, stock, image_url, is_active, category_id, category')
+      .or(`category_id.eq.${c.id},category.ilike.${c.name}`)
       .order('title');
-    setCategoriaProdutos(data || []);
+    setCategoriaProdutos((data || []) as ProdutoSimple[]);
     setLoadingProdutos(false);
   };
 
