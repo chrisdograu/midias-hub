@@ -292,7 +292,7 @@ export default function MForumGame() {
               filteredPosts.map(p => (
                 <div key={p.id} className="glass rounded-xl p-3 hover:border-primary/40 transition-colors">
                   <Link to={`/m/forum/post/${p.id}`} className="block">
-                    <div className="flex items-center justify-between text-[10px] text-muted-foreground"><b className="text-foreground">{p.author}</b><span>{timeAgo(p.created_at)}</span></div>
+                    <div className="flex items-center justify-between text-[10px] text-muted-foreground"><span className="flex items-center gap-1.5"><b className="text-foreground">{p.author}</b><LevelBadge userId={p.user_id} size="sm" /></span><span>{timeAgo(p.created_at)}</span></div>
                     <p className="text-sm mt-1.5 line-clamp-3">{p.content}</p>
                   </Link>
                   <div className="flex items-center gap-3 mt-2 text-[11px] text-muted-foreground">
