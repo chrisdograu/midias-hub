@@ -231,7 +231,7 @@ export default function MForum() {
             <div key={s.id} className="glass rounded-lg p-2.5 text-xs space-y-1">
               <div className="flex items-center justify-between gap-2">
                 <span className="font-semibold truncate">{s.title}</span>
-                <MobileBadge tone={s.status === 'aprovado' ? 'success' : s.status === 'rejeitado' ? 'destructive' : 'muted'}>
+                <MobileBadge tone={s.status === 'aprovado' ? 'success' : s.status === 'rejeitado' ? 'warning' : 'muted'}>
                   {s.status === 'aprovado' ? '✅ Aprovada' : s.status === 'rejeitado' ? '❌ Rejeitada' : '⏳ Pendente'}
                 </MobileBadge>
               </div>
