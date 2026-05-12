@@ -101,6 +101,8 @@ export default function SugestoesJogos() {
     setApproveOpen(null);
     fetchAll();
   };
+
+  const handleReject = async () => {
     if (!rejectOpen || !user) return;
     setSaving(true);
     const { error } = await supabase.from('game_suggestions').update({
