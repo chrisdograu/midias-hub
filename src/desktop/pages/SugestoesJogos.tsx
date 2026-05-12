@@ -33,7 +33,7 @@ export default function SugestoesJogos() {
   const [filter, setFilter] = useState<'todas' | Status>('pendente');
   const [approveOpen, setApproveOpen] = useState<Suggestion | null>(null);
   const [rejectOpen, setRejectOpen] = useState<Suggestion | null>(null);
-  const [form, setForm] = useState({ title: '', cover_url: '', description: '', price: '0', publisher: '' });
+  const [form, setForm] = useState({ title: '', cover_url: '', description: '', price: '0', publisher: '', admin_notes: '' });
   const [adminNotes, setAdminNotes] = useState('');
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
