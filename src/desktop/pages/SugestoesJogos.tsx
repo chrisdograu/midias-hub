@@ -63,6 +63,7 @@ export default function SugestoesJogos() {
       description: s.description || '',
       price: '0',
       publisher: '',
+      admin_notes: '',
     });
   };
 
@@ -79,6 +80,7 @@ export default function SugestoesJogos() {
       original_price: Number(form.price) || 0,
       stock: 0,
       is_active: true,
+      awaiting_first_stock: true,
       product_type: 'digital',
     }).select('id').single();
     if (prodError || !prod) {
@@ -89,17 +91,16 @@ export default function SugestoesJogos() {
     const { error } = await supabase.from('game_suggestions').update({
       status: 'aprovado',
       created_product_id: prod.id,
+      admin_notes: form.admin_notes.trim() || null,
       reviewed_by: user.id,
       reviewed_at: new Date().toISOString(),
     }).eq('id', approveOpen.id);
     setSaving(false);
     if (error) { toast({ title: 'Erro ao aprovar', description: error.message, variant: 'destructive' }); return; }
-    toast({ title: '✅ Sugestão aprovada', description: 'Produto criado e usuário notificado.' });
+    toast({ title: '✅ Sugestão aprovada', description: 'Produto criado (oculto até receber estoque) e usuário notificado.' });
     setApproveOpen(null);
     fetchAll();
   };
-
-  const handleReject = async () => {
     if (!rejectOpen || !user) return;
     setSaving(true);
     const { error } = await supabase.from('game_suggestions').update({
