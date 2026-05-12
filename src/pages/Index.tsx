@@ -1,15 +1,52 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useProdutos } from '@/hooks/useProdutos';
 import GameCard from '@/components/GameCard';
 import { motion } from 'framer-motion';
-import { ChevronRight, Flame, TrendingUp, Zap, Loader2 } from 'lucide-react';
+import { ChevronRight, Flame, TrendingUp, Zap, Loader2, Sparkles, Clock } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+
+interface FlashPromo { id: string; product_id: string; discount_percent: number; ends_at: string; }
 
 export default function Index() {
   const { data: games = [], isLoading } = useProdutos();
-  const featured = games.slice(0, 3);
-  const bestDeals = useMemo(() => [...games].sort((a, b) => b.discount - a.discount).slice(0, 6), [games]);
-  const topRated = useMemo(() => [...games].sort((a, b) => b.rating - a.rating).slice(0, 6), [games]);
+  const inStock = useMemo(() => games.filter(g => g.stock > 0), [games]);
+  const featured = inStock.slice(0, 3);
+  const bestDeals = useMemo(() => [...inStock].sort((a, b) => b.discount - a.discount).slice(0, 6), [inStock]);
+  const topRated = useMemo(() => [...inStock].sort((a, b) => b.rating - a.rating).slice(0, 6), [inStock]);
+
+  // Daily Pick: deterministic by date — pick from inStock based on day-of-year
+  const dailyPick = useMemo(() => {
+    if (inStock.length === 0) return null;
+    const today = new Date();
+    const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000);
+    return inStock[dayOfYear % inStock.length];
+  }, [inStock]);
+
+  // Active flash promo
+  const [flashPromo, setFlashPromo] = useState<{ promo: FlashPromo; product: typeof games[0] } | null>(null);
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const tick = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(tick);
+  }, []);
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from('flash_promotions')
+        .select('id, product_id, discount_percent, ends_at')
+        .eq('is_active', true)
+        .gt('ends_at', new Date().toISOString())
+        .order('ends_at', { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      if (data) {
+        const product = inStock.find(g => g.id === data.product_id);
+        if (product) setFlashPromo({ promo: data as FlashPromo, product });
+      }
+    })();
+  }, [inStock.length]);
+
 
   if (isLoading) {
     return (
