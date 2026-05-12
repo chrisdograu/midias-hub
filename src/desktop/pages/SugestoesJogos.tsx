@@ -217,7 +217,11 @@ export default function SugestoesJogos() {
             <div><Label>Publisher</Label><Input value={form.publisher} onChange={e => setForm({ ...form, publisher: e.target.value })} /></div>
             <div><Label>Preço inicial (R$)</Label><Input type="number" step="0.01" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} /></div>
             <div><Label>Descrição</Label><Textarea rows={3} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} /></div>
-            <p className="text-xs text-muted-foreground">O produto será criado ativo, com estoque 0. Ajuste depois em Produtos/Estoque.</p>
+            <div>
+              <Label>Motivo da aprovação (opcional, será mostrado ao usuário)</Label>
+              <Textarea rows={2} value={form.admin_notes} onChange={e => setForm({ ...form, admin_notes: e.target.value })} placeholder="Ex.: ótima sugestão, já adicionado!" />
+            </div>
+            <p className="text-xs text-muted-foreground">O produto será criado oculto da loja até receber o primeiro estoque. Ajuste em Estoque/Produtos.</p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setApproveOpen(null)} disabled={saving}>Cancelar</Button>
