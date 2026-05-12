@@ -10,6 +10,7 @@ export function useProdutos() {
         .from('produtos')
         .select('*')
         .eq('is_active', true)
+        .eq('awaiting_first_stock', false)
         .order('created_at', { ascending: false });
       if (error) throw error;
       return (data || []).map(mapProdutoToGame);

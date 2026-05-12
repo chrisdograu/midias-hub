@@ -33,7 +33,7 @@ export default function SugestoesJogos() {
   const [filter, setFilter] = useState<'todas' | Status>('pendente');
   const [approveOpen, setApproveOpen] = useState<Suggestion | null>(null);
   const [rejectOpen, setRejectOpen] = useState<Suggestion | null>(null);
-  const [form, setForm] = useState({ title: '', cover_url: '', description: '', price: '0', publisher: '' });
+  const [form, setForm] = useState({ title: '', cover_url: '', description: '', price: '0', publisher: '', admin_notes: '' });
   const [adminNotes, setAdminNotes] = useState('');
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
@@ -63,6 +63,7 @@ export default function SugestoesJogos() {
       description: s.description || '',
       price: '0',
       publisher: '',
+      admin_notes: '',
     });
   };
 
@@ -79,6 +80,7 @@ export default function SugestoesJogos() {
       original_price: Number(form.price) || 0,
       stock: 0,
       is_active: true,
+      awaiting_first_stock: true,
       product_type: 'digital',
     }).select('id').single();
     if (prodError || !prod) {
@@ -89,12 +91,13 @@ export default function SugestoesJogos() {
     const { error } = await supabase.from('game_suggestions').update({
       status: 'aprovado',
       created_product_id: prod.id,
+      admin_notes: form.admin_notes.trim() || null,
       reviewed_by: user.id,
       reviewed_at: new Date().toISOString(),
     }).eq('id', approveOpen.id);
     setSaving(false);
     if (error) { toast({ title: 'Erro ao aprovar', description: error.message, variant: 'destructive' }); return; }
-    toast({ title: '✅ Sugestão aprovada', description: 'Produto criado e usuário notificado.' });
+    toast({ title: '✅ Sugestão aprovada', description: 'Produto criado (oculto até receber estoque) e usuário notificado.' });
     setApproveOpen(null);
     fetchAll();
   };
@@ -214,7 +217,11 @@ export default function SugestoesJogos() {
             <div><Label>Publisher</Label><Input value={form.publisher} onChange={e => setForm({ ...form, publisher: e.target.value })} /></div>
             <div><Label>Preço inicial (R$)</Label><Input type="number" step="0.01" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} /></div>
             <div><Label>Descrição</Label><Textarea rows={3} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} /></div>
-            <p className="text-xs text-muted-foreground">O produto será criado ativo, com estoque 0. Ajuste depois em Produtos/Estoque.</p>
+            <div>
+              <Label>Motivo da aprovação (opcional, será mostrado ao usuário)</Label>
+              <Textarea rows={2} value={form.admin_notes} onChange={e => setForm({ ...form, admin_notes: e.target.value })} placeholder="Ex.: ótima sugestão, já adicionado!" />
+            </div>
+            <p className="text-xs text-muted-foreground">O produto será criado oculto da loja até receber o primeiro estoque. Ajuste em Estoque/Produtos.</p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setApproveOpen(null)} disabled={saving}>Cancelar</Button>

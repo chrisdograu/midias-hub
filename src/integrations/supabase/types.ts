@@ -236,6 +236,62 @@ export type Database = {
         }
         Relationships: []
       }
+      bundle_items: {
+        Row: {
+          bundle_id: string
+          product_id: string
+        }
+        Insert: {
+          bundle_id: string
+          product_id: string
+        }
+        Update: {
+          bundle_id?: string
+          product_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bundle_items_bundle_id_fkey"
+            columns: ["bundle_id"]
+            isOneToOne: false
+            referencedRelation: "bundles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bundles: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          price: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          price?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          price?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       categorias: {
         Row: {
           created_at: string
@@ -446,6 +502,27 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_pick_overrides: {
+        Row: {
+          created_at: string
+          pick_date: string
+          product_id: string
+          set_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          pick_date: string
+          product_id: string
+          set_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          pick_date?: string
+          product_id?: string
+          set_by?: string | null
+        }
+        Relationships: []
+      }
       denuncias: {
         Row: {
           created_at: string
@@ -548,6 +625,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      flash_promotions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          discount_percent: number
+          ends_at: string
+          id: string
+          is_active: boolean
+          product_id: string
+          starts_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          discount_percent: number
+          ends_at: string
+          id?: string
+          is_active?: boolean
+          product_id: string
+          starts_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          discount_percent?: number
+          ends_at?: string
+          id?: string
+          is_active?: boolean
+          product_id?: string
+          starts_at?: string
+        }
+        Relationships: []
       }
       fornecedores: {
         Row: {
@@ -1085,14 +1195,43 @@ export type Database = {
         }
         Relationships: []
       }
+      price_history: {
+        Row: {
+          discount: number
+          id: string
+          original_price: number
+          price: number
+          product_id: string
+          recorded_at: string
+        }
+        Insert: {
+          discount?: number
+          id?: string
+          original_price?: number
+          price: number
+          product_id: string
+          recorded_at?: string
+        }
+        Update: {
+          discount?: number
+          id?: string
+          original_price?: number
+          price?: number
+          product_id?: string
+          recorded_at?: string
+        }
+        Relationships: []
+      }
       produtos: {
         Row: {
+          awaiting_first_stock: boolean
           category: string | null
           category_id: string | null
           cost_price: number | null
           created_at: string
           description: string | null
           discount: number
+          featured: boolean
           id: string
           image_url: string | null
           is_active: boolean
@@ -1111,12 +1250,14 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          awaiting_first_stock?: boolean
           category?: string | null
           category_id?: string | null
           cost_price?: number | null
           created_at?: string
           description?: string | null
           discount?: number
+          featured?: boolean
           id?: string
           image_url?: string | null
           is_active?: boolean
@@ -1135,12 +1276,14 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          awaiting_first_stock?: boolean
           category?: string | null
           category_id?: string | null
           cost_price?: number | null
           created_at?: string
           description?: string | null
           discount?: number
+          featured?: boolean
           id?: string
           image_url?: string | null
           is_active?: boolean
