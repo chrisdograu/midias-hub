@@ -5,6 +5,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
 import { motion, AnimatePresence } from 'framer-motion';
+import NotificationBell from './NotificationBell';
 
 export default function Header() {
   const { itemCount } = useCart();
@@ -77,6 +78,8 @@ export default function Header() {
             <button onClick={toggleTheme} className="p-2 rounded-lg hover:bg-secondary transition-colors" title={theme === 'dark' ? 'Modo claro' : 'Modo escuro'}>
               {theme === 'dark' ? <Sun className="h-5 w-5 text-foreground" /> : <Moon className="h-5 w-5 text-foreground" />}
             </button>
+
+            <NotificationBell />
 
             <Link to="/carrinho" className="relative p-2 rounded-lg hover:bg-secondary transition-colors">
               <ShoppingCart className="h-5 w-5 text-foreground" />

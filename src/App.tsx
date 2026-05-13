@@ -71,6 +71,8 @@ const NotificacoesAdmin = lazy(() => import("./desktop/pages/NotificacoesAdmin")
 const ForumAdmin = lazy(() => import("./desktop/pages/ForumAdmin"));
 const SugestoesJogos = lazy(() => import("./desktop/pages/SugestoesJogos"));
 const Configuracoes = lazy(() => import("./desktop/pages/Configuracoes"));
+const BadgesAdmin = lazy(() => import("./desktop/pages/Badges"));
+const Promocoes = lazy(() => import("./desktop/pages/Promocoes"));
 
 const PageFallback = () => (
   <div className="min-h-[40vh] flex items-center justify-center">
@@ -131,6 +133,8 @@ const App = () => (
                 <Route path="relatorios" element={<Relatorios />} />
                 <Route path="certificados" element={<Certificados />} />
                 <Route path="configuracoes" element={<Configuracoes />} />
+                <Route path="badges" element={<BadgesAdmin />} />
+                <Route path="promocoes" element={<Promocoes />} />
               </Route>
 
               {/* Web E-commerce Routes */}

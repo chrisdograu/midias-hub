@@ -4,7 +4,7 @@ import {
   Warehouse, ClipboardList, Shield, BarChart3,
   Award, LogOut, Gamepad2, ChevronLeft, ChevronRight,
   Megaphone, ArrowLeftRight, MessageSquare, Star, Bell, MessageCircle,
-  Sun, Moon, Settings, Loader2, Ticket, Lightbulb,
+  Sun, Moon, Settings, Loader2, Ticket, Lightbulb, Trophy, Zap,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useTheme } from '@/hooks/useTheme';
@@ -39,6 +39,8 @@ const navSections: {
       { title: 'Fornecedores', url: '/desktop/fornecedores', icon: Truck, route: 'fornecedores' },
       { title: 'Categorias', url: '/desktop/categorias', icon: Tags, route: 'categorias' },
       { title: 'Cupons', url: '/desktop/cupons', icon: Ticket, route: 'cupons' },
+      { title: 'Promoções & Bundles', url: '/desktop/promocoes', icon: Zap, route: 'promocoes' },
+      { title: 'Badges', url: '/desktop/badges', icon: Trophy, route: 'badges' },
     ],
   },
   {
