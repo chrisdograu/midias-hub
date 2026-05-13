@@ -9,7 +9,7 @@ export const POSITION_PERMISSIONS: Record<EmployeePosition, string[]> = {
   admin: ['*'], // all sections
   gerente: [
     'produtos', 'funcionarios', 'clientes', 'fornecedores', 'categorias', 'cupons',
-    'estoque', 'pedidos', 'relatorios',
+    'estoque', 'pedidos', 'relatorios', 'promocoes', 'badges',
   ],
   moderador: [
     'moderacao', 'forum', 'avaliacoes-usuario',
