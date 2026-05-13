@@ -9,6 +9,7 @@ import { HalfStarDisplay, InteractiveHalfStar } from '@/components/HalfStarRatin
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import GameCard from '@/components/GameCard';
+import PriceHistoryChart from '@/components/PriceHistoryChart';
 
 export default function GameDetail() {
   const { id } = useParams();
@@ -162,6 +163,9 @@ export default function GameDetail() {
           </div>
         </div>
       </div>
+
+      {/* Price history */}
+      <PriceHistoryChart productId={game.id} currentPrice={game.price} />
 
       {/* Related */}
       {related.length > 0 && (
