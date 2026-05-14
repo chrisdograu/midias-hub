@@ -107,19 +107,34 @@ export default function Index() {
         const h = Math.floor(remainingMs / 3600000);
         const m = Math.floor((remainingMs % 3600000) / 60000);
         const s = Math.floor((remainingMs % 60000) / 1000);
+        const promoPrice = flashPromo.product.price * (1 - flashPromo.promo.discount_percent / 100);
         return (
-          <section className="container mx-auto px-4 -mt-4">
-            <Link to={`/jogo/${flashPromo.product.id}`} className="block">
-              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="relative overflow-hidden rounded-xl bg-gradient-to-r from-price/20 via-price/10 to-accent/10 border border-price/40 p-4 md:p-6 flex items-center gap-4">
-                <div className="bg-price text-price-foreground rounded-lg px-3 py-2 font-bold text-sm flex items-center gap-1"><Zap className="h-4 w-4" /> RELÂMPAGO</div>
-                <img src={flashPromo.product.image} alt={flashPromo.product.title} className="w-16 h-20 object-cover rounded hidden sm:block" />
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-foreground truncate">{flashPromo.product.title}</h3>
-                  <p className="text-sm text-muted-foreground">-{flashPromo.promo.discount_percent}% por tempo limitado</p>
-                </div>
-                <div className="flex items-center gap-2 text-price font-mono font-bold tabular-nums">
-                  <Clock className="h-4 w-4" />
-                  {String(h).padStart(2, '0')}:{String(m).padStart(2, '0')}:{String(s).padStart(2, '0')}
+          <section className="container mx-auto px-4 pt-8">
+            <Link to={`/jogo/${flashPromo.product.id}`} className="block group">
+              <motion.div
+                initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+                className="relative overflow-hidden rounded-2xl border border-price/30 bg-gradient-to-r from-price/15 via-background to-accent/10"
+              >
+                <div className="grid grid-cols-[auto_1fr_auto] items-center gap-4 sm:gap-6 p-4 sm:p-5">
+                  <img src={flashPromo.product.image} alt={flashPromo.product.title} className="w-20 h-28 sm:w-24 sm:h-32 object-cover rounded-lg shadow-lg" />
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <span className="inline-flex items-center gap-1 bg-price text-price-foreground rounded px-2 py-0.5 text-[11px] font-bold tracking-wide"><Zap className="h-3 w-3" /> RELÂMPAGO</span>
+                      <span className="text-[11px] text-muted-foreground uppercase tracking-wide">−{flashPromo.promo.discount_percent}%</span>
+                    </div>
+                    <h3 className="font-bold text-base sm:text-lg text-foreground truncate group-hover:text-primary transition-colors">{flashPromo.product.title}</h3>
+                    <div className="flex items-baseline gap-2 mt-1 flex-wrap">
+                      <span className="text-muted-foreground text-sm line-through">R$ {flashPromo.product.price.toFixed(2)}</span>
+                      <span className="text-price font-bold text-xl">R$ {promoPrice.toFixed(2)}</span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end gap-1 shrink-0">
+                    <span className="text-[10px] uppercase text-muted-foreground tracking-wider hidden sm:block">Termina em</span>
+                    <div className="flex items-center gap-1.5 text-price">
+                      <Clock className="h-4 w-4" />
+                      <span className="font-mono font-bold text-base sm:text-lg tabular-nums">{String(h).padStart(2, '0')}:{String(m).padStart(2, '0')}:{String(s).padStart(2, '0')}</span>
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             </Link>
@@ -134,18 +149,63 @@ export default function Index() {
             <Sparkles className="h-5 w-5 text-accent" />
             <h2 className="text-xl font-bold text-foreground">Escolha do Dia</h2>
           </div>
-          <Link to={`/jogo/${dailyPick.id}`} className="group block relative rounded-2xl overflow-hidden aspect-[21/9] md:aspect-[3/1]">
-            <img src={dailyPick.image} alt={dailyPick.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-6">
-              <span className="inline-block bg-accent text-accent-foreground text-xs font-bold px-2 py-1 rounded mb-2">PICK DO DIA</span>
-              <h3 className="text-2xl md:text-3xl font-bold text-white mb-1">{dailyPick.title}</h3>
-              <div className="flex items-center gap-3">
+          <Link to={`/jogo/${dailyPick.id}`} className="group grid grid-cols-1 md:grid-cols-[1.4fr_1fr] rounded-2xl overflow-hidden border border-border bg-card hover:border-accent/50 transition-colors">
+            <div className="relative aspect-[16/9] md:aspect-auto overflow-hidden">
+              <img src={dailyPick.image} alt={dailyPick.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+              <span className="absolute top-3 left-3 inline-block bg-accent text-accent-foreground text-[11px] font-bold px-2 py-1 rounded tracking-wide">PICK DO DIA</span>
+            </div>
+            <div className="p-5 md:p-6 flex flex-col justify-center gap-3">
+              <h3 className="text-xl md:text-2xl font-bold text-foreground leading-tight">{dailyPick.title}</h3>
+              {pickReason ? (
+                <p className="text-sm text-accent/90 italic border-l-2 border-accent/60 pl-3">"{pickReason}"</p>
+              ) : (
+                <p className="text-xs text-muted-foreground uppercase tracking-wider">Recomendado pela equipe</p>
+              )}
+              {dailyPick.description && (
+                <p className="text-sm text-muted-foreground line-clamp-3">{dailyPick.description}</p>
+              )}
+              <div className="flex items-center gap-3 mt-1">
                 {dailyPick.discount > 0 && <span className="bg-primary text-primary-foreground text-xs font-bold px-2 py-0.5 rounded">-{dailyPick.discount}%</span>}
-                <span className="text-price font-bold text-lg">R$ {dailyPick.price.toFixed(2)}</span>
+                <span className="text-price font-bold text-xl">R$ {dailyPick.price.toFixed(2)}</span>
               </div>
             </div>
           </Link>
+        </section>
+      )}
+
+      {/* Bundles */}
+      {bundles.length > 0 && (
+        <section className="container mx-auto px-4 pt-12">
+          <div className="flex items-center gap-2 mb-4">
+            <Package className="h-5 w-5 text-primary" />
+            <h2 className="text-xl font-bold text-foreground">Pacotes & Bundles</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {bundles.map(({ bundle, products }) => {
+              const fullPrice = products.reduce((s, p) => s + p.price, 0);
+              const savings = Math.max(0, fullPrice - bundle.price);
+              const pct = fullPrice > 0 ? Math.round((savings / fullPrice) * 100) : 0;
+              return (
+                <Link key={bundle.id} to={`/jogo/${products[0].id}`} className="group bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-colors">
+                  <div className="relative aspect-[16/9] grid grid-cols-3 bg-secondary/30">
+                    {products.slice(0, 3).map(p => (
+                      <img key={p.id} src={p.image} alt={p.title} className="w-full h-full object-cover" />
+                    ))}
+                    {pct > 0 && <span className="absolute top-2 right-2 bg-price text-price-foreground text-xs font-bold px-2 py-0.5 rounded">−{pct}%</span>}
+                  </div>
+                  <div className="p-4 space-y-1">
+                    <h3 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">{bundle.title}</h3>
+                    <p className="text-xs text-muted-foreground">{products.length} jogos incluídos</p>
+                    <div className="flex items-baseline gap-2 pt-1">
+                      {savings > 0 && <span className="text-xs text-muted-foreground line-through">R$ {fullPrice.toFixed(2)}</span>}
+                      <span className="text-price font-bold text-lg">R$ {Number(bundle.price).toFixed(2)}</span>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
         </section>
       )}
 
