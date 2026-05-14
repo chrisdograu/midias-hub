@@ -104,7 +104,7 @@ export default function Promocoes() {
     if (!pickForm.product_id) return toast.error('Escolha um jogo');
     const { data: { user } } = await supabase.auth.getUser();
     const { error } = await supabase.from('daily_pick_overrides' as any).upsert({
-      pick_date: pickForm.pick_date, product_id: pickForm.product_id, set_by: user?.id,
+      pick_date: pickForm.pick_date, product_id: pickForm.product_id, set_by: user?.id, reason: pickForm.reason || null,
     }, { onConflict: 'pick_date' });
     if (error) return toast.error(error.message);
     toast.success('Pick do dia definido');
