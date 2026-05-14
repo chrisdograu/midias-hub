@@ -168,6 +168,9 @@ export default function GameDetail() {
       {/* Price history */}
       <PriceHistoryChart productId={game.id} currentPrice={game.price} />
 
+      {/* Bundles */}
+      <ProductBundles productId={game.id} />
+
       {/* Related */}
       {related.length > 0 && (
         <div className="mt-12">
