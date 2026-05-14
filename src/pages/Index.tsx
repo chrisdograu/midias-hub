@@ -18,12 +18,18 @@ export default function Index() {
   const topRated = useMemo(() => [...inStock].sort((a, b) => b.rating - a.rating).slice(0, 6), [inStock]);
 
   // Daily Pick: deterministic by date — pick from inStock based on day-of-year
-  const dailyPick = useMemo(() => {
+  const fallbackPick = useMemo(() => {
     if (inStock.length === 0) return null;
     const today = new Date();
     const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000);
     return inStock[dayOfYear % inStock.length];
   }, [inStock]);
+  const [pickOverride, setPickOverride] = useState<{ product_id: string; reason: string | null } | null>(null);
+  const dailyPick = useMemo(() => {
+    if (pickOverride) return inStock.find(g => g.id === pickOverride.product_id) ?? fallbackPick;
+    return fallbackPick;
+  }, [pickOverride, inStock, fallbackPick]);
+  const pickReason = pickOverride?.reason ?? null;
 
   // Active flash promo
   const [flashPromo, setFlashPromo] = useState<{ promo: FlashPromo; product: typeof games[0] } | null>(null);
