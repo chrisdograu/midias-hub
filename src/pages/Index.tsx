@@ -3,10 +3,12 @@ import { Link } from 'react-router-dom';
 import { useProdutos } from '@/hooks/useProdutos';
 import GameCard from '@/components/GameCard';
 import { motion } from 'framer-motion';
-import { ChevronRight, Flame, TrendingUp, Zap, Loader2, Sparkles, Clock } from 'lucide-react';
+import { ChevronRight, Flame, TrendingUp, Zap, Loader2, Sparkles, Clock, Package } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface FlashPromo { id: string; product_id: string; discount_percent: number; ends_at: string; }
+interface BundleRow { id: string; title: string; description: string | null; price: number; image_url: string | null; }
+interface BundleItemRow { bundle_id: string; product_id: string; }
 
 export default function Index() {
   const { data: games = [], isLoading } = useProdutos();
