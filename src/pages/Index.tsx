@@ -60,11 +60,11 @@ export default function Index() {
       if (po) setPickOverride(po as any);
       if (bd && bi) {
         const itemsByBundle = new Map<string, string[]>();
-        (bi as BundleItemRow[]).forEach(i => {
+        ((bi as unknown) as BundleItemRow[]).forEach(i => {
           const arr = itemsByBundle.get(i.bundle_id) || [];
           arr.push(i.product_id); itemsByBundle.set(i.bundle_id, arr);
         });
-        const built = (bd as BundleRow[]).map(b => ({
+        const built = ((bd as unknown) as BundleRow[]).map(b => ({
           bundle: b,
           products: (itemsByBundle.get(b.id) || []).map(pid => inStock.find(g => g.id === pid)).filter(Boolean) as typeof games,
         })).filter(b => b.products.length >= 2);
