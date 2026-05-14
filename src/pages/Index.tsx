@@ -38,19 +38,37 @@ export default function Index() {
     const tick = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(tick);
   }, []);
+  // Bundles
+  const [bundles, setBundles] = useState<{ bundle: BundleRow; products: typeof games }[]>([]);
+
   useEffect(() => {
+    if (inStock.length === 0) return;
     (async () => {
-      const { data } = await supabase
-        .from('flash_promotions')
-        .select('id, product_id, discount_percent, ends_at')
-        .eq('is_active', true)
-        .gt('ends_at', new Date().toISOString())
-        .order('ends_at', { ascending: true })
-        .limit(1)
-        .maybeSingle();
-      if (data) {
-        const product = inStock.find(g => g.id === data.product_id);
-        if (product) setFlashPromo({ promo: data as FlashPromo, product });
+      const today = new Date().toISOString().slice(0, 10);
+      const [{ data: fp }, { data: po }, { data: bd }, { data: bi }] = await Promise.all([
+        supabase.from('flash_promotions').select('id, product_id, discount_percent, ends_at')
+          .eq('is_active', true).gt('ends_at', new Date().toISOString())
+          .order('ends_at', { ascending: true }).limit(1).maybeSingle(),
+        supabase.from('daily_pick_overrides' as any).select('product_id, reason').eq('pick_date', today).maybeSingle(),
+        supabase.from('bundles' as any).select('id, title, description, price, image_url').eq('is_active', true).order('created_at', { ascending: false }).limit(6),
+        supabase.from('bundle_items' as any).select('bundle_id, product_id'),
+      ]);
+      if (fp) {
+        const product = inStock.find(g => g.id === fp.product_id);
+        if (product) setFlashPromo({ promo: fp as FlashPromo, product });
+      }
+      if (po) setPickOverride(po as any);
+      if (bd && bi) {
+        const itemsByBundle = new Map<string, string[]>();
+        (bi as BundleItemRow[]).forEach(i => {
+          const arr = itemsByBundle.get(i.bundle_id) || [];
+          arr.push(i.product_id); itemsByBundle.set(i.bundle_id, arr);
+        });
+        const built = (bd as BundleRow[]).map(b => ({
+          bundle: b,
+          products: (itemsByBundle.get(b.id) || []).map(pid => inStock.find(g => g.id === pid)).filter(Boolean) as typeof games,
+        })).filter(b => b.products.length >= 2);
+        setBundles(built);
       }
     })();
   }, [inStock.length]);
