@@ -204,12 +204,12 @@ export default function ForumAdmin() {
                   ) : userResults.length === 0 ? (
                     <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Nenhum post encontrado</TableCell></TableRow>
                   ) : userResults.map(p => (
-                    <TableRow key={p.id} className="border-border hover:bg-muted/30">
-                      <TableCell className="text-sm font-medium">{p.user_name}</TableCell>
-                      <TableCell className="text-sm">{p.product_name}</TableCell>
-                      <TableCell className="text-sm max-w-[300px] truncate">{p.content}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR') : '—'}</TableCell>
-                      <TableCell className="text-center">
+                    <TableRow key={p.id} className="border-border hover:bg-muted/30 align-top">
+                      <TableCell className="text-sm font-medium align-top">{p.user_name}</TableCell>
+                      <TableCell className="text-sm align-top">{p.product_name}</TableCell>
+                      <TableCell className="text-sm align-top"><div className="whitespace-pre-wrap break-words max-w-[380px]">{p.content}</div></TableCell>
+                      <TableCell className="text-sm text-muted-foreground align-top">{p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR') : '—'}</TableCell>
+                      <TableCell className="text-center align-top">
                         <Button variant="ghost" size="sm" className="text-xs h-7 text-destructive" onClick={() => handleDelete(p.id)}><Trash2 className="h-3 w-3" /></Button>
                       </TableCell>
                     </TableRow>
