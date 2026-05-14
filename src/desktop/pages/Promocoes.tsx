@@ -259,6 +259,7 @@ export default function Promocoes() {
                     {produtos.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
                   </select>
                 </div>
+                <div><Label>Motivo da escolha (opcional)</Label><Textarea rows={2} placeholder="Ex: Lançamento da semana, jogo brasileiro, classico imperdível..." value={pickForm.reason} onChange={e => setPickForm({ ...pickForm, reason: e.target.value })} /></div>
               </div>
               <DialogFooter><Button onClick={setPick}>Salvar</Button></DialogFooter>
             </DialogContent>
