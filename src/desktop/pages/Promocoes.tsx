@@ -13,7 +13,7 @@ interface Produto { id: string; title: string; price: number; image_url: string 
 interface Promo { id: string; product_id: string; discount_percent: number; starts_at: string; ends_at: string; is_active: boolean; }
 interface Bundle { id: string; title: string; description: string | null; price: number; image_url: string | null; is_active: boolean; }
 interface BundleItem { bundle_id: string; product_id: string; }
-interface DailyPick { pick_date: string; product_id: string; }
+interface DailyPick { pick_date: string; product_id: string; reason?: string | null; }
 
 export default function Promocoes() {
   const [produtos, setProdutos] = useState<Produto[]>([]);
