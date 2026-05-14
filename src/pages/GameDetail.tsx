@@ -10,6 +10,8 @@ import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import GameCard from '@/components/GameCard';
 import PriceHistoryChart from '@/components/PriceHistoryChart';
+import ProductGallery from '@/components/ProductGallery';
+import ProductBundles from '@/components/ProductBundles';
 
 export default function GameDetail() {
   const { id } = useParams();
