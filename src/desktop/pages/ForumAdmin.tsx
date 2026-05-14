@@ -162,10 +162,10 @@ export default function ForumAdmin() {
                 </TableRow></TableHeader>
                 <TableBody>
                   {gamePosts.map(p => (
-                    <TableRow key={p.id} className="border-border hover:bg-muted/30">
-                      <TableCell className="text-sm font-medium">{p.user_name}</TableCell>
-                      <TableCell className="text-sm max-w-[400px] truncate">{p.content}</TableCell>
-                      <TableCell className="text-center text-sm">{p.likes_count}</TableCell>
+                    <TableRow key={p.id} className="border-border hover:bg-muted/30 align-top">
+                      <TableCell className="text-sm font-medium align-top">{p.user_name}</TableCell>
+                      <TableCell className="text-sm align-top"><div className="whitespace-pre-wrap break-words max-w-[480px]">{p.content}</div></TableCell>
+                      <TableCell className="text-center text-sm align-top">{p.likes_count}</TableCell>
                       <TableCell className="text-center text-sm">{p.replies_count}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">{p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR') : '—'}</TableCell>
                       <TableCell className="text-center">
