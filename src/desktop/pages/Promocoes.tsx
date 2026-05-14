@@ -29,7 +29,7 @@ export default function Promocoes() {
   const [bundleOpen, setBundleOpen] = useState(false);
   const [bundleForm, setBundleForm] = useState({ title: '', description: '', price: 0, image_url: '', items: [] as string[] });
   const [pickOpen, setPickOpen] = useState(false);
-  const [pickForm, setPickForm] = useState({ pick_date: new Date().toISOString().slice(0, 10), product_id: '' });
+  const [pickForm, setPickForm] = useState({ pick_date: new Date().toISOString().slice(0, 10), product_id: '', reason: '' });
 
   const load = async () => {
     setLoading(true);
