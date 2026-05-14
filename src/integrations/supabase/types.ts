@@ -507,18 +507,21 @@ export type Database = {
           created_at: string
           pick_date: string
           product_id: string
+          reason: string | null
           set_by: string | null
         }
         Insert: {
           created_at?: string
           pick_date: string
           product_id: string
+          reason?: string | null
           set_by?: string | null
         }
         Update: {
           created_at?: string
           pick_date?: string
           product_id?: string
+          reason?: string | null
           set_by?: string | null
         }
         Relationships: []
@@ -1219,6 +1222,30 @@ export type Database = {
           price?: number
           product_id?: string
           recorded_at?: string
+        }
+        Relationships: []
+      }
+      produto_imagens: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string
+          position: number
+          product_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url: string
+          position?: number
+          product_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          position?: number
+          product_id?: string
         }
         Relationships: []
       }

@@ -13,7 +13,7 @@ interface Produto { id: string; title: string; price: number; image_url: string 
 interface Promo { id: string; product_id: string; discount_percent: number; starts_at: string; ends_at: string; is_active: boolean; }
 interface Bundle { id: string; title: string; description: string | null; price: number; image_url: string | null; is_active: boolean; }
 interface BundleItem { bundle_id: string; product_id: string; }
-interface DailyPick { pick_date: string; product_id: string; }
+interface DailyPick { pick_date: string; product_id: string; reason?: string | null; }
 
 export default function Promocoes() {
   const [produtos, setProdutos] = useState<Produto[]>([]);
@@ -29,7 +29,7 @@ export default function Promocoes() {
   const [bundleOpen, setBundleOpen] = useState(false);
   const [bundleForm, setBundleForm] = useState({ title: '', description: '', price: 0, image_url: '', items: [] as string[] });
   const [pickOpen, setPickOpen] = useState(false);
-  const [pickForm, setPickForm] = useState({ pick_date: new Date().toISOString().slice(0, 10), product_id: '' });
+  const [pickForm, setPickForm] = useState({ pick_date: new Date().toISOString().slice(0, 10), product_id: '', reason: '' });
 
   const load = async () => {
     setLoading(true);
@@ -104,7 +104,7 @@ export default function Promocoes() {
     if (!pickForm.product_id) return toast.error('Escolha um jogo');
     const { data: { user } } = await supabase.auth.getUser();
     const { error } = await supabase.from('daily_pick_overrides' as any).upsert({
-      pick_date: pickForm.pick_date, product_id: pickForm.product_id, set_by: user?.id,
+      pick_date: pickForm.pick_date, product_id: pickForm.product_id, set_by: user?.id, reason: pickForm.reason || null,
     }, { onConflict: 'pick_date' });
     if (error) return toast.error(error.message);
     toast.success('Pick do dia definido');
@@ -259,6 +259,7 @@ export default function Promocoes() {
                     {produtos.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
                   </select>
                 </div>
+                <div><Label>Motivo da escolha (opcional)</Label><Textarea rows={2} placeholder="Ex: Lançamento da semana, jogo brasileiro, classico imperdível..." value={pickForm.reason} onChange={e => setPickForm({ ...pickForm, reason: e.target.value })} /></div>
               </div>
               <DialogFooter><Button onClick={setPick}>Salvar</Button></DialogFooter>
             </DialogContent>

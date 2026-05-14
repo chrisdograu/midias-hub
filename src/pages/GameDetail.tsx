@@ -10,6 +10,8 @@ import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import GameCard from '@/components/GameCard';
 import PriceHistoryChart from '@/components/PriceHistoryChart';
+import ProductGallery from '@/components/ProductGallery';
+import ProductBundles from '@/components/ProductBundles';
 
 export default function GameDetail() {
   const { id } = useParams();
@@ -62,10 +64,9 @@ export default function GameDetail() {
       </Link>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="lg:col-span-2">
-          <div className="relative rounded-xl overflow-hidden aspect-video">
-            <img src={game.image} alt={game.title} className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent" />
-            <button onClick={handleFav} className="absolute top-4 right-4 p-2 rounded-full bg-card/80 backdrop-blur-sm hover:bg-card transition-colors">
+          <div className="relative">
+            <ProductGallery productId={game.id} mainImage={game.image} title={game.title} />
+            <button onClick={handleFav} className="absolute top-4 right-4 p-2 rounded-full bg-card/80 backdrop-blur-sm hover:bg-card transition-colors z-10">
               <Heart className={`h-5 w-5 ${isFavorito(game.id) ? 'fill-destructive text-destructive' : 'text-muted-foreground'}`} />
             </button>
           </div>
@@ -166,6 +167,9 @@ export default function GameDetail() {
 
       {/* Price history */}
       <PriceHistoryChart productId={game.id} currentPrice={game.price} />
+
+      {/* Bundles */}
+      <ProductBundles productId={game.id} />
 
       {/* Related */}
       {related.length > 0 && (
