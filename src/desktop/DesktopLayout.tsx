@@ -41,6 +41,7 @@ const navSections: {
       { title: 'Cupons', url: '/desktop/cupons', icon: Ticket, route: 'cupons' },
       { title: 'Promoções & Bundles', url: '/desktop/promocoes', icon: Zap, route: 'promocoes' },
       { title: 'Badges', url: '/desktop/badges', icon: Trophy, route: 'badges' },
+      { title: 'Torneios', url: '/desktop/torneios', icon: Trophy, route: 'torneios' },
     ],
   },
   {

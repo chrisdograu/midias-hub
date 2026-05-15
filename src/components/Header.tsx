@@ -23,6 +23,10 @@ export default function Header() {
     { to: '/', label: 'Início' },
     { to: '/catalogo', label: 'Catálogo' },
     { to: '/ofertas', label: 'Ofertas' },
+    { to: '/em-alta', label: 'Em Alta' },
+    { to: '/pra-voce', label: 'Pra Você' },
+    { to: '/torneios', label: 'Torneios' },
+    { to: '/social', label: 'Social' },
   ];
 
   const handleSearch = (e: React.FormEvent) => {

@@ -1,4 +1,6 @@
+import { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import { useProduto, useProdutos } from '@/hooks/useProdutos';
 import { useCart } from '@/hooks/useCart';
 import { useFavoritos } from '@/hooks/useFavoritos';

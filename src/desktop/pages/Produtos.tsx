@@ -14,6 +14,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { Tables } from '@/integrations/supabase/types';
+import ProductGalleryAdmin from '@/components/ProductGalleryAdmin';
 
 type Produto = Tables<'produtos'>;
 
@@ -252,6 +253,11 @@ export default function Produtos() {
                 </div>
               </div>
             </div>
+            {selected && (
+              <div className="col-span-2 pt-2 border-t border-border">
+                <ProductGalleryAdmin productId={selected.id} />
+              </div>
+            )}
             <div className="col-span-2 flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={() => { setDialogOpen(false); resetForm(); }}>Cancelar</Button>
               <Button className="bg-primary text-primary-foreground" onClick={handleSave} disabled={saving}>
