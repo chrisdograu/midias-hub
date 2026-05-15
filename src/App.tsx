@@ -73,6 +73,11 @@ const SugestoesJogos = lazy(() => import("./desktop/pages/SugestoesJogos"));
 const Configuracoes = lazy(() => import("./desktop/pages/Configuracoes"));
 const BadgesAdmin = lazy(() => import("./desktop/pages/Badges"));
 const Promocoes = lazy(() => import("./desktop/pages/Promocoes"));
+const TorneiosAdmin = lazy(() => import("./desktop/pages/Torneios"));
+const EmAlta = lazy(() => import("./pages/EmAlta"));
+const ParaVoce = lazy(() => import("./pages/ParaVoce"));
+const Social = lazy(() => import("./pages/Social"));
+const Torneios = lazy(() => import("./pages/Torneios"));
 
 const PageFallback = () => (
   <div className="min-h-[40vh] flex items-center justify-center">
@@ -135,6 +140,7 @@ const App = () => (
                 <Route path="configuracoes" element={<Configuracoes />} />
                 <Route path="badges" element={<BadgesAdmin />} />
                 <Route path="promocoes" element={<Promocoes />} />
+                <Route path="torneios" element={<TorneiosAdmin />} />
               </Route>
 
               {/* Web E-commerce Routes */}
@@ -142,6 +148,10 @@ const App = () => (
                 { path: '/', el: <Index /> },
                 { path: '/catalogo', el: <Catalogo /> },
                 { path: '/ofertas', el: <Ofertas /> },
+                { path: '/em-alta', el: <EmAlta /> },
+                { path: '/pra-voce', el: <ParaVoce /> },
+                { path: '/social', el: <Social /> },
+                { path: '/torneios', el: <Torneios /> },
                 { path: '/jogo/:id', el: <GameDetail /> },
                 { path: '/carrinho', el: <Carrinho /> },
                 { path: '/checkout', el: <ProtectedRoute><Checkout /></ProtectedRoute> },
