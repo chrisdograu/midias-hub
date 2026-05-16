@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useCart } from '@/lib/cartStore';
+import { useCart } from '@/hooks/useCart';
 import { Package, Loader2, ShoppingCart, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useSubmitGuard } from '@/hooks/useSubmitGuard';
