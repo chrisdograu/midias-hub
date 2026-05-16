@@ -78,6 +78,8 @@ const EmAlta = lazy(() => import("./pages/EmAlta"));
 const ParaVoce = lazy(() => import("./pages/ParaVoce"));
 const Social = lazy(() => import("./pages/Social"));
 const Torneios = lazy(() => import("./pages/Torneios"));
+const BundleDetail = lazy(() => import("./pages/BundleDetail"));
+const BibliotecaJogo = lazy(() => import("./pages/BibliotecaJogo"));
 
 const PageFallback = () => (
   <div className="min-h-[40vh] flex items-center justify-center">
