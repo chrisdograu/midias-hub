@@ -52,7 +52,11 @@ export default function BundleDetail() {
 
   const addAll = guard(async () => {
     for (const it of bundle.items) {
-      cart.addItem({ id: it.product_id, title: it.title, price: bundle.price / bundle.items.length, image_url: it.image_url, quantity: 1 } as any);
+      cart.addItem({
+        id: it.product_id, title: it.title, price: bundle.price / bundle.items.length,
+        image: it.image_url || '', category: it.category || '', platform: [], rating: 0,
+        originalPrice: it.price, discount: 0, description: '',
+      } as any);
     }
     toast.success(`Bundle "${bundle.title}" adicionado ao carrinho`);
   });
