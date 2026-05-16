@@ -155,6 +155,8 @@ const App = () => (
                 { path: '/social', el: <Social /> },
                 { path: '/torneios', el: <Torneios /> },
                 { path: '/jogo/:id', el: <GameDetail /> },
+                { path: '/bundle/:id', el: <BundleDetail /> },
+                { path: '/biblioteca/:productId', el: <ProtectedRoute><BibliotecaJogo /></ProtectedRoute> },
                 { path: '/carrinho', el: <Carrinho /> },
                 { path: '/checkout', el: <ProtectedRoute><Checkout /></ProtectedRoute> },
                 { path: '/checkout/sucesso', el: <ProtectedRoute><CheckoutSucesso /></ProtectedRoute> },
