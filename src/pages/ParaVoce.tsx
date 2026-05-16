@@ -65,7 +65,14 @@ export default function ParaVoce() {
               <section key={genre}>
                 <h2 className="text-xl font-semibold mb-4">Porque você curte <span className="text-primary">{genre}</span></h2>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-                  {games.slice(0, 5).map(g => <GameCard key={g.id} game={g} />)}
+                  {games.slice(0, 5).map(g => (
+                    <div key={g.id} className="space-y-1">
+                      <GameCard game={g} />
+                      <p className="text-xs text-primary/80 italic px-1">
+                        Porque você curte {genre.toLowerCase()}
+                      </p>
+                    </div>
+                  ))}
                 </div>
               </section>
             ))}
