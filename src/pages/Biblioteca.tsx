@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useBiblioteca } from '@/hooks/useBiblioteca';
 import { Library, Gamepad2, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -57,12 +58,16 @@ export default function Biblioteca() {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
           {filtered.map((item, i) => (
             <motion.div key={item.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-              className="bg-card border border-border rounded-lg overflow-hidden">
-              <div className="aspect-[3/4] overflow-hidden">
-                <img src={item.produto?.image_url || '/placeholder.svg'} alt={item.produto?.title || ''} className="w-full h-full object-cover" loading="lazy" />
-              </div>
+              className="bg-card border border-border rounded-lg overflow-hidden hover:border-primary/50 transition-colors">
+              <Link to={`/biblioteca/${item.product_id}`}>
+                <div className="aspect-[3/4] overflow-hidden">
+                  <img src={item.produto?.image_url || '/placeholder.svg'} alt={item.produto?.title || ''} className="w-full h-full object-cover hover:scale-105 transition-transform" loading="lazy" />
+                </div>
+              </Link>
               <div className="p-3 space-y-2">
-                <h3 className="text-sm font-semibold text-foreground line-clamp-2 leading-tight">{item.produto?.title}</h3>
+                <Link to={`/biblioteca/${item.product_id}`}>
+                  <h3 className="text-sm font-semibold text-foreground line-clamp-2 leading-tight hover:text-primary">{item.produto?.title}</h3>
+                </Link>
                 <div className="flex flex-wrap gap-1">
                   {(item.produto?.platform || []).map(p => (
                     <span key={p} className="text-[10px] bg-secondary text-muted-foreground px-1.5 py-0.5 rounded">{p}</span>
@@ -71,7 +76,10 @@ export default function Biblioteca() {
                 <select value={item.status} onChange={e => handleStatusChange(item.id, e.target.value)}
                   className="w-full px-2 py-1.5 bg-secondary border border-border rounded text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50">
                   <option value="quero_jogar">Quero Jogar</option>
-                  <option value="ja_joguei">Já Joguei</option>
+                  <option value="jogando">Jogando</option>
+                  <option value="zerado">Completado</option>
+                  <option value="pausado">Pausado</option>
+                  <option value="abandonado">Abandonado</option>
                 </select>
               </div>
             </motion.div>

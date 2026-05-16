@@ -78,6 +78,8 @@ const EmAlta = lazy(() => import("./pages/EmAlta"));
 const ParaVoce = lazy(() => import("./pages/ParaVoce"));
 const Social = lazy(() => import("./pages/Social"));
 const Torneios = lazy(() => import("./pages/Torneios"));
+const BundleDetail = lazy(() => import("./pages/BundleDetail"));
+const BibliotecaJogo = lazy(() => import("./pages/BibliotecaJogo"));
 
 const PageFallback = () => (
   <div className="min-h-[40vh] flex items-center justify-center">
@@ -153,6 +155,8 @@ const App = () => (
                 { path: '/social', el: <Social /> },
                 { path: '/torneios', el: <Torneios /> },
                 { path: '/jogo/:id', el: <GameDetail /> },
+                { path: '/bundle/:id', el: <BundleDetail /> },
+                { path: '/biblioteca/:productId', el: <ProtectedRoute><BibliotecaJogo /></ProtectedRoute> },
                 { path: '/carrinho', el: <Carrinho /> },
                 { path: '/checkout', el: <ProtectedRoute><Checkout /></ProtectedRoute> },
                 { path: '/checkout/sucesso', el: <ProtectedRoute><CheckoutSucesso /></ProtectedRoute> },

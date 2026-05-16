@@ -163,6 +163,8 @@ export type Database = {
           description: string
           icon: string
           id: string
+          image_url: string | null
+          is_custom: boolean
           name: string
         }
         Insert: {
@@ -171,6 +173,8 @@ export type Database = {
           description: string
           icon?: string
           id: string
+          image_url?: string | null
+          is_custom?: boolean
           name: string
         }
         Update: {
@@ -179,6 +183,8 @@ export type Database = {
           description?: string
           icon?: string
           id?: string
+          image_url?: string | null
+          is_custom?: boolean
           name?: string
         }
         Relationships: []
@@ -187,22 +193,28 @@ export type Database = {
         Row: {
           acquired_at: string
           id: string
+          personal_note: string | null
           product_id: string
           status: string
+          status_updated_at: string
           user_id: string
         }
         Insert: {
           acquired_at?: string
           id?: string
+          personal_note?: string | null
           product_id: string
           status?: string
+          status_updated_at?: string
           user_id: string
         }
         Update: {
           acquired_at?: string
           id?: string
+          personal_note?: string | null
           product_id?: string
           status?: string
+          status_updated_at?: string
           user_id?: string
         }
         Relationships: [
@@ -380,11 +392,14 @@ export type Database = {
           created_at: string | null
           has_active_report: boolean
           id: string
+          is_admin_chat: boolean
           last_message: string | null
           last_message_at: string | null
+          match_id: string | null
           participant_1: string
           participant_2: string
           status: string
+          tournament_id: string | null
         }
         Insert: {
           anuncio_id?: string | null
@@ -392,11 +407,14 @@ export type Database = {
           created_at?: string | null
           has_active_report?: boolean
           id?: string
+          is_admin_chat?: boolean
           last_message?: string | null
           last_message_at?: string | null
+          match_id?: string | null
           participant_1: string
           participant_2: string
           status?: string
+          tournament_id?: string | null
         }
         Update: {
           anuncio_id?: string | null
@@ -404,11 +422,14 @@ export type Database = {
           created_at?: string | null
           has_active_report?: boolean
           id?: string
+          is_admin_chat?: boolean
           last_message?: string | null
           last_message_at?: string | null
+          match_id?: string | null
           participant_1?: string
           participant_2?: string
           status?: string
+          tournament_id?: string | null
         }
         Relationships: [
           {
@@ -979,37 +1000,49 @@ export type Database = {
           anuncio_id: string | null
           content: string
           created_at: string
+          flagged_auto: boolean
           id: string
           image_url: string | null
+          is_admin_chat: boolean
           is_read: boolean
+          match_id: string | null
           message_type: string
           payload: Json | null
           receiver_id: string
           sender_id: string
+          tournament_id: string | null
         }
         Insert: {
           anuncio_id?: string | null
           content: string
           created_at?: string
+          flagged_auto?: boolean
           id?: string
           image_url?: string | null
+          is_admin_chat?: boolean
           is_read?: boolean
+          match_id?: string | null
           message_type?: string
           payload?: Json | null
           receiver_id: string
           sender_id: string
+          tournament_id?: string | null
         }
         Update: {
           anuncio_id?: string | null
           content?: string
           created_at?: string
+          flagged_auto?: boolean
           id?: string
           image_url?: string | null
+          is_admin_chat?: boolean
           is_read?: boolean
+          match_id?: string | null
           message_type?: string
           payload?: Json | null
           receiver_id?: string
           sender_id?: string
+          tournament_id?: string | null
         }
         Relationships: [
           {
@@ -1368,6 +1401,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          active_title_id: string | null
           avatar_url: string | null
           banned_until: string | null
           bio: string | null
@@ -1384,6 +1418,7 @@ export type Database = {
           username: string | null
         }
         Insert: {
+          active_title_id?: string | null
           avatar_url?: string | null
           banned_until?: string | null
           bio?: string | null
@@ -1400,6 +1435,7 @@ export type Database = {
           username?: string | null
         }
         Update: {
+          active_title_id?: string | null
           avatar_url?: string | null
           banned_until?: string | null
           bio?: string | null
@@ -1502,6 +1538,36 @@ export type Database = {
         }
         Relationships: []
       }
+      tournament_duplicate_alerts: {
+        Row: {
+          created_at: string
+          id: string
+          reason: string
+          resolved: boolean
+          resolved_by: string | null
+          tournament_id: string
+          user_ids: string[]
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reason: string
+          resolved?: boolean
+          resolved_by?: string | null
+          tournament_id: string
+          user_ids: string[]
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reason?: string
+          resolved?: boolean
+          resolved_by?: string | null
+          tournament_id?: string
+          user_ids?: string[]
+        }
+        Relationships: []
+      }
       tournament_matches: {
         Row: {
           created_at: string
@@ -1557,20 +1623,32 @@ export type Database = {
       }
       tournament_participants: {
         Row: {
+          device_fingerprint: string | null
+          final_rank: number | null
           id: string
           joined_at: string
+          phone_verified: boolean
+          signup_ip: unknown
           tournament_id: string
           user_id: string
         }
         Insert: {
+          device_fingerprint?: string | null
+          final_rank?: number | null
           id?: string
           joined_at?: string
+          phone_verified?: boolean
+          signup_ip?: unknown
           tournament_id: string
           user_id: string
         }
         Update: {
+          device_fingerprint?: string | null
+          final_rank?: number | null
           id?: string
           joined_at?: string
+          phone_verified?: boolean
+          signup_ip?: unknown
           tournament_id?: string
           user_id?: string
         }
@@ -1593,11 +1671,22 @@ export type Database = {
           id: string
           max_participants: number
           prize: string | null
+          prize_badge_id: string | null
+          prize_coupon_id: string | null
+          prize_game_id: string | null
+          prize_title: string | null
+          prize_types: string[]
+          prize_xp_bonus: number
+          rewards_distributed: boolean
           starts_at: string | null
           status: string
           title: string
           type: string
           updated_at: string
+          verified: boolean
+          xp_champion: number
+          xp_match_win: number
+          xp_signup: number
         }
         Insert: {
           created_at?: string
@@ -1607,11 +1696,22 @@ export type Database = {
           id?: string
           max_participants?: number
           prize?: string | null
+          prize_badge_id?: string | null
+          prize_coupon_id?: string | null
+          prize_game_id?: string | null
+          prize_title?: string | null
+          prize_types?: string[]
+          prize_xp_bonus?: number
+          rewards_distributed?: boolean
           starts_at?: string | null
           status?: string
           title: string
           type?: string
           updated_at?: string
+          verified?: boolean
+          xp_champion?: number
+          xp_match_win?: number
+          xp_signup?: number
         }
         Update: {
           created_at?: string
@@ -1621,11 +1721,22 @@ export type Database = {
           id?: string
           max_participants?: number
           prize?: string | null
+          prize_badge_id?: string | null
+          prize_coupon_id?: string | null
+          prize_game_id?: string | null
+          prize_title?: string | null
+          prize_types?: string[]
+          prize_xp_bonus?: number
+          rewards_distributed?: boolean
           starts_at?: string | null
           status?: string
           title?: string
           type?: string
           updated_at?: string
+          verified?: boolean
+          xp_champion?: number
+          xp_match_win?: number
+          xp_signup?: number
         }
         Relationships: []
       }
@@ -1747,6 +1858,36 @@ export type Database = {
         }
         Relationships: []
       }
+      user_titles: {
+        Row: {
+          awarded_at: string
+          awarded_by: string | null
+          id: string
+          name: string
+          source: string
+          tournament_id: string | null
+          user_id: string
+        }
+        Insert: {
+          awarded_at?: string
+          awarded_by?: string | null
+          id?: string
+          name: string
+          source?: string
+          tournament_id?: string | null
+          user_id: string
+        }
+        Update: {
+          awarded_at?: string
+          awarded_by?: string | null
+          id?: string
+          name?: string
+          source?: string
+          tournament_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_xp_log: {
         Row: {
           action: string
@@ -1792,6 +1933,10 @@ export type Database = {
       }
     }
     Functions: {
+      award_tournament_rewards: {
+        Args: { _tournament_id: string }
+        Returns: undefined
+      }
       award_xp: {
         Args: {
           _action: string
@@ -1801,6 +1946,14 @@ export type Database = {
           _xp: number
         }
         Returns: undefined
+      }
+      calc_tournament_xp: {
+        Args: { _max_participants: number }
+        Returns: {
+          xp_champion: number
+          xp_match_win: number
+          xp_signup: number
+        }[]
       }
       check_and_award_badges: { Args: { _user_id: string }; Returns: undefined }
       get_employee_position: {
