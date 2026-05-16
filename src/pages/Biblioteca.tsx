@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useBiblioteca } from '@/hooks/useBiblioteca';
 import { Library, Gamepad2, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
