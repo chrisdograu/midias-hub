@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import NotificationBell from '@/components/NotificationBell';
 
 const tabs = [
   { to: '/m', icon: Home, label: 'Início', end: true },
@@ -51,7 +52,10 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
           <NavLink to="/m" className="font-display text-xl font-bold gradient-text tracking-wider">
             MIDIAS
           </NavLink>
-          <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-display">mobile</div>
+          <div className="flex items-center gap-2">
+            <NotificationBell />
+            <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-display">mobile</span>
+          </div>
         </div>
       </header>
 
