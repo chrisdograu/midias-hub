@@ -12,7 +12,7 @@ interface Tournament {
   id: string; title: string; description: string | null; type: string; status: string;
   prize: string | null; max_participants: number; starts_at: string | null; ends_at: string | null;
   xp_signup?: number | null; xp_match_win?: number | null; xp_champion?: number | null;
-  verified?: boolean | null; prize_type?: string[] | null;
+  verified?: boolean | null; prize_types?: string[] | null;
 }
 
 function fingerprint() {
@@ -141,8 +141,8 @@ export default function Torneios() {
         </div>
 
         <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground mb-4">
-          {t.prize_typess?.length ? (
-            <div className="flex items-center gap-1 col-span-2"><Award className="h-3.5 w-3.5" /> {t.prize_typess.join(' + ')}</div>
+          {t.prize_types?.length ? (
+            <div className="flex items-center gap-1 col-span-2"><Award className="h-3.5 w-3.5" /> {t.prize_types.join(' + ')}</div>
           ) : t.prize ? <div className="flex items-center gap-1 col-span-2"><Award className="h-3.5 w-3.5" /> {t.prize}</div> : null}
           <div className="flex items-center gap-1"><Users className="h-3.5 w-3.5" /> Máx {t.max_participants}</div>
           {t.starts_at && <div className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> {new Date(t.starts_at).toLocaleDateString('pt-BR')}</div>}
