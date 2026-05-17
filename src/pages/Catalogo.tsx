@@ -5,7 +5,8 @@ import { useProdutos } from '@/hooks/useProdutos';
 import { supabase } from '@/integrations/supabase/client';
 import { useDebounce } from '@/hooks/useDebounce';
 import GameCard from '@/components/GameCard';
-import { Search, Loader2 } from 'lucide-react';
+import BundleStoreGrid from '@/components/BundleStoreGrid';
+import { Search, Loader2, Package } from 'lucide-react';
 
 export default function Catalogo() {
   const [searchParams] = useSearchParams();
@@ -72,6 +73,12 @@ export default function Catalogo() {
         <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
       ) : (
         <>
+          {!debouncedQuery && category === 'Todos' && platform === 'Todos' && (
+            <section className="mb-8">
+              <h2 className="text-lg font-bold mb-3 flex items-center gap-2"><Package className="h-5 w-5 text-primary" /> Bundles</h2>
+              <BundleStoreGrid limit={4} />
+            </section>
+          )}
           <p className="text-sm text-muted-foreground mb-4">{filtered.length} jogos encontrados</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
             {filtered.map((game, i) => <GameCard key={game.id} game={game} index={i} />)}
