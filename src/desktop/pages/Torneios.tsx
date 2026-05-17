@@ -30,7 +30,7 @@ const PRIZE_OPTIONS = [
 const empty = {
   id: '', title: '', description: '', type: 'semanal', status: 'open',
   max_participants: 16, starts_at: '', ends_at: '',
-  verified: false, prize_type: [] as string[], prize_xp_bonus: 0, prize_title: '',
+  verified: false, prize_types: [] as string[], prize_xp_bonus: 0, prize_title: '',
 };
 
 function calcXp(n: number) {
@@ -70,7 +70,7 @@ export default function TorneiosAdmin() {
       max_participants: Number(form.max_participants) || 16,
       starts_at: form.starts_at || null, ends_at: form.ends_at || null,
       verified: !!form.verified,
-      prize_type: form.prize_type?.length ? form.prize_type : null,
+      prize_types: form.prize_typess?.length ? form.prize_typess : null,
       prize_xp_bonus: Number(form.prize_xp_bonus) || 0,
       prize_title: form.prize_title || null,
     };
@@ -166,13 +166,13 @@ export default function TorneiosAdmin() {
           <p className="text-xs text-muted-foreground uppercase">{t.type} · {t.status}</p>
         </div>
         <div className="flex gap-1">
-          <Button size="icon" variant="ghost" onClick={() => { setForm({ ...t, description: t.description || '', starts_at: t.starts_at || '', ends_at: t.ends_at || '', prize_type: t.prize_type || [], prize_xp_bonus: t.prize_xp_bonus || 0, verified: !!t.verified, prize_title: (t as any).prize_title || '' }); setEditing(t.id); setDialog(true); }}><Edit className="h-4 w-4" /></Button>
+          <Button size="icon" variant="ghost" onClick={() => { setForm({ ...t, description: t.description || '', starts_at: t.starts_at || '', ends_at: t.ends_at || '', prize_types: t.prize_typess || [], prize_xp_bonus: t.prize_xp_bonus || 0, verified: !!t.verified, prize_title: (t as any).prize_title || '' }); setEditing(t.id); setDialog(true); }}><Edit className="h-4 w-4" /></Button>
           <Button size="icon" variant="ghost" onClick={() => remove(t)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
         </div>
       </div>
       <div className="text-xs text-muted-foreground">
         XP: <b>{t.xp_signup ?? 0}</b>/<b>{t.xp_match_win ?? 0}</b>/<b>{t.xp_champion ?? 0}</b>
-        {t.prize_type?.length ? <span> · 🎁 {t.prize_type.length} tipo(s)</span> : null}
+        {t.prize_typess?.length ? <span> · 🎁 {t.prize_typess.length} tipo(s)</span> : null}
       </div>
       <Button size="sm" variant="outline" className="w-full" onClick={() => openBracket(t)}><Users className="h-3.5 w-3.5 mr-1" /> Participantes & Chaves</Button>
       {t.status === 'closed' && !t.rewards_distributed && (
@@ -266,10 +266,10 @@ export default function TorneiosAdmin() {
               <Label>Tipos de prêmio (sem dinheiro real)</Label>
               <div className="grid grid-cols-2 gap-2 mt-1">
                 {PRIZE_OPTIONS.map(opt => {
-                  const checked = (form.prize_type || []).includes(opt.id);
+                  const checked = (form.prize_typess || []).includes(opt.id);
                   return (
                     <button type="button" key={opt.id}
-                      onClick={() => setForm({ ...form, prize_type: checked ? form.prize_type.filter((p: string) => p !== opt.id) : [...(form.prize_type || []), opt.id] })}
+                      onClick={() => setForm({ ...form, prize_types: checked ? form.prize_typess.filter((p: string) => p !== opt.id) : [...(form.prize_typess || []), opt.id] })}
                       className={`text-left text-sm px-3 py-2 rounded-lg border ${checked ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-card text-muted-foreground'}`}>
                       {opt.label}
                     </button>
@@ -277,10 +277,10 @@ export default function TorneiosAdmin() {
                 })}
               </div>
             </div>
-            {form.prize_type?.includes('xp_bonus') && (
+            {form.prize_typess?.includes('xp_bonus') && (
               <div><Label>XP bônus adicional</Label><Input type="number" value={form.prize_xp_bonus} onChange={e => setForm({ ...form, prize_xp_bonus: e.target.value })} /></div>
             )}
-            {form.prize_type?.includes('title') && (
+            {form.prize_typess?.includes('title') && (
               <div><Label>Nome do título de conquista</Label><Input value={form.prize_title} onChange={e => setForm({ ...form, prize_title: e.target.value })} placeholder="ex: Campeão — Inverno 2026" /></div>
             )}
           </div>
