@@ -9,6 +9,8 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import BlockedUsersTab from '@/components/perfil/BlockedUsersTab';
 import MyReviewsTab from '@/components/perfil/MyReviewsTab';
+import LevelTitleBadge from '@/components/LevelTitleBadge';
+import ActiveTitleSelector from '@/components/ActiveTitleSelector';
 
 export default function Perfil() {
   const { user, profile, updatePassword } = useAuth();
