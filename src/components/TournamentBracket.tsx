@@ -45,7 +45,14 @@ export default function TournamentBracket({ tournament, onClose }: { tournament:
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-5xl max-h-[85vh] overflow-auto">
-        <DialogHeader><DialogTitle>{tournament.title} — Chaveamento</DialogTitle></DialogHeader>
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            {tournament.title} — Chaveamento
+            <span className="inline-flex items-center gap-1 text-[10px] font-medium text-success bg-success/10 border border-success/30 rounded-full px-2 py-0.5">
+              <Radio className="h-2.5 w-2.5 animate-pulse" /> AO VIVO
+            </span>
+          </DialogTitle>
+        </DialogHeader>
         {loading ? <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin" /></div> :
           matches.length === 0 ? <p className="text-muted-foreground text-center py-12">Chaves ainda não geradas.</p> : (
             <div className="flex gap-6 overflow-x-auto pb-4">
