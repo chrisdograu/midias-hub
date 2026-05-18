@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Radio } from 'lucide-react';
 
 interface Match {
   id: string; round: number; position: number;
@@ -17,28 +17,42 @@ export default function TournamentBracket({ tournament, onClose }: { tournament:
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    (async () => {
-      const { data: ms } = await supabase.from('tournament_matches' as any).select('*').eq('tournament_id', tournament.id).order('round').order('position');
-      const list = ((ms as any) || []) as Match[];
-      setMatches(list);
-      const ids = [...new Set(list.flatMap(m => [m.player_a, m.player_b]).filter(Boolean) as string[])];
-      if (ids.length) {
-        const { data: profs } = await supabase.from('profiles').select('id, display_name, avatar_url').in('id', ids);
-        const map: Record<string, Profile> = {};
-        (profs || []).forEach(p => { map[p.id] = p as any; });
-        setProfiles(map);
-      }
-      setLoading(false);
-    })();
+  const reload = useCallback(async () => {
+    const { data: ms } = await supabase.from('tournament_matches' as any).select('*').eq('tournament_id', tournament.id).order('round').order('position');
+    const list = ((ms as any) || []) as Match[];
+    setMatches(list);
+    const ids = [...new Set(list.flatMap(m => [m.player_a, m.player_b]).filter(Boolean) as string[])];
+    if (ids.length) {
+      const { data: profs } = await supabase.from('profiles').select('id, display_name, avatar_url').in('id', ids);
+      const map: Record<string, Profile> = {};
+      (profs || []).forEach(p => { map[p.id] = p as any; });
+      setProfiles(prev => ({ ...prev, ...map }));
+    }
+    setLoading(false);
   }, [tournament.id]);
+
+  useEffect(() => {
+    reload();
+    const ch = supabase.channel(`bracket-${tournament.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tournament_matches', filter: `tournament_id=eq.${tournament.id}` }, reload)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tournament_participants', filter: `tournament_id=eq.${tournament.id}` }, reload)
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [tournament.id, reload]);
 
   const rounds = [...new Set(matches.map(m => m.round))].sort();
 
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-5xl max-h-[85vh] overflow-auto">
-        <DialogHeader><DialogTitle>{tournament.title} — Chaveamento</DialogTitle></DialogHeader>
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            {tournament.title} — Chaveamento
+            <span className="inline-flex items-center gap-1 text-[10px] font-medium text-success bg-success/10 border border-success/30 rounded-full px-2 py-0.5">
+              <Radio className="h-2.5 w-2.5 animate-pulse" /> AO VIVO
+            </span>
+          </DialogTitle>
+        </DialogHeader>
         {loading ? <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin" /></div> :
           matches.length === 0 ? <p className="text-muted-foreground text-center py-12">Chaves ainda não geradas.</p> : (
             <div className="flex gap-6 overflow-x-auto pb-4">
