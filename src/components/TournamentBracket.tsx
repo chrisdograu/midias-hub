@@ -17,21 +17,28 @@ export default function TournamentBracket({ tournament, onClose }: { tournament:
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    (async () => {
-      const { data: ms } = await supabase.from('tournament_matches' as any).select('*').eq('tournament_id', tournament.id).order('round').order('position');
-      const list = ((ms as any) || []) as Match[];
-      setMatches(list);
-      const ids = [...new Set(list.flatMap(m => [m.player_a, m.player_b]).filter(Boolean) as string[])];
-      if (ids.length) {
-        const { data: profs } = await supabase.from('profiles').select('id, display_name, avatar_url').in('id', ids);
-        const map: Record<string, Profile> = {};
-        (profs || []).forEach(p => { map[p.id] = p as any; });
-        setProfiles(map);
-      }
-      setLoading(false);
-    })();
+  const reload = useCallback(async () => {
+    const { data: ms } = await supabase.from('tournament_matches' as any).select('*').eq('tournament_id', tournament.id).order('round').order('position');
+    const list = ((ms as any) || []) as Match[];
+    setMatches(list);
+    const ids = [...new Set(list.flatMap(m => [m.player_a, m.player_b]).filter(Boolean) as string[])];
+    if (ids.length) {
+      const { data: profs } = await supabase.from('profiles').select('id, display_name, avatar_url').in('id', ids);
+      const map: Record<string, Profile> = {};
+      (profs || []).forEach(p => { map[p.id] = p as any; });
+      setProfiles(prev => ({ ...prev, ...map }));
+    }
+    setLoading(false);
   }, [tournament.id]);
+
+  useEffect(() => {
+    reload();
+    const ch = supabase.channel(`bracket-${tournament.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tournament_matches', filter: `tournament_id=eq.${tournament.id}` }, reload)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tournament_participants', filter: `tournament_id=eq.${tournament.id}` }, reload)
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [tournament.id, reload]);
 
   const rounds = [...new Set(matches.map(m => m.round))].sort();
 
