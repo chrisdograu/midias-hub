@@ -160,9 +160,10 @@ export default function Perfil() {
               </button>
               <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
             </div>
-            <div>
-              <p className="font-semibold text-foreground">{displayName || 'Usuário'}</p>
-              <p className="text-sm text-muted-foreground">{user?.email}</p>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-foreground truncate">{displayName || 'Usuário'}</p>
+              <p className="text-sm text-muted-foreground truncate">{user?.email}</p>
+              {user && <div className="mt-2"><LevelTitleBadge userId={user.id} variant="card" /></div>}
             </div>
           </div>
 
