@@ -101,22 +101,45 @@ export default function MChat() {
 
   const pending = conversas.filter(c => c.status === 'pending' && c.participant_2 === user.id);
   const active = conversas.filter(c => c.status === 'accepted');
-  const filtered = active.filter(c => !query.trim() || c.other_name.toLowerCase().includes(query.toLowerCase()));
+  const tournamentConvs = active.filter(c => c.tournament_id);
+  const generalConvs = active.filter(c => !c.tournament_id);
+  const tournamentUnread = tournamentConvs.reduce((s, c) => s + c.unread, 0);
+
+  // Group tournament convs by tournament_id
+  const tournamentGroups = tournamentConvs.reduce<Record<string, Conv[]>>((acc, c) => {
+    const k = c.tournament_id!;
+    (acc[k] = acc[k] || []).push(c);
+    return acc;
+  }, {});
+
+  const list = tab === 'torneios' ? tournamentConvs : generalConvs;
+  const filtered = list.filter(c => !query.trim() || c.other_name.toLowerCase().includes(query.toLowerCase()) || (c.tournament_title || '').toLowerCase().includes(query.toLowerCase()));
 
   return (
     <div className="px-4 py-5 space-y-4">
       <h1 className="font-display text-xl font-bold gradient-text">Chat</h1>
 
+      <div className="flex gap-2 p-1 bg-card border border-border rounded-xl">
+        <button onClick={() => setTab('geral')} className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${tab === 'geral' ? 'bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-md' : 'text-muted-foreground'}`}>
+          <MessagesSquare className="h-3.5 w-3.5" /> Geral
+          {generalConvs.reduce((s,c)=>s+c.unread,0) > 0 && <span className="ml-1 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">{generalConvs.reduce((s,c)=>s+c.unread,0)}</span>}
+        </button>
+        <button onClick={() => setTab('torneios')} className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${tab === 'torneios' ? 'bg-gradient-to-r from-destructive to-accent text-primary-foreground shadow-md' : 'text-muted-foreground'}`}>
+          <Trophy className="h-3.5 w-3.5" /> Torneios
+          {tournamentUnread > 0 && <span className="ml-1 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">{tournamentUnread}</span>}
+        </button>
+      </div>
+
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Buscar conversas..." className="w-full pl-10 pr-3 py-2.5 bg-card border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
+        <input value={query} onChange={e => setQuery(e.target.value)} placeholder={tab === 'torneios' ? 'Buscar por torneio ou jogador...' : 'Buscar conversas...'} className="w-full pl-10 pr-3 py-2.5 bg-card border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
       </div>
 
       {loading ? (
         <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
       ) : (
         <>
-          {pending.length > 0 && (
+          {tab === 'geral' && pending.length > 0 && (
             <section>
               <h2 className="text-xs font-bold uppercase tracking-wider text-warning mb-2">Pedidos de conversa ({pending.length})</h2>
               <div className="space-y-2">
@@ -135,7 +158,51 @@ export default function MChat() {
             </section>
           )}
 
-          {filtered.length === 0 ? (
+          {tab === 'torneios' ? (
+            tournamentConvs.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                <Trophy className="h-10 w-10 mx-auto mb-2 opacity-40" />
+                <p className="text-sm">Nenhum chat de torneio.</p>
+                <p className="text-xs mt-1">Inscreva-se em um torneio para conversar com adversários e admins.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {Object.entries(tournamentGroups).map(([tid, convs]) => {
+                  const title = convs[0].tournament_title || 'Torneio';
+                  const visible = convs.filter(c => filtered.includes(c));
+                  if (visible.length === 0) return null;
+                  return (
+                    <section key={tid} className="space-y-2">
+                      <div className="flex items-center gap-2 px-1">
+                        <Trophy className="h-4 w-4 text-destructive" />
+                        <h2 className="text-xs font-bold uppercase tracking-wider gradient-text truncate flex-1">{title}</h2>
+                        <span className="text-[10px] text-muted-foreground">{visible.length}</span>
+                      </div>
+                      <div className="space-y-1.5">
+                        {visible.map(c => (
+                          <Link key={c.id} to={`/m/chat/${c.id}`} className="flex items-center gap-3 p-3 glass rounded-xl border-l-2 border-destructive/60 hover:border-destructive transition-all">
+                            <Avatar name={c.other_name} url={c.other_avatar} />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between gap-2">
+                                <p className="text-sm font-semibold truncate flex items-center gap-1.5">
+                                  {c.is_admin_chat && <ShieldAlert className="h-3 w-3 text-warning shrink-0" />}
+                                  {c.other_name}
+                                </p>
+                                <span className="text-[10px] text-muted-foreground shrink-0">{timeAgo(c.last_message_at)}</span>
+                              </div>
+                              {c.is_admin_chat && <MobileBadge tone="warning">Admin</MobileBadge>}
+                              <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{c.last_message || 'Sem mensagens'}</p>
+                            </div>
+                            {c.unread > 0 && <span className="w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">{c.unread > 9 ? '9+' : c.unread}</span>}
+                          </Link>
+                        ))}
+                      </div>
+                    </section>
+                  );
+                })}
+              </div>
+            )
+          ) : filtered.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <MessagesSquare className="h-10 w-10 mx-auto mb-2 opacity-40" />
               <p className="text-sm">Nenhuma conversa ainda.</p>
