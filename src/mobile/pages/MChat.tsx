@@ -21,17 +21,21 @@ export default function MChat() {
   const [conversas, setConversas] = useState<Conv[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
+  const [tab, setTab] = useState<'geral' | 'torneios'>('geral');
 
   const applyConversationState = async (convs: any[]) => {
     const otherIds = convs.map(c => c.participant_1 === user?.id ? c.participant_2 : c.participant_1);
     const adIds = convs.map(c => c.anuncio_id).filter(Boolean) as string[];
-    const [{ data: profiles }, { data: ads }, { data: unread }] = await Promise.all([
+    const tIds = [...new Set(convs.map(c => c.tournament_id).filter(Boolean) as string[])];
+    const [{ data: profiles }, { data: ads }, { data: unread }, { data: tourns }] = await Promise.all([
       otherIds.length ? supabase.from('profiles').select('id, display_name, avatar_url').in('id', otherIds) : Promise.resolve({ data: [] }),
       adIds.length ? supabase.from('anuncios').select('id, title').in('id', adIds) : Promise.resolve({ data: [] }),
       user ? supabase.from('mensagens').select('sender_id').eq('receiver_id', user.id).eq('is_read', false) : Promise.resolve({ data: [] }),
+      tIds.length ? supabase.from('tournaments' as any).select('id, title').in('id', tIds) : Promise.resolve({ data: [] }),
     ]);
     const profileMap = new Map((profiles || []).map(p => [p.id, p]));
     const adMap = new Map((ads || []).map(a => [a.id, a.title]));
+    const tournMap = new Map(((tourns as any) || []).map((t: any) => [t.id, t.title]));
     const unreadMap = new Map<string, number>();
     (unread || []).forEach(m => unreadMap.set(m.sender_id, (unreadMap.get(m.sender_id) || 0) + 1));
 
@@ -44,6 +48,9 @@ export default function MChat() {
         status: c.status || 'accepted',
         other_id: otherId, other_name: p?.display_name || 'Usuário', other_avatar: p?.avatar_url || null,
         unread: unreadMap.get(otherId) || 0, ad_title: c.anuncio_id ? adMap.get(c.anuncio_id) || null : null,
+        tournament_id: c.tournament_id || null,
+        is_admin_chat: !!c.is_admin_chat,
+        tournament_title: c.tournament_id ? (tournMap.get(c.tournament_id) as string) || null : null,
       };
     }));
   };
@@ -52,7 +59,7 @@ export default function MChat() {
     if (!user) return;
     setLoading(true);
     const { data: convs } = await supabase
-      .from('conversas').select('id, participant_1, participant_2, anuncio_id, last_message, last_message_at, status')
+      .from('conversas').select('id, participant_1, participant_2, anuncio_id, last_message, last_message_at, status, tournament_id, is_admin_chat')
       .or(`participant_1.eq.${user.id},participant_2.eq.${user.id}`)
       .order('last_message_at', { ascending: false, nullsFirst: false });
     if (!convs) { setLoading(false); return; }
