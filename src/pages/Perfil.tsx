@@ -215,9 +215,15 @@ export default function Perfil() {
               <p className="text-sm font-medium text-foreground">Perfil privado</p>
               <p className="text-xs text-muted-foreground">Sua biblioteca e perfil não ficam visíveis para outros usuários</p>
             </div>
-            <Switch checked={isPrivate} onCheckedChange={setIsPrivate} />
           </div>
         </div>
+
+        {/* Título de conquista */}
+        {user && (
+          <div className="bg-card border border-border rounded-xl p-6 mb-4">
+            <ActiveTitleSelector userId={user.id} />
+          </div>
+        )}
 
         {/* Notificações */}
         <div className="bg-card border border-border rounded-xl p-6 mb-4">
