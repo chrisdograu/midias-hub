@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { HalfStarDisplay } from '@/components/HalfStarRating';
 import LevelBadge from '@/components/LevelBadge';
+import LevelTitleBadge from '@/components/LevelTitleBadge';
 import UserBadges from '@/components/UserBadges';
 import { useFollow } from '@/mobile/lib/useFollow';
 import { toast } from 'sonner';
