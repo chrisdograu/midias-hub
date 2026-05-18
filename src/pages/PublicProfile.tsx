@@ -94,7 +94,8 @@ export default function PublicProfile() {
           )}
         </div>
         <h1 className="text-xl font-bold text-foreground">{profile.display_name || 'Usuário'}</h1>
-        {profile.bio && <p className="text-sm text-muted-foreground mt-1">{profile.bio}</p>}
+        <div className="mt-2 flex justify-center"><LevelTitleBadge userId={profile.id} variant="card" /></div>
+        {profile.bio && <p className="text-sm text-muted-foreground mt-2">{profile.bio}</p>}
         {reputation && reputation.count > 0 && (
           <div className="flex items-center justify-center gap-2 mt-3">
             <HalfStarDisplay rating={reputation.avg} size={16} />
