@@ -140,7 +140,10 @@ export default function MProfile() {
         <h1 className="font-display text-lg font-bold">{profile.display_name || 'Usuário'}</h1>
         {profile.username && <p className="text-xs text-muted-foreground">@{profile.username}</p>}
         <div className="flex items-center justify-center gap-1.5 mt-2"><HalfStarDisplay rating={rating} size={14} /><span className="text-xs text-muted-foreground">{rating > 0 ? rating.toFixed(1) : 'sem avaliações'}</span></div>
-        <div className="mt-2 flex justify-center"><LevelBadge userId={targetId} size="md" showXp /></div>
+        <div className="mt-2 flex flex-col items-center gap-1.5">
+          <LevelTitleBadge userId={targetId} variant="card" />
+          <LevelBadge userId={targetId} size="sm" showXp />
+        </div>
         <UserBadges userId={targetId} max={8} className="mt-3" />
         {profile.bio && <p className="text-sm text-muted-foreground mt-3">{profile.bio}</p>}
 
