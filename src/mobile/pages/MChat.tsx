@@ -12,6 +12,7 @@ interface Conv {
   last_message: string | null; last_message_at: string | null; status: string;
   other_id: string; other_name: string; other_avatar: string | null;
   unread: number; ad_title: string | null;
+  tournament_id: string | null; is_admin_chat: boolean; tournament_title: string | null;
 }
 
 export default function MChat() {
