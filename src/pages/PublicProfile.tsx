@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useProdutos } from '@/hooks/useProdutos';
 import { HalfStarDisplay } from '@/components/HalfStarRating';
 import { ArrowLeft, Loader2, User, Star, Library, ShoppingBag } from 'lucide-react';
+import LevelTitleBadge from '@/components/LevelTitleBadge';
 
 export default function PublicProfile() {
   const { userId } = useParams();
