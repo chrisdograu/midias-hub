@@ -7,6 +7,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import NotificationBell from '@/components/NotificationBell';
 
+const ROUTES_WITH_BELL = new Set(['/m', '/m/']);
+
 const tabs = [
   { to: '/m', icon: Home, label: 'Início', end: true },
   { to: '/m/marketplace', icon: ShoppingBag, label: 'Market' },
@@ -53,7 +55,7 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
             MIDIAS
           </NavLink>
           <div className="flex items-center gap-2">
-            <NotificationBell />
+            {ROUTES_WITH_BELL.has(location.pathname) && <NotificationBell />}
             <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-display">mobile</span>
           </div>
         </div>
