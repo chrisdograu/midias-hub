@@ -44,7 +44,7 @@ export default function ProductBundles({ productId }: Props) {
           const savings = Math.max(0, fullPrice - Number(b.price));
           const pct = fullPrice > 0 ? Math.round((savings / fullPrice) * 100) : 0;
           return (
-            <Link key={b.id} to={`/jogo/${products[0]?.id || ''}`} className="block bg-card border border-border rounded-xl p-4 hover:border-primary/50 transition-colors">
+            <Link key={b.id} to={`/bundle/${b.id}`} className="block bg-card border border-border rounded-xl p-4 hover:border-primary/50 transition-colors">
               <div className="flex items-start justify-between gap-3 mb-3">
                 <div className="min-w-0">
                   <h3 className="font-semibold text-foreground">{b.title}</h3>

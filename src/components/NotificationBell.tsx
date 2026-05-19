@@ -40,11 +40,20 @@ export default function NotificationBell() {
     load();
   };
 
+  const isMobile = typeof window !== 'undefined' && window.location.pathname.startsWith('/m');
   const linkFor = (n: Notif) => {
-    if (n.reference_type === 'pedido') return '/pedidos';
-    if (n.reference_type === 'review_comment' || n.reference_type === 'avaliacao') return '/perfil';
-    if (n.reference_type === 'certificado') return '/perfil';
-    return '/perfil';
+    const t = n.reference_type;
+    const id = n.reference_id;
+    if (t === 'produto' && id) return isMobile ? `/m/forum/${id}` : `/jogo/${id}`;
+    if (t === 'pedido') return isMobile ? '/m/perfil' : '/pedidos';
+    if (t === 'mensagem' || t === 'conversa') return isMobile ? '/m/chat' : '/perfil';
+    if (t === 'anuncio' && id) return isMobile ? `/m/marketplace/${id}` : '/perfil';
+    if (t === 'proposta') return isMobile ? '/m/perfil' : '/perfil';
+    if (t === 'forum_post' && id) return isMobile ? `/m/forum/post/${id}` : '/perfil';
+    if (t === 'tournament' && id) return isMobile ? '/m/perfil' : `/torneios`;
+    if (t === 'certificado') return isMobile ? '/m/perfil' : '/perfil';
+    if (t === 'review_comment' || t === 'avaliacao') return isMobile ? '/m/perfil' : '/perfil';
+    return isMobile ? '/m/perfil' : '/perfil';
   };
 
   if (!user) return null;
