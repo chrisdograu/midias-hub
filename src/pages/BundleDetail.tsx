@@ -21,27 +21,35 @@ export default function BundleDetail() {
 
   useEffect(() => {
     if (!id) return;
+    let cancelled = false;
     (async () => {
-      const { data } = await supabase
+      setLoading(true);
+      const { data: b } = await supabase
         .from('bundles' as any)
-        .select('id, title, description, price, image_url, bundle_items(product_id, produtos(title, image_url, price, category))')
+        .select('id, title, description, price, image_url')
         .eq('id', id)
         .maybeSingle();
-      if (data) {
-        const b: any = data;
-        setBundle({
-          id: b.id, title: b.title, description: b.description, price: Number(b.price), image_url: b.image_url,
-          items: (b.bundle_items || []).map((bi: any) => ({
-            product_id: bi.product_id,
-            title: bi.produtos?.title || '',
-            image_url: bi.produtos?.image_url || null,
-            price: Number(bi.produtos?.price || 0),
-            category: bi.produtos?.category || null,
-          })),
-        });
-      }
+      if (!b || cancelled) { if (!cancelled) { setBundle(null); setLoading(false); } return; }
+      const { data: bis } = await supabase
+        .from('bundle_items' as any)
+        .select('product_id')
+        .eq('bundle_id', id);
+      const pids = ((bis as any[]) || []).map(x => x.product_id);
+      const { data: prods } = pids.length
+        ? await supabase.from('produtos').select('id, title, image_url, price, category').in('id', pids)
+        : { data: [] as any[] };
+      if (cancelled) return;
+      const bd: any = b;
+      setBundle({
+        id: bd.id, title: bd.title, description: bd.description, price: Number(bd.price), image_url: bd.image_url,
+        items: (prods || []).map((p: any) => ({
+          product_id: p.id, title: p.title, image_url: p.image_url,
+          price: Number(p.price), category: p.category,
+        })),
+      });
       setLoading(false);
     })();
+    return () => { cancelled = true; };
   }, [id]);
 
   if (loading) return <div className="flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin" /></div>;
