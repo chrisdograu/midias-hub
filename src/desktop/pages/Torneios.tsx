@@ -88,7 +88,6 @@ export default function TorneiosAdmin() {
   };
 
   const remove = async (t: T) => {
-    if (!confirm(`Excluir "${t.title}"?`)) return;
     const { error } = await supabase.from('tournaments' as any).delete().eq('id', t.id);
     if (error) return toast.error(error.message);
     toast.success('Removido'); load();
