@@ -186,7 +186,7 @@ export default function TorneiosAdmin() {
       </div>
       <Button size="sm" variant="outline" className="w-full" onClick={() => openBracket(t)}><Users className="h-3.5 w-3.5 mr-1" /> Participantes & Chaves</Button>
       {t.status === 'closed' && !t.rewards_distributed && (
-        <Button size="sm" className="w-full" onClick={() => distribute(t)}><Gift className="h-3.5 w-3.5 mr-1" /> Distribuir recompensas</Button>
+        <Button size="sm" className="w-full" onClick={() => setConfirmDistribute(t)}><Gift className="h-3.5 w-3.5 mr-1" /> Distribuir recompensas</Button>
       )}
       {t.rewards_distributed && <p className="text-[10px] text-success text-center">✓ Recompensas distribuídas</p>}
     </div>
