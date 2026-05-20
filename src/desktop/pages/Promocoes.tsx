@@ -96,9 +96,10 @@ export default function Promocoes() {
     load();
   };
   const removeBundle = async (id: string) => {
-    if (!confirm('Remover bundle?')) return;
     await supabase.from('bundle_items' as any).delete().eq('bundle_id', id);
-    await supabase.from('bundles' as any).delete().eq('id', id);
+    const { error } = await supabase.from('bundles' as any).delete().eq('id', id);
+    if (error) return toast.error(error.message);
+    toast.success('Bundle removido');
     load();
   };
 
