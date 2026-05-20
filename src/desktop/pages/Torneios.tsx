@@ -177,7 +177,7 @@ export default function TorneiosAdmin() {
         </div>
         <div className="flex gap-1">
           <Button size="icon" variant="ghost" onClick={() => { setForm({ ...t, description: t.description || '', starts_at: t.starts_at || '', ends_at: t.ends_at || '', prize_types: t.prize_types || [], prize_xp_bonus: t.prize_xp_bonus || 0, verified: !!t.verified, prize_title: (t as any).prize_title || '' }); setEditing(t.id); setDialog(true); }}><Edit className="h-4 w-4" /></Button>
-          <Button size="icon" variant="ghost" onClick={() => remove(t)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+          <Button size="icon" variant="ghost" onClick={() => setConfirmDelete(t)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
         </div>
       </div>
       <div className="text-xs text-muted-foreground">
