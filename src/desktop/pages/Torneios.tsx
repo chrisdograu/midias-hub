@@ -99,13 +99,9 @@ export default function TorneiosAdmin() {
     setParticipants(((data as any) || []).map((p: any) => ({ user_id: p.user_id, display_name: p.profiles?.display_name, final_rank: p.final_rank })));
   };
 
-  const generateBracket = async () => {
+  const doGenerateBracket = async () => {
     if (!bracketFor) return;
-    const { data: existing } = await supabase.from('tournament_matches' as any).select('id').eq('tournament_id', bracketFor.id);
-    if ((existing as any)?.length) {
-      if (!confirm('Já existem chaves geradas. Substituir?')) return;
-      await supabase.from('tournament_matches' as any).delete().eq('tournament_id', bracketFor.id);
-    }
+    await supabase.from('tournament_matches' as any).delete().eq('tournament_id', bracketFor.id);
     const shuffled = [...participants].sort(() => Math.random() - 0.5);
     const pairs: any[] = [];
     for (let i = 0; i < shuffled.length; i += 2) {
@@ -124,6 +120,16 @@ export default function TorneiosAdmin() {
     setBracketFor(null); load();
   };
 
+  const generateBracket = async () => {
+    if (!bracketFor) return;
+    const { data: existing } = await supabase.from('tournament_matches' as any).select('id').eq('tournament_id', bracketFor.id);
+    if ((existing as any)?.length) {
+      setConfirmRegen(() => doGenerateBracket);
+      return;
+    }
+    doGenerateBracket();
+  };
+
   const setRank = async (userId: string, rank: number | null) => {
     if (!bracketFor) return;
     await supabase.from('tournament_participants' as any).update({ final_rank: rank }).eq('tournament_id', bracketFor.id).eq('user_id', userId);
@@ -131,12 +137,13 @@ export default function TorneiosAdmin() {
   };
 
   const distribute = async (t: T) => {
-    if (!confirm(`Distribuir recompensas para "${t.title}"? Esta ação é definitiva.`)) return;
     const { error } = await supabase.rpc('award_tournament_rewards' as any, { _tournament_id: t.id });
     if (error) return toast.error(error.message);
     toast.success('Recompensas distribuídas!');
     load();
   };
+
+
 
   const talkToParticipant = async (userId: string) => {
     const { data: { user } } = await supabase.auth.getUser();
