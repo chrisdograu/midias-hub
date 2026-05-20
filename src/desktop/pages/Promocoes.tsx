@@ -174,7 +174,7 @@ export default function Promocoes() {
                   </div>
                   <div className="flex flex-col gap-1">
                     {!expired && <Button size="sm" variant="outline" onClick={() => togglePromo(promo.id, promo.is_active)}>{promo.is_active ? 'Pausar' : 'Ativar'}</Button>}
-                    <Button size="sm" variant="ghost" onClick={() => removePromo(promo.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                    <Button size="sm" variant="ghost" onClick={() => setConfirmDelete({ type: 'promo', id: promo.id, label: `promoção de ${productMap.get(promo.product_id)?.title || ''}` })}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                   </div>
                 </div>
               );
