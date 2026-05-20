@@ -234,7 +234,7 @@ export default function Promocoes() {
                     </div>
                     <div className="flex gap-1">
                       <Button size="sm" variant="outline" onClick={() => toggleBundle(b.id, b.is_active)}>{b.is_active ? 'Pausar' : 'Ativar'}</Button>
-                      <Button size="sm" variant="ghost" onClick={() => removeBundle(b.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                      <Button size="sm" variant="ghost" onClick={() => setConfirmDelete({ type: 'bundle', id: b.id, label: b.title })}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                     </div>
                   </div>
                   {b.description && <p className="text-sm text-muted-foreground mb-2">{b.description}</p>}
