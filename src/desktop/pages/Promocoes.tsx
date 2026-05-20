@@ -70,8 +70,9 @@ export default function Promocoes() {
     load();
   };
   const removePromo = async (id: string) => {
-    if (!confirm('Remover promoção?')) return;
-    await supabase.from('flash_promotions' as any).delete().eq('id', id);
+    const { error } = await supabase.from('flash_promotions' as any).delete().eq('id', id);
+    if (error) return toast.error(error.message);
+    toast.success('Promoção removida');
     load();
   };
 
