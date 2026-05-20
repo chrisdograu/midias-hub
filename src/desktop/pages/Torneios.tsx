@@ -328,6 +328,54 @@ export default function TorneiosAdmin() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!confirmDelete} onOpenChange={(o) => { if (!o) setConfirmDelete(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir torneio?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir <strong>{confirmDelete?.title}</strong>? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={async () => { if (confirmDelete) await remove(confirmDelete); setConfirmDelete(null); }}
+            >Excluir</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!confirmDistribute} onOpenChange={(o) => { if (!o) setConfirmDistribute(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Distribuir recompensas?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Confirmar a distribuição de XP, badges e títulos para os vencedores de <strong>{confirmDistribute?.title}</strong>? Esta ação é definitiva.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => { if (confirmDistribute) await distribute(confirmDistribute); setConfirmDistribute(null); }}
+            >Distribuir</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!confirmRegen} onOpenChange={(o) => { if (!o) setConfirmRegen(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Substituir chaves existentes?</AlertDialogTitle>
+            <AlertDialogDescription>Já existem chaves geradas. Tem certeza que deseja substituí-las?</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={() => { const fn = confirmRegen; setConfirmRegen(null); fn && fn(); }}>Substituir</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
