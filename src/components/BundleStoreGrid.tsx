@@ -13,26 +13,43 @@ export default function BundleStoreGrid({ limit = 8 }: { limit?: number }) {
   const [bundles, setBundles] = useState<Bundle[]>([]);
 
   useEffect(() => {
+    let cancelled = false;
     (async () => {
-      const { data } = await supabase
+      const { data: bds } = await supabase
         .from('bundles' as any)
-        .select('id, title, price, image_url, bundle_items(product_id, produtos(title, image_url, price))')
+        .select('id, title, price, image_url')
         .eq('is_active', true)
         .limit(limit);
-      const list: Bundle[] = ((data as any) || []).map((b: any) => {
-        const items = (b.bundle_items || []).map((bi: any) => ({
-          product_id: bi.product_id,
-          title: bi.produtos?.title || '',
-          image_url: bi.produtos?.image_url || null,
-          price: Number(bi.produtos?.price || 0),
-        }));
+      const bundlesRaw = (bds as any[]) || [];
+      if (!bundlesRaw.length) { if (!cancelled) setBundles([]); return; }
+      const ids = bundlesRaw.map(b => b.id);
+      const { data: bis } = await supabase
+        .from('bundle_items' as any)
+        .select('bundle_id, product_id')
+        .in('bundle_id', ids);
+      const pids = [...new Set(((bis as any[]) || []).map(x => x.product_id))];
+      const { data: prods } = pids.length
+        ? await supabase.from('produtos').select('id, title, image_url, price').in('id', pids)
+        : { data: [] as any[] };
+      const prodMap = new Map((prods || []).map((p: any) => [p.id, p]));
+      const byBundle = new Map<string, any[]>();
+      ((bis as any[]) || []).forEach((row: any) => {
+        const p = prodMap.get(row.product_id);
+        if (!p) return;
+        const arr = byBundle.get(row.bundle_id) || [];
+        arr.push({ product_id: row.product_id, title: p.title, image_url: p.image_url, price: Number(p.price) });
+        byBundle.set(row.bundle_id, arr);
+      });
+      if (cancelled) return;
+      setBundles(bundlesRaw.map((b: any) => {
+        const items = byBundle.get(b.id) || [];
         return {
           id: b.id, title: b.title, price: Number(b.price), image_url: b.image_url,
-          items, total_original: items.reduce((s: number, i: any) => s + i.price, 0),
+          items, total_original: items.reduce((s, i) => s + i.price, 0),
         };
-      });
-      setBundles(list);
+      }));
     })();
+    return () => { cancelled = true; };
   }, [limit]);
 
   if (!bundles.length) return null;

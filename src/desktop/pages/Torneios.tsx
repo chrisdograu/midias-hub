@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Trophy, Plus, Loader2, Users, Shuffle, Trash2, Edit, Gift, AlertTriangle, MessageCircle } from 'lucide-react';
@@ -50,6 +51,9 @@ export default function TorneiosAdmin() {
   const [bracketFor, setBracketFor] = useState<T | null>(null);
   const [participants, setParticipants] = useState<{ user_id: string; display_name: string | null; final_rank: number | null }[]>([]);
   const [alerts, setAlerts] = useState<any[]>([]);
+  const [confirmDelete, setConfirmDelete] = useState<T | null>(null);
+  const [confirmDistribute, setConfirmDistribute] = useState<T | null>(null);
+  const [confirmRegen, setConfirmRegen] = useState<(() => void) | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -84,7 +88,6 @@ export default function TorneiosAdmin() {
   };
 
   const remove = async (t: T) => {
-    if (!confirm(`Excluir "${t.title}"?`)) return;
     const { error } = await supabase.from('tournaments' as any).delete().eq('id', t.id);
     if (error) return toast.error(error.message);
     toast.success('Removido'); load();
@@ -96,13 +99,9 @@ export default function TorneiosAdmin() {
     setParticipants(((data as any) || []).map((p: any) => ({ user_id: p.user_id, display_name: p.profiles?.display_name, final_rank: p.final_rank })));
   };
 
-  const generateBracket = async () => {
+  const doGenerateBracket = async () => {
     if (!bracketFor) return;
-    const { data: existing } = await supabase.from('tournament_matches' as any).select('id').eq('tournament_id', bracketFor.id);
-    if ((existing as any)?.length) {
-      if (!confirm('Já existem chaves geradas. Substituir?')) return;
-      await supabase.from('tournament_matches' as any).delete().eq('tournament_id', bracketFor.id);
-    }
+    await supabase.from('tournament_matches' as any).delete().eq('tournament_id', bracketFor.id);
     const shuffled = [...participants].sort(() => Math.random() - 0.5);
     const pairs: any[] = [];
     for (let i = 0; i < shuffled.length; i += 2) {
@@ -121,6 +120,16 @@ export default function TorneiosAdmin() {
     setBracketFor(null); load();
   };
 
+  const generateBracket = async () => {
+    if (!bracketFor) return;
+    const { data: existing } = await supabase.from('tournament_matches' as any).select('id').eq('tournament_id', bracketFor.id);
+    if ((existing as any)?.length) {
+      setConfirmRegen(() => doGenerateBracket);
+      return;
+    }
+    doGenerateBracket();
+  };
+
   const setRank = async (userId: string, rank: number | null) => {
     if (!bracketFor) return;
     await supabase.from('tournament_participants' as any).update({ final_rank: rank }).eq('tournament_id', bracketFor.id).eq('user_id', userId);
@@ -128,12 +137,13 @@ export default function TorneiosAdmin() {
   };
 
   const distribute = async (t: T) => {
-    if (!confirm(`Distribuir recompensas para "${t.title}"? Esta ação é definitiva.`)) return;
     const { error } = await supabase.rpc('award_tournament_rewards' as any, { _tournament_id: t.id });
     if (error) return toast.error(error.message);
     toast.success('Recompensas distribuídas!');
     load();
   };
+
+
 
   const talkToParticipant = async (userId: string) => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -167,7 +177,7 @@ export default function TorneiosAdmin() {
         </div>
         <div className="flex gap-1">
           <Button size="icon" variant="ghost" onClick={() => { setForm({ ...t, description: t.description || '', starts_at: t.starts_at || '', ends_at: t.ends_at || '', prize_types: t.prize_types || [], prize_xp_bonus: t.prize_xp_bonus || 0, verified: !!t.verified, prize_title: (t as any).prize_title || '' }); setEditing(t.id); setDialog(true); }}><Edit className="h-4 w-4" /></Button>
-          <Button size="icon" variant="ghost" onClick={() => remove(t)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+          <Button size="icon" variant="ghost" onClick={() => setConfirmDelete(t)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
         </div>
       </div>
       <div className="text-xs text-muted-foreground">
@@ -176,7 +186,7 @@ export default function TorneiosAdmin() {
       </div>
       <Button size="sm" variant="outline" className="w-full" onClick={() => openBracket(t)}><Users className="h-3.5 w-3.5 mr-1" /> Participantes & Chaves</Button>
       {t.status === 'closed' && !t.rewards_distributed && (
-        <Button size="sm" className="w-full" onClick={() => distribute(t)}><Gift className="h-3.5 w-3.5 mr-1" /> Distribuir recompensas</Button>
+        <Button size="sm" className="w-full" onClick={() => setConfirmDistribute(t)}><Gift className="h-3.5 w-3.5 mr-1" /> Distribuir recompensas</Button>
       )}
       {t.rewards_distributed && <p className="text-[10px] text-success text-center">✓ Recompensas distribuídas</p>}
     </div>
@@ -318,6 +328,54 @@ export default function TorneiosAdmin() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!confirmDelete} onOpenChange={(o) => { if (!o) setConfirmDelete(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir torneio?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir <strong>{confirmDelete?.title}</strong>? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={async () => { if (confirmDelete) await remove(confirmDelete); setConfirmDelete(null); }}
+            >Excluir</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!confirmDistribute} onOpenChange={(o) => { if (!o) setConfirmDistribute(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Distribuir recompensas?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Confirmar a distribuição de XP, badges e títulos para os vencedores de <strong>{confirmDistribute?.title}</strong>? Esta ação é definitiva.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => { if (confirmDistribute) await distribute(confirmDistribute); setConfirmDistribute(null); }}
+            >Distribuir</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!confirmRegen} onOpenChange={(o) => { if (!o) setConfirmRegen(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Substituir chaves existentes?</AlertDialogTitle>
+            <AlertDialogDescription>Já existem chaves geradas. Tem certeza que deseja substituí-las?</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={() => { const fn = confirmRegen; setConfirmRegen(null); fn && fn(); }}>Substituir</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

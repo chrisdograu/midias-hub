@@ -115,9 +115,20 @@ export default function Produtos() {
   const handleDelete = async () => {
     if (!selected) return;
     setSaving(true);
-    await supabase.from('produtos').delete().eq('id', selected.id);
+    const { error } = await supabase.from('produtos').delete().eq('id', selected.id);
+    setSaving(false);
+    if (error) {
+      toast({
+        title: 'Não foi possível excluir',
+        description: error.message.includes('foreign key') || error.code === '23503'
+          ? 'Este produto tem pedidos, avaliações ou referências vinculadas. Use "Desativar" em vez de excluir.'
+          : error.message,
+        variant: 'destructive',
+      });
+      return;
+    }
     toast({ title: 'Produto excluído' });
-    setSaving(false); setDeleteOpen(false); setSelected(null); fetchAll();
+    setDeleteOpen(false); setSelected(null); fetchAll();
   };
 
   const handleToggle = async (p: Produto) => {

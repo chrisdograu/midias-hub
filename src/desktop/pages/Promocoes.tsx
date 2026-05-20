@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Plus, Loader2, Trash2, Zap, Package, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -30,6 +31,7 @@ export default function Promocoes() {
   const [bundleForm, setBundleForm] = useState({ title: '', description: '', price: 0, image_url: '', items: [] as string[] });
   const [pickOpen, setPickOpen] = useState(false);
   const [pickForm, setPickForm] = useState({ pick_date: new Date().toISOString().slice(0, 10), product_id: '', reason: '' });
+  const [confirmDelete, setConfirmDelete] = useState<{ type: 'promo' | 'bundle'; id: string; label: string } | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -68,8 +70,9 @@ export default function Promocoes() {
     load();
   };
   const removePromo = async (id: string) => {
-    if (!confirm('Remover promoção?')) return;
-    await supabase.from('flash_promotions' as any).delete().eq('id', id);
+    const { error } = await supabase.from('flash_promotions' as any).delete().eq('id', id);
+    if (error) return toast.error(error.message);
+    toast.success('Promoção removida');
     load();
   };
 
@@ -93,9 +96,10 @@ export default function Promocoes() {
     load();
   };
   const removeBundle = async (id: string) => {
-    if (!confirm('Remover bundle?')) return;
     await supabase.from('bundle_items' as any).delete().eq('bundle_id', id);
-    await supabase.from('bundles' as any).delete().eq('id', id);
+    const { error } = await supabase.from('bundles' as any).delete().eq('id', id);
+    if (error) return toast.error(error.message);
+    toast.success('Bundle removido');
     load();
   };
 
@@ -170,7 +174,7 @@ export default function Promocoes() {
                   </div>
                   <div className="flex flex-col gap-1">
                     {!expired && <Button size="sm" variant="outline" onClick={() => togglePromo(promo.id, promo.is_active)}>{promo.is_active ? 'Pausar' : 'Ativar'}</Button>}
-                    <Button size="sm" variant="ghost" onClick={() => removePromo(promo.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                    <Button size="sm" variant="ghost" onClick={() => setConfirmDelete({ type: 'promo', id: promo.id, label: `promoção de ${productMap.get(promo.product_id)?.title || ''}` })}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                   </div>
                 </div>
               );
@@ -230,7 +234,7 @@ export default function Promocoes() {
                     </div>
                     <div className="flex gap-1">
                       <Button size="sm" variant="outline" onClick={() => toggleBundle(b.id, b.is_active)}>{b.is_active ? 'Pausar' : 'Ativar'}</Button>
-                      <Button size="sm" variant="ghost" onClick={() => removeBundle(b.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                      <Button size="sm" variant="ghost" onClick={() => setConfirmDelete({ type: 'bundle', id: b.id, label: b.title })}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                     </div>
                   </div>
                   {b.description && <p className="text-sm text-muted-foreground mb-2">{b.description}</p>}
@@ -279,6 +283,29 @@ export default function Promocoes() {
           </div>
         </TabsContent>
       </Tabs>
+
+      <AlertDialog open={!!confirmDelete} onOpenChange={(o) => { if (!o) setConfirmDelete(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja remover {confirmDelete?.type === 'bundle' ? 'o bundle' : 'a'} <strong>{confirmDelete?.label}</strong>? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={async () => {
+                if (!confirmDelete) return;
+                if (confirmDelete.type === 'promo') await removePromo(confirmDelete.id);
+                else await removeBundle(confirmDelete.id);
+                setConfirmDelete(null);
+              }}
+            >Excluir</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
