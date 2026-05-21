@@ -650,6 +650,35 @@ export type Database = {
           },
         ]
       }
+      favoritos_anuncio: {
+        Row: {
+          anuncio_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          anuncio_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          anuncio_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favoritos_anuncio_anuncio_id_fkey"
+            columns: ["anuncio_id"]
+            isOneToOne: false
+            referencedRelation: "anuncios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       flash_promotions: {
         Row: {
           created_at: string
