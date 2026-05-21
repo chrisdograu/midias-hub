@@ -1,19 +1,23 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Search, User, Menu, X, Gamepad2, LogOut, Heart, Package, Library, Sun, Moon, Sparkles, Ban } from 'lucide-react';
+import { ShoppingCart, Search, User, Menu, X, Gamepad2, LogOut, Heart, Package, Library, Sun, Moon, Sparkles, Ban, AtSign } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
 import { motion, AnimatePresence } from 'framer-motion';
 import NotificationBell from './NotificationBell';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Header() {
   const { itemCount } = useCart();
   const { user, profile, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [userResults, setUserResults] = useState<{ id: string; display_name: string | null; username: string | null; avatar_url: string | null }[]>([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -31,10 +35,38 @@ export default function Header() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    if (searchQuery.trim().startsWith('@')) {
+      const q = searchQuery.trim().slice(1);
+      if (userResults[0]) { navigate(`/perfil/${userResults[0].id}`); setSearchOpen(false); return; }
+      if (q) { /* no exact match */ }
+      return;
+    }
     if (searchQuery.trim()) {
       navigate(`/catalogo?q=${encodeURIComponent(searchQuery)}`);
+      setSearchOpen(false);
     }
   };
+
+  useEffect(() => {
+    const q = searchQuery.trim();
+    if (!q.startsWith('@') || q.length < 2) { setUserResults([]); return; }
+    const term = q.slice(1);
+    const t = setTimeout(async () => {
+      const { data } = await supabase
+        .from('profiles').select('id, display_name, username, avatar_url')
+        .or(`display_name.ilike.%${term}%,username.ilike.%${term}%`).limit(8);
+      setUserResults(data || []);
+    }, 200);
+    return () => clearTimeout(t);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) setSearchOpen(false);
+    };
+    document.addEventListener('mousedown', onClick);
+    return () => document.removeEventListener('mousedown', onClick);
+  }, []);
 
   const handleSignOut = async () => {
     await signOut();
@@ -70,11 +102,32 @@ export default function Header() {
           </nav>
 
           <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md">
-            <div className="relative w-full">
+            <div ref={searchRef} className="relative w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Buscar jogos..."
+              <input type="text" value={searchQuery}
+                onChange={e => { setSearchQuery(e.target.value); setSearchOpen(true); }}
+                onFocus={() => setSearchOpen(true)}
+                placeholder="Buscar jogos ou @usuário..."
                 className="w-full pl-10 pr-4 py-2 bg-secondary border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" />
+              {searchOpen && searchQuery.startsWith('@') && userResults.length > 0 && (
+                <div className="absolute left-0 right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-xl overflow-hidden z-50 max-h-80 overflow-y-auto">
+                  <div className="px-3 py-1.5 text-[10px] uppercase tracking-wider text-muted-foreground border-b border-border flex items-center gap-1">
+                    <AtSign className="h-3 w-3" /> Usuários
+                  </div>
+                  {userResults.map(u => (
+                    <Link key={u.id} to={`/perfil/${u.id}`} onClick={() => { setSearchOpen(false); setSearchQuery(''); }}
+                      className="flex items-center gap-3 px-3 py-2 hover:bg-secondary transition-colors">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent overflow-hidden flex items-center justify-center text-primary-foreground text-xs font-bold shrink-0">
+                        {u.avatar_url ? <img src={u.avatar_url} alt="" className="w-full h-full object-cover" /> : (u.display_name?.[0]?.toUpperCase() || '?')}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">{u.display_name || 'Usuário'}</p>
+                        {u.username && <p className="text-xs text-muted-foreground truncate">@{u.username}</p>}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
           </form>
 
