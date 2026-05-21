@@ -26,6 +26,8 @@ import MChatThread from "./mobile/pages/MChatThread";
 import MProfile from "./mobile/pages/MProfile";
 import MConfig from "./mobile/pages/MConfig";
 import MReview from "./mobile/pages/MReview";
+import MFavoritos from "./mobile/pages/MFavoritos";
+import MFriends from "./mobile/pages/MFriends";
 import MNotFound from "./mobile/pages/MNotFound";
 import NotFound from "./pages/NotFound";
 
@@ -115,6 +117,8 @@ const App = () => (
               <Route path="/m/perfil" element={<MobileLayout><ProtectedRoute redirectTo="/m/auth"><MProfile /></ProtectedRoute></MobileLayout>} />
               <Route path="/m/perfil/:userId" element={<MobileLayout><MProfile /></MobileLayout>} />
               <Route path="/m/config" element={<MobileLayout><ProtectedRoute redirectTo="/m/auth"><MConfig /></ProtectedRoute></MobileLayout>} />
+              <Route path="/m/favoritos" element={<MobileLayout><ProtectedRoute redirectTo="/m/auth"><MFavoritos /></ProtectedRoute></MobileLayout>} />
+              <Route path="/m/amigos" element={<MobileLayout><ProtectedRoute redirectTo="/m/auth"><MFriends /></ProtectedRoute></MobileLayout>} />
               <Route path="/m/*" element={<MobileLayout><MNotFound /></MobileLayout>} />
 
               {/* Desktop Backoffice Routes */}
