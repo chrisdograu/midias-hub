@@ -44,15 +44,18 @@ export default function NotificationBell() {
   const linkFor = (n: Notif) => {
     const t = n.reference_type;
     const id = n.reference_id;
-    if (t === 'produto' && id) return isMobile ? `/m/forum/${id}` : `/jogo/${id}`;
+    if (t === 'produto' && id) return isMobile ? `/m/review/${id}` : `/jogo/${id}`;
     if (t === 'pedido') return isMobile ? '/m/perfil' : '/pedidos';
-    if (t === 'mensagem' || t === 'conversa') return isMobile ? '/m/chat' : '/perfil';
+    if (t === 'mensagem' || t === 'conversa') return isMobile ? (id ? `/m/chat/${id}` : '/m/chat') : '/perfil';
     if (t === 'anuncio' && id) return isMobile ? `/m/marketplace/${id}` : '/perfil';
     if (t === 'proposta') return isMobile ? '/m/perfil' : '/perfil';
     if (t === 'forum_post' && id) return isMobile ? `/m/forum/post/${id}` : '/perfil';
-    if (t === 'tournament' && id) return isMobile ? '/m/perfil' : `/torneios`;
+    if (t === 'tournament') return isMobile ? '/m/perfil' : `/torneios`;
     if (t === 'certificado') return isMobile ? '/m/perfil' : '/perfil';
-    if (t === 'review_comment' || t === 'avaliacao') return isMobile ? '/m/perfil' : '/perfil';
+    if (t === 'review_comment' || t === 'avaliacao') return isMobile
+      ? (id ? `/m/review/${id}` : '/m/perfil')
+      : (id ? `/jogo/${id}` : '/perfil');
+    if (t === 'profile' && id) return isMobile ? `/m/perfil/${id}` : `/perfil/${id}`;
     return isMobile ? '/m/perfil' : '/perfil';
   };
 
