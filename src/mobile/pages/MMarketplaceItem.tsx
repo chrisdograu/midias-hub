@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, ShieldCheck, ArrowLeftRight, Send, ChevronLeft, ChevronRight, Loader2, ShoppingBag, Star } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, ArrowLeftRight, Send, ChevronLeft, ChevronRight, Loader2, ShoppingBag, Star, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -9,6 +9,7 @@ import { HalfStarDisplay } from '@/components/HalfStarRating';
 import { useFollow } from '@/mobile/lib/useFollow';
 import { toast } from 'sonner';
 import { ItemActionsMenu } from '@/components/ItemActionsMenu';
+import { useFavoritoAnuncio } from '@/hooks/useFavoritoAnuncio';
 
 interface Ad {
   id: string; title: string; description: string | null; price: number; ad_type: string;
@@ -29,6 +30,7 @@ export default function MMarketplaceItem() {
   const [similar, setSimilar] = useState<{ id: string; title: string; price: number; image: string | null }[]>([]);
   const [loading, setLoading] = useState(true);
   const { isFollowing, loading: followLoading, toggle: toggleFollow } = useFollow(seller?.id);
+  const { isFav, loading: favLoading, toggle: toggleFav } = useFavoritoAnuncio(id);
   const canDeleteAd = !!user && !!ad && user.id === ad.seller_id;
   const canReportAd = !!ad && (!user || user.id !== ad.seller_id);
 
@@ -174,9 +176,16 @@ export default function MMarketplaceItem() {
 
         <div className="flex gap-2 items-center">
           {user && user.id !== ad.seller_id && (
-              <button onClick={handleMessage} className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold glow-primary">
+            <>
+              <button onClick={handleMessage} type="button" className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold glow-primary">
                 <Send className="h-4 w-4" /> Mandar mensagem
               </button>
+              <button onClick={toggleFav} disabled={favLoading} type="button"
+                aria-label={isFav ? 'Remover dos favoritos' : 'Salvar nos favoritos'}
+                className={`px-4 py-3 rounded-xl border transition-colors ${isFav ? 'bg-primary/10 border-primary/40 text-primary' : 'bg-card border-border text-muted-foreground hover:text-primary'}`}>
+                <Heart className={`h-5 w-5 ${isFav ? 'fill-primary' : ''}`} />
+              </button>
+            </>
           )}
           <ItemActionsMenu
             copyText={`${ad.title} — R$ ${ad.price.toFixed(2)}`}
