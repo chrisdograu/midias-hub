@@ -178,6 +178,8 @@ export default function MProfile() {
 
       {isOwn && (
         <div className="grid grid-cols-2 gap-2">
+          <Link to="/m/favoritos" className="glass rounded-xl p-3 flex flex-col items-center gap-1 hover:border-primary/40"><span className="text-base">❤️</span><span className="text-xs font-semibold">Favoritos</span></Link>
+          <Link to="/m/amigos" className="glass rounded-xl p-3 flex flex-col items-center gap-1 hover:border-accent/40"><Users className="h-5 w-5 text-accent" /><span className="text-xs font-semibold">Amigos</span></Link>
           <Link to="/m/marketplace/novo" className="glass rounded-xl p-3 flex flex-col items-center gap-1 hover:border-primary/40"><ShoppingBag className="h-5 w-5 text-primary" /><span className="text-xs font-semibold">Novo anúncio</span></Link>
           <Link to="/m/config" className="glass rounded-xl p-3 flex flex-col items-center gap-1 hover:border-accent/40"><Settings className="h-5 w-5 text-accent" /><span className="text-xs font-semibold">Configurações</span></Link>
         </div>
