@@ -15,6 +15,15 @@ interface Conv {
   tournament_id: string | null; is_admin_chat: boolean; tournament_title: string | null;
 }
 
+function getConversationPreview(conv: Conv) {
+  const raw = (conv.last_message || '').trim();
+  if (!raw) return conv.status === 'pending' ? 'quer iniciar uma conversa' : 'Sem mensagens ainda';
+  if (raw === '[imagem]') return '📷 Imagem';
+  if (raw === '[gif]') return '🎞️ GIF';
+  if (/^sistema:/i.test(raw)) return raw.replace(/^sistema:\s*/i, '');
+  return raw;
+}
+
 export default function MChat() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -144,11 +153,11 @@ export default function MChat() {
               <h2 className="text-xs font-bold uppercase tracking-wider text-warning mb-2">Pedidos de conversa ({pending.length})</h2>
               <div className="space-y-2">
                 {pending.map(c => (
-                  <div key={c.id} className="glass rounded-xl p-3 flex items-center gap-3">
+                  <div key={c.id} className="glass rounded-xl p-3 flex items-start gap-3">
                     <Avatar name={c.other_name} url={c.other_avatar} />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold truncate">{c.other_name}</p>
-                      <p className="text-xs text-muted-foreground line-clamp-1">{c.last_message || 'quer iniciar uma conversa'}</p>
+                      <p className="block max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-xs text-muted-foreground">{getConversationPreview(c)}</p>
                     </div>
                     <button onClick={() => handleAccept(c.id)} className="w-8 h-8 rounded-full bg-success/20 text-success flex items-center justify-center"><Check className="h-4 w-4" /></button>
                     <button onClick={() => handleReject(c.id)} className="w-8 h-8 rounded-full bg-destructive/20 text-destructive flex items-center justify-center"><X className="h-4 w-4" /></button>
@@ -180,18 +189,18 @@ export default function MChat() {
                       </div>
                       <div className="space-y-1.5">
                         {visible.map(c => (
-                          <Link key={c.id} to={`/m/chat/${c.id}`} className="flex items-center gap-3 p-3 glass rounded-xl border-l-2 border-destructive/60 hover:border-destructive transition-all">
+                          <Link key={c.id} to={`/m/chat/${c.id}`} className="flex items-start gap-3 p-3 glass rounded-xl border-l-2 border-destructive/60 hover:border-destructive transition-all">
                             <Avatar name={c.other_name} url={c.other_avatar} />
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center justify-between gap-2">
-                                <p className="text-sm font-semibold truncate flex items-center gap-1.5">
+                              <div className="flex items-center justify-between gap-2 min-w-0">
+                                <p className="min-w-0 flex items-center gap-1.5 overflow-hidden text-sm font-semibold">
                                   {c.is_admin_chat && <ShieldAlert className="h-3 w-3 text-warning shrink-0" />}
-                                  {c.other_name}
+                                  <span className="truncate">{c.other_name}</span>
                                 </p>
                                 <span className="text-[10px] text-muted-foreground shrink-0">{timeAgo(c.last_message_at)}</span>
                               </div>
                               {c.is_admin_chat && <MobileBadge tone="warning">Admin</MobileBadge>}
-                              <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{c.last_message || 'Sem mensagens'}</p>
+                              <p className="mt-0.5 block max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-xs text-muted-foreground">{getConversationPreview(c)}</p>
                             </div>
                             {c.unread > 0 && <span className="w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">{c.unread > 9 ? '9+' : c.unread}</span>}
                           </Link>
@@ -211,15 +220,15 @@ export default function MChat() {
           ) : (
             <div className="space-y-1.5">
               {filtered.map(c => (
-                <Link key={c.id} to={`/m/chat/${c.id}`} className="flex items-center gap-3 p-3 glass rounded-xl hover:border-primary/40 transition-colors">
+                <Link key={c.id} to={`/m/chat/${c.id}`} className="flex items-start gap-3 p-3 glass rounded-xl hover:border-primary/40 transition-colors">
                   <Avatar name={c.other_name} url={c.other_avatar} />
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center justify-between gap-2 min-w-0">
                       <p className="text-sm font-semibold truncate">{c.other_name}</p>
                       <span className="text-[10px] text-muted-foreground shrink-0">{timeAgo(c.last_message_at)}</span>
                     </div>
-                    {c.ad_title && <MobileBadge tone="primary">📦 {c.ad_title.slice(0, 30)}</MobileBadge>}
-                    <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{c.last_message || 'Sem mensagens'}</p>
+                    {c.ad_title && <div className="max-w-full overflow-hidden"><MobileBadge tone="primary">📦 {c.ad_title.slice(0, 30)}</MobileBadge></div>}
+                    <p className="mt-0.5 block max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-xs text-muted-foreground">{getConversationPreview(c)}</p>
                   </div>
                   {c.unread > 0 && <span className="w-5 h-5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">{c.unread > 9 ? '9+' : c.unread}</span>}
                 </Link>

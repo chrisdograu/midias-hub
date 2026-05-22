@@ -172,7 +172,12 @@ export default function MForumPost() {
             <Link to={`/m/forum/${post.product_id}`}><MForumTag name={post.product.toLowerCase().replace(/\s+/g, '').slice(0, 14)} /></Link>
             <span className="text-[10px] text-muted-foreground">{timeAgo(post.created_at)}</span>
           </div>
-          <p className="text-sm font-semibold">{post.author}</p>
+          <Link to={`/profile/${post.user_id}`} className="inline-flex items-center gap-2 text-sm font-semibold hover:text-primary">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary">
+              {post.author?.[0]?.toUpperCase() || '?'}
+            </span>
+            <span>{post.author}</span>
+          </Link>
           <p className="text-base mt-2 whitespace-pre-wrap">{post.content}</p>
           <div className="flex items-center gap-3 mt-3 text-xs text-muted-foreground">
             <button onClick={togglePostLike} className={`flex items-center gap-1 hover:text-primary transition-colors ${post.iLiked ? 'text-primary' : ''}`}>
@@ -199,7 +204,7 @@ export default function MForumPost() {
         {topReply && topReply.likes_count > post.likes_count && (
           <div className="glass border border-accent/40 rounded-xl p-3">
             <MobileBadge tone="accent">🔥 Comentário mais popular que o post</MobileBadge>
-            <p className="text-sm mt-2"><b>{topReply.author}</b>: {topReply.content}</p>
+            <p className="text-sm mt-2"><Link to={`/profile/${topReply.user_id}`} className="font-bold hover:text-primary">{topReply.author}</Link>: {topReply.content}</p>
           </div>
         )}
 
@@ -216,8 +221,13 @@ export default function MForumPost() {
                 const canReportReply = !user || user.id !== r.user_id;
                 return (
               <div key={r.id} className="glass rounded-xl p-3">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-semibold">{r.author}</span>
+                <div className="mb-1 flex items-center justify-between gap-2">
+                  <Link to={`/profile/${r.user_id}`} className="inline-flex min-w-0 items-center gap-2 text-xs font-semibold hover:text-primary">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/15 text-[10px] font-bold text-primary">
+                      {r.author?.[0]?.toUpperCase() || '?'}
+                    </span>
+                    <span className="truncate">{r.author}</span>
+                  </Link>
                   <span className="text-[10px] text-muted-foreground">{timeAgo(r.created_at)}</span>
                 </div>
                 {(() => {

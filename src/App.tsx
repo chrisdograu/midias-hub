@@ -110,6 +110,7 @@ const App = () => (
               <Route path="/m/marketplace/:id" element={<MobileLayout><MMarketplaceItem /></MobileLayout>} />
               <Route path="/m/forum" element={<MobileLayout><MForum /></MobileLayout>} />
               <Route path="/m/forum/:gameId" element={<MobileLayout><MForumGame /></MobileLayout>} />
+              <Route path="/m/forum/jogo/:gameId" element={<MobileLayout><MForumGame /></MobileLayout>} />
               <Route path="/m/forum/post/:postId" element={<MobileLayout><MForumPost /></MobileLayout>} />
               <Route path="/m/review/:productId" element={<MobileLayout><MReview /></MobileLayout>} />
               <Route path="/m/chat" element={<MobileLayout><ProtectedRoute redirectTo="/m/auth"><MChat /></ProtectedRoute></MobileLayout>} />
@@ -119,6 +120,7 @@ const App = () => (
               <Route path="/m/config" element={<MobileLayout><ProtectedRoute redirectTo="/m/auth"><MConfig /></ProtectedRoute></MobileLayout>} />
               <Route path="/m/favoritos" element={<MobileLayout><ProtectedRoute redirectTo="/m/auth"><MFavoritos /></ProtectedRoute></MobileLayout>} />
               <Route path="/m/amigos" element={<MobileLayout><ProtectedRoute redirectTo="/m/auth"><MFriends /></ProtectedRoute></MobileLayout>} />
+              <Route path="/m/friends" element={<MobileLayout><ProtectedRoute redirectTo="/m/auth"><MFriends /></ProtectedRoute></MobileLayout>} />
               <Route path="/m/*" element={<MobileLayout><MNotFound /></MobileLayout>} />
 
               {/* Desktop Backoffice Routes */}
@@ -170,6 +172,7 @@ const App = () => (
                 { path: '/favoritos', el: <ProtectedRoute><Favoritos /></ProtectedRoute> },
                 { path: '/perfil', el: <ProtectedRoute><Perfil /></ProtectedRoute> },
                 { path: '/perfil/:userId', el: <PublicProfile /> },
+                { path: '/profile/:userId', el: <PublicProfile /> },
                 { path: '/biblioteca', el: <ProtectedRoute><Biblioteca /></ProtectedRoute> },
                 { path: '/faq', el: <FAQ /> },
                 { path: '/contato', el: <Contato /> },

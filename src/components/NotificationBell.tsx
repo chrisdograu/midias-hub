@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 interface Notif {
   id: string; title: string; body: string | null; type: string;
   is_read: boolean; created_at: string; reference_type: string | null; reference_id: string | null;
+  href?: string;
 }
 
 export default function NotificationBell() {
@@ -20,7 +21,48 @@ export default function NotificationBell() {
     const { data } = await supabase.from('notifications')
       .select('*').eq('user_id', user.id)
       .order('created_at', { ascending: false }).limit(20);
-    setItems((data as any) || []);
+    const rows = ((data as any) || []) as Notif[];
+
+    const messageIds = rows
+      .filter((item) => item.reference_type === 'mensagem' && item.reference_id)
+      .map((item) => item.reference_id as string);
+
+    let messageHrefMap = new Map<string, string>();
+
+    if (messageIds.length) {
+      const { data: messages } = await supabase
+        .from('mensagens')
+        .select('id, sender_id, receiver_id')
+        .in('id', messageIds);
+
+      const conversationLookups = await Promise.all(
+        (messages || []).map(async (message) => {
+          const { data: conversation } = await supabase
+            .from('conversas')
+            .select('id')
+            .or(`and(participant_1.eq.${message.sender_id},participant_2.eq.${message.receiver_id}),and(participant_1.eq.${message.receiver_id},participant_2.eq.${message.sender_id})`)
+            .order('last_message_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          return conversation?.id ? [message.id, conversation.id] as const : null;
+        })
+      );
+
+      messageHrefMap = new Map(
+        conversationLookups.filter(Boolean).map(([messageId, conversationId]) => [
+          messageId,
+          isMobile ? `/m/chat/${conversationId}` : '/perfil',
+        ])
+      );
+    }
+
+    setItems(rows.map((item) => ({
+      ...item,
+      href: item.reference_type === 'mensagem' && item.reference_id
+        ? messageHrefMap.get(item.reference_id) || (isMobile ? '/m/chat' : '/perfil')
+        : linkFor(item),
+    })));
   };
 
   useEffect(() => {
@@ -37,6 +79,14 @@ export default function NotificationBell() {
   const markAllRead = async () => {
     if (!user || unread === 0) return;
     await supabase.from('notifications').update({ is_read: true }).eq('user_id', user.id).eq('is_read', false);
+    load();
+  };
+
+  const markOneRead = async (id: string, alreadyRead: boolean) => {
+    if (!alreadyRead) {
+      await supabase.from('notifications').update({ is_read: true }).eq('id', id).eq('user_id', user?.id || '');
+    }
+    setOpen(false);
     load();
   };
 
@@ -86,7 +136,7 @@ export default function NotificationBell() {
               <div className="max-h-96 overflow-y-auto divide-y divide-border">
                 {items.length === 0 && <p className="p-6 text-center text-sm text-muted-foreground">Nenhuma notificação</p>}
                 {items.map(n => (
-                  <Link key={n.id} to={linkFor(n)} onClick={() => setOpen(false)}
+                  <Link key={n.id} to={n.href || linkFor(n)} onClick={() => markOneRead(n.id, n.is_read)}
                     className={`block p-3 hover:bg-secondary/50 transition-colors ${!n.is_read ? 'bg-primary/5' : ''}`}>
                     <div className="flex items-start gap-2">
                       {!n.is_read && <span className="w-2 h-2 rounded-full bg-primary mt-1.5 shrink-0" />}
