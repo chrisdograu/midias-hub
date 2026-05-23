@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Plus, Loader2, Trash2, Zap, Package, Calendar } from 'lucide-react';
+import { Plus, Loader2, Trash2, Zap, Package, Calendar, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Produto { id: string; title: string; price: number; image_url: string | null; }
@@ -28,6 +28,7 @@ export default function Promocoes() {
   const [promoOpen, setPromoOpen] = useState(false);
   const [promoForm, setPromoForm] = useState({ product_id: '', discount_percent: 20, hours: 24 });
   const [bundleOpen, setBundleOpen] = useState(false);
+  const [editingBundleId, setEditingBundleId] = useState<string | null>(null);
   const [bundleForm, setBundleForm] = useState({ title: '', description: '', price: 0, image_url: '', items: [] as string[] });
   const [pickOpen, setPickOpen] = useState(false);
   const [pickForm, setPickForm] = useState({ pick_date: new Date().toISOString().slice(0, 10), product_id: '', reason: '' });
@@ -77,18 +78,44 @@ export default function Promocoes() {
   };
 
   // ---- Bundles ----
-  const createBundle = async () => {
-    if (!bundleForm.title || bundleForm.items.length < 2) return toast.error('Título e ao menos 2 jogos');
-    const { data: bd, error } = await supabase.from('bundles' as any).insert({
-      title: bundleForm.title, description: bundleForm.description || null,
-      price: bundleForm.price, image_url: bundleForm.image_url || null,
-    }).select().single();
-    if (error || !bd) return toast.error(error?.message || 'Erro');
-    const items = bundleForm.items.map(pid => ({ bundle_id: (bd as any).id, product_id: pid }));
-    await supabase.from('bundle_items' as any).insert(items);
-    toast.success('Bundle criado');
-    setBundleOpen(false);
+  const resetBundleForm = () => {
+    setEditingBundleId(null);
     setBundleForm({ title: '', description: '', price: 0, image_url: '', items: [] });
+  };
+  const openCreateBundle = () => { resetBundleForm(); setBundleOpen(true); };
+  const openEditBundle = (b: Bundle) => {
+    const items = bundleItems.filter(bi => bi.bundle_id === b.id).map(bi => bi.product_id);
+    setEditingBundleId(b.id);
+    setBundleForm({
+      title: b.title, description: b.description || '',
+      price: Number(b.price), image_url: b.image_url || '', items,
+    });
+    setBundleOpen(true);
+  };
+  const saveBundle = async () => {
+    if (!bundleForm.title || bundleForm.items.length < 2) return toast.error('Título e ao menos 2 jogos');
+    if (editingBundleId) {
+      const { error } = await supabase.from('bundles' as any).update({
+        title: bundleForm.title, description: bundleForm.description || null,
+        price: bundleForm.price, image_url: bundleForm.image_url || null,
+      }).eq('id', editingBundleId);
+      if (error) return toast.error(error.message);
+      await supabase.from('bundle_items' as any).delete().eq('bundle_id', editingBundleId);
+      const items = bundleForm.items.map(pid => ({ bundle_id: editingBundleId, product_id: pid }));
+      await supabase.from('bundle_items' as any).insert(items);
+      toast.success('Bundle atualizado');
+    } else {
+      const { data: bd, error } = await supabase.from('bundles' as any).insert({
+        title: bundleForm.title, description: bundleForm.description || null,
+        price: bundleForm.price, image_url: bundleForm.image_url || null,
+      }).select().single();
+      if (error || !bd) return toast.error(error?.message || 'Erro');
+      const items = bundleForm.items.map(pid => ({ bundle_id: (bd as any).id, product_id: pid }));
+      await supabase.from('bundle_items' as any).insert(items);
+      toast.success('Bundle criado');
+    }
+    setBundleOpen(false);
+    resetBundleForm();
     load();
   };
   const toggleBundle = async (id: string, is_active: boolean) => {
@@ -185,10 +212,10 @@ export default function Promocoes() {
 
         {/* Bundles */}
         <TabsContent value="bundles" className="space-y-4">
-          <Dialog open={bundleOpen} onOpenChange={setBundleOpen}>
-            <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-1" /> Novo Bundle</Button></DialogTrigger>
+          <Dialog open={bundleOpen} onOpenChange={(o) => { setBundleOpen(o); if (!o) resetBundleForm(); }}>
+            <DialogTrigger asChild><Button onClick={openCreateBundle}><Plus className="h-4 w-4 mr-1" /> Novo Bundle</Button></DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-              <DialogHeader><DialogTitle>Criar bundle</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle>{editingBundleId ? 'Editar bundle' : 'Criar bundle'}</DialogTitle></DialogHeader>
               <div className="space-y-3">
                 <div><Label>Título</Label><Input value={bundleForm.title} onChange={e => setBundleForm({ ...bundleForm, title: e.target.value })} placeholder="ex: Pacote RPG Lendário" /></div>
                 <div><Label>Descrição</Label><Textarea value={bundleForm.description} onChange={e => setBundleForm({ ...bundleForm, description: e.target.value })} /></div>
@@ -218,7 +245,7 @@ export default function Promocoes() {
                   )}
                 </div>
               </div>
-              <DialogFooter><Button onClick={createBundle}>Criar</Button></DialogFooter>
+              <DialogFooter><Button onClick={saveBundle}>{editingBundleId ? 'Salvar alterações' : 'Criar'}</Button></DialogFooter>
             </DialogContent>
           </Dialog>
 
@@ -233,6 +260,7 @@ export default function Promocoes() {
                       <p className="text-price font-bold">R$ {Number(b.price).toFixed(2)}</p>
                     </div>
                     <div className="flex gap-1">
+                      <Button size="sm" variant="outline" onClick={() => openEditBundle(b)}><Pencil className="h-4 w-4" /></Button>
                       <Button size="sm" variant="outline" onClick={() => toggleBundle(b.id, b.is_active)}>{b.is_active ? 'Pausar' : 'Ativar'}</Button>
                       <Button size="sm" variant="ghost" onClick={() => setConfirmDelete({ type: 'bundle', id: b.id, label: b.title })}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                     </div>
