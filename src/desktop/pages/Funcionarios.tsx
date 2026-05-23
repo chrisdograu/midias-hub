@@ -286,13 +286,14 @@ export default function Funcionarios() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => openEdit(f)}>
-                            <Edit className="h-4 w-4 mr-2" />Editar
+                            <Edit className="h-4 w-4 mr-2" />Editar dados
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleToggleActive(f)}>
-                            <ToggleLeft className="h-4 w-4 mr-2" />Desativar
+                            <ToggleLeft className="h-4 w-4 mr-2" />
+                            {(f.role === 'admin' || f.role === 'atendente') ? 'Desativar (remover cargo)' : 'Reativar como atendente'}
                           </DropdownMenuItem>
                           <DropdownMenuItem className="text-destructive" onClick={() => { setSelectedEmployee(f); setDeleteDialogOpen(true); }}>
-                            <Trash2 className="h-4 w-4 mr-2" />Excluir
+                            <Trash2 className="h-4 w-4 mr-2" />Excluir conta
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
