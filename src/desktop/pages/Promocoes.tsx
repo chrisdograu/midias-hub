@@ -78,18 +78,44 @@ export default function Promocoes() {
   };
 
   // ---- Bundles ----
-  const createBundle = async () => {
-    if (!bundleForm.title || bundleForm.items.length < 2) return toast.error('Título e ao menos 2 jogos');
-    const { data: bd, error } = await supabase.from('bundles' as any).insert({
-      title: bundleForm.title, description: bundleForm.description || null,
-      price: bundleForm.price, image_url: bundleForm.image_url || null,
-    }).select().single();
-    if (error || !bd) return toast.error(error?.message || 'Erro');
-    const items = bundleForm.items.map(pid => ({ bundle_id: (bd as any).id, product_id: pid }));
-    await supabase.from('bundle_items' as any).insert(items);
-    toast.success('Bundle criado');
-    setBundleOpen(false);
+  const resetBundleForm = () => {
+    setEditingBundleId(null);
     setBundleForm({ title: '', description: '', price: 0, image_url: '', items: [] });
+  };
+  const openCreateBundle = () => { resetBundleForm(); setBundleOpen(true); };
+  const openEditBundle = (b: Bundle) => {
+    const items = bundleItems.filter(bi => bi.bundle_id === b.id).map(bi => bi.product_id);
+    setEditingBundleId(b.id);
+    setBundleForm({
+      title: b.title, description: b.description || '',
+      price: Number(b.price), image_url: b.image_url || '', items,
+    });
+    setBundleOpen(true);
+  };
+  const saveBundle = async () => {
+    if (!bundleForm.title || bundleForm.items.length < 2) return toast.error('Título e ao menos 2 jogos');
+    if (editingBundleId) {
+      const { error } = await supabase.from('bundles' as any).update({
+        title: bundleForm.title, description: bundleForm.description || null,
+        price: bundleForm.price, image_url: bundleForm.image_url || null,
+      }).eq('id', editingBundleId);
+      if (error) return toast.error(error.message);
+      await supabase.from('bundle_items' as any).delete().eq('bundle_id', editingBundleId);
+      const items = bundleForm.items.map(pid => ({ bundle_id: editingBundleId, product_id: pid }));
+      await supabase.from('bundle_items' as any).insert(items);
+      toast.success('Bundle atualizado');
+    } else {
+      const { data: bd, error } = await supabase.from('bundles' as any).insert({
+        title: bundleForm.title, description: bundleForm.description || null,
+        price: bundleForm.price, image_url: bundleForm.image_url || null,
+      }).select().single();
+      if (error || !bd) return toast.error(error?.message || 'Erro');
+      const items = bundleForm.items.map(pid => ({ bundle_id: (bd as any).id, product_id: pid }));
+      await supabase.from('bundle_items' as any).insert(items);
+      toast.success('Bundle criado');
+    }
+    setBundleOpen(false);
+    resetBundleForm();
     load();
   };
   const toggleBundle = async (id: string, is_active: boolean) => {
