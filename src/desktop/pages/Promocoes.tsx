@@ -212,10 +212,10 @@ export default function Promocoes() {
 
         {/* Bundles */}
         <TabsContent value="bundles" className="space-y-4">
-          <Dialog open={bundleOpen} onOpenChange={setBundleOpen}>
-            <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-1" /> Novo Bundle</Button></DialogTrigger>
+          <Dialog open={bundleOpen} onOpenChange={(o) => { setBundleOpen(o); if (!o) resetBundleForm(); }}>
+            <DialogTrigger asChild><Button onClick={openCreateBundle}><Plus className="h-4 w-4 mr-1" /> Novo Bundle</Button></DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-              <DialogHeader><DialogTitle>Criar bundle</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle>{editingBundleId ? 'Editar bundle' : 'Criar bundle'}</DialogTitle></DialogHeader>
               <div className="space-y-3">
                 <div><Label>Título</Label><Input value={bundleForm.title} onChange={e => setBundleForm({ ...bundleForm, title: e.target.value })} placeholder="ex: Pacote RPG Lendário" /></div>
                 <div><Label>Descrição</Label><Textarea value={bundleForm.description} onChange={e => setBundleForm({ ...bundleForm, description: e.target.value })} /></div>
@@ -245,7 +245,7 @@ export default function Promocoes() {
                   )}
                 </div>
               </div>
-              <DialogFooter><Button onClick={createBundle}>Criar</Button></DialogFooter>
+              <DialogFooter><Button onClick={saveBundle}>{editingBundleId ? 'Salvar alterações' : 'Criar'}</Button></DialogFooter>
             </DialogContent>
           </Dialog>
 
@@ -260,6 +260,7 @@ export default function Promocoes() {
                       <p className="text-price font-bold">R$ {Number(b.price).toFixed(2)}</p>
                     </div>
                     <div className="flex gap-1">
+                      <Button size="sm" variant="outline" onClick={() => openEditBundle(b)}><Pencil className="h-4 w-4" /></Button>
                       <Button size="sm" variant="outline" onClick={() => toggleBundle(b.id, b.is_active)}>{b.is_active ? 'Pausar' : 'Ativar'}</Button>
                       <Button size="sm" variant="ghost" onClick={() => setConfirmDelete({ type: 'bundle', id: b.id, label: b.title })}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                     </div>
