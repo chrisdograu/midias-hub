@@ -28,6 +28,7 @@ export default function Promocoes() {
   const [promoOpen, setPromoOpen] = useState(false);
   const [promoForm, setPromoForm] = useState({ product_id: '', discount_percent: 20, hours: 24 });
   const [bundleOpen, setBundleOpen] = useState(false);
+  const [editingBundleId, setEditingBundleId] = useState<string | null>(null);
   const [bundleForm, setBundleForm] = useState({ title: '', description: '', price: 0, image_url: '', items: [] as string[] });
   const [pickOpen, setPickOpen] = useState(false);
   const [pickForm, setPickForm] = useState({ pick_date: new Date().toISOString().slice(0, 10), product_id: '', reason: '' });
