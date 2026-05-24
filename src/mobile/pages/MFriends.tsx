@@ -50,6 +50,14 @@ export default function MFriends() {
   const [tab, setTab] = useState<Tab>(initial);
   const [followers, setFollowers] = useState<Person[]>([]);
   const [following, setFollowing] = useState<Person[]>([]);
+  const [followingSet, setFollowingSet] = useState<Set<string>>(new Set());
+  const handleFollowChange = (id: string, isF: boolean) => {
+    setFollowingSet(prev => {
+      const next = new Set(prev);
+      if (isF) next.add(id); else next.delete(id);
+      return next;
+    });
+  };
   const [query, setQuery] = useState('');
   const [discover, setDiscover] = useState<Person[]>([]);
   const [loading, setLoading] = useState(true);
