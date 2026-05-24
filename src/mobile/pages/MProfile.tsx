@@ -143,7 +143,9 @@ export default function MProfile() {
         </div>
         <h1 className="font-display text-lg font-bold">{profile.display_name || 'Usuário'}</h1>
         {profile.username && <p className="text-xs text-muted-foreground">@{profile.username}</p>}
-        <div className="flex items-center justify-center gap-1.5 mt-2"><HalfStarDisplay rating={rating} size={14} /><span className="text-xs text-muted-foreground">{rating > 0 ? rating.toFixed(1) : 'sem avaliações'}</span></div>
+        {mode === 'vendedor' && (
+          <div className="flex items-center justify-center gap-1.5 mt-2"><HalfStarDisplay rating={rating} size={14} /><span className="text-xs text-muted-foreground">{rating > 0 ? `${rating.toFixed(1)} (vendedor)` : 'sem avaliações de vendedor'}</span></div>
+        )}
         <div className="mt-2 flex justify-center"><LevelTitleBadge userId={targetId} variant="card" /></div>
         <UserBadges userId={targetId} max={8} className="mt-3" />
         {profile.bio && <p className="text-sm text-muted-foreground mt-3">{profile.bio}</p>}
