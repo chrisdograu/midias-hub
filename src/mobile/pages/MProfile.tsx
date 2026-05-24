@@ -31,7 +31,11 @@ export default function MProfile() {
   const [reviewsCount, setReviewsCount] = useState(0);
   const [postsCount, setPostsCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<'ads' | 'reviews' | 'posts' | 'lib'>('ads');
+  const [tab, setTab] = useState<'ads' | 'reviews' | 'posts' | 'lib'>('reviews');
+  const [mode, setMode] = useState<'pessoal' | 'vendedor'>(() => {
+    try { return (localStorage.getItem('m:profileMode') as any) || 'pessoal'; } catch { return 'pessoal'; }
+  });
+  useEffect(() => { try { localStorage.setItem('m:profileMode', mode); } catch {} setTab(mode === 'vendedor' ? 'ads' : 'reviews'); }, [mode]);
   const [libFilter, setLibFilter] = useState<'all' | 'quero_jogar' | 'ja_joguei'>(() => {
     try { return (localStorage.getItem('m:libFilter') as any) || 'all'; } catch { return 'all'; }
   });
