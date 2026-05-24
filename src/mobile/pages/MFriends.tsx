@@ -157,15 +157,18 @@ export default function MFriends() {
       ) : (
         <div className="space-y-2">
           {list.map(p => (
-            <Link key={p.id} to={`/m/perfil/${p.id}`} className="flex items-center gap-3 glass rounded-xl p-3 hover:border-primary/40 transition-colors">
-              <div className="w-11 h-11 rounded-full bg-gradient-to-br from-primary to-accent overflow-hidden flex items-center justify-center text-primary-foreground font-bold shrink-0">
-                {p.avatar_url ? <img src={p.avatar_url} alt="" className="w-full h-full object-cover" /> : (p.display_name?.[0]?.toUpperCase() || '?')}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground truncate">{p.display_name || 'Usuário'}</p>
-                {p.username && <p className="text-xs text-muted-foreground truncate">@{p.username}</p>}
-              </div>
-            </Link>
+            <div key={p.id} className="flex items-center gap-3 glass rounded-xl p-3 hover:border-primary/40 transition-colors">
+              <Link to={`/m/perfil/${p.id}`} className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="w-11 h-11 rounded-full bg-gradient-to-br from-primary to-accent overflow-hidden flex items-center justify-center text-primary-foreground font-bold shrink-0">
+                  {p.avatar_url ? <img src={p.avatar_url} alt="" className="w-full h-full object-cover" /> : (p.display_name?.[0]?.toUpperCase() || '?')}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-foreground truncate">{p.display_name || 'Usuário'}</p>
+                  {p.username && <p className="text-xs text-muted-foreground truncate">@{p.username}</p>}
+                </div>
+              </Link>
+              <FollowBtn targetId={p.id} initiallyFollowing={followingSet.has(p.id)} onChange={(v) => handleFollowChange(p.id, v)} />
+            </div>
           ))}
         </div>
       )}
