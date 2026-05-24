@@ -83,6 +83,7 @@ export default function MFriends() {
       if (cancel) return;
       setFollowers(fIds.map(id => map.get(id)).filter(Boolean) as Person[]);
       setFollowing(gIds.map(id => map.get(id)).filter(Boolean) as Person[]);
+      setFollowingSet(new Set(gIds));
       setLoading(false);
     })();
     return () => { cancel = true; };
