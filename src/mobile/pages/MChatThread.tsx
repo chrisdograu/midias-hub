@@ -190,10 +190,11 @@ export default function MChatThread() {
   if (!conv || !other) return <div className="p-6 text-center text-muted-foreground">Conversa não encontrada.</div>;
 
   const canCounteroffer = ad && (ad.accepts_counteroffer || ad.ad_type === 'troca');
+  const threadHeight = 'calc(100dvh - 57px - 68px - env(safe-area-inset-bottom))';
 
   return (
-    <div className="flex flex-col bg-background" style={{ minHeight: 'calc(100vh - 80px)' }}>
-      <header className="sticky top-[57px] z-20 backdrop-blur-xl bg-background/80 border-b border-border/50 px-3 py-2 flex items-center gap-3">
+    <div className="flex flex-col overflow-hidden bg-background" style={{ minHeight: threadHeight, height: threadHeight }}>
+      <header className="z-20 backdrop-blur-xl bg-background/80 border-b border-border/50 px-3 py-2 flex items-center gap-3 shrink-0">
         <button onClick={() => navigate('/m/chat')} className="p-1"><ArrowLeft className="h-5 w-5" /></button>
         <Link to={`/m/perfil/${other.id}`} className="flex items-center gap-2 flex-1 min-w-0">
           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-accent overflow-hidden flex items-center justify-center text-primary-foreground font-bold text-sm shrink-0">
@@ -206,7 +207,7 @@ export default function MChatThread() {
         </Link>
       </header>
 
-      <div className="flex-1 px-3 py-3 space-y-2 overflow-y-auto">
+      <div className="flex-1 min-h-0 px-3 py-3 space-y-2 overflow-y-auto">
         {msgs.length === 0 && <p className="text-center text-xs text-muted-foreground py-10">Mande a primeira mensagem 👋</p>}
         {msgs.map(m => {
           const own = m.sender_id === user?.id;
@@ -270,7 +271,7 @@ export default function MChatThread() {
         <div ref={endRef} />
       </div>
 
-      <div className="sticky bottom-[68px] backdrop-blur-xl bg-background/90 border-t border-border/50 px-2 py-2">
+      <div className="shrink-0 backdrop-blur-xl bg-background/90 border-t border-border/50 px-2 py-2">
         {canCounteroffer && (
           <button onClick={() => setOfferOpen(true)} className="w-full mb-2 py-1.5 rounded-lg bg-accent/20 text-accent text-xs font-semibold flex items-center justify-center gap-1.5">
             <ArrowLeftRight className="h-3.5 w-3.5" /> Fazer contraoferta
