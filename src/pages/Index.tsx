@@ -187,7 +187,7 @@ export default function Index() {
               const savings = Math.max(0, fullPrice - bundle.price);
               const pct = fullPrice > 0 ? Math.round((savings / fullPrice) * 100) : 0;
               return (
-                <Link key={bundle.id} to={`/jogo/${products[0].id}`} className="group bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-colors">
+                <Link key={bundle.id} to={`/bundle/${bundle.id}`} className="group bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-colors">
                   <div className="relative aspect-[16/9] grid grid-cols-3 bg-secondary/30">
                     {products.slice(0, 3).map(p => (
                       <img key={p.id} src={p.image} alt={p.title} className="w-full h-full object-cover" />
