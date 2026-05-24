@@ -1,12 +1,47 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Loader2, UserPlus, Users, Search } from 'lucide-react';
+import { ArrowLeft, Loader2, UserPlus, UserCheck, Users, Search } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 interface Person { id: string; display_name: string | null; avatar_url: string | null; username: string | null }
 
 type Tab = 'followers' | 'following' | 'discover';
+
+function FollowBtn({ targetId, initiallyFollowing, onChange }: { targetId: string; initiallyFollowing: boolean; onChange?: (v: boolean) => void }) {
+  const { user } = useAuth();
+  const [following, setFollowing] = useState(initiallyFollowing);
+  const [loading, setLoading] = useState(false);
+  useEffect(() => { setFollowing(initiallyFollowing); }, [initiallyFollowing]);
+  if (!user || user.id === targetId) return null;
+  const toggle = async (e: React.MouseEvent) => {
+    e.preventDefault(); e.stopPropagation();
+    if (loading) return;
+    setLoading(true);
+    if (following) {
+      await supabase.from('user_follows').delete().eq('follower_id', user.id).eq('following_id', targetId);
+      setFollowing(false); onChange?.(false);
+    } else {
+      const { error } = await supabase.from('user_follows').insert({ follower_id: user.id, following_id: targetId });
+      if (error) { toast.error('Não foi possível seguir'); setLoading(false); return; }
+      setFollowing(true); onChange?.(true);
+      await supabase.from('notifications').insert({
+        user_id: targetId, type: 'novo_seguidor' as any,
+        title: 'Você tem um novo seguidor 🎮',
+        body: 'Alguém começou a seguir seu perfil na MIDIAS',
+        reference_type: 'profile', reference_id: user.id,
+      });
+    }
+    setLoading(false);
+  };
+  return (
+    <button onClick={toggle} disabled={loading}
+      className={`shrink-0 text-[11px] font-semibold px-3 py-1.5 rounded-full transition-all ${following ? 'bg-card border border-border text-foreground' : 'bg-gradient-to-r from-primary to-accent text-primary-foreground'}`}>
+      {following ? <span className="inline-flex items-center gap-1"><UserCheck className="h-3 w-3" />Seguindo</span> : <span className="inline-flex items-center gap-1"><UserPlus className="h-3 w-3" />Seguir</span>}
+    </button>
+  );
+}
 
 export default function MFriends() {
   const { user } = useAuth();
@@ -15,6 +50,14 @@ export default function MFriends() {
   const [tab, setTab] = useState<Tab>(initial);
   const [followers, setFollowers] = useState<Person[]>([]);
   const [following, setFollowing] = useState<Person[]>([]);
+  const [followingSet, setFollowingSet] = useState<Set<string>>(new Set());
+  const handleFollowChange = (id: string, isF: boolean) => {
+    setFollowingSet(prev => {
+      const next = new Set(prev);
+      if (isF) next.add(id); else next.delete(id);
+      return next;
+    });
+  };
   const [query, setQuery] = useState('');
   const [discover, setDiscover] = useState<Person[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,6 +83,7 @@ export default function MFriends() {
       if (cancel) return;
       setFollowers(fIds.map(id => map.get(id)).filter(Boolean) as Person[]);
       setFollowing(gIds.map(id => map.get(id)).filter(Boolean) as Person[]);
+      setFollowingSet(new Set(gIds));
       setLoading(false);
     })();
     return () => { cancel = true; };
@@ -113,15 +157,18 @@ export default function MFriends() {
       ) : (
         <div className="space-y-2">
           {list.map(p => (
-            <Link key={p.id} to={`/m/perfil/${p.id}`} className="flex items-center gap-3 glass rounded-xl p-3 hover:border-primary/40 transition-colors">
-              <div className="w-11 h-11 rounded-full bg-gradient-to-br from-primary to-accent overflow-hidden flex items-center justify-center text-primary-foreground font-bold shrink-0">
-                {p.avatar_url ? <img src={p.avatar_url} alt="" className="w-full h-full object-cover" /> : (p.display_name?.[0]?.toUpperCase() || '?')}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground truncate">{p.display_name || 'Usuário'}</p>
-                {p.username && <p className="text-xs text-muted-foreground truncate">@{p.username}</p>}
-              </div>
-            </Link>
+            <div key={p.id} className="flex items-center gap-3 glass rounded-xl p-3 hover:border-primary/40 transition-colors">
+              <Link to={`/m/perfil/${p.id}`} className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="w-11 h-11 rounded-full bg-gradient-to-br from-primary to-accent overflow-hidden flex items-center justify-center text-primary-foreground font-bold shrink-0">
+                  {p.avatar_url ? <img src={p.avatar_url} alt="" className="w-full h-full object-cover" /> : (p.display_name?.[0]?.toUpperCase() || '?')}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-foreground truncate">{p.display_name || 'Usuário'}</p>
+                  {p.username && <p className="text-xs text-muted-foreground truncate">@{p.username}</p>}
+                </div>
+              </Link>
+              <FollowBtn targetId={p.id} initiallyFollowing={followingSet.has(p.id)} onChange={(v) => handleFollowChange(p.id, v)} />
+            </div>
           ))}
         </div>
       )}

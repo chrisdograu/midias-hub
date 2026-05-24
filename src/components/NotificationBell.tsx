@@ -11,6 +11,26 @@ interface Notif {
   href?: string;
 }
 
+const isMobileCtx = () => typeof window !== 'undefined' && window.location.pathname.startsWith('/m');
+
+function linkFor(n: Notif): string {
+  const isMobile = isMobileCtx();
+  const t = n.reference_type;
+  const id = n.reference_id;
+  if (t === 'produto' && id) return isMobile ? `/m/review/${id}` : `/jogo/${id}`;
+  if (t === 'pedido') return isMobile ? '/m/perfil' : '/pedidos';
+  if (t === 'anuncio' && id) return isMobile ? `/m/marketplace/${id}` : '/perfil';
+  if (t === 'proposta') return isMobile ? '/m/perfil' : '/perfil';
+  if (t === 'forum_post' && id) return isMobile ? `/m/forum/post/${id}` : '/perfil';
+  if (t === 'tournament') return isMobile ? '/m/perfil' : '/torneios';
+  if (t === 'certificado') return isMobile ? '/m/perfil' : '/perfil';
+  if (t === 'review_comment' || t === 'avaliacao')
+    return isMobile ? (id ? `/m/review/${id}` : '/m/perfil') : (id ? `/jogo/${id}` : '/perfil');
+  if (t === 'profile' && id) return isMobile ? `/m/perfil/${id}` : `/perfil/${id}`;
+  if (t === 'game_suggestion' && id) return isMobile ? `/m/forum/jogo/${id}` : `/jogo/${id}`;
+  return isMobile ? '/m/perfil' : '/perfil';
+}
+
 export default function NotificationBell() {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
@@ -18,6 +38,7 @@ export default function NotificationBell() {
 
   const load = async () => {
     if (!user) return;
+    const isMobile = isMobileCtx();
     const { data } = await supabase.from('notifications')
       .select('*').eq('user_id', user.id)
       .order('created_at', { ascending: false }).limit(20);
@@ -27,7 +48,7 @@ export default function NotificationBell() {
       .filter((item) => item.reference_type === 'mensagem' && item.reference_id)
       .map((item) => item.reference_id as string);
 
-    let messageHrefMap = new Map<string, string>();
+    const messageHrefMap = new Map<string, string>();
 
     if (messageIds.length) {
       const { data: messages } = await supabase
@@ -35,7 +56,7 @@ export default function NotificationBell() {
         .select('id, sender_id, receiver_id')
         .in('id', messageIds);
 
-      const conversationLookups = await Promise.all(
+      await Promise.all(
         (messages || []).map(async (message) => {
           const { data: conversation } = await supabase
             .from('conversas')
@@ -44,16 +65,10 @@ export default function NotificationBell() {
             .order('last_message_at', { ascending: false })
             .limit(1)
             .maybeSingle();
-
-          return conversation?.id ? [message.id, conversation.id] as const : null;
+          if (conversation?.id) {
+            messageHrefMap.set(message.id, isMobile ? `/m/chat/${conversation.id}` : '/perfil');
+          }
         })
-      );
-
-      messageHrefMap = new Map(
-        conversationLookups.filter(Boolean).map(([messageId, conversationId]) => [
-          messageId,
-          isMobile ? `/m/chat/${conversationId}` : '/perfil',
-        ])
       );
     }
 
@@ -88,25 +103,6 @@ export default function NotificationBell() {
     }
     setOpen(false);
     load();
-  };
-
-  const isMobile = typeof window !== 'undefined' && window.location.pathname.startsWith('/m');
-  const linkFor = (n: Notif) => {
-    const t = n.reference_type;
-    const id = n.reference_id;
-    if (t === 'produto' && id) return isMobile ? `/m/review/${id}` : `/jogo/${id}`;
-    if (t === 'pedido') return isMobile ? '/m/perfil' : '/pedidos';
-    if (t === 'mensagem' || t === 'conversa') return isMobile ? (id ? `/m/chat/${id}` : '/m/chat') : '/perfil';
-    if (t === 'anuncio' && id) return isMobile ? `/m/marketplace/${id}` : '/perfil';
-    if (t === 'proposta') return isMobile ? '/m/perfil' : '/perfil';
-    if (t === 'forum_post' && id) return isMobile ? `/m/forum/post/${id}` : '/perfil';
-    if (t === 'tournament') return isMobile ? '/m/perfil' : `/torneios`;
-    if (t === 'certificado') return isMobile ? '/m/perfil' : '/perfil';
-    if (t === 'review_comment' || t === 'avaliacao') return isMobile
-      ? (id ? `/m/review/${id}` : '/m/perfil')
-      : (id ? `/jogo/${id}` : '/perfil');
-    if (t === 'profile' && id) return isMobile ? `/m/perfil/${id}` : `/perfil/${id}`;
-    return isMobile ? '/m/perfil' : '/perfil';
   };
 
   if (!user) return null;
