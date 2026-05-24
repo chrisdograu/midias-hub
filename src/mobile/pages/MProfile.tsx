@@ -209,19 +209,31 @@ export default function MProfile() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-4 gap-1 p-1 bg-secondary/40 rounded-lg">
-            {([
-              { id: 'ads', label: 'Anúncios', icon: ShoppingBag, count: ads.length },
-              { id: 'reviews', label: 'Reviews', icon: Star, count: reviewsCount },
-              { id: 'posts', label: 'Posts', icon: Newspaper, count: postsCount },
-              { id: 'lib', label: 'Lib.', icon: BookMarked, count: library.length },
-            ] as const).map(t => (
-              <button key={t.id} onClick={() => setTab(t.id)} className={`py-2 px-1 rounded-md text-[10px] font-semibold inline-flex flex-col items-center justify-center gap-0.5 ${tab === t.id ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>
-                <t.icon className="h-3.5 w-3.5" />
-                <span className="truncate max-w-full">{t.label} <span className="opacity-60">({t.count})</span></span>
-              </button>
-            ))}
+          <div className="flex gap-1 p-1 bg-secondary/40 rounded-full text-[11px] font-semibold">
+            <button onClick={() => setMode('pessoal')} className={`flex-1 py-1.5 rounded-full transition-all ${mode === 'pessoal' ? 'bg-gradient-to-r from-primary to-accent text-primary-foreground' : 'text-muted-foreground'}`}>👤 Pessoal</button>
+            <button onClick={() => setMode('vendedor')} className={`flex-1 py-1.5 rounded-full transition-all ${mode === 'vendedor' ? 'bg-gradient-to-r from-primary to-accent text-primary-foreground' : 'text-muted-foreground'}`}>🛍️ Vendedor</button>
           </div>
+
+          {(() => {
+            const allTabs = [
+              { id: 'ads', label: 'Anúncios', icon: ShoppingBag, count: ads.length, mode: 'vendedor' },
+              { id: 'reviews', label: 'Reviews', icon: Star, count: reviewsCount, mode: 'pessoal' },
+              { id: 'posts', label: 'Posts', icon: Newspaper, count: postsCount, mode: 'pessoal' },
+              { id: 'lib', label: 'Lib.', icon: BookMarked, count: library.length, mode: 'pessoal' },
+            ] as const;
+            const visible = allTabs.filter(t => t.mode === mode);
+            return (
+              <div className={`grid gap-1 p-1 bg-secondary/40 rounded-lg`} style={{ gridTemplateColumns: `repeat(${visible.length}, minmax(0, 1fr))` }}>
+                {visible.map(t => (
+                  <button key={t.id} onClick={() => setTab(t.id)} className={`py-2 px-1 rounded-md text-[10px] font-semibold inline-flex flex-col items-center justify-center gap-0.5 ${tab === t.id ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>
+                    <t.icon className="h-3.5 w-3.5" />
+                    <span className="truncate max-w-full">{t.label} <span className="opacity-60">({t.count})</span></span>
+                  </button>
+                ))}
+              </div>
+            );
+          })()}
+
 
           {tab === 'ads' && (
             ads.length === 0 ? <p className="text-sm text-muted-foreground text-center py-6">Nenhum anúncio ativo.</p> : (
