@@ -10,7 +10,7 @@ import UserBadges from '@/components/UserBadges';
 import { useFollow } from '@/mobile/lib/useFollow';
 import { toast } from 'sonner';
 
-interface Profile { id: string; display_name: string | null; avatar_url: string | null; bio: string | null; username: string | null; is_private?: boolean }
+interface Profile { id: string; display_name: string | null; avatar_url: string | null; bio: string | null; seller_bio?: string | null; username: string | null; is_private?: boolean }
 interface Ad { id: string; title: string; price: number; image: string | null }
 interface ReviewItem { id: string; product_id: string; product: string; rating: number; comment: string | null; created_at: string }
 interface PostItem { id: string; product_id: string; product: string; content: string; created_at: string; likes_count: number }
