@@ -119,6 +119,7 @@ const App = () => (
               <Route path="/m/perfil" element={<MobileLayout><ProtectedRoute redirectTo="/m/auth"><MProfile /></ProtectedRoute></MobileLayout>} />
               <Route path="/m/perfil/:userId" element={<MobileLayout><MProfile /></MobileLayout>} />
               <Route path="/m/config" element={<MobileLayout><ProtectedRoute redirectTo="/m/auth"><MConfig /></ProtectedRoute></MobileLayout>} />
+              <Route path="/m/config/bloqueados" element={<MobileLayout><ProtectedRoute redirectTo="/m/auth"><MBlockedUsers /></ProtectedRoute></MobileLayout>} />
               <Route path="/m/favoritos" element={<MobileLayout><ProtectedRoute redirectTo="/m/auth"><MFavoritos /></ProtectedRoute></MobileLayout>} />
               <Route path="/m/amigos" element={<MobileLayout><ProtectedRoute redirectTo="/m/auth"><MFriends /></ProtectedRoute></MobileLayout>} />
               <Route path="/m/friends" element={<MobileLayout><ProtectedRoute redirectTo="/m/auth"><MFriends /></ProtectedRoute></MobileLayout>} />
