@@ -189,7 +189,7 @@ export default function MChat() {
                       </div>
                       <div className="space-y-1.5">
                         {visible.map(c => (
-                          <Link key={c.id} to={`/m/chat/${c.id}`} className="flex items-start gap-3 p-3 glass rounded-xl border-l-2 border-destructive/60 hover:border-destructive transition-all">
+                          <Link key={c.id} to={`/m/chat/${c.id}`} className="relative flex items-start gap-3 p-3 glass rounded-xl border-l-2 border-destructive/60 hover:border-destructive transition-all overflow-hidden">
                             <Avatar name={c.other_name} url={c.other_avatar} />
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between gap-2 min-w-0">
@@ -220,7 +220,7 @@ export default function MChat() {
           ) : (
             <div className="space-y-1.5">
               {filtered.map(c => (
-                <Link key={c.id} to={`/m/chat/${c.id}`} className="flex items-start gap-3 p-3 glass rounded-xl hover:border-primary/40 transition-colors">
+                <Link key={c.id} to={`/m/chat/${c.id}`} className="relative flex items-start gap-3 p-3 glass rounded-xl hover:border-primary/40 transition-colors overflow-hidden">
                   <Avatar name={c.other_name} url={c.other_avatar} />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2 min-w-0">
