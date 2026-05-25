@@ -148,7 +148,10 @@ export default function MProfile() {
         )}
         <div className="mt-2 flex justify-center"><LevelTitleBadge userId={targetId} variant="card" /></div>
         <UserBadges userId={targetId} max={8} className="mt-3" />
-        {profile.bio && <p className="text-sm text-muted-foreground mt-3">{profile.bio}</p>}
+        {(() => {
+          const shownBio = mode === 'vendedor' ? (profile.seller_bio || profile.bio) : profile.bio;
+          return shownBio ? <p className="text-sm text-muted-foreground mt-3 whitespace-pre-wrap">{shownBio}</p> : null;
+        })()}
 
         {/* Stats */}
         <div className="grid grid-cols-4 gap-2 mt-4 pt-4 border-t border-border/40">
