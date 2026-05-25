@@ -712,6 +712,42 @@ export type Database = {
         }
         Relationships: []
       }
+      follow_requests: {
+        Row: {
+          created_at: string
+          id: string
+          requester_id: string
+          target_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          requester_id: string
+          target_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          requester_id?: string
+          target_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "follow_requests_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "follow_requests_target_id_fkey"
+            columns: ["target_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fornecedores: {
         Row: {
           address: string | null
@@ -1443,6 +1479,8 @@ export type Database = {
           is_private: boolean
           phone: string | null
           push_notifications: boolean
+          require_follow_approval: boolean
+          seller_bio: string | null
           updated_at: string
           username: string | null
         }
@@ -1460,6 +1498,8 @@ export type Database = {
           is_private?: boolean
           phone?: string | null
           push_notifications?: boolean
+          require_follow_approval?: boolean
+          seller_bio?: string | null
           updated_at?: string
           username?: string | null
         }
@@ -1477,6 +1517,8 @@ export type Database = {
           is_private?: boolean
           phone?: string | null
           push_notifications?: boolean
+          require_follow_approval?: boolean
+          seller_bio?: string | null
           updated_at?: string
           username?: string | null
         }
@@ -1962,6 +2004,10 @@ export type Database = {
       }
     }
     Functions: {
+      accept_follow_request: {
+        Args: { _request_id: string }
+        Returns: undefined
+      }
       award_tournament_rewards: {
         Args: { _tournament_id: string }
         Returns: undefined

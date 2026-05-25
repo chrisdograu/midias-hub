@@ -10,7 +10,7 @@ import UserBadges from '@/components/UserBadges';
 import { useFollow } from '@/mobile/lib/useFollow';
 import { toast } from 'sonner';
 
-interface Profile { id: string; display_name: string | null; avatar_url: string | null; bio: string | null; username: string | null; is_private?: boolean }
+interface Profile { id: string; display_name: string | null; avatar_url: string | null; bio: string | null; seller_bio?: string | null; username: string | null; is_private?: boolean }
 interface Ad { id: string; title: string; price: number; image: string | null }
 interface ReviewItem { id: string; product_id: string; product: string; rating: number; comment: string | null; created_at: string }
 interface PostItem { id: string; product_id: string; product: string; content: string; created_at: string; likes_count: number }
@@ -47,7 +47,7 @@ export default function MProfile() {
   const [followersOpen, setFollowersOpen] = useState<'followers' | 'following' | null>(null);
   const [followList, setFollowList] = useState<{ id: string; display_name: string | null; avatar_url: string | null }[]>([]);
 
-  const { isFollowing, followersCount, followingCount, loading: followLoading, toggle: toggleFollow } = useFollow(targetId);
+  const { isFollowing, requested, followersCount, followingCount, loading: followLoading, toggle: toggleFollow } = useFollow(targetId);
 
   useEffect(() => {
     if (!targetId) { setLoading(false); return; }
@@ -55,7 +55,7 @@ export default function MProfile() {
     (async () => {
       setLoading(true);
       const [{ data: p }, { data: revs }, { data: adsRaw }, { data: myReviews }, { data: myPosts }, { data: myLib }] = await Promise.all([
-        supabase.from('profiles').select('id, display_name, avatar_url, bio, username, is_private').eq('id', targetId).maybeSingle(),
+        supabase.from('profiles').select('id, display_name, avatar_url, bio, seller_bio, username, is_private').eq('id', targetId).maybeSingle(),
         supabase.from('avaliacoes_usuario').select('rating').eq('reviewed_id', targetId),
         supabase.from('anuncios').select('id, title, price').eq('seller_id', targetId).eq('status', 'active').limit(20),
         supabase.from('avaliacoes').select('id, product_id, rating, comment, created_at').eq('user_id', targetId).eq('is_approved', true).order('created_at', { ascending: false }).limit(30),
@@ -148,7 +148,10 @@ export default function MProfile() {
         )}
         <div className="mt-2 flex justify-center"><LevelTitleBadge userId={targetId} variant="card" /></div>
         <UserBadges userId={targetId} max={8} className="mt-3" />
-        {profile.bio && <p className="text-sm text-muted-foreground mt-3">{profile.bio}</p>}
+        {(() => {
+          const shownBio = mode === 'vendedor' ? (profile.seller_bio || profile.bio) : profile.bio;
+          return shownBio ? <p className="text-sm text-muted-foreground mt-3 whitespace-pre-wrap">{shownBio}</p> : null;
+        })()}
 
         {/* Stats */}
         <div className="grid grid-cols-4 gap-2 mt-4 pt-4 border-t border-border/40">
@@ -173,8 +176,8 @@ export default function MProfile() {
 
       {!isOwn && user && (
         <div className="flex gap-2">
-          <button onClick={toggleFollow} disabled={followLoading} className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${isFollowing ? 'bg-card border border-border text-foreground' : 'bg-gradient-to-r from-primary to-accent text-primary-foreground glow-primary'}`}>
-            {isFollowing ? <><UserCheck className="h-4 w-4" />Seguindo</> : <><UserPlus className="h-4 w-4" />Seguir</>}
+          <button onClick={toggleFollow} disabled={followLoading} className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${isFollowing || requested ? 'bg-card border border-border text-foreground' : 'bg-gradient-to-r from-primary to-accent text-primary-foreground glow-primary'}`}>
+            {isFollowing ? <><UserCheck className="h-4 w-4" />Seguindo</> : requested ? <><UserCheck className="h-4 w-4" />Solicitado</> : <><UserPlus className="h-4 w-4" />Seguir</>}
           </button>
           <button onClick={handleMessage} className="px-4 rounded-xl bg-card border border-border"><Send className="h-4 w-4" /></button>
           <button onClick={handleBlock} className="px-4 rounded-xl bg-card border border-border text-muted-foreground"><ShieldOff className="h-4 w-4" /></button>

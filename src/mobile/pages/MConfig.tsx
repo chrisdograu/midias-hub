@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { Loader2, Save, Sun, Moon, Bell, Lock, ShieldCheck, Eye, EyeOff, Camera, User } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Loader2, Save, Sun, Moon, ShieldCheck, Camera, User, ShieldOff, ChevronRight, Store } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import { toast } from 'sonner';
-import BlockedUsersTab from '@/components/perfil/BlockedUsersTab';
 
 export default function MConfig() {
   const { user } = useAuth();
@@ -14,8 +14,9 @@ export default function MConfig() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const avatarRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({
-    display_name: '', username: '', bio: '', phone: '', cpf: '',
+    display_name: '', username: '', bio: '', seller_bio: '', phone: '', cpf: '',
     push_notifications: true, email_notifications: false, is_private: false,
+    require_follow_approval: false,
   });
   const [saving, setSaving] = useState(false);
   const [certifying, setCertifying] = useState(false);
@@ -23,16 +24,21 @@ export default function MConfig() {
 
   useEffect(() => {
     if (!user) return;
+    let cancel = false;
     (async () => {
       const [{ data: p }, { data: c }] = await Promise.all([
         supabase.from('profiles').select('*').eq('id', user.id).maybeSingle(),
         supabase.from('certificados').select('status').eq('user_id', user.id).order('created_at', { ascending: false }).limit(1),
       ]);
+      if (cancel) return;
       if (p) {
         setForm({
           display_name: p.display_name || '', username: p.username || '', bio: p.bio || '',
+          seller_bio: (p as any).seller_bio || '',
           phone: p.phone || '', cpf: p.cpf || '',
-          push_notifications: p.push_notifications, email_notifications: p.email_notifications, is_private: p.is_private,
+          push_notifications: p.push_notifications, email_notifications: p.email_notifications,
+          is_private: p.is_private,
+          require_follow_approval: !!(p as any).require_follow_approval,
         });
         setAvatarUrl(p.avatar_url || null);
       }
@@ -40,7 +46,8 @@ export default function MConfig() {
       setHasCert(last === 'ativo' ? 'active' : last === 'pendente' ? 'pending' : 'none');
       setLoading(false);
     })();
-  }, [user]);
+    return () => { cancel = true; };
+  }, [user?.id]);
 
   const uploadAvatar = async (file: File) => {
     if (!user) return;
@@ -60,7 +67,7 @@ export default function MConfig() {
   const save = async () => {
     if (!user) return;
     setSaving(true);
-    const { error } = await supabase.from('profiles').update(form).eq('id', user.id);
+    const { error } = await supabase.from('profiles').update(form as any).eq('id', user.id);
     if (error) toast.error('Erro ao salvar'); else toast.success('Configurações salvas');
     setSaving(false);
   };
@@ -102,9 +109,16 @@ export default function MConfig() {
       <Section title="👤 Conta">
         <Field label="Nome de exibição" value={form.display_name} onChange={v => setForm({ ...form, display_name: v })} />
         <Field label="@username" value={form.username} onChange={v => setForm({ ...form, username: v.toLowerCase().replace(/\s/g, '') })} />
-        <Field label="Bio" value={form.bio} onChange={v => setForm({ ...form, bio: v })} multiline />
+        <Field label="Bio pessoal" value={form.bio} onChange={v => setForm({ ...form, bio: v })} multiline />
         <Field label="Telefone" value={form.phone} onChange={v => setForm({ ...form, phone: v })} />
         <Field label="CPF (apenas para vendedor protegido)" value={form.cpf} onChange={v => setForm({ ...form, cpf: v })} />
+      </Section>
+
+      <Section title={<span className="flex items-center gap-1.5"><Store className="h-3.5 w-3.5 text-accent" />Perfil de vendedor</span>}>
+        <p className="text-[11px] text-muted-foreground -mt-1">
+          Esta bio aparece quando alguém abre seu perfil no modo <strong>Vendedor</strong>. Use para descrever sua loja, formas de troca, garantias etc.
+        </p>
+        <Field label="Bio de vendedor" value={form.seller_bio} onChange={v => setForm({ ...form, seller_bio: v })} multiline />
       </Section>
 
       <Section title="🛡️ Vendedor protegido">
@@ -135,11 +149,29 @@ export default function MConfig() {
 
       <Section title="🔒 Privacidade">
         <Toggle label="Perfil privado (oculta biblioteca)" checked={form.is_private} onChange={v => setForm({ ...form, is_private: v })} />
+        <Toggle
+          label="Aprovar manualmente quem quer me seguir"
+          checked={form.require_follow_approval}
+          onChange={v => setForm({ ...form, require_follow_approval: v })}
+        />
+        <p className="text-[11px] text-muted-foreground -mt-1">
+          Quando ativo, novos seguidores ficam pendentes em <strong>Amigos → Solicitações</strong> até você aprovar ou recusar (igual no Instagram).
+        </p>
       </Section>
 
-      <Section title="🚫 Usuários bloqueados">
-        <BlockedUsersTab />
-      </Section>
+      <Link
+        to="/m/config/bloqueados"
+        className="glass rounded-2xl p-4 flex items-center gap-3 hover:border-primary/40 transition-colors"
+      >
+        <div className="w-10 h-10 rounded-xl bg-destructive/15 text-destructive flex items-center justify-center">
+          <ShieldOff className="h-5 w-5" />
+        </div>
+        <div className="flex-1">
+          <p className="text-sm font-semibold">Usuários bloqueados</p>
+          <p className="text-[11px] text-muted-foreground">Veja e gerencie sua lista de bloqueios em uma página separada</p>
+        </div>
+        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+      </Link>
 
       <button onClick={save} disabled={saving} className="w-full py-3 rounded-xl bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold flex items-center justify-center gap-2 glow-primary disabled:opacity-50">
         {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Salvar alterações
@@ -148,7 +180,7 @@ export default function MConfig() {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, children }: { title: React.ReactNode; children: React.ReactNode }) {
   return (
     <div className="glass rounded-2xl p-4 space-y-3">
       <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{title}</h2>
@@ -169,8 +201,8 @@ function Field({ label, value, onChange, multiline }: { label: string; value: st
 function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
     <button onClick={() => onChange(!checked)} className="w-full flex items-center justify-between py-2">
-      <span className="text-sm text-foreground">{label}</span>
-      <span className={`relative w-10 h-5 rounded-full transition-colors ${checked ? 'bg-primary' : 'bg-secondary'}`}>
+      <span className="text-sm text-foreground text-left flex-1 pr-3">{label}</span>
+      <span className={`relative w-10 h-5 rounded-full transition-colors shrink-0 ${checked ? 'bg-primary' : 'bg-secondary'}`}>
         <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${checked ? 'translate-x-5' : ''}`} />
       </span>
     </button>
