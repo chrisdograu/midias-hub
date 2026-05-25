@@ -23,26 +23,22 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [profile, setProfile] = useState<{ display_name: string | null; avatar_url: string | null; banned_until: string | null } | null>(null);
   const loadedProfileFor = useRef<string | null>(null);
 
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        void fetchProfile(session.user.id);
-      } else {
-        loadedProfileFor.current = null;
-        setProfile(null);
-      }
-      setLoading(false);
-    });
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
+  const lastUserId = useRef<string | null>(null);
+  const applySession = (session: Session | null) => {
+    const nextUserId = session?.user?.id ?? null;
+    setSession(session);
+    if (nextUserId !== lastUserId.current) {
+      lastUserId.current = nextUserId;
       setUser(session?.user ?? null);
       if (session?.user) void fetchProfile(session.user.id);
-      setLoading(false);
-    });
+      else { loadedProfileFor.current = null; setProfile(null); }
+    }
+    setLoading(false);
+  };
 
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => applySession(session));
+    supabase.auth.getSession().then(({ data: { session } }) => applySession(session));
     return () => subscription.unsubscribe();
   }, []);
 
