@@ -47,7 +47,7 @@ export default function MProfile() {
   const [followersOpen, setFollowersOpen] = useState<'followers' | 'following' | null>(null);
   const [followList, setFollowList] = useState<{ id: string; display_name: string | null; avatar_url: string | null }[]>([]);
 
-  const { isFollowing, followersCount, followingCount, loading: followLoading, toggle: toggleFollow } = useFollow(targetId);
+  const { isFollowing, requested, followersCount, followingCount, loading: followLoading, toggle: toggleFollow } = useFollow(targetId);
 
   useEffect(() => {
     if (!targetId) { setLoading(false); return; }
