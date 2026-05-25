@@ -176,8 +176,8 @@ export default function MProfile() {
 
       {!isOwn && user && (
         <div className="flex gap-2">
-          <button onClick={toggleFollow} disabled={followLoading} className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${isFollowing ? 'bg-card border border-border text-foreground' : 'bg-gradient-to-r from-primary to-accent text-primary-foreground glow-primary'}`}>
-            {isFollowing ? <><UserCheck className="h-4 w-4" />Seguindo</> : <><UserPlus className="h-4 w-4" />Seguir</>}
+          <button onClick={toggleFollow} disabled={followLoading} className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${isFollowing || requested ? 'bg-card border border-border text-foreground' : 'bg-gradient-to-r from-primary to-accent text-primary-foreground glow-primary'}`}>
+            {isFollowing ? <><UserCheck className="h-4 w-4" />Seguindo</> : requested ? <><UserCheck className="h-4 w-4" />Solicitado</> : <><UserPlus className="h-4 w-4" />Seguir</>}
           </button>
           <button onClick={handleMessage} className="px-4 rounded-xl bg-card border border-border"><Send className="h-4 w-4" /></button>
           <button onClick={handleBlock} className="px-4 rounded-xl bg-card border border-border text-muted-foreground"><ShieldOff className="h-4 w-4" /></button>
