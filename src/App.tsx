@@ -25,6 +25,7 @@ import MChat from "./mobile/pages/MChat";
 import MChatThread from "./mobile/pages/MChatThread";
 import MProfile from "./mobile/pages/MProfile";
 import MConfig from "./mobile/pages/MConfig";
+import MBlockedUsers from "./mobile/pages/MBlockedUsers";
 import MReview from "./mobile/pages/MReview";
 import MFavoritos from "./mobile/pages/MFavoritos";
 import MFriends from "./mobile/pages/MFriends";
