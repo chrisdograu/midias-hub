@@ -77,15 +77,15 @@ export default function MChat() {
   };
 
   useEffect(() => {
+    if (!user) { setLoading(false); return; }
     load();
-    if (!user) return;
-    const ch = supabase.channel('chat-list')
+    const ch = supabase.channel(`chat-list-${user.id}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'conversas', filter: `participant_1=eq.${user.id}` }, load)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'conversas', filter: `participant_2=eq.${user.id}` }, load)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'mensagens', filter: `receiver_id=eq.${user.id}` }, load)
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, [user]);
+  }, [user?.id]);
 
   const handleAccept = async (id: string) => {
     await supabase.from('conversas').update({ status: 'accepted' }).eq('id', id);
