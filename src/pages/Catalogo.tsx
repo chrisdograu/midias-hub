@@ -1,45 +1,57 @@
-import { useState, useMemo, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { platforms } from '@/lib/gameData';
-import { useProdutos } from '@/hooks/useProdutos';
-import { supabase } from '@/integrations/supabase/client';
-import { useDebounce } from '@/hooks/useDebounce';
-import GameCard from '@/components/GameCard';
-import BundleStoreGrid from '@/components/BundleStoreGrid';
-import { Search, Loader2, Package } from 'lucide-react';
+import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import { platforms } from "@/lib/gameData";
+import { useProdutos } from "@/hooks/useProdutos";
+import { supabase } from "@/integrations/supabase/client";
+import { useDebounce } from "@/hooks/useDebounce";
+import GameCard from "@/components/GameCard";
+import BundleStoreGrid from "@/components/BundleStoreGrid";
+import { Search, Loader2, Package } from "lucide-react";
 
 export default function Catalogo() {
   const [searchParams] = useSearchParams();
-  const initialQuery = searchParams.get('q') || '';
+  const initialQuery = searchParams.get("q") || "";
   const [query, setQuery] = useState(initialQuery);
-  const [category, setCategory] = useState('Todos');
-  const [platform, setPlatform] = useState('Todos');
-  const [sortBy, setSortBy] = useState('relevance');
+  const [category, setCategory] = useState("Todos");
+  const [platform, setPlatform] = useState("Todos");
+  const [sortBy, setSortBy] = useState("relevance");
   const { data: games = [], isLoading } = useProdutos();
   const [dbCategories, setDbCategories] = useState<string[]>([]);
 
   useEffect(() => {
-    supabase.from('categorias').select('name').order('name').then(({ data }) => {
-      if (data) setDbCategories(['Todos', ...data.map(c => c.name)]);
-    });
+    supabase
+      .from("categorias")
+      .select("name")
+      .order("name")
+      .then(({ data }) => {
+        if (data) setDbCategories(["Todos", ...data.map((c) => c.name)]);
+      });
   }, []);
 
-  const categoryOptions = dbCategories.length > 1 ? dbCategories : ['Todos'];
+  const categoryOptions = dbCategories.length > 1 ? dbCategories : ["Todos"];
 
   const debouncedQuery = useDebounce(query, 200);
   const filtered = useMemo(() => {
     const q = debouncedQuery.trim().toLowerCase();
-    let result = games.filter(g => {
-      const matchQuery = !q || g.title.toLowerCase().includes(q) || g.tags.some(t => t.toLowerCase().includes(q));
-      const matchCat = category === 'Todos' || g.category === category;
-      const matchPlat = platform === 'Todos' || g.platform.includes(platform);
+    let result = games.filter((g) => {
+      const matchQuery = !q || g.title.toLowerCase().includes(q) || g.tags.some((t) => t.toLowerCase().includes(q));
+      const matchCat = category === "Todos" || g.category === category;
+      const matchPlat = platform === "Todos" || g.platform.includes(platform);
       return matchQuery && matchCat && matchPlat;
     });
     switch (sortBy) {
-      case 'price-asc': result.sort((a, b) => a.price - b.price); break;
-      case 'price-desc': result.sort((a, b) => b.price - a.price); break;
-      case 'discount': result.sort((a, b) => b.discount - a.discount); break;
-      case 'rating': result.sort((a, b) => b.rating - a.rating); break;
+      case "price-asc":
+        result.sort((a, b) => a.price - b.price);
+        break;
+      case "price-desc":
+        result.sort((a, b) => b.price - a.price);
+        break;
+      case "discount":
+        result.sort((a, b) => b.discount - a.discount);
+        break;
+      case "rating":
+        result.sort((a, b) => b.rating - a.rating);
+        break;
     }
     return result;
   }, [games, debouncedQuery, category, platform, sortBy]);
@@ -50,17 +62,41 @@ export default function Catalogo() {
       <div className="flex flex-col md:flex-row gap-4 mb-8">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Buscar por nome ou tag..."
-            className="w-full pl-10 pr-4 py-2.5 bg-card border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Buscar por nome ou tag..."
+            className="w-full pl-10 pr-4 py-2.5 bg-card border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+          />
         </div>
         <div className="flex flex-wrap gap-2">
-          <select value={category} onChange={e => setCategory(e.target.value)} className="px-3 py-2.5 bg-card border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50">
-            {categoryOptions.map(c => <option key={c} value={c}>{c}</option>)}
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="px-3 py-2.5 bg-card border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+          >
+            {categoryOptions.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
           </select>
-          <select value={platform} onChange={e => setPlatform(e.target.value)} className="px-3 py-2.5 bg-card border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50">
-            {platforms.map(p => <option key={p} value={p}>{p}</option>)}
+          <select
+            value={platform}
+            onChange={(e) => setPlatform(e.target.value)}
+            className="px-3 py-2.5 bg-card border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+          >
+            {platforms.map((p) => (
+              <option key={p} value={p}>
+                {p}
+              </option>
+            ))}
           </select>
-          <select value={sortBy} onChange={e => setSortBy(e.target.value)} className="px-3 py-2.5 bg-card border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50">
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="px-3 py-2.5 bg-card border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+          >
             <option value="relevance">Relevância</option>
             <option value="price-asc">Menor Preço</option>
             <option value="price-desc">Maior Preço</option>
@@ -70,47 +106,33 @@ export default function Catalogo() {
         </div>
       </div>
       {isLoading ? (
-        <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+        <div className="flex justify-center py-16">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
       ) : (
         <>
-          {!debouncedQuery && category === 'Todos' && platform === 'Todos' && (
+          {!debouncedQuery && category === "Todos" && platform === "Todos" && (
             <section className="mb-8">
-              <h2 className="text-lg font-bold mb-3 flex items-center gap-2"><Package className="h-5 w-5 text-primary" /> Bundles</h2>
-              
-export default function BundleStoreGrid({ limit = 4 }) {
-  // Exemplo de como você puxaria os dados (substitua pela sua lógica real)
-  const bundles exibidos = bundles.slice(0, limit); 
-  const quantidade = bundlesExibidos.length;
-
-  // Define dinamicamente a largura das colunas com base na quantidade real de itens
-              
-  const gridColsClass = {
-    1: 'grid-cols-1',
-    2: 'grid-cols-1 sm:grid-cols-2',
-    3: 'grid-cols-1 sm:grid-cols-3',
-    4: 'grid-cols-2 sm:grid-cols-4', // Se forem 4, divide em 2 no mobile e 4 no desktop
-  }[quantidade] || 'grid-cols-1';
-
-  return (
-    <div className={`grid ${gridColsClass} gap-4 w-full`}>
-      {bundlesExibidos.map((bundle) => (
-        <div key={bundle.id} className="w-full h-full">
-          {/* O conteúdo do seu card de Bundle aqui */}
-          <img 
-            src={bundle.image} 
-            alt={bundle.title} 
-            className="w-full h-48 object-cover rounded-lg" 
-          />
-        </div>
-      ))}
-    </div>
- 
+              <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
+                <Package className="h-5 w-5 text-primary" /> Bundles
+              </h2>
+              return (
+              <div className={`grid ${gridColsClass} gap-4 w-full`}>
+                {bundlesExibidos.map((bundle) => (
+                  <div key={bundle.id} className="w-full h-full">
+                    {/* O conteúdo do seu card de Bundle aqui */}
+                    <img src={bundle.image} alt={bundle.title} className="w-full h-48 object-cover rounded-lg" />
+                  </div>
+                ))}
+              </div>
               <BundleStoreGrid limit={4} />
             </section>
           )}
           <p className="text-sm text-muted-foreground mb-4">{filtered.length} jogos encontrados</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-            {filtered.map((game, i) => <GameCard key={game.id} game={game} index={i} />)}
+            {filtered.map((game, i) => (
+              <GameCard key={game.id} game={game} index={i} />
+            ))}
           </div>
           {filtered.length === 0 && (
             <div className="text-center py-16 text-muted-foreground">
