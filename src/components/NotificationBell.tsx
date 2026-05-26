@@ -122,7 +122,7 @@ export default function NotificationBell() {
           <>
             <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
             <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-              className="absolute right-0 top-full mt-1 w-80 bg-card border border-border rounded-lg shadow-xl overflow-hidden z-50">
+              className="absolute right-0 top-full mt-1 z-50 w-[min(20rem,calc(100vw-1rem))] max-w-[calc(100vw-1rem)] bg-card border border-border rounded-lg shadow-xl overflow-hidden">
               <div className="p-3 border-b border-border flex items-center justify-between">
                 <h3 className="font-semibold text-sm">Notificações</h3>
                 {unread > 0 && (
