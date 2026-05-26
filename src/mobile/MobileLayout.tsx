@@ -47,7 +47,7 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
   }, [user]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
+    <div className="h-[100dvh] overflow-hidden bg-background text-foreground flex flex-col">
       {/* Top brand bar */}
       <header className="sticky top-0 z-30 backdrop-blur-xl bg-background/70 border-b border-border/50">
         <div className="px-4 py-3 flex items-center justify-between">
@@ -62,7 +62,7 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
       </header>
 
       {/* Page content */}
-      <main className="flex-1 pb-24">
+      <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden pb-24">
         <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}
@@ -70,6 +70,7 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.18 }}
+            className="min-h-full"
           >
             {children ?? <Outlet />}
           </motion.div>

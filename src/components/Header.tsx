@@ -24,7 +24,6 @@ export default function Header() {
   const isBanned = profile?.banned_until && new Date(profile.banned_until) > new Date();
 
   const navLinks = [
-    { to: '/', label: 'Início' },
     { to: '/catalogo', label: 'Catálogo' },
     { to: '/ofertas', label: 'Ofertas' },
     { to: '/em-alta', label: 'Em Alta' },

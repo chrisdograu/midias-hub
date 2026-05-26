@@ -1,9 +1,28 @@
-import { useState, useCallback, FC, ReactNode } from 'react';
+import { useState, useCallback, FC, ReactNode, useEffect } from 'react';
 import { CartContext, CartItem } from '@/lib/cartContext';
 import { Game } from '@/lib/gameData';
 
+const CART_STORAGE_KEY = 'midias-cart-v1';
+
 export const CartProvider: FC<{ children: ReactNode }> = ({ children }) => {
-  const [items, setItems] = useState<CartItem[]>([]);
+  const [items, setItems] = useState<CartItem[]>(() => {
+    try {
+      const raw = localStorage.getItem(CART_STORAGE_KEY);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+    } catch {
+      // ignore persistence failures
+    }
+  }, [items]);
 
   const addItem = useCallback((game: Game) => {
     setItems(prev => {

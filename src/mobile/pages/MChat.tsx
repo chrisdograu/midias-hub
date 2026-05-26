@@ -125,7 +125,7 @@ export default function MChat() {
   const filtered = list.filter(c => !query.trim() || c.other_name.toLowerCase().includes(query.toLowerCase()) || (c.tournament_title || '').toLowerCase().includes(query.toLowerCase()));
 
   return (
-    <div className="px-4 py-5 space-y-4">
+    <div className="h-full overflow-hidden px-4 py-5 flex flex-col gap-4">
       <h1 className="font-display text-xl font-bold gradient-text">Chat</h1>
 
       <div className="flex gap-2 p-1 bg-card border border-border rounded-xl">
@@ -144,6 +144,7 @@ export default function MChat() {
         <input value={query} onChange={e => setQuery(e.target.value)} placeholder={tab === 'torneios' ? 'Buscar por torneio ou jogador...' : 'Buscar conversas...'} className="w-full pl-10 pr-3 py-2.5 bg-card border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
       </div>
 
+      <div className="min-h-0 flex-1 overflow-y-auto pr-1">
       {loading ? (
         <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
       ) : (
@@ -237,6 +238,7 @@ export default function MChat() {
           )}
         </>
       )}
+      </div>
     </div>
   );
 }
