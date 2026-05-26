@@ -115,14 +115,20 @@ export default function Index() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {" "}
-      {/* Garante o fundo padrão na página toda */}
+    <div className="min-h-screen">
       {/* Hero */}
-      <section className="relative overflow-hidden bg-background">
-        {" "}
-        {/* Mudado aqui */}
-        {/* Removidas as duas divs antigas de gradiente que criavam o efeito visual */}
+
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-accent/10" />
+
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 20% 50%, hsl(170 80% 50% / 0.08) 0%, transparent 50%), radial-gradient(circle at 80% 50%, hsl(270 60% 55% / 0.08) 0%, transparent 50%)",
+          }}
+        />
+
         <div className="container mx-auto px-4 py-16 md:py-24 relative">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -133,9 +139,11 @@ export default function Index() {
             <h1 className="font-display text-4xl md:text-6xl font-bold mb-4">
               <span className="gradient-text">MIDIAS</span>
             </h1>
+
             <p className="text-lg md:text-xl text-muted-foreground mb-8">
               Jogos digitais com os melhores preços. Entrega instantânea de chaves.
             </p>
+
             <div className="flex flex-wrap justify-center gap-3">
               <Link
                 to="/catalogo"
@@ -143,6 +151,7 @@ export default function Index() {
               >
                 Ver Catálogo
               </Link>
+
               <Link
                 to="/ofertas"
                 className="px-6 py-3 bg-secondary text-secondary-foreground font-semibold rounded-lg hover:bg-secondary/80 transition-all border border-border"
