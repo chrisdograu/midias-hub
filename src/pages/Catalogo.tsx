@@ -76,6 +76,35 @@ export default function Catalogo() {
           {!debouncedQuery && category === 'Todos' && platform === 'Todos' && (
             <section className="mb-8">
               <h2 className="text-lg font-bold mb-3 flex items-center gap-2"><Package className="h-5 w-5 text-primary" /> Bundles</h2>
+              
+export default function BundleStoreGrid({ limit = 4 }) {
+  // Exemplo de como você puxaria os dados (substitua pela sua lógica real)
+  const bundles exibidos = bundles.slice(0, limit); 
+  const quantidade = bundlesExibidos.length;
+
+  // Define dinamicamente a largura das colunas com base na quantidade real de itens
+              
+  const gridColsClass = {
+    1: 'grid-cols-1',
+    2: 'grid-cols-1 sm:grid-cols-2',
+    3: 'grid-cols-1 sm:grid-cols-3',
+    4: 'grid-cols-2 sm:grid-cols-4', // Se forem 4, divide em 2 no mobile e 4 no desktop
+  }[quantidade] || 'grid-cols-1';
+
+  return (
+    <div className={`grid ${gridColsClass} gap-4 w-full`}>
+      {bundlesExibidos.map((bundle) => (
+        <div key={bundle.id} className="w-full h-full">
+          {/* O conteúdo do seu card de Bundle aqui */}
+          <img 
+            src={bundle.image} 
+            alt={bundle.title} 
+            className="w-full h-48 object-cover rounded-lg" 
+          />
+        </div>
+      ))}
+    </div>
+ 
               <BundleStoreGrid limit={4} />
             </section>
           )}
