@@ -58,90 +58,101 @@ export default function Catalogo() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold text-foreground mb-6">Catálogo de Jogos</h1>
+            <h1 className="text-2xl font-bold text-foreground mb-6">Catálogo de Jogos</h1>     {" "}
       <div className="flex flex-col md:flex-row gap-4 mb-8">
+               {" "}
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                   {" "}
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Buscar por nome ou tag..."
             className="w-full pl-10 pr-4 py-2.5 bg-card border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
           />
+                 {" "}
         </div>
+               {" "}
         <div className="flex flex-wrap gap-2">
+                   {" "}
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             className="px-3 py-2.5 bg-card border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
           >
+                       {" "}
             {categoryOptions.map((c) => (
               <option key={c} value={c}>
                 {c}
               </option>
             ))}
+                     {" "}
           </select>
+                   {" "}
           <select
             value={platform}
             onChange={(e) => setPlatform(e.target.value)}
             className="px-3 py-2.5 bg-card border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
           >
+                       {" "}
             {platforms.map((p) => (
               <option key={p} value={p}>
                 {p}
               </option>
             ))}
+                     {" "}
           </select>
+                   {" "}
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
             className="px-3 py-2.5 bg-card border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
           >
-            <option value="relevance">Relevância</option>
-            <option value="price-asc">Menor Preço</option>
-            <option value="price-desc">Maior Preço</option>
-            <option value="discount">Maior Desconto</option>
-            <option value="rating">Melhor Avaliação</option>
+                        <option value="relevance">Relevância</option>           {" "}
+            <option value="price-asc">Menor Preço</option>            <option value="price-desc">Maior Preço</option>   
+                    <option value="discount">Maior Desconto</option>           {" "}
+            <option value="rating">Melhor Avaliação</option>         {" "}
           </select>
+                 {" "}
         </div>
+             {" "}
       </div>
+           {" "}
       {isLoading ? (
         <div className="flex justify-center py-16">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       ) : (
         <>
+                   {" "}
           {!debouncedQuery && category === "Todos" && platform === "Todos" && (
             <section className="mb-8">
+                           {" "}
               <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
                 <Package className="h-5 w-5 text-primary" /> Bundles
               </h2>
-              return (
-              <div className={`grid ${gridColsClass} gap-4 w-full`}>
-                {bundlesExibidos.map((bundle) => (
-                  <div key={bundle.id} className="w-full h-full">
-                    {/* O conteúdo do seu card de Bundle aqui */}
-                    <img src={bundle.image} alt={bundle.title} className="w-full h-48 object-cover rounded-lg" />
-                  </div>
-                ))}
-              </div>
-              <BundleStoreGrid limit={4} />
+                            <BundleStoreGrid limit={4} />           {" "}
             </section>
           )}
-          <p className="text-sm text-muted-foreground mb-4">{filtered.length} jogos encontrados</p>
+                    <p className="text-sm text-muted-foreground mb-4">{filtered.length} jogos encontrados</p>         {" "}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                       {" "}
             {filtered.map((game, i) => (
               <GameCard key={game.id} game={game} index={i} />
             ))}
+                     {" "}
           </div>
+                   {" "}
           {filtered.length === 0 && (
             <div className="text-center py-16 text-muted-foreground">
-              <p className="text-lg">Nenhum jogo encontrado.</p>
-              <p className="text-sm mt-1">Tente ajustar os filtros ou buscar por outro termo.</p>
+                            <p className="text-lg">Nenhum jogo encontrado.</p>             {" "}
+              <p className="text-sm mt-1">Tente ajustar os filtros ou buscar por outro termo.</p>           {" "}
             </div>
           )}
+                 {" "}
         </>
       )}
+         {" "}
     </div>
   );
 }
