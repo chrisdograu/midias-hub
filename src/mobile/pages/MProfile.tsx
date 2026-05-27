@@ -290,14 +290,18 @@ export default function MProfile() {
                 <div className="flex gap-1 p-1 bg-secondary/40 rounded-lg">
                   {([
                     { id: 'all', label: `Tudo (${library.length})` },
-                    { id: 'ja_joguei', label: `Já joguei (${library.filter(l => l.status === 'ja_joguei').length})` },
+                    { id: 'ja_joguei', label: `Já joguei (${library.filter(l => JA_JOGUEI_STATUSES.includes(l.status)).length})` },
                     { id: 'quero_jogar', label: `Quero jogar (${library.filter(l => l.status === 'quero_jogar').length})` },
                   ] as const).map(f => (
                     <button key={f.id} onClick={() => setLibFilter(f.id)} className={`flex-1 py-1.5 rounded-md text-[10px] font-semibold ${libFilter === f.id ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>{f.label}</button>
                   ))}
                 </div>
                 {(() => {
-                  const filtered = libFilter === 'all' ? library : library.filter(l => l.status === libFilter);
+                  const filtered = libFilter === 'all'
+                    ? library
+                    : libFilter === 'ja_joguei'
+                      ? library.filter(l => JA_JOGUEI_STATUSES.includes(l.status))
+                      : library.filter(l => l.status === libFilter);
                   if (filtered.length === 0) return <p className="text-sm text-muted-foreground text-center py-6">Nada por aqui.</p>;
                   const totalPages = Math.max(1, Math.ceil(filtered.length / LIB_PAGE_SIZE));
                   const page = Math.min(libPage, totalPages);
