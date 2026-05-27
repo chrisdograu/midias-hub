@@ -17,6 +17,7 @@ const formatMemberSince = (iso?: string | null) => {
 
 export default function PublicProfile() {
   const { userId } = useParams();
+  const { user } = useAuth();
   const { data: games = [] } = useProdutos();
 
   const { data: profile, isLoading } = useQuery({
@@ -32,6 +33,17 @@ export default function PublicProfile() {
       return data;
     },
     enabled: !!userId,
+  });
+
+  const { data: isFollower = false } = useQuery({
+    queryKey: ['is-follower', user?.id, userId],
+    queryFn: async () => {
+      if (!user || !userId || user.id === userId) return false;
+      const { data } = await supabase.from('user_follows')
+        .select('follower_id').eq('follower_id', user.id).eq('following_id', userId).maybeSingle();
+      return !!data;
+    },
+    enabled: !!user && !!userId,
   });
 
   const { data: biblioteca = [] } = useQuery({
