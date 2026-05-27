@@ -2,9 +2,18 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useProdutos } from '@/hooks/useProdutos';
+import { useAuth } from '@/hooks/useAuth';
 import { HalfStarDisplay } from '@/components/HalfStarRating';
-import { ArrowLeft, Loader2, User, Star, Library, ShoppingBag } from 'lucide-react';
+import { ArrowLeft, Loader2, User, Star, Library, ShoppingBag, Lock, Calendar } from 'lucide-react';
 import LevelTitleBadge from '@/components/LevelTitleBadge';
+
+const JA_JOGUEI = ['ja_joguei', 'zerado', 'jogando', 'pausado', 'abandonado'];
+const formatMemberSince = (iso?: string | null) => {
+  if (!iso) return null;
+  try {
+    return new Date(iso).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  } catch { return null; }
+};
 
 export default function PublicProfile() {
   const { userId } = useParams();
