@@ -11,7 +11,12 @@ export default function Biblioteca() {
   const { biblioteca, updateStatus, isLoading } = useBiblioteca();
   const [filter, setFilter] = useState<StatusFilter>('todos');
 
-  const filtered = filter === 'todos' ? biblioteca : biblioteca.filter(b => b.status === filter);
+  const JA_JOGUEI_STATUSES = ['ja_joguei', 'zerado', 'jogando', 'pausado', 'abandonado'];
+  const filtered = filter === 'todos'
+    ? biblioteca
+    : filter === 'ja_joguei'
+      ? biblioteca.filter(b => JA_JOGUEI_STATUSES.includes(b.status))
+      : biblioteca.filter(b => b.status === filter);
 
   const handleStatusChange = async (id: string, newStatus: string) => {
     try {

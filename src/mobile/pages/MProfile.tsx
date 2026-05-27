@@ -10,7 +10,8 @@ import UserBadges from '@/components/UserBadges';
 import { useFollow } from '@/mobile/lib/useFollow';
 import { toast } from 'sonner';
 
-interface Profile { id: string; display_name: string | null; avatar_url: string | null; bio: string | null; seller_bio?: string | null; username: string | null; is_private?: boolean }
+interface Profile { id: string; display_name: string | null; avatar_url: string | null; bio: string | null; seller_bio?: string | null; username: string | null; is_private?: boolean; created_at?: string | null }
+const JA_JOGUEI_STATUSES = ['ja_joguei', 'zerado', 'jogando', 'pausado', 'abandonado'];
 interface Ad { id: string; title: string; price: number; image: string | null }
 interface ReviewItem { id: string; product_id: string; product: string; rating: number; comment: string | null; created_at: string }
 interface PostItem { id: string; product_id: string; product: string; content: string; created_at: string; likes_count: number }
@@ -55,7 +56,7 @@ export default function MProfile() {
     (async () => {
       setLoading(true);
       const [{ data: p }, { data: revs }, { data: adsRaw }, { data: myReviews }, { data: myPosts }, { data: myLib }] = await Promise.all([
-        supabase.from('profiles').select('id, display_name, avatar_url, bio, seller_bio, username, is_private').eq('id', targetId).maybeSingle(),
+        supabase.from('profiles').select('id, display_name, avatar_url, bio, seller_bio, username, is_private, created_at').eq('id', targetId).maybeSingle(),
         supabase.from('avaliacoes_usuario').select('rating').eq('reviewed_id', targetId),
         supabase.from('anuncios').select('id, title, price').eq('seller_id', targetId).eq('status', 'active').limit(20),
         supabase.from('avaliacoes').select('id, product_id, rating, comment, created_at').eq('user_id', targetId).eq('is_approved', true).order('created_at', { ascending: false }).limit(30),
@@ -143,6 +144,9 @@ export default function MProfile() {
         </div>
         <h1 className="font-display text-lg font-bold">{profile.display_name || 'Usuário'}</h1>
         {profile.username && <p className="text-xs text-muted-foreground">@{profile.username}</p>}
+        {profile.created_at && (
+          <p className="text-[10px] text-muted-foreground mt-0.5">📅 Membro desde {new Date(profile.created_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</p>
+        )}
         {mode === 'vendedor' && (
           <div className="flex items-center justify-center gap-1.5 mt-2"><HalfStarDisplay rating={rating} size={14} /><span className="text-xs text-muted-foreground">{rating > 0 ? `${rating.toFixed(1)} (vendedor)` : 'sem avaliações de vendedor'}</span></div>
         )}
@@ -286,14 +290,18 @@ export default function MProfile() {
                 <div className="flex gap-1 p-1 bg-secondary/40 rounded-lg">
                   {([
                     { id: 'all', label: `Tudo (${library.length})` },
-                    { id: 'ja_joguei', label: `Já joguei (${library.filter(l => l.status === 'ja_joguei').length})` },
+                    { id: 'ja_joguei', label: `Já joguei (${library.filter(l => JA_JOGUEI_STATUSES.includes(l.status)).length})` },
                     { id: 'quero_jogar', label: `Quero jogar (${library.filter(l => l.status === 'quero_jogar').length})` },
                   ] as const).map(f => (
                     <button key={f.id} onClick={() => setLibFilter(f.id)} className={`flex-1 py-1.5 rounded-md text-[10px] font-semibold ${libFilter === f.id ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>{f.label}</button>
                   ))}
                 </div>
                 {(() => {
-                  const filtered = libFilter === 'all' ? library : library.filter(l => l.status === libFilter);
+                  const filtered = libFilter === 'all'
+                    ? library
+                    : libFilter === 'ja_joguei'
+                      ? library.filter(l => JA_JOGUEI_STATUSES.includes(l.status))
+                      : library.filter(l => l.status === libFilter);
                   if (filtered.length === 0) return <p className="text-sm text-muted-foreground text-center py-6">Nada por aqui.</p>;
                   const totalPages = Math.max(1, Math.ceil(filtered.length / LIB_PAGE_SIZE));
                   const page = Math.min(libPage, totalPages);
@@ -305,8 +313,8 @@ export default function MProfile() {
                           <Link key={l.product_id} to={`/m/forum/jogo/${l.product_id}`} className="glass rounded-lg overflow-hidden">
                             <div className="aspect-[3/4] bg-muted relative">
                               {l.image_url ? <img src={l.image_url} alt={l.title} loading="lazy" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><BookMarked className="h-6 w-6 text-muted-foreground" /></div>}
-                              <span className={`absolute top-1 right-1 text-[8px] px-1.5 py-0.5 rounded-full font-bold ${l.status === 'ja_joguei' ? 'bg-success/90 text-success-foreground' : 'bg-accent/90 text-accent-foreground'}`}>
-                                {l.status === 'ja_joguei' ? 'JOGUEI' : 'QUERO'}
+                              <span className={`absolute top-1 right-1 text-[8px] px-1.5 py-0.5 rounded-full font-bold ${l.status === 'quero_jogar' ? 'bg-accent/90 text-accent-foreground' : 'bg-success/90 text-success-foreground'}`}>
+                                {l.status === 'quero_jogar' ? 'QUERO' : 'JOGUEI'}
                               </span>
                             </div>
                             <p className="text-[10px] font-semibold line-clamp-1 p-1.5">{l.title}</p>
