@@ -144,6 +144,9 @@ export default function MProfile() {
         </div>
         <h1 className="font-display text-lg font-bold">{profile.display_name || 'Usuário'}</h1>
         {profile.username && <p className="text-xs text-muted-foreground">@{profile.username}</p>}
+        {profile.created_at && (
+          <p className="text-[10px] text-muted-foreground mt-0.5">📅 Membro desde {new Date(profile.created_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</p>
+        )}
         {mode === 'vendedor' && (
           <div className="flex items-center justify-center gap-1.5 mt-2"><HalfStarDisplay rating={rating} size={14} /><span className="text-xs text-muted-foreground">{rating > 0 ? `${rating.toFixed(1)} (vendedor)` : 'sem avaliações de vendedor'}</span></div>
         )}
