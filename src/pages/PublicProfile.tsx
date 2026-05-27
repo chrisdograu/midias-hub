@@ -94,8 +94,13 @@ export default function PublicProfile() {
   if (isLoading) return <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   if (!profile) return <div className="container mx-auto px-4 py-16 text-center"><p className="text-muted-foreground">Perfil não encontrado.</p></div>;
 
+  const isOwn = user?.id === userId;
+  const canSeePrivate = isOwn || isFollower;
+  const privacyGate = profile.is_private && !canSeePrivate;
+  const memberSince = formatMemberSince((profile as any).created_at);
+
   const libGames = biblioteca.map(b => ({ ...b, game: games.find(g => g.id === b.product_id) })).filter(b => b.game);
-  const jaJoguei = libGames.filter(b => b.status === 'ja_joguei');
+  const jaJoguei = libGames.filter(b => JA_JOGUEI.includes(b.status));
   const queroJogar = libGames.filter(b => b.status === 'quero_jogar');
   const favoritos = libGames.filter(b => b.status === 'favoritos');
 
@@ -116,6 +121,11 @@ export default function PublicProfile() {
         </div>
         <h1 className="text-xl font-bold text-foreground">{profile.display_name || 'Usuário'}</h1>
         <div className="mt-2 flex justify-center"><LevelTitleBadge userId={profile.id} variant="card" /></div>
+        {memberSince && (
+          <p className="mt-2 inline-flex items-center gap-1 text-xs text-muted-foreground">
+            <Calendar className="h-3 w-3" /> Membro desde {memberSince}
+          </p>
+        )}
         {profile.bio && <p className="text-sm text-muted-foreground mt-2">{profile.bio}</p>}
         {reputation && reputation.count > 0 && (
           <div className="flex items-center justify-center gap-2 mt-3">
@@ -125,6 +135,19 @@ export default function PublicProfile() {
           </div>
         )}
       </div>
+
+      {privacyGate ? (
+        <div className="bg-card border border-border rounded-xl p-8 text-center text-muted-foreground">
+          <Lock className="h-8 w-8 mx-auto mb-2 opacity-60" />
+          <p className="text-sm font-semibold text-foreground">Perfil privado</p>
+          <p className="text-xs mt-1">Siga este usuário para ver a biblioteca e atividade.</p>
+          {anuncios.length > 0 && (
+            <p className="text-xs mt-3">Apenas anúncios ativos abaixo são públicos.</p>
+          )}
+        </div>
+      ) : (
+      <>
+
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3 mb-6">
