@@ -188,6 +188,10 @@ export default function PublicProfile() {
           </div>
         </div>
       ))}
+      </>
+      )}
+
+
 
       {/* Active ads */}
       {anuncios.length > 0 && (
