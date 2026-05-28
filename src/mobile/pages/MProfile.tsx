@@ -134,48 +134,68 @@ export default function MProfile() {
   if (loading) return <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   if (!profile) return <div className="p-6 text-center text-muted-foreground">Perfil não encontrado.</div>;
 
+  const isSeller = mode === 'vendedor';
+
   return (
     <div className="px-4 py-5 space-y-5">
       {!isOwn && <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-sm text-muted-foreground"><ArrowLeft className="h-4 w-4" /> Voltar</button>}
 
-      <div className="glass rounded-2xl p-5 text-center">
-        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-accent overflow-hidden mx-auto mb-3 flex items-center justify-center text-primary-foreground text-3xl font-bold">
+      {/* Toggle de modo SEMPRE no topo */}
+      <div className="flex gap-1 p-1 bg-secondary/40 rounded-full text-[11px] font-semibold">
+        <button onClick={() => setMode('pessoal')} className={`flex-1 py-1.5 rounded-full transition-all ${!isSeller ? 'bg-gradient-to-r from-primary to-accent text-primary-foreground' : 'text-muted-foreground'}`}>👤 Pessoal</button>
+        <button onClick={() => setMode('vendedor')} className={`flex-1 py-1.5 rounded-full transition-all ${isSeller ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white' : 'text-muted-foreground'}`}>🛍️ Vendedor</button>
+      </div>
+
+      <div className={`rounded-2xl p-5 text-center ${isSeller ? 'bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-transparent border border-amber-500/30' : 'glass'}`}>
+        <div className={`w-20 h-20 rounded-full overflow-hidden mx-auto mb-3 flex items-center justify-center text-3xl font-bold ${isSeller ? 'bg-gradient-to-br from-amber-500 to-orange-600 text-white ring-2 ring-amber-500/40' : 'bg-gradient-to-br from-primary to-accent text-primary-foreground'}`}>
           {profile.avatar_url ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" /> : profile.display_name?.[0]?.toUpperCase() || '?'}
         </div>
-        <h1 className="font-display text-lg font-bold">{profile.display_name || 'Usuário'}</h1>
+        <h1 className="font-display text-lg font-bold flex items-center justify-center gap-1.5">
+          {profile.display_name || 'Usuário'}
+          {isSeller && <span className="px-1.5 py-0.5 text-[9px] rounded bg-amber-500/20 text-amber-600 dark:text-amber-400 uppercase tracking-wider">Vendedor</span>}
+        </h1>
         {profile.username && <p className="text-xs text-muted-foreground">@{profile.username}</p>}
         {profile.created_at && (
           <p className="text-[10px] text-muted-foreground mt-0.5">📅 Membro desde {new Date(profile.created_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</p>
         )}
-        {mode === 'vendedor' && (
-          <div className="flex items-center justify-center gap-1.5 mt-2"><HalfStarDisplay rating={rating} size={14} /><span className="text-xs text-muted-foreground">{rating > 0 ? `${rating.toFixed(1)} (vendedor)` : 'sem avaliações de vendedor'}</span></div>
+        {isSeller ? (
+          <div className="flex items-center justify-center gap-1.5 mt-2"><HalfStarDisplay rating={rating} size={14} /><span className="text-xs text-muted-foreground">{rating > 0 ? `${rating.toFixed(1)} como vendedor` : 'sem avaliações ainda'}</span></div>
+        ) : (
+          <>
+            <div className="mt-2 flex justify-center"><LevelTitleBadge userId={targetId} variant="card" /></div>
+            <UserBadges userId={targetId} max={8} className="mt-3" />
+          </>
         )}
-        <div className="mt-2 flex justify-center"><LevelTitleBadge userId={targetId} variant="card" /></div>
-        <UserBadges userId={targetId} max={8} className="mt-3" />
         {(() => {
-          const shownBio = mode === 'vendedor' ? (profile.seller_bio || profile.bio) : profile.bio;
+          const shownBio = isSeller ? (profile.seller_bio || profile.bio) : profile.bio;
           return shownBio ? <p className="text-sm text-muted-foreground mt-3 whitespace-pre-wrap">{shownBio}</p> : null;
         })()}
 
-        {/* Stats */}
-        <div className="grid grid-cols-4 gap-2 mt-4 pt-4 border-t border-border/40">
-          <button onClick={() => openFollowList('followers')} className="text-center hover:text-primary transition-colors">
-            <div className="text-base font-bold">{followersCount}</div>
-            <div className="text-[10px] text-muted-foreground uppercase">Seguidores</div>
-          </button>
-          <button onClick={() => openFollowList('following')} className="text-center hover:text-primary transition-colors">
-            <div className="text-base font-bold">{followingCount}</div>
-            <div className="text-[10px] text-muted-foreground uppercase">Seguindo</div>
-          </button>
-          <div className="text-center">
-            <div className="text-base font-bold">{reviewsCount}</div>
-            <div className="text-[10px] text-muted-foreground uppercase">Reviews</div>
+        {!isSeller ? (
+          <div className="grid grid-cols-4 gap-2 mt-4 pt-4 border-t border-border/40">
+            <button onClick={() => openFollowList('followers')} className="text-center hover:text-primary transition-colors">
+              <div className="text-base font-bold">{followersCount}</div>
+              <div className="text-[10px] text-muted-foreground uppercase">Seguidores</div>
+            </button>
+            <button onClick={() => openFollowList('following')} className="text-center hover:text-primary transition-colors">
+              <div className="text-base font-bold">{followingCount}</div>
+              <div className="text-[10px] text-muted-foreground uppercase">Seguindo</div>
+            </button>
+            <div className="text-center">
+              <div className="text-base font-bold">{reviewsCount}</div>
+              <div className="text-[10px] text-muted-foreground uppercase">Reviews</div>
+            </div>
+            <div className="text-center">
+              <div className="text-base font-bold">{postsCount}</div>
+              <div className="text-[10px] text-muted-foreground uppercase">Posts</div>
+            </div>
           </div>
-          <div className="text-center">
-            <div className="text-base font-bold">{postsCount}</div>
-            <div className="text-[10px] text-muted-foreground uppercase">Posts</div>
+        ) : (
+          <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-amber-500/20">
+            <div className="text-center"><div className="text-base font-bold text-amber-600 dark:text-amber-400">{ads.length}</div><div className="text-[10px] text-muted-foreground uppercase">Anúncios ativos</div></div>
+            <div className="text-center"><div className="text-base font-bold text-amber-600 dark:text-amber-400">{rating > 0 ? rating.toFixed(1) : '—'}</div><div className="text-[10px] text-muted-foreground uppercase">Reputação</div></div>
           </div>
-        </div>
+        )}
       </div>
 
       {!isOwn && user && (
@@ -216,10 +236,7 @@ export default function MProfile() {
         </div>
       ) : (
         <>
-          <div className="flex gap-1 p-1 bg-secondary/40 rounded-full text-[11px] font-semibold">
-            <button onClick={() => setMode('pessoal')} className={`flex-1 py-1.5 rounded-full transition-all ${mode === 'pessoal' ? 'bg-gradient-to-r from-primary to-accent text-primary-foreground' : 'text-muted-foreground'}`}>👤 Pessoal</button>
-            <button onClick={() => setMode('vendedor')} className={`flex-1 py-1.5 rounded-full transition-all ${mode === 'vendedor' ? 'bg-gradient-to-r from-primary to-accent text-primary-foreground' : 'text-muted-foreground'}`}>🛍️ Vendedor</button>
-          </div>
+
 
           {(() => {
             const allTabs = [
