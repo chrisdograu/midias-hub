@@ -391,6 +391,9 @@ export default function MReview() {
                 Ver na loja →
               </Link>
             )}
+            <Link to={`/m/forum/${produto.id}`} className="text-xs font-semibold text-primary hover:underline">
+              Ver no fórum →
+            </Link>
             <Link to={`/m/marketplace?tag=${encodeURIComponent(reviewTag || produto.title)}`} className="text-xs font-semibold text-accent hover:underline">
               Ver no Marketplace →
             </Link>
