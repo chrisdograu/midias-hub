@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Loader2, Search, MessagesSquare, Check, X, Trophy, ShieldAlert } from 'lucide-react';
+import { Loader2, Search, MessagesSquare, Check, X, Trophy, ShieldAlert, Users, Store } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { timeAgo } from '@/mobile/lib/time';
@@ -30,7 +30,7 @@ export default function MChat() {
   const [conversas, setConversas] = useState<Conv[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
-  const [tab, setTab] = useState<'geral' | 'torneios'>('geral');
+  const [tab, setTab] = useState<'amigos' | 'vendedores' | 'torneios'>('amigos');
 
   const applyConversationState = async (convs: any[]) => {
     const otherIds = convs.map(c => c.participant_1 === user?.id ? c.participant_2 : c.participant_1);
@@ -111,8 +111,11 @@ export default function MChat() {
   const pending = conversas.filter(c => c.status === 'pending' && c.participant_2 === user.id);
   const active = conversas.filter(c => c.status === 'accepted');
   const tournamentConvs = active.filter(c => c.tournament_id);
-  const generalConvs = active.filter(c => !c.tournament_id);
+  const vendorConvs = active.filter(c => !c.tournament_id && c.anuncio_id);
+  const friendsConvs = active.filter(c => !c.tournament_id && !c.anuncio_id);
   const tournamentUnread = tournamentConvs.reduce((s, c) => s + c.unread, 0);
+  const vendorUnread = vendorConvs.reduce((s, c) => s + c.unread, 0);
+  const friendsUnread = friendsConvs.reduce((s, c) => s + c.unread, 0);
 
   // Group tournament convs by tournament_id
   const tournamentGroups = tournamentConvs.reduce<Record<string, Conv[]>>((acc, c) => {
@@ -121,21 +124,25 @@ export default function MChat() {
     return acc;
   }, {});
 
-  const list = tab === 'torneios' ? tournamentConvs : generalConvs;
-  const filtered = list.filter(c => !query.trim() || c.other_name.toLowerCase().includes(query.toLowerCase()) || (c.tournament_title || '').toLowerCase().includes(query.toLowerCase()));
+  const list = tab === 'torneios' ? tournamentConvs : tab === 'vendedores' ? vendorConvs : friendsConvs;
+  const filtered = list.filter(c => !query.trim() || c.other_name.toLowerCase().includes(query.toLowerCase()) || (c.tournament_title || '').toLowerCase().includes(query.toLowerCase()) || (c.ad_title || '').toLowerCase().includes(query.toLowerCase()));
 
   return (
     <div className="h-full overflow-hidden px-4 py-5 flex flex-col gap-4">
       <h1 className="font-display text-xl font-bold gradient-text">Chat</h1>
 
-      <div className="flex gap-2 p-1 bg-card border border-border rounded-xl">
-        <button onClick={() => setTab('geral')} className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${tab === 'geral' ? 'bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-md' : 'text-muted-foreground'}`}>
-          <MessagesSquare className="h-3.5 w-3.5" /> Geral
-          {generalConvs.reduce((s,c)=>s+c.unread,0) > 0 && <span className="ml-1 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">{generalConvs.reduce((s,c)=>s+c.unread,0)}</span>}
+      <div className="flex gap-1 p-1 bg-card border border-border rounded-xl">
+        <button onClick={() => setTab('amigos')} className={`flex-1 py-2 rounded-lg text-[11px] font-semibold transition-all flex items-center justify-center gap-1 ${tab === 'amigos' ? 'bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-md' : 'text-muted-foreground'}`}>
+          <Users className="h-3.5 w-3.5" /> Amigos
+          {friendsUnread > 0 && <span className="ml-0.5 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">{friendsUnread}</span>}
         </button>
-        <button onClick={() => setTab('torneios')} className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 ${tab === 'torneios' ? 'bg-gradient-to-r from-destructive to-accent text-primary-foreground shadow-md' : 'text-muted-foreground'}`}>
+        <button onClick={() => setTab('vendedores')} className={`flex-1 py-2 rounded-lg text-[11px] font-semibold transition-all flex items-center justify-center gap-1 ${tab === 'vendedores' ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md' : 'text-muted-foreground'}`}>
+          <Store className="h-3.5 w-3.5" /> Vendedores
+          {vendorUnread > 0 && <span className="ml-0.5 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">{vendorUnread}</span>}
+        </button>
+        <button onClick={() => setTab('torneios')} className={`flex-1 py-2 rounded-lg text-[11px] font-semibold transition-all flex items-center justify-center gap-1 ${tab === 'torneios' ? 'bg-gradient-to-r from-destructive to-accent text-primary-foreground shadow-md' : 'text-muted-foreground'}`}>
           <Trophy className="h-3.5 w-3.5" /> Torneios
-          {tournamentUnread > 0 && <span className="ml-1 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">{tournamentUnread}</span>}
+          {tournamentUnread > 0 && <span className="ml-0.5 w-4 h-4 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">{tournamentUnread}</span>}
         </button>
       </div>
 
@@ -149,7 +156,7 @@ export default function MChat() {
         <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
       ) : (
         <>
-          {tab === 'geral' && pending.length > 0 && (
+          {tab === 'amigos' && pending.length > 0 && (
             <section>
               <h2 className="text-xs font-bold uppercase tracking-wider text-warning mb-2">Pedidos de conversa ({pending.length})</h2>
               <div className="space-y-2">
@@ -214,9 +221,9 @@ export default function MChat() {
             )
           ) : filtered.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
-              <MessagesSquare className="h-10 w-10 mx-auto mb-2 opacity-40" />
-              <p className="text-sm">Nenhuma conversa ainda.</p>
-              <p className="text-xs mt-1">Inicie uma conversa pelo Marketplace ou pelo Fórum.</p>
+              {tab === 'vendedores' ? <Store className="h-10 w-10 mx-auto mb-2 opacity-40" /> : <MessagesSquare className="h-10 w-10 mx-auto mb-2 opacity-40" />}
+              <p className="text-sm">{tab === 'vendedores' ? 'Nenhum chat de vendedor.' : 'Nenhuma conversa ainda.'}</p>
+              <p className="text-xs mt-1">{tab === 'vendedores' ? 'Conversas iniciadas a partir de anúncios aparecem aqui.' : 'Inicie uma conversa pelo Fórum ou pelo perfil de um amigo.'}</p>
             </div>
           ) : (
             <div className="space-y-1.5">
