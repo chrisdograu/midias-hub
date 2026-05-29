@@ -11,7 +11,7 @@ import { ItemActionsMenu } from '@/components/ItemActionsMenu';
 import { toast } from 'sonner';
 
 type Sort = 'popular' | 'recent' | 'commented';
-type Tab = 'posts' | 'reviews';
+type Tab = 'tudo' | 'posts' | 'reviews';
 const SORTS: { id: Sort; label: string; icon: any }[] = [
   { id: 'popular', label: 'Populares', icon: TrendingUp },
   { id: 'recent', label: 'Recentes', icon: Clock },
@@ -29,7 +29,8 @@ interface ForumReview {
 }
 
 export default function MForum() {
-  const [tab, setTab] = useState<Tab>('posts');
+  const [tab, setTab] = useState<Tab>('tudo');
+  const [filterOpen, setFilterOpen] = useState(false);
   const [sort, setSort] = useState<Sort>('popular');
   const [period, setPeriod] = useState<Period>('week');
   const [query, setQuery] = useState('');
@@ -219,10 +220,12 @@ export default function MForum() {
         </div>
       </section>
 
-      <button onClick={() => setSuggestOpen(true)} className="w-full glass rounded-xl p-3 flex items-center justify-center gap-2 text-sm font-semibold hover:border-accent/40 transition-colors">
-        <Lightbulb className="h-4 w-4 text-accent" />
-        Não achou seu jogo? <span className="gradient-text">Sugerir adição</span>
-      </button>
+      {debouncedQuery.trim().length >= 2 && communityHits.length === 0 && (
+        <button onClick={() => setSuggestOpen(true)} className="w-full glass rounded-xl p-3 flex items-center justify-center gap-2 text-sm font-semibold hover:border-accent/40 transition-colors">
+          <Lightbulb className="h-4 w-4 text-accent" />
+          Não achou "{debouncedQuery.trim()}"? <span className="gradient-text">Sugerir adição</span>
+        </button>
+      )}
 
       {mySuggestions.length > 0 && (
         <div className="space-y-1.5">
@@ -246,8 +249,11 @@ export default function MForum() {
         </div>
       )}
 
-      {/* Tabs Posts / Reviews */}
+      {/* Tabs Tudo / Posts / Reviews */}
       <div className="flex p-1 bg-secondary/50 rounded-lg">
+        <button onClick={() => setTab('tudo')} className={`flex-1 py-2 rounded-md text-xs font-semibold flex items-center justify-center gap-1 ${tab === 'tudo' ? 'bg-gradient-to-r from-primary to-accent text-primary-foreground' : 'text-muted-foreground'}`}>
+          <Flame className="h-3.5 w-3.5" /> Tudo
+        </button>
         <button onClick={() => setTab('posts')} className={`flex-1 py-2 rounded-md text-xs font-semibold flex items-center justify-center gap-1 ${tab === 'posts' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>
           <Newspaper className="h-3.5 w-3.5" /> Posts
         </button>
@@ -256,14 +262,13 @@ export default function MForum() {
         </button>
       </div>
 
-      <div className="space-y-2">
-        <div className="flex gap-1.5 overflow-x-auto scrollbar-thin -mx-4 px-4">
-          {SORTS.map(s => <MobileChip key={s.id} active={sort === s.id} onClick={() => setSort(s.id)}>{s.label}</MobileChip>)}
-        </div>
-        <div className="flex gap-1.5 overflow-x-auto scrollbar-thin -mx-4 px-4">
-          {PERIOD_OPTIONS.map(p => <MobileChip key={p.id} active={period === p.id} onClick={() => setPeriod(p.id)}>{p.label}</MobileChip>)}
-        </div>
-      </div>
+      <button onClick={() => setFilterOpen(true)} className="w-full flex items-center justify-between px-3 py-2 bg-card border border-border rounded-lg text-xs">
+        <span className="flex items-center gap-1.5 text-muted-foreground">
+          <Newspaper className="h-3.5 w-3.5" />
+          {SORTS.find(s => s.id === sort)?.label} · {PERIOD_OPTIONS.find(p => p.id === period)?.label}
+        </span>
+        <span className="text-primary font-semibold">Filtros</span>
+      </button>
 
       {loading ? (
         <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
@@ -272,10 +277,49 @@ export default function MForum() {
           {sortedPosts.length === 0 ? <p className="text-center py-10 text-sm text-muted-foreground">Nenhum post no período.</p> :
             sortedPosts.map(p => <PostCard key={p.id} p={p} onDeleted={() => setPosts(prev => prev.filter(x => x.id !== p.id))} />)}
         </div>
-      ) : (
+      ) : tab === 'reviews' ? (
         <div className="space-y-2.5">
           {sortedReviews.length === 0 ? <p className="text-center py-10 text-sm text-muted-foreground">Nenhuma review no período.</p> :
             sortedReviews.map(r => <ReviewCard key={r.id} r={r} />)}
+        </div>
+      ) : (
+        <div className="space-y-2.5">
+          {sortedPosts.length === 0 && sortedReviews.length === 0 ? (
+            <p className="text-center py-10 text-sm text-muted-foreground">Nada por aqui ainda.</p>
+          ) : (
+            [
+              ...sortedPosts.map(p => ({ kind: 'post' as const, ts: +new Date(p.created_at), data: p })),
+              ...sortedReviews.map(r => ({ kind: 'review' as const, ts: +new Date(r.created_at), data: r })),
+            ].sort((a, b) => b.ts - a.ts).slice(0, 40).map(entry =>
+              entry.kind === 'post'
+                ? <PostCard key={`p-${entry.data.id}`} p={entry.data} onDeleted={() => setPosts(prev => prev.filter(x => x.id !== entry.data.id))} />
+                : <ReviewCard key={`r-${entry.data.id}`} r={entry.data} />
+            )
+          )}
+        </div>
+      )}
+
+      {filterOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-end" onClick={() => setFilterOpen(false)}>
+          <div className="w-full bg-card rounded-t-2xl p-5 space-y-4" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold">Filtros</h3>
+              <button onClick={() => setFilterOpen(false)} className="p-1 rounded-lg bg-secondary"><X className="h-4 w-4" /></button>
+            </div>
+            <div>
+              <p className="text-[11px] uppercase tracking-wide text-muted-foreground mb-2">Ordenar por</p>
+              <div className="flex gap-1.5 flex-wrap">
+                {SORTS.map(s => <MobileChip key={s.id} active={sort === s.id} onClick={() => setSort(s.id)}>{s.label}</MobileChip>)}
+              </div>
+            </div>
+            <div>
+              <p className="text-[11px] uppercase tracking-wide text-muted-foreground mb-2">Período</p>
+              <div className="flex gap-1.5 flex-wrap">
+                {PERIOD_OPTIONS.map(p => <MobileChip key={p.id} active={period === p.id} onClick={() => setPeriod(p.id)}>{p.label}</MobileChip>)}
+              </div>
+            </div>
+            <button onClick={() => setFilterOpen(false)} className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm">Aplicar</button>
+          </div>
         </div>
       )}
 
