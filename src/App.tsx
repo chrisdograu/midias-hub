@@ -164,6 +164,8 @@ const App = () => (
                 { path: '/pra-voce', el: <ParaVoce /> },
                 { path: '/social', el: <Social /> },
                 { path: '/torneios', el: <Torneios /> },
+                { path: '/torneios/:id', el: <TournamentEvent /> },
+                { path: '/torneios/:id/partida/:matchId', el: <TournamentMatch /> },
                 { path: '/jogo/:id', el: <GameDetail /> },
                 { path: '/bundle/:id', el: <BundleDetail /> },
                 { path: '/biblioteca/:productId', el: <ProtectedRoute><BibliotecaJogo /></ProtectedRoute> },
