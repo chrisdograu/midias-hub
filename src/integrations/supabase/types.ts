@@ -816,8 +816,11 @@ export type Database = {
           content: string
           created_at: string | null
           id: string
+          is_pinned: boolean
           likes_count: number
-          product_id: string
+          product_id: string | null
+          title: string | null
+          tournament_id: string | null
           updated_at: string | null
           user_id: string
         }
@@ -825,8 +828,11 @@ export type Database = {
           content: string
           created_at?: string | null
           id?: string
+          is_pinned?: boolean
           likes_count?: number
-          product_id: string
+          product_id?: string | null
+          title?: string | null
+          tournament_id?: string | null
           updated_at?: string | null
           user_id: string
         }
@@ -834,8 +840,11 @@ export type Database = {
           content?: string
           created_at?: string | null
           id?: string
+          is_pinned?: boolean
           likes_count?: number
-          product_id?: string
+          product_id?: string | null
+          title?: string | null
+          tournament_id?: string | null
           updated_at?: string | null
           user_id?: string
         }
@@ -1609,6 +1618,39 @@ export type Database = {
         }
         Relationships: []
       }
+      tournament_chat_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          kind: string
+          match_id: string | null
+          payload: Json | null
+          tournament_id: string
+          user_id: string
+        }
+        Insert: {
+          content?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          match_id?: string | null
+          payload?: Json | null
+          tournament_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          match_id?: string | null
+          payload?: Json | null
+          tournament_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       tournament_duplicate_alerts: {
         Row: {
           created_at: string
@@ -1639,46 +1681,133 @@ export type Database = {
         }
         Relationships: []
       }
-      tournament_matches: {
+      tournament_highlights: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          match_id: string | null
+          title: string
+          tournament_id: string
+          video_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          match_id?: string | null
+          title: string
+          tournament_id: string
+          video_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          match_id?: string | null
+          title?: string
+          tournament_id?: string
+          video_url?: string | null
+        }
+        Relationships: []
+      }
+      tournament_match_events: {
         Row: {
           created_at: string
           id: string
-          player_a: string | null
-          player_b: string | null
-          position: number
-          round: number
-          scheduled_at: string | null
-          score_a: number | null
-          score_b: number | null
-          status: string
+          kind: string
+          match_id: string
+          payload: Json | null
           tournament_id: string
-          winner: string | null
         }
         Insert: {
           created_at?: string
           id?: string
-          player_a?: string | null
-          player_b?: string | null
-          position?: number
-          round?: number
-          scheduled_at?: string | null
-          score_a?: number | null
-          score_b?: number | null
-          status?: string
+          kind: string
+          match_id: string
+          payload?: Json | null
           tournament_id: string
-          winner?: string | null
         }
         Update: {
           created_at?: string
           id?: string
+          kind?: string
+          match_id?: string
+          payload?: Json | null
+          tournament_id?: string
+        }
+        Relationships: []
+      }
+      tournament_matches: {
+        Row: {
+          bracket_side: string
+          created_at: string
+          ended_at: string | null
+          id: string
+          is_live: boolean
+          momentum: number
+          mvp_user_id: string | null
+          player_a: string | null
+          player_b: string | null
+          position: number
+          round: number
+          round_label: string | null
+          scheduled_at: string | null
+          score_a: number | null
+          score_b: number | null
+          started_at: string | null
+          status: string
+          stream_url: string | null
+          tournament_id: string
+          winner: string | null
+        }
+        Insert: {
+          bracket_side?: string
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          is_live?: boolean
+          momentum?: number
+          mvp_user_id?: string | null
           player_a?: string | null
           player_b?: string | null
           position?: number
           round?: number
+          round_label?: string | null
           scheduled_at?: string | null
           score_a?: number | null
           score_b?: number | null
+          started_at?: string | null
           status?: string
+          stream_url?: string | null
+          tournament_id: string
+          winner?: string | null
+        }
+        Update: {
+          bracket_side?: string
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          is_live?: boolean
+          momentum?: number
+          mvp_user_id?: string | null
+          player_a?: string | null
+          player_b?: string | null
+          position?: number
+          round?: number
+          round_label?: string | null
+          scheduled_at?: string | null
+          score_a?: number | null
+          score_b?: number | null
+          started_at?: string | null
+          status?: string
+          stream_url?: string | null
           tournament_id?: string
           winner?: string | null
         }
@@ -1691,6 +1820,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      tournament_mvp_votes: {
+        Row: {
+          created_at: string
+          id: string
+          match_id: string
+          tournament_id: string
+          voted_for_id: string
+          voter_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          match_id: string
+          tournament_id: string
+          voted_for_id: string
+          voter_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          match_id?: string
+          tournament_id?: string
+          voted_for_id?: string
+          voter_id?: string
+        }
+        Relationships: []
       }
       tournament_participants: {
         Row: {
@@ -1733,78 +1889,198 @@ export type Database = {
           },
         ]
       }
+      tournament_predictions: {
+        Row: {
+          created_at: string
+          id: string
+          match_id: string
+          predicted_winner_id: string
+          tournament_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          match_id: string
+          predicted_winner_id: string
+          tournament_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          match_id?: string
+          predicted_winner_id?: string
+          tournament_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tournament_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          match_id: string | null
+          tournament_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          match_id?: string | null
+          tournament_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          match_id?: string | null
+          tournament_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tournament_storylines: {
+        Row: {
+          auto_generated: boolean
+          created_at: string
+          id: string
+          kind: string
+          match_id: string | null
+          narrative: string
+          tournament_id: string
+        }
+        Insert: {
+          auto_generated?: boolean
+          created_at?: string
+          id?: string
+          kind: string
+          match_id?: string | null
+          narrative: string
+          tournament_id: string
+        }
+        Update: {
+          auto_generated?: boolean
+          created_at?: string
+          id?: string
+          kind?: string
+          match_id?: string | null
+          narrative?: string
+          tournament_id?: string
+        }
+        Relationships: []
+      }
       tournaments: {
         Row: {
+          archived_at: string | null
+          banner_url: string | null
+          bracket_type: string
           created_at: string
           created_by: string | null
           description: string | null
           ends_at: string | null
+          event_state: string
+          forum_thread_id: string | null
+          hype_score: number
           id: string
           max_participants: number
+          narrative: string | null
           prize: string | null
           prize_badge_id: string | null
           prize_coupon_id: string | null
           prize_game_id: string | null
+          prize_pool_amount: number | null
           prize_title: string | null
           prize_types: string[]
           prize_xp_bonus: number
           rewards_distributed: boolean
+          runner_up_id: string | null
           starts_at: string | null
           status: string
+          stream_url: string | null
+          third_place_id: string | null
           title: string
           type: string
           updated_at: string
           verified: boolean
+          winner_id: string | null
           xp_champion: number
           xp_match_win: number
           xp_signup: number
         }
         Insert: {
+          archived_at?: string | null
+          banner_url?: string | null
+          bracket_type?: string
           created_at?: string
           created_by?: string | null
           description?: string | null
           ends_at?: string | null
+          event_state?: string
+          forum_thread_id?: string | null
+          hype_score?: number
           id?: string
           max_participants?: number
+          narrative?: string | null
           prize?: string | null
           prize_badge_id?: string | null
           prize_coupon_id?: string | null
           prize_game_id?: string | null
+          prize_pool_amount?: number | null
           prize_title?: string | null
           prize_types?: string[]
           prize_xp_bonus?: number
           rewards_distributed?: boolean
+          runner_up_id?: string | null
           starts_at?: string | null
           status?: string
+          stream_url?: string | null
+          third_place_id?: string | null
           title: string
           type?: string
           updated_at?: string
           verified?: boolean
+          winner_id?: string | null
           xp_champion?: number
           xp_match_win?: number
           xp_signup?: number
         }
         Update: {
+          archived_at?: string | null
+          banner_url?: string | null
+          bracket_type?: string
           created_at?: string
           created_by?: string | null
           description?: string | null
           ends_at?: string | null
+          event_state?: string
+          forum_thread_id?: string | null
+          hype_score?: number
           id?: string
           max_participants?: number
+          narrative?: string | null
           prize?: string | null
           prize_badge_id?: string | null
           prize_coupon_id?: string | null
           prize_game_id?: string | null
+          prize_pool_amount?: number | null
           prize_title?: string | null
           prize_types?: string[]
           prize_xp_bonus?: number
           rewards_distributed?: boolean
+          runner_up_id?: string | null
           starts_at?: string | null
           status?: string
+          stream_url?: string | null
+          third_place_id?: string | null
           title?: string
           type?: string
           updated_at?: string
           verified?: boolean
+          winner_id?: string | null
           xp_champion?: number
           xp_match_win?: number
           xp_signup?: number
