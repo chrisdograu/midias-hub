@@ -81,6 +81,8 @@ const EmAlta = lazy(() => import("./pages/EmAlta"));
 const ParaVoce = lazy(() => import("./pages/ParaVoce"));
 const Social = lazy(() => import("./pages/Social"));
 const Torneios = lazy(() => import("./pages/Torneios"));
+const TournamentEvent = lazy(() => import("./pages/torneios/TournamentEvent"));
+const TournamentMatch = lazy(() => import("./pages/torneios/TournamentMatch"));
 const BundleDetail = lazy(() => import("./pages/BundleDetail"));
 const BibliotecaJogo = lazy(() => import("./pages/BibliotecaJogo"));
 
@@ -162,6 +164,8 @@ const App = () => (
                 { path: '/pra-voce', el: <ParaVoce /> },
                 { path: '/social', el: <Social /> },
                 { path: '/torneios', el: <Torneios /> },
+                { path: '/torneios/:id', el: <TournamentEvent /> },
+                { path: '/torneios/:id/partida/:matchId', el: <TournamentMatch /> },
                 { path: '/jogo/:id', el: <GameDetail /> },
                 { path: '/bundle/:id', el: <BundleDetail /> },
                 { path: '/biblioteca/:productId', el: <ProtectedRoute><BibliotecaJogo /></ProtectedRoute> },
