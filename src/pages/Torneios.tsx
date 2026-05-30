@@ -148,7 +148,7 @@ export default function Torneios() {
           {t.starts_at && <div className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> {new Date(t.starts_at).toLocaleDateString('pt-BR')}</div>}
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" className="flex-1" onClick={() => setSelected(t)}>Ver chaveamento</Button>
+          <Button variant="outline" size="sm" className="flex-1" onClick={() => navigate(`/torneios/${t.id}`)}>Abrir evento</Button>
           {t.status === 'open' && (inIt
             ? <Button size="sm" variant="secondary" onClick={() => leave(t)}>Sair</Button>
             : <Button size="sm" onClick={() => join(t)}>Inscrever</Button>)}
