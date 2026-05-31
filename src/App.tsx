@@ -79,7 +79,7 @@ const Promocoes = lazy(() => import("./desktop/pages/Promocoes"));
 const TorneiosAdmin = lazy(() => import("./desktop/pages/Torneios"));
 const EmAlta = lazy(() => import("./pages/EmAlta"));
 const ParaVoce = lazy(() => import("./pages/ParaVoce"));
-const Social = lazy(() => import("./pages/Social"));
+const Social = lazy(() => import("./pages/SocialLibrary"));
 const Torneios = lazy(() => import("./pages/Torneios"));
 const TournamentEvent = lazy(() => import("./pages/torneios/TournamentEvent"));
 const TournamentMatch = lazy(() => import("./pages/torneios/TournamentMatch"));
