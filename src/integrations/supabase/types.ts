@@ -385,6 +385,36 @@ export type Database = {
           },
         ]
       }
+      connected_platforms: {
+        Row: {
+          connected_at: string
+          id: string
+          is_public: boolean
+          platform: string
+          profile_url: string | null
+          user_id: string
+          username: string
+        }
+        Insert: {
+          connected_at?: string
+          id?: string
+          is_public?: boolean
+          platform: string
+          profile_url?: string | null
+          user_id: string
+          username: string
+        }
+        Update: {
+          connected_at?: string
+          id?: string
+          is_public?: boolean
+          platform?: string
+          profile_url?: string | null
+          user_id?: string
+          username?: string
+        }
+        Relationships: []
+      }
       conversas: {
         Row: {
           anuncio_id: string | null
@@ -945,6 +975,72 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      friend_activity_states: {
+        Row: {
+          activity_ref_id: string
+          activity_type: string
+          created_at: string
+          friend_id: string
+          id: string
+          state: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activity_ref_id: string
+          activity_type: string
+          created_at?: string
+          friend_id: string
+          id?: string
+          state?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activity_ref_id?: string
+          activity_type?: string
+          created_at?: string
+          friend_id?: string
+          id?: string
+          state?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      game_clips: {
+        Row: {
+          created_at: string
+          duration_seconds: number | null
+          id: string
+          product_id: string
+          thumbnail_url: string | null
+          title: string | null
+          user_id: string
+          video_url: string
+        }
+        Insert: {
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          product_id: string
+          thumbnail_url?: string | null
+          title?: string | null
+          user_id: string
+          video_url: string
+        }
+        Update: {
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          product_id?: string
+          thumbnail_url?: string | null
+          title?: string | null
+          user_id?: string
+          video_url?: string
+        }
+        Relationships: []
       }
       game_suggestions: {
         Row: {
@@ -1594,6 +1690,66 @@ export type Database = {
           },
         ]
       }
+      review_metadata: {
+        Row: {
+          completion: string | null
+          created_at: string
+          difficulty: string | null
+          has_spoiler: boolean
+          hours_played: number | null
+          mood: string | null
+          platform: string | null
+          review_id: string
+          updated_at: string
+        }
+        Insert: {
+          completion?: string | null
+          created_at?: string
+          difficulty?: string | null
+          has_spoiler?: boolean
+          hours_played?: number | null
+          mood?: string | null
+          platform?: string | null
+          review_id: string
+          updated_at?: string
+        }
+        Update: {
+          completion?: string | null
+          created_at?: string
+          difficulty?: string | null
+          has_spoiler?: boolean
+          hours_played?: number | null
+          mood?: string | null
+          platform?: string | null
+          review_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      review_screenshots: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string
+          position: number
+          review_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url: string
+          position?: number
+          review_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          position?: number
+          review_id?: string
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           id: string
@@ -2134,6 +2290,39 @@ export type Database = {
           },
         ]
       }
+      user_achievements: {
+        Row: {
+          achievement_description: string | null
+          achievement_name: string
+          icon_url: string | null
+          id: string
+          product_id: string
+          rarity: string | null
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          achievement_description?: string | null
+          achievement_name: string
+          icon_url?: string | null
+          id?: string
+          product_id: string
+          rarity?: string | null
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          achievement_description?: string | null
+          achievement_name?: string
+          icon_url?: string | null
+          id?: string
+          product_id?: string
+          rarity?: string | null
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_badges: {
         Row: {
           awarded_at: string
@@ -2181,6 +2370,36 @@ export type Database = {
           follower_id?: string
           following_id?: string
           id?: string
+        }
+        Relationships: []
+      }
+      user_playtime: {
+        Row: {
+          hours_played: number
+          id: string
+          last_played_at: string | null
+          platform: string | null
+          product_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          hours_played?: number
+          id?: string
+          last_played_at?: string | null
+          platform?: string | null
+          product_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          hours_played?: number
+          id?: string
+          last_played_at?: string | null
+          platform?: string | null
+          product_id?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -2284,6 +2503,10 @@ export type Database = {
         Args: { _request_id: string }
         Returns: undefined
       }
+      are_mutual_friends: {
+        Args: { _user_a: string; _user_b: string }
+        Returns: boolean
+      }
       award_tournament_rewards: {
         Args: { _tournament_id: string }
         Returns: undefined
@@ -2310,6 +2533,12 @@ export type Database = {
       get_employee_position: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["employee_position"]
+      }
+      get_mutual_friends: {
+        Args: { _user_id: string }
+        Returns: {
+          friend_id: string
+        }[]
       }
       get_product_avg_rating: {
         Args: { p_product_id: string }
