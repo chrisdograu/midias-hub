@@ -6,7 +6,7 @@ import { useCart } from '@/hooks/useCart';
 import { useFavoritos } from '@/hooks/useFavoritos';
 import { useAvaliacoes } from '@/hooks/useAvaliacoes';
 import { useAuth } from '@/hooks/useAuth';
-import { ShoppingCart, ArrowLeft, Shield, Zap, Clock, Heart, Loader2, AlertTriangle } from 'lucide-react';
+import { ShoppingCart, ArrowLeft, Shield, Zap, Clock, Heart, Loader2, AlertTriangle, Users } from 'lucide-react';
 import { HalfStarDisplay, InteractiveHalfStar } from '@/components/HalfStarRating';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -112,6 +112,12 @@ export default function GameDetail() {
               className="w-full py-3 bg-primary text-primary-foreground font-semibold rounded-lg flex items-center justify-center gap-2 hover:opacity-90 transition-all glow-primary disabled:opacity-50 disabled:cursor-not-allowed">
               <ShoppingCart className="h-5 w-5" /> {outOfStock ? 'Indisponível' : 'Adicionar ao Carrinho'}
             </button>
+            {user && (
+              <Link to={`/jogo/${game.id}/social`}
+                className="w-full py-2.5 bg-secondary text-secondary-foreground font-semibold rounded-lg flex items-center justify-center gap-2 hover:bg-secondary/80 transition-all text-sm">
+                <Users className="h-4 w-4" /> Ver Hub Social dos Amigos
+              </Link>
+            )}
             <div className="space-y-2 pt-2">
               <div className="flex items-center gap-2 text-xs text-muted-foreground"><Zap className="h-3.5 w-3.5 text-primary" /> Entrega instantânea por e-mail</div>
               <div className="flex items-center gap-2 text-xs text-muted-foreground"><Shield className="h-3.5 w-3.5 text-success" /> Garantia de 30 dias</div>
