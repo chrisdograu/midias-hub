@@ -385,6 +385,27 @@ export type Database = {
           },
         ]
       }
+      close_friends: {
+        Row: {
+          created_at: string
+          friend_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          friend_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          friend_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       connected_platforms: {
         Row: {
           connected_at: string
@@ -853,6 +874,7 @@ export type Database = {
           tournament_id: string | null
           updated_at: string | null
           user_id: string
+          visibility: string
         }
         Insert: {
           content: string
@@ -865,6 +887,7 @@ export type Database = {
           tournament_id?: string | null
           updated_at?: string | null
           user_id: string
+          visibility?: string
         }
         Update: {
           content?: string
@@ -877,6 +900,7 @@ export type Database = {
           tournament_id?: string | null
           updated_at?: string | null
           user_id?: string
+          visibility?: string
         }
         Relationships: [
           {
@@ -1019,6 +1043,7 @@ export type Database = {
           title: string | null
           user_id: string
           video_url: string
+          visibility: string
         }
         Insert: {
           created_at?: string
@@ -1029,6 +1054,7 @@ export type Database = {
           title?: string | null
           user_id: string
           video_url: string
+          visibility?: string
         }
         Update: {
           created_at?: string
@@ -1039,6 +1065,7 @@ export type Database = {
           title?: string | null
           user_id?: string
           video_url?: string
+          visibility?: string
         }
         Relationships: []
       }
@@ -1731,22 +1758,28 @@ export type Database = {
           created_at: string
           id: string
           image_url: string
+          owner_id: string | null
           position: number
           review_id: string
+          visibility: string
         }
         Insert: {
           created_at?: string
           id?: string
           image_url: string
+          owner_id?: string | null
           position?: number
           review_id: string
+          visibility?: string
         }
         Update: {
           created_at?: string
           id?: string
           image_url?: string
+          owner_id?: string | null
           position?: number
           review_id?: string
+          visibility?: string
         }
         Relationships: []
       }
@@ -2503,10 +2536,7 @@ export type Database = {
         Args: { _request_id: string }
         Returns: undefined
       }
-      are_mutual_friends: {
-        Args: { _user_a: string; _user_b: string }
-        Returns: boolean
-      }
+      are_mutual_friends: { Args: { _a: string; _b: string }; Returns: boolean }
       award_tournament_rewards: {
         Args: { _tournament_id: string }
         Returns: undefined
@@ -2528,6 +2558,10 @@ export type Database = {
           xp_match_win: number
           xp_signup: number
         }[]
+      }
+      can_view_friend_content: {
+        Args: { _owner: string; _viewer: string; _visibility: string }
+        Returns: boolean
       }
       check_and_award_badges: { Args: { _user_id: string }; Returns: undefined }
       get_employee_position: {
@@ -2557,6 +2591,10 @@ export type Database = {
       }
       is_admin: { Args: never; Returns: boolean }
       is_atendente: { Args: never; Returns: boolean }
+      is_close_friend: {
+        Args: { _owner: string; _viewer: string }
+        Returns: boolean
+      }
       is_staff: { Args: never; Returns: boolean }
       is_user_banned: { Args: { _user_id: string }; Returns: boolean }
       show_limit: { Args: never; Returns: number }
