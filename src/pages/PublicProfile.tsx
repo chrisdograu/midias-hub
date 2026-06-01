@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { HalfStarDisplay } from '@/components/HalfStarRating';
 import { ArrowLeft, Loader2, User, Star, Library, ShoppingBag, Lock, Calendar } from 'lucide-react';
 import LevelTitleBadge from '@/components/LevelTitleBadge';
+import FriendIdentityPanel from '@/components/social/FriendIdentityPanel';
 
 const JA_JOGUEI = ['ja_joguei', 'zerado', 'jogando', 'pausado', 'abandonado'];
 const formatMemberSince = (iso?: string | null) => {
@@ -188,6 +189,8 @@ export default function PublicProfile() {
           </div>
         </div>
       ))}
+
+      {userId && <FriendIdentityPanel userId={userId} />}
       </>
       )}
 

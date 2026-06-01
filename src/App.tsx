@@ -85,6 +85,7 @@ const TournamentEvent = lazy(() => import("./pages/torneios/TournamentEvent"));
 const TournamentMatch = lazy(() => import("./pages/torneios/TournamentMatch"));
 const BundleDetail = lazy(() => import("./pages/BundleDetail"));
 const BibliotecaJogo = lazy(() => import("./pages/BibliotecaJogo"));
+const GameSocialHub = lazy(() => import("./pages/GameSocialHub"));
 
 const PageFallback = () => (
   <div className="min-h-[40vh] flex items-center justify-center">
@@ -167,6 +168,7 @@ const App = () => (
                 { path: '/torneios/:id', el: <TournamentEvent /> },
                 { path: '/torneios/:id/partida/:matchId', el: <TournamentMatch /> },
                 { path: '/jogo/:id', el: <GameDetail /> },
+                { path: '/jogo/:id/social', el: <ProtectedRoute><GameSocialHub /></ProtectedRoute> },
                 { path: '/bundle/:id', el: <BundleDetail /> },
                 { path: '/biblioteca/:productId', el: <ProtectedRoute><BibliotecaJogo /></ProtectedRoute> },
                 { path: '/carrinho', el: <Carrinho /> },
