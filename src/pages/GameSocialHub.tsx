@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import MediaLightbox, { LightboxItem } from '@/components/social/MediaLightbox';
+import ReviewCompletaCard, { ReviewCompletaData } from '@/components/social/ReviewCompletaCard';
+import { Pencil } from 'lucide-react';
 
 type Tab = 'biblioteca' | 'reviews' | 'reviewsCompletas' | 'screenshots' | 'discussoes' | 'historico';
 type SortKey = 'recent' | 'liked' | 'trending' | 'close';
