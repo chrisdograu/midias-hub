@@ -86,6 +86,8 @@ const TournamentMatch = lazy(() => import("./pages/torneios/TournamentMatch"));
 const BundleDetail = lazy(() => import("./pages/BundleDetail"));
 const BibliotecaJogo = lazy(() => import("./pages/BibliotecaJogo"));
 const GameSocialHub = lazy(() => import("./pages/GameSocialHub"));
+const ReviewCompletaEditor = lazy(() => import("./pages/ReviewCompletaEditor"));
+const FriendProfile = lazy(() => import("./pages/FriendProfile"));
 
 const PageFallback = () => (
   <div className="min-h-[40vh] flex items-center justify-center">
