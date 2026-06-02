@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import MediaLightbox, { LightboxItem } from '@/components/social/MediaLightbox';
+import ReviewCompletaCard, { ReviewCompletaData } from '@/components/social/ReviewCompletaCard';
+import { Pencil } from 'lucide-react';
 
 type Tab = 'biblioteca' | 'reviews' | 'reviewsCompletas' | 'screenshots' | 'discussoes' | 'historico';
 type SortKey = 'recent' | 'liked' | 'trending' | 'close';
@@ -116,6 +118,27 @@ export default function GameSocialHub() {
       return (data as any[]) || [];
     },
   });
+
+  // Reviews Completas (nova tabela Fase 2 — diário gamer privado)
+  const friendsAndSelf = useMemo(
+    () => (user ? [user.id, ...friendIds] : friendIds),
+    [user, friendIds]
+  );
+  const { data: reviewsCompletasNew = [] } = useQuery<ReviewCompletaData[]>({
+    queryKey: ['gsh-reviews-completas', id, friendsAndSelf],
+    enabled: !!id && friendsAndSelf.length > 0,
+    queryFn: async () => {
+      const { data } = await supabase.from('reviews_completas' as any)
+        .select('*, profile:user_id(display_name,avatar_url)')
+        .eq('product_id', id!).in('user_id', friendsAndSelf)
+        .order('created_at', { ascending: false });
+      return ((data as any[]) || []) as ReviewCompletaData[];
+    },
+  });
+  const myReviewCompleta = useMemo(
+    () => reviewsCompletasNew.find(r => r.user_id === user?.id),
+    [reviewsCompletasNew, user?.id]
+  );
 
   // Filter: a content with visibility=private is only visible if I'm in author's close friends
   // For now, screenshots have owner_id+visibility; reviews have full visibility logic later.
@@ -279,7 +302,24 @@ export default function GameSocialHub() {
           )}
 
           {tab === 'reviewsCompletas' && (
-            <ReviewsList reviews={sortItems(reviewsCompletas as any)} onOpenShot={openLightbox} full />
+            <section className="space-y-4">
+              {user && (
+                <div className="flex justify-end">
+                  <Link to={`/jogo/${id}/review-completa`}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-primary text-primary-foreground font-semibold">
+                    <Pencil className="h-3.5 w-3.5" />
+                    {myReviewCompleta ? 'Editar minha Review Completa' : 'Escrever Review Completa'}
+                  </Link>
+                </div>
+              )}
+              {reviewsCompletasNew.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Nenhuma Review Completa ainda. Seja o primeiro!</p>
+              ) : (
+                sortItems(reviewsCompletasNew as any).map((r: any) => (
+                  <ReviewCompletaCard key={r.id} review={r} />
+                ))
+              )}
+            </section>
           )}
 
           {tab === 'screenshots' && (
