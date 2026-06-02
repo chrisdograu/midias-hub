@@ -119,6 +119,27 @@ export default function GameSocialHub() {
     },
   });
 
+  // Reviews Completas (nova tabela Fase 2 — diário gamer privado)
+  const friendsAndSelf = useMemo(
+    () => (user ? [user.id, ...friendIds] : friendIds),
+    [user, friendIds]
+  );
+  const { data: reviewsCompletasNew = [] } = useQuery<ReviewCompletaData[]>({
+    queryKey: ['gsh-reviews-completas', id, friendsAndSelf],
+    enabled: !!id && friendsAndSelf.length > 0,
+    queryFn: async () => {
+      const { data } = await supabase.from('reviews_completas' as any)
+        .select('*, profile:user_id(display_name,avatar_url)')
+        .eq('product_id', id!).in('user_id', friendsAndSelf)
+        .order('created_at', { ascending: false });
+      return ((data as any[]) || []) as ReviewCompletaData[];
+    },
+  });
+  const myReviewCompleta = useMemo(
+    () => reviewsCompletasNew.find(r => r.user_id === user?.id),
+    [reviewsCompletasNew, user?.id]
+  );
+
   // Filter: a content with visibility=private is only visible if I'm in author's close friends
   // For now, screenshots have owner_id+visibility; reviews have full visibility logic later.
   const visibleScreenshots = useMemo(() => {
