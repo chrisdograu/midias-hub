@@ -171,6 +171,8 @@ const App = () => (
                 { path: '/torneios/:id/partida/:matchId', el: <TournamentMatch /> },
                 { path: '/jogo/:id', el: <GameDetail /> },
                 { path: '/jogo/:id/social', el: <ProtectedRoute><GameSocialHub /></ProtectedRoute> },
+                { path: '/jogo/:id/review-completa', el: <ProtectedRoute><ReviewCompletaEditor /></ProtectedRoute> },
+                { path: '/amigo/:userId', el: <ProtectedRoute><FriendProfile /></ProtectedRoute> },
                 { path: '/bundle/:id', el: <BundleDetail /> },
                 { path: '/biblioteca/:productId', el: <ProtectedRoute><BibliotecaJogo /></ProtectedRoute> },
                 { path: '/carrinho', el: <Carrinho /> },
