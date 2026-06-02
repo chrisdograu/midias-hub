@@ -302,7 +302,24 @@ export default function GameSocialHub() {
           )}
 
           {tab === 'reviewsCompletas' && (
-            <ReviewsList reviews={sortItems(reviewsCompletas as any)} onOpenShot={openLightbox} full />
+            <section className="space-y-4">
+              {user && (
+                <div className="flex justify-end">
+                  <Link to={`/jogo/${id}/review-completa`}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs bg-primary text-primary-foreground font-semibold">
+                    <Pencil className="h-3.5 w-3.5" />
+                    {myReviewCompleta ? 'Editar minha Review Completa' : 'Escrever Review Completa'}
+                  </Link>
+                </div>
+              )}
+              {reviewsCompletasNew.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Nenhuma Review Completa ainda. Seja o primeiro!</p>
+              ) : (
+                sortItems(reviewsCompletasNew as any).map((r: any) => (
+                  <ReviewCompletaCard key={r.id} review={r} />
+                ))
+              )}
+            </section>
           )}
 
           {tab === 'screenshots' && (
