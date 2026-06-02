@@ -1600,15 +1600,21 @@ export type Database = {
         Row: {
           active_title_id: string | null
           avatar_url: string | null
+          backlog_note: string | null
           banned_until: string | null
+          banner_url: string | null
           bio: string | null
           contact_email: string | null
           cpf: string | null
           created_at: string
+          current_game_id: string | null
           display_name: string | null
           email_notifications: boolean
+          favorite_genres: string[] | null
+          gamer_personality: string | null
           id: string
           is_private: boolean
+          monthly_favorites: string[] | null
           phone: string | null
           push_notifications: boolean
           require_follow_approval: boolean
@@ -1619,15 +1625,21 @@ export type Database = {
         Insert: {
           active_title_id?: string | null
           avatar_url?: string | null
+          backlog_note?: string | null
           banned_until?: string | null
+          banner_url?: string | null
           bio?: string | null
           contact_email?: string | null
           cpf?: string | null
           created_at?: string
+          current_game_id?: string | null
           display_name?: string | null
           email_notifications?: boolean
+          favorite_genres?: string[] | null
+          gamer_personality?: string | null
           id: string
           is_private?: boolean
+          monthly_favorites?: string[] | null
           phone?: string | null
           push_notifications?: boolean
           require_follow_approval?: boolean
@@ -1638,15 +1650,21 @@ export type Database = {
         Update: {
           active_title_id?: string | null
           avatar_url?: string | null
+          backlog_note?: string | null
           banned_until?: string | null
+          banner_url?: string | null
           bio?: string | null
           contact_email?: string | null
           cpf?: string | null
           created_at?: string
+          current_game_id?: string | null
           display_name?: string | null
           email_notifications?: boolean
+          favorite_genres?: string[] | null
+          gamer_personality?: string | null
           id?: string
           is_private?: boolean
+          monthly_favorites?: string[] | null
           phone?: string | null
           push_notifications?: boolean
           require_follow_approval?: boolean
@@ -1779,6 +1797,69 @@ export type Database = {
           owner_id?: string | null
           position?: number
           review_id?: string
+          visibility?: string
+        }
+        Relationships: []
+      }
+      reviews_completas: {
+        Row: {
+          analise: string
+          contras: string[] | null
+          created_at: string
+          dificuldade: string | null
+          horas_jogadas: number | null
+          id: string
+          momentos_favoritos: string | null
+          personagens_favoritos: string | null
+          plataforma: string | null
+          product_id: string
+          pros: string[] | null
+          recomendacao: string | null
+          status: string | null
+          tags_emocionais: string[] | null
+          trilha_sonora_favorita: string | null
+          updated_at: string
+          user_id: string
+          visibility: string
+        }
+        Insert: {
+          analise: string
+          contras?: string[] | null
+          created_at?: string
+          dificuldade?: string | null
+          horas_jogadas?: number | null
+          id?: string
+          momentos_favoritos?: string | null
+          personagens_favoritos?: string | null
+          plataforma?: string | null
+          product_id: string
+          pros?: string[] | null
+          recomendacao?: string | null
+          status?: string | null
+          tags_emocionais?: string[] | null
+          trilha_sonora_favorita?: string | null
+          updated_at?: string
+          user_id: string
+          visibility?: string
+        }
+        Update: {
+          analise?: string
+          contras?: string[] | null
+          created_at?: string
+          dificuldade?: string | null
+          horas_jogadas?: number | null
+          id?: string
+          momentos_favoritos?: string | null
+          personagens_favoritos?: string | null
+          plataforma?: string | null
+          product_id?: string
+          pros?: string[] | null
+          recomendacao?: string | null
+          status?: string | null
+          tags_emocionais?: string[] | null
+          trilha_sonora_favorita?: string | null
+          updated_at?: string
+          user_id?: string
           visibility?: string
         }
         Relationships: []
