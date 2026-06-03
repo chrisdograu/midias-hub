@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Trophy, Loader2, Users, Calendar, Award, Zap, Star, Crown, ShieldCheck, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import TournamentBracket from '@/components/TournamentBracket';
+import CreateTournamentDialog from '@/components/tournaments/CreateTournamentDialog';
 
 interface Tournament {
   id: string; title: string; description: string | null; type: string; status: string;
@@ -148,13 +149,18 @@ export default function Torneios() {
           {t.starts_at && <div className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> {new Date(t.starts_at).toLocaleDateString('pt-BR')}</div>}
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" className="flex-1" onClick={() => navigate(`/torneios/${t.id}`)}>Abrir evento</Button>
+          <Button variant="outline" size="sm" className="flex-1 min-w-[100px]" onClick={() => navigate(`/torneios/${t.id}`)}>Abrir</Button>
+          {inIt && (
+            <Button variant="secondary" size="sm" onClick={() => navigate(`/torneios/${t.id}/grupo`)} title="Grupo de participantes">
+              <MessageCircle className="h-3.5 w-3.5 mr-1" /> Grupo
+            </Button>
+          )}
           {t.status === 'open' && (inIt
-            ? <Button size="sm" variant="secondary" onClick={() => leave(t)}>Sair</Button>
+            ? <Button size="sm" variant="ghost" onClick={() => leave(t)}>Sair</Button>
             : <Button size="sm" onClick={() => join(t)}>Inscrever</Button>)}
           {user && (
             <Button size="sm" variant="ghost" onClick={() => talkToAdmin(t)} title="Falar com o admin">
-              <MessageCircle className="h-3.5 w-3.5 mr-1" /> Admin
+              <MessageCircle className="h-3.5 w-3.5" />
             </Button>
           )}
         </div>
@@ -175,12 +181,15 @@ export default function Torneios() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex items-center gap-3 mb-6">
-        <Trophy className="h-7 w-7 text-yellow-500" />
-        <div>
-          <h1 className="text-3xl font-display font-bold">Torneios</h1>
-          <p className="text-muted-foreground text-sm">Compita, suba no ranking e ganhe badges exclusivos</p>
+      <div className="flex items-center justify-between gap-3 mb-6 flex-wrap">
+        <div className="flex items-center gap-3">
+          <Trophy className="h-7 w-7 text-yellow-500" />
+          <div>
+            <h1 className="text-3xl font-display font-bold">Torneios</h1>
+            <p className="text-muted-foreground text-sm">Compita, suba no ranking e ganhe badges exclusivos</p>
+          </div>
         </div>
+        {user && <CreateTournamentDialog onCreated={load} />}
       </div>
       {loading ? <div className="flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin" /></div> : (
         <Tabs defaultValue="open">

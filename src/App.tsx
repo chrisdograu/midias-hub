@@ -83,6 +83,7 @@ const Social = lazy(() => import("./pages/SocialLibrary"));
 const Torneios = lazy(() => import("./pages/Torneios"));
 const TournamentEvent = lazy(() => import("./pages/torneios/TournamentEvent"));
 const TournamentMatch = lazy(() => import("./pages/torneios/TournamentMatch"));
+const TournamentGroup = lazy(() => import("./pages/torneios/TournamentGroup"));
 const BundleDetail = lazy(() => import("./pages/BundleDetail"));
 const BibliotecaJogo = lazy(() => import("./pages/BibliotecaJogo"));
 const GameSocialHub = lazy(() => import("./pages/GameSocialHub"));
@@ -169,6 +170,7 @@ const App = () => (
                 { path: '/torneios', el: <Torneios /> },
                 { path: '/torneios/:id', el: <TournamentEvent /> },
                 { path: '/torneios/:id/partida/:matchId', el: <TournamentMatch /> },
+                { path: '/torneios/:id/grupo', el: <ProtectedRoute><TournamentGroup /></ProtectedRoute> },
                 { path: '/jogo/:id', el: <GameDetail /> },
                 { path: '/jogo/:id/social', el: <ProtectedRoute><GameSocialHub /></ProtectedRoute> },
                 { path: '/jogo/:id/review-completa', el: <ProtectedRoute><ReviewCompletaEditor /></ProtectedRoute> },
