@@ -192,27 +192,45 @@ export type Database = {
       biblioteca_usuario: {
         Row: {
           acquired_at: string
+          completed_at: string | null
+          hours_played: number
           id: string
+          mood_tags: string[]
+          my_screenshots: string[]
           personal_note: string | null
+          personal_rating: number | null
           product_id: string
+          started_at: string | null
           status: string
           status_updated_at: string
           user_id: string
         }
         Insert: {
           acquired_at?: string
+          completed_at?: string | null
+          hours_played?: number
           id?: string
+          mood_tags?: string[]
+          my_screenshots?: string[]
           personal_note?: string | null
+          personal_rating?: number | null
           product_id: string
+          started_at?: string | null
           status?: string
           status_updated_at?: string
           user_id: string
         }
         Update: {
           acquired_at?: string
+          completed_at?: string | null
+          hours_played?: number
           id?: string
+          mood_tags?: string[]
+          my_screenshots?: string[]
           personal_note?: string | null
+          personal_rating?: number | null
           product_id?: string
+          started_at?: string | null
           status?: string
           status_updated_at?: string
           user_id?: string
@@ -1921,6 +1939,44 @@ export type Database = {
         }
         Relationships: []
       }
+      tournament_chat_mutes: {
+        Row: {
+          created_at: string
+          id: string
+          muted_by: string
+          muted_until: string
+          reason: string | null
+          tournament_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          muted_by: string
+          muted_until: string
+          reason?: string | null
+          tournament_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          muted_by?: string
+          muted_until?: string
+          reason?: string | null
+          tournament_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_chat_mutes_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_duplicate_alerts: {
         Row: {
           created_at: string
@@ -2084,6 +2140,38 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "tournament_matches_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournament_moderators: {
+        Row: {
+          created_at: string
+          id: string
+          role: string
+          tournament_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: string
+          tournament_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: string
+          tournament_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_moderators_tournament_id_fkey"
             columns: ["tournament_id"]
             isOneToOne: false
             referencedRelation: "tournaments"
@@ -2677,6 +2765,7 @@ export type Database = {
         Returns: boolean
       }
       is_staff: { Args: never; Returns: boolean }
+      is_tournament_mod: { Args: { _t: string; _u: string }; Returns: boolean }
       is_user_banned: { Args: { _user_id: string }; Returns: boolean }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
