@@ -193,7 +193,7 @@ export default function BibliotecaJogo() {
             </Panel>
 
             <Panel title="Minha nota pessoal" icon={<Star className="h-4 w-4 text-yellow-500" />}>
-              <HalfStarRating value={personalRating} onChange={setPersonalRating} />
+              <InteractiveHalfStar value={personalRating} onChange={setPersonalRating} />
               <p className="text-xs text-muted-foreground mt-2">Visível só para você</p>
             </Panel>
 
