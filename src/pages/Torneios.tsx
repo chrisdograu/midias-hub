@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Trophy, Loader2, Users, Calendar, Award, Zap, Star, Crown, ShieldCheck, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import TournamentBracket from '@/components/TournamentBracket';
+import CreateTournamentDialog from '@/components/tournaments/CreateTournamentDialog';
 
 interface Tournament {
   id: string; title: string; description: string | null; type: string; status: string;
