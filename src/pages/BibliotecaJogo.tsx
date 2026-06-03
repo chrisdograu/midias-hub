@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { useSubmitGuard } from '@/hooks/useSubmitGuard';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
-import HalfStarRating from '@/components/HalfStarRating';
+import { InteractiveHalfStar } from '@/components/HalfStarRating';
 
 const STATUS_OPTIONS = [
   { v: 'quero_jogar', label: 'Quero jogar', tone: 'bg-blue-500/20 text-blue-300' },
