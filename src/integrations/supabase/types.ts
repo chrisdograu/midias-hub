@@ -459,6 +459,7 @@ export type Database = {
           anuncio_id: string | null
           category: string
           created_at: string | null
+          group_id: string | null
           has_active_report: boolean
           id: string
           is_admin_chat: boolean
@@ -474,6 +475,7 @@ export type Database = {
           anuncio_id?: string | null
           category?: string
           created_at?: string | null
+          group_id?: string | null
           has_active_report?: boolean
           id?: string
           is_admin_chat?: boolean
@@ -489,6 +491,7 @@ export type Database = {
           anuncio_id?: string | null
           category?: string
           created_at?: string | null
+          group_id?: string | null
           has_active_report?: boolean
           id?: string
           is_admin_chat?: boolean
@@ -506,6 +509,54 @@ export type Database = {
             columns: ["anuncio_id"]
             isOneToOne: false
             referencedRelation: "anuncios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversas_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversation_settings: {
+        Row: {
+          archived: boolean
+          conversation_id: string
+          created_at: string
+          favorited: boolean
+          id: string
+          muted: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          archived?: boolean
+          conversation_id: string
+          created_at?: string
+          favorited?: boolean
+          id?: string
+          muted?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          archived?: boolean
+          conversation_id?: string
+          created_at?: string
+          favorited?: boolean
+          id?: string
+          muted?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_settings_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversas"
             referencedColumns: ["id"]
           },
         ]
@@ -1168,6 +1219,205 @@ export type Database = {
         }
         Relationships: []
       }
+      group_blocks: {
+        Row: {
+          created_at: string
+          group_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          group_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          group_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_blocks_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_events: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          group_id: string
+          id: string
+          starts_at: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          group_id: string
+          id?: string
+          starts_at: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          group_id?: string
+          id?: string
+          starts_at?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_events_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_members: {
+        Row: {
+          group_id: string
+          id: string
+          joined_at: string
+          role: Database["public"]["Enums"]["group_role"]
+          user_id: string
+        }
+        Insert: {
+          group_id: string
+          id?: string
+          joined_at?: string
+          role?: Database["public"]["Enums"]["group_role"]
+          user_id: string
+        }
+        Update: {
+          group_id?: string
+          id?: string
+          joined_at?: string
+          role?: Database["public"]["Enums"]["group_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_poll_votes: {
+        Row: {
+          created_at: string
+          id: string
+          option_index: number
+          poll_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          option_index: number
+          poll_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          option_index?: number
+          poll_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_poll_votes_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "group_polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_polls: {
+        Row: {
+          closes_at: string | null
+          created_at: string
+          created_by: string
+          group_id: string
+          id: string
+          options: Json
+          question: string
+        }
+        Insert: {
+          closes_at?: string | null
+          created_at?: string
+          created_by: string
+          group_id: string
+          id?: string
+          options: Json
+          question: string
+        }
+        Update: {
+          closes_at?: string | null
+          created_at?: string
+          created_by?: string
+          group_id?: string
+          id?: string
+          options?: Json
+          question?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_polls_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      groups: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          image_url: string | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       itens_pedido: {
         Row: {
           created_at: string
@@ -1216,6 +1466,7 @@ export type Database = {
           content: string
           created_at: string
           flagged_auto: boolean
+          group_id: string | null
           id: string
           image_url: string | null
           is_admin_chat: boolean
@@ -1232,6 +1483,7 @@ export type Database = {
           content: string
           created_at?: string
           flagged_auto?: boolean
+          group_id?: string | null
           id?: string
           image_url?: string | null
           is_admin_chat?: boolean
@@ -1248,6 +1500,7 @@ export type Database = {
           content?: string
           created_at?: string
           flagged_auto?: boolean
+          group_id?: string | null
           id?: string
           image_url?: string | null
           is_admin_chat?: boolean
@@ -1267,7 +1520,44 @@ export type Database = {
             referencedRelation: "anuncios"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "mensagens_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      mentions: {
+        Row: {
+          context_preview: string | null
+          created_at: string
+          id: string
+          mentioned_by: string
+          mentioned_user_id: string
+          source_id: string
+          source_type: string
+        }
+        Insert: {
+          context_preview?: string | null
+          created_at?: string
+          id?: string
+          mentioned_by: string
+          mentioned_user_id: string
+          source_id: string
+          source_type: string
+        }
+        Update: {
+          context_preview?: string | null
+          created_at?: string
+          id?: string
+          mentioned_by?: string
+          mentioned_user_id?: string
+          source_id?: string
+          source_type?: string
+        }
+        Relationships: []
       }
       moderation_history: {
         Row: {
@@ -2706,6 +2996,10 @@ export type Database = {
         Returns: undefined
       }
       are_mutual_friends: { Args: { _a: string; _b: string }; Returns: boolean }
+      are_users_all_mutual_friends: {
+        Args: { _users: string[] }
+        Returns: boolean
+      }
       award_tournament_rewards: {
         Args: { _tournament_id: string }
         Returns: undefined
@@ -2764,6 +3058,14 @@ export type Database = {
         Args: { _owner: string; _viewer: string }
         Returns: boolean
       }
+      is_group_admin: {
+        Args: { _group: string; _user: string }
+        Returns: boolean
+      }
+      is_group_member: {
+        Args: { _group: string; _user: string }
+        Returns: boolean
+      }
       is_staff: { Args: never; Returns: boolean }
       is_tournament_mod: { Args: { _t: string; _u: string }; Returns: boolean }
       is_user_banned: { Args: { _user_id: string }; Returns: boolean }
@@ -2785,6 +3087,7 @@ export type Database = {
         | "atendente_marketplace"
         | "estoquista"
         | "atendente"
+      group_role: "admin" | "member" | "observer"
       notification_type:
         | "nova_mensagem"
         | "proposta_aceita"
@@ -2947,6 +3250,7 @@ export const Constants = {
         "estoquista",
         "atendente",
       ],
+      group_role: ["admin", "member", "observer"],
       notification_type: [
         "nova_mensagem",
         "proposta_aceita",
