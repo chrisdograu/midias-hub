@@ -139,11 +139,25 @@ export default function MChat() {
   }, {});
 
   const list = tab === 'torneios' ? tournamentConvs : tab === 'vendedores' ? vendorConvs : friendsConvs;
-  const filtered = list.filter(c => !query.trim() || c.other_name.toLowerCase().includes(query.toLowerCase()) || (c.tournament_title || '').toLowerCase().includes(query.toLowerCase()) || (c.ad_title || '').toLowerCase().includes(query.toLowerCase()));
+  const byFilter = list.filter(c => {
+    if (filter === 'favorites') return c.favorited;
+    if (filter === 'unread') return c.unread > 0;
+    if (filter === 'archived') return c.archived;
+    return !c.archived;
+  });
+  const filtered = byFilter.filter(c => !query.trim() || c.other_name.toLowerCase().includes(query.toLowerCase()) || (c.tournament_title || '').toLowerCase().includes(query.toLowerCase()) || (c.ad_title || '').toLowerCase().includes(query.toLowerCase()));
+
+  // Pesquisa social — @handle
+  const isSocialSearch = query.trim().startsWith('@') && query.trim().length > 1;
 
   return (
-    <div className="h-full overflow-hidden px-4 py-5 flex flex-col gap-4">
-      <h1 className="font-display text-xl font-bold gradient-text">Chat</h1>
+    <div className="h-full overflow-hidden px-4 py-5 flex flex-col gap-3">
+      <div className="flex items-center justify-between">
+        <h1 className="font-display text-xl font-bold gradient-text">Chat</h1>
+        <Link to="/m/grupos" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-card border border-border text-xs font-semibold hover:border-primary/40">
+          <UsersRound className="h-3.5 w-3.5 text-primary" /> Grupos
+        </Link>
+      </div>
 
       <div className="flex gap-1 p-1 bg-card border border-border rounded-xl">
         <button onClick={() => setTab('amigos')} className={`flex-1 py-2 rounded-lg text-[11px] font-semibold transition-all flex items-center justify-center gap-1 ${tab === 'amigos' ? 'bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-md' : 'text-muted-foreground'}`}>
@@ -160,10 +174,49 @@ export default function MChat() {
         </button>
       </div>
 
+      <div className="flex gap-1.5 overflow-x-auto scrollbar-thin">
+        {([
+          { id: 'all', label: 'Todos', Icon: Inbox },
+          { id: 'favorites', label: 'Favoritos', Icon: Star },
+          { id: 'unread', label: 'Não lidos', Icon: MessagesSquare },
+          { id: 'archived', label: 'Arquivados', Icon: Archive },
+        ] as { id: Filter; label: string; Icon: any }[]).map(f => (
+          <button key={f.id} onClick={() => setFilter(f.id)}
+            className={`px-3 py-1.5 rounded-full text-[11px] font-semibold whitespace-nowrap flex items-center gap-1 ${filter === f.id ? 'bg-primary text-primary-foreground' : 'bg-card border border-border text-muted-foreground'}`}>
+            <f.Icon className="h-3 w-3" /> {f.label}
+          </button>
+        ))}
+      </div>
+
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <input value={query} onChange={e => setQuery(e.target.value)} placeholder={tab === 'torneios' ? 'Buscar por torneio ou jogador...' : 'Buscar conversas...'} className="w-full pl-10 pr-3 py-2.5 bg-card border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
+        <input
+          value={query} onChange={async e => {
+            const v = e.target.value;
+            setQuery(v);
+            if (v.startsWith('@') && v.length > 2) {
+              const { data } = await supabase.from('profiles').select('id, display_name, avatar_url').ilike('display_name', `${v.slice(1)}%`).limit(8);
+              setSearchProfiles(data || []);
+            } else setSearchProfiles([]);
+          }}
+          placeholder={'Buscar conversas... (@ para usuários)'}
+          className="w-full pl-10 pr-3 py-2.5 bg-card border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
+        {isSocialSearch && searchProfiles.length > 0 && (
+          <div className="absolute top-full left-0 right-0 mt-1 glass rounded-xl p-2 z-30 max-h-64 overflow-y-auto">
+            <p className="text-[10px] uppercase text-muted-foreground px-2 mb-1">Pesquisa social</p>
+            {searchProfiles.map(p => (
+              <Link key={p.id} to={`/m/perfil/${p.id}`} className="flex items-center gap-2 p-2 rounded-lg hover:bg-card">
+                {p.avatar_url ? <img src={p.avatar_url} alt="" className="w-7 h-7 rounded-full object-cover" /> : <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-[10px] font-bold text-primary-foreground">{p.display_name?.[0]?.toUpperCase()}</div>}
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold truncate">{p.display_name}</p>
+                  <p className="text-[10px] text-muted-foreground">@{(p.display_name || '').toLowerCase()}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
+
 
       <div className="min-h-0 flex-1 overflow-y-auto pr-1">
       {loading ? (
