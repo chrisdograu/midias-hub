@@ -14,7 +14,11 @@ interface Conv {
   other_id: string; other_name: string; other_avatar: string | null;
   unread: number; ad_title: string | null;
   tournament_id: string | null; is_admin_chat: boolean; tournament_title: string | null;
+  favorited: boolean; archived: boolean; muted: boolean;
 }
+
+type Filter = 'all' | 'favorites' | 'unread' | 'archived';
+
 
 function getConversationPreview(conv: Conv) {
   const raw = (conv.last_message || '').trim();
@@ -32,6 +36,9 @@ export default function MChat() {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
   const [tab, setTab] = useState<'amigos' | 'vendedores' | 'torneios'>('amigos');
+  const [filter, setFilter] = useState<Filter>('all');
+  const [searchProfiles, setSearchProfiles] = useState<any[]>([]);
+
 
   const applyConversationState = async (convs: any[]) => {
     const otherIds = convs.map(c => c.participant_1 === user?.id ? c.participant_2 : c.participant_1);
