@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Loader2, Search, MessagesSquare, Check, X, Trophy, ShieldAlert, Users, Store } from 'lucide-react';
+import { Loader2, Search, MessagesSquare, Check, X, Trophy, ShieldAlert, Users, Store, Star, Archive, Inbox, UsersRound } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { timeAgo } from '@/mobile/lib/time';
 import { MobileBadge } from '@/mobile/lib/badge';
 import { toast } from 'sonner';
+
 
 interface Conv {
   id: string; participant_1: string; participant_2: string; anuncio_id: string | null;
