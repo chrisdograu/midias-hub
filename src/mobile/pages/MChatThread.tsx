@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Send, Image as ImageIcon, ArrowLeftRight, Loader2, Check, X, User, Sparkles } from 'lucide-react';
+import { ArrowLeft, Send, Image as ImageIcon, ArrowLeftRight, Loader2, Check, X, User, Sparkles, MoreVertical, Star, Archive, BellOff, ShieldOff, Flag, Package } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -8,6 +8,9 @@ import { toast } from 'sonner';
 import { MobileBadge } from '@/mobile/lib/badge';
 import { ItemActionsMenu } from '@/components/ItemActionsMenu';
 import { GifPicker } from '@/components/GifPicker';
+import { MentionText } from '@/mobile/components/MentionText';
+import { recordMentions } from '@/mobile/lib/mentions';
+
 
 interface Msg {
   id: string; sender_id: string; receiver_id: string; content: string;
