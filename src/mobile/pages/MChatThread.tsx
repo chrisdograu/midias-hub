@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Send, Image as ImageIcon, ArrowLeftRight, Loader2, Check, X, User, Sparkles } from 'lucide-react';
+import { ArrowLeft, Send, Image as ImageIcon, ArrowLeftRight, Loader2, Check, X, User, Sparkles, MoreVertical, Star, Archive, BellOff, ShieldOff, Flag, Package } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -8,6 +8,9 @@ import { toast } from 'sonner';
 import { MobileBadge } from '@/mobile/lib/badge';
 import { ItemActionsMenu } from '@/components/ItemActionsMenu';
 import { GifPicker } from '@/components/GifPicker';
+import { MentionText } from '@/mobile/components/MentionText';
+import { recordMentions } from '@/mobile/lib/mentions';
+
 
 interface Msg {
   id: string; sender_id: string; receiver_id: string; content: string;
@@ -196,7 +199,7 @@ export default function MChatThread() {
     <div className="flex flex-col overflow-hidden bg-background" style={{ minHeight: threadHeight, height: threadHeight }}>
       <header className="z-20 backdrop-blur-xl bg-background/80 border-b border-border/50 px-3 py-2 flex items-center gap-3 shrink-0">
         <button onClick={() => navigate('/m/chat')} className="p-1"><ArrowLeft className="h-5 w-5" /></button>
-        <Link to={`/m/perfil/${other.id}`} className="flex items-center gap-2 flex-1 min-w-0">
+        <Link to={`/m/chat/${conversationId}/info`} className="flex items-center gap-2 flex-1 min-w-0">
           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-accent overflow-hidden flex items-center justify-center text-primary-foreground font-bold text-sm shrink-0">
             {other.avatar_url ? <img src={other.avatar_url} alt="" className="w-full h-full object-cover" /> : other.display_name?.[0]?.toUpperCase() || <User className="h-4 w-4" />}
           </div>
@@ -205,7 +208,14 @@ export default function MChatThread() {
             {ad && <p className="text-[10px] text-muted-foreground truncate">📦 {ad.title}</p>}
           </div>
         </Link>
+        {ad && (
+          <Link to={`/m/marketplace/${ad.id}`} className="p-2 rounded-lg bg-primary/15 text-primary text-[10px] font-semibold flex items-center gap-1" title="Ver produto">
+            <Package className="h-3.5 w-3.5" /> Produto
+          </Link>
+        )}
+        <Link to={`/m/chat/${conversationId}/info`} className="p-2"><MoreVertical className="h-4 w-4 text-muted-foreground" /></Link>
       </header>
+
 
       <div className="flex-1 min-h-0 px-3 py-3 space-y-2 overflow-y-auto">
         {msgs.length === 0 && <p className="text-center text-xs text-muted-foreground py-10">Mande a primeira mensagem 👋</p>}

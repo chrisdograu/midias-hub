@@ -29,6 +29,13 @@ import MBlockedUsers from "./mobile/pages/MBlockedUsers";
 import MReview from "./mobile/pages/MReview";
 import MFavoritos from "./mobile/pages/MFavoritos";
 import MFriends from "./mobile/pages/MFriends";
+import MGroups from "./mobile/pages/MGroups";
+import MGroupNew from "./mobile/pages/MGroupNew";
+import MGroupChat from "./mobile/pages/MGroupChat";
+import MGroupInfo from "./mobile/pages/MGroupInfo";
+import MChatInfo from "./mobile/pages/MChatInfo";
+import MTournamentGroup from "./mobile/pages/MTournamentGroup";
+
 import MNotFound from "./mobile/pages/MNotFound";
 import NotFound from "./pages/NotFound";
 
@@ -122,6 +129,13 @@ const App = () => (
               <Route path="/m/review/:productId" element={<MobileLayout><MReview /></MobileLayout>} />
               <Route path="/m/chat" element={<MobileLayout><ProtectedRoute redirectTo="/m/auth"><MChat /></ProtectedRoute></MobileLayout>} />
               <Route path="/m/chat/:conversationId" element={<MobileLayout><ProtectedRoute redirectTo="/m/auth"><MChatThread /></ProtectedRoute></MobileLayout>} />
+              <Route path="/m/chat/:conversationId/info" element={<MobileLayout><ProtectedRoute redirectTo="/m/auth"><MChatInfo /></ProtectedRoute></MobileLayout>} />
+              <Route path="/m/grupos" element={<MobileLayout><ProtectedRoute redirectTo="/m/auth"><MGroups /></ProtectedRoute></MobileLayout>} />
+              <Route path="/m/grupos/novo" element={<MobileLayout><ProtectedRoute redirectTo="/m/auth"><MGroupNew /></ProtectedRoute></MobileLayout>} />
+              <Route path="/m/grupos/:id" element={<MobileLayout><ProtectedRoute redirectTo="/m/auth"><MGroupChat /></ProtectedRoute></MobileLayout>} />
+              <Route path="/m/grupos/:id/info" element={<MobileLayout><ProtectedRoute redirectTo="/m/auth"><MGroupInfo /></ProtectedRoute></MobileLayout>} />
+              <Route path="/m/torneios/:id/grupo" element={<MobileLayout><ProtectedRoute redirectTo="/m/auth"><MTournamentGroup /></ProtectedRoute></MobileLayout>} />
+
               <Route path="/m/perfil" element={<MobileLayout><ProtectedRoute redirectTo="/m/auth"><MProfile /></ProtectedRoute></MobileLayout>} />
               <Route path="/m/perfil/:userId" element={<MobileLayout><MProfile /></MobileLayout>} />
               <Route path="/m/config" element={<MobileLayout><ProtectedRoute redirectTo="/m/auth"><MConfig /></ProtectedRoute></MobileLayout>} />
