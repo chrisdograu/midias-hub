@@ -44,21 +44,25 @@ export default function MChat() {
     const otherIds = convs.map(c => c.participant_1 === user?.id ? c.participant_2 : c.participant_1);
     const adIds = convs.map(c => c.anuncio_id).filter(Boolean) as string[];
     const tIds = [...new Set(convs.map(c => c.tournament_id).filter(Boolean) as string[])];
-    const [{ data: profiles }, { data: ads }, { data: unread }, { data: tourns }] = await Promise.all([
+    const convIds = convs.map(c => c.id);
+    const [{ data: profiles }, { data: ads }, { data: unread }, { data: tourns }, { data: settings }] = await Promise.all([
       otherIds.length ? supabase.from('profiles').select('id, display_name, avatar_url').in('id', otherIds) : Promise.resolve({ data: [] }),
       adIds.length ? supabase.from('anuncios').select('id, title').in('id', adIds) : Promise.resolve({ data: [] }),
       user ? supabase.from('mensagens').select('sender_id').eq('receiver_id', user.id).eq('is_read', false) : Promise.resolve({ data: [] }),
       tIds.length ? supabase.from('tournaments' as any).select('id, title').in('id', tIds) : Promise.resolve({ data: [] }),
+      user && convIds.length ? supabase.from('conversation_settings').select('conversation_id, favorited, archived, muted').eq('user_id', user.id).in('conversation_id', convIds) : Promise.resolve({ data: [] }),
     ]);
     const profileMap = new Map((profiles || []).map(p => [p.id, p]));
     const adMap = new Map((ads || []).map(a => [a.id, a.title]));
     const tournMap = new Map(((tourns as any) || []).map((t: any) => [t.id, t.title]));
+    const settingsMap = new Map(((settings as any) || []).map((s: any) => [s.conversation_id, s]));
     const unreadMap = new Map<string, number>();
     (unread || []).forEach(m => unreadMap.set(m.sender_id, (unreadMap.get(m.sender_id) || 0) + 1));
 
     setConversas(convs.map(c => {
       const otherId = c.participant_1 === user?.id ? c.participant_2 : c.participant_1;
       const p = profileMap.get(otherId);
+      const s = settingsMap.get(c.id) as any;
       return {
         id: c.id, participant_1: c.participant_1, participant_2: c.participant_2,
         anuncio_id: c.anuncio_id, last_message: c.last_message, last_message_at: c.last_message_at,
@@ -68,8 +72,10 @@ export default function MChat() {
         tournament_id: c.tournament_id || null,
         is_admin_chat: !!c.is_admin_chat,
         tournament_title: c.tournament_id ? (tournMap.get(c.tournament_id) as string) || null : null,
+        favorited: !!s?.favorited, archived: !!s?.archived, muted: !!s?.muted,
       };
     }));
+
   };
 
   const load = async () => {
