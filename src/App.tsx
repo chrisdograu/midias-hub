@@ -29,6 +29,13 @@ import MBlockedUsers from "./mobile/pages/MBlockedUsers";
 import MReview from "./mobile/pages/MReview";
 import MFavoritos from "./mobile/pages/MFavoritos";
 import MFriends from "./mobile/pages/MFriends";
+import MGroups from "./mobile/pages/MGroups";
+import MGroupNew from "./mobile/pages/MGroupNew";
+import MGroupChat from "./mobile/pages/MGroupChat";
+import MGroupInfo from "./mobile/pages/MGroupInfo";
+import MChatInfo from "./mobile/pages/MChatInfo";
+import MTournamentGroup from "./mobile/pages/MTournamentGroup";
+
 import MNotFound from "./mobile/pages/MNotFound";
 import NotFound from "./pages/NotFound";
 
