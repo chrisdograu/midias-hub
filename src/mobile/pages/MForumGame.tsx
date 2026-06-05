@@ -288,45 +288,57 @@ export default function MForumGame() {
         <div className="mt-4 space-y-2.5">
           {feedLoading ? (
             <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
-          ) : tab === 'forum' ? (
-            filteredPosts.length === 0 ? <p className="text-center py-10 text-sm text-muted-foreground">Nenhum post no período.</p> :
-              filteredPosts.map(p => (
-                <div key={p.id} className="glass rounded-xl p-3 hover:border-primary/40 transition-colors">
-                  <Link to={`/m/forum/post/${p.id}`} className="block">
-                    <div className="flex items-center justify-between text-[10px] text-muted-foreground"><span className="flex items-center gap-1.5"><b className="text-foreground">{p.author}</b><LevelBadge userId={p.user_id} size="sm" /></span><span>{timeAgo(p.created_at)}</span></div>
-                    <p className="text-sm mt-1.5 line-clamp-3">{p.content}</p>
-                  </Link>
-                  <div className="flex items-center gap-3 mt-2 text-[11px] text-muted-foreground">
-                    <button onClick={() => togglePostLike(p)} className={`flex items-center gap-1 hover:text-primary ${p.iLiked ? 'text-primary' : ''}`}>
-                      <ThumbsUp className={`h-3 w-3 ${p.iLiked ? 'fill-current' : ''}`} />{p.likes_count}
-                    </button>
-                    <Link to={`/m/forum/post/${p.id}`} className="flex items-center gap-1 hover:text-foreground">
-                      <MessageSquare className="h-3 w-3" />{p.replies}
-                    </Link>
-                  </div>
-                </div>
-              ))
-          ) : (
-            filteredReviews.length === 0 ? <p className="text-center py-10 text-sm text-muted-foreground">Nenhuma review no período.</p> :
-              filteredReviews.map(r => (
-                <Link key={r.id} to={`/m/review/${gameId}?focus=${r.id}`} className="block glass rounded-xl p-3">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="flex items-center gap-1.5"><span className="text-sm font-semibold">{r.author}</span><LevelBadge userId={r.user_id} size="sm" /></span>
-                    <span className="text-[10px] text-muted-foreground">{timeAgo(r.created_at)}</span>
-                  </div>
-                  <div className="flex items-center gap-2 mb-1"><HalfStarDisplay rating={r.rating} size={13} /><span className="text-xs font-semibold text-price">{r.rating.toFixed(1)}</span></div>
-                  {r.comment && <p className="text-sm">{r.comment}</p>}
-                  <div className="flex items-center gap-3 mt-2 text-[11px] text-muted-foreground">
-                    <button onClick={(e) => { e.preventDefault(); reactReview(r, 'like'); }} className={`flex items-center gap-1 hover:text-primary ${r.myReaction === 'like' ? 'text-primary' : ''}`}>
-                      <ThumbsUp className={`h-3 w-3 ${r.myReaction === 'like' ? 'fill-current' : ''}`} />{r.likes}
-                    </button>
-                    <button onClick={(e) => { e.preventDefault(); reactReview(r, 'dislike'); }} className={`flex items-center gap-1 hover:text-destructive ${r.myReaction === 'dislike' ? 'text-destructive' : ''}`}>
-                      <ThumbsDown className={`h-3 w-3 ${r.myReaction === 'dislike' ? 'fill-current' : ''}`} />{r.dislikes}
-                    </button>
-                  </div>
+          ) : (() => {
+            const showPosts = tab !== 'reviews';
+            const showReviews = tab !== 'forum';
+            const postNodes = filteredPosts.map(p => (
+              <div key={`p-${p.id}`} className="glass rounded-xl p-3 hover:border-primary/40 transition-colors">
+                <Link to={`/m/forum/post/${p.id}`} className="block">
+                  <div className="flex items-center justify-between text-[10px] text-muted-foreground"><span className="flex items-center gap-1.5"><span className="px-1.5 py-0.5 rounded bg-primary/15 text-primary text-[9px] font-bold">FÓRUM</span><b className="text-foreground">{p.author}</b><LevelBadge userId={p.user_id} size="sm" /></span><span>{timeAgo(p.created_at)}</span></div>
+                  <p className="text-sm mt-1.5 line-clamp-3">{p.content}</p>
                 </Link>
-              ))
-          )}
+                <div className="flex items-center gap-3 mt-2 text-[11px] text-muted-foreground">
+                  <button onClick={() => togglePostLike(p)} className={`flex items-center gap-1 hover:text-primary ${p.iLiked ? 'text-primary' : ''}`}>
+                    <ThumbsUp className={`h-3 w-3 ${p.iLiked ? 'fill-current' : ''}`} />{p.likes_count}
+                  </button>
+                  <Link to={`/m/forum/post/${p.id}`} className="flex items-center gap-1 hover:text-foreground">
+                    <MessageSquare className="h-3 w-3" />{p.replies}
+                  </Link>
+                </div>
+              </div>
+            ));
+            const reviewNodes = filteredReviews.map(r => (
+              <Link key={`r-${r.id}`} to={`/m/review/${gameId}?focus=${r.id}`} className="block glass rounded-xl p-3">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="flex items-center gap-1.5"><span className="px-1.5 py-0.5 rounded bg-accent/15 text-accent text-[9px] font-bold">REVIEW</span><span className="text-sm font-semibold">{r.author}</span><LevelBadge userId={r.user_id} size="sm" /></span>
+                  <span className="text-[10px] text-muted-foreground">{timeAgo(r.created_at)}</span>
+                </div>
+                <div className="flex items-center gap-2 mb-1"><HalfStarDisplay rating={r.rating} size={13} /><span className="text-xs font-semibold text-price">{r.rating.toFixed(1)}</span></div>
+                {r.comment && <p className="text-sm">{r.comment}</p>}
+                <div className="flex items-center gap-3 mt-2 text-[11px] text-muted-foreground">
+                  <button onClick={(e) => { e.preventDefault(); reactReview(r, 'like'); }} className={`flex items-center gap-1 hover:text-primary ${r.myReaction === 'like' ? 'text-primary' : ''}`}>
+                    <ThumbsUp className={`h-3 w-3 ${r.myReaction === 'like' ? 'fill-current' : ''}`} />{r.likes}
+                  </button>
+                  <button onClick={(e) => { e.preventDefault(); reactReview(r, 'dislike'); }} className={`flex items-center gap-1 hover:text-destructive ${r.myReaction === 'dislike' ? 'text-destructive' : ''}`}>
+                    <ThumbsDown className={`h-3 w-3 ${r.myReaction === 'dislike' ? 'fill-current' : ''}`} />{r.dislikes}
+                  </button>
+                </div>
+              </Link>
+            ));
+            let merged: any[] = [];
+            if (tab === 'forum') merged = postNodes;
+            else if (tab === 'reviews') merged = reviewNodes;
+            else {
+              // Both — intercala por data desc
+              const all = [
+                ...filteredPosts.map(p => ({ kind: 'p' as const, date: p.created_at, node: postNodes.find(n => n.key === `p-${p.id}`)! })),
+                ...filteredReviews.map(r => ({ kind: 'r' as const, date: r.created_at, node: reviewNodes.find(n => n.key === `r-${r.id}`)! })),
+              ].sort((a,b) => +new Date(b.date) - +new Date(a.date));
+              merged = all.map(x => x.node);
+            }
+            if (!merged.length) return <p className="text-center py-10 text-sm text-muted-foreground">Nada por aqui no período.</p>;
+            return merged;
+          })()}
         </div>
       </div>
 
