@@ -2498,6 +2498,7 @@ export type Database = {
       }
       tournament_participants: {
         Row: {
+          chat_role: Database["public"]["Enums"]["tournament_chat_role"]
           device_fingerprint: string | null
           final_rank: number | null
           id: string
@@ -2508,6 +2509,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          chat_role?: Database["public"]["Enums"]["tournament_chat_role"]
           device_fingerprint?: string | null
           final_rank?: number | null
           id?: string
@@ -2518,6 +2520,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          chat_role?: Database["public"]["Enums"]["tournament_chat_role"]
           device_fingerprint?: string | null
           final_rank?: number | null
           id?: string
@@ -3107,6 +3110,7 @@ export type Database = {
       product_type: "digital" | "physical" | "subscription"
       stock_movement_type: "entrada" | "saida" | "ajuste"
       suggestion_status: "pendente" | "aprovado" | "rejeitado"
+      tournament_chat_role: "admin" | "member" | "observer"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -3272,6 +3276,7 @@ export const Constants = {
       product_type: ["digital", "physical", "subscription"],
       stock_movement_type: ["entrada", "saida", "ajuste"],
       suggestion_status: ["pendente", "aprovado", "rejeitado"],
+      tournament_chat_role: ["admin", "member", "observer"],
     },
   },
 } as const
