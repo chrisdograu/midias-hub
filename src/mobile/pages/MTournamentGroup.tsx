@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Loader2, Send, Crown, Trash2, ShieldCheck, UserMinus, VolumeX } from 'lucide-react';
+import { ArrowLeft, Loader2, Send, Crown, Trash2, ShieldCheck, UserMinus, VolumeX, Users, Eye, Shield } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -8,6 +8,8 @@ import { MentionText } from '@/mobile/components/MentionText';
 import { recordMentions } from '@/mobile/lib/mentions';
 
 interface Msg { id: string; sender_id: string; content: string; created_at: string; }
+type Role = 'admin' | 'member' | 'observer';
+interface Participant { user_id: string; chat_role: Role; profiles: { display_name: string | null; avatar_url: string | null } | null; }
 
 export default function MTournamentGroup() {
   const { id } = useParams<{ id: string }>();
@@ -16,8 +18,7 @@ export default function MTournamentGroup() {
   const [tournament, setTournament] = useState<any>(null);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [profiles, setProfiles] = useState<Record<string, any>>({});
-  const [participants, setParticipants] = useState<any[]>([]);
-  const [isMod, setIsMod] = useState(false);
+  const [participants, setParticipants] = useState<Participant[]>([]);
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(true);
   const [showSide, setShowSide] = useState(false);
@@ -28,8 +29,6 @@ export default function MTournamentGroup() {
     (async () => {
       const { data: t } = await supabase.from('tournaments').select('*').eq('id', id).maybeSingle();
       setTournament(t);
-      const { data: mods } = await supabase.from('tournament_moderators').select('user_id').eq('tournament_id', id);
-      setIsMod(!!mods?.some((m: any) => m.user_id === user.id));
       await loadParticipants();
       await loadMessages();
       setLoading(false);
@@ -57,13 +56,17 @@ export default function MTournamentGroup() {
   };
   const loadParticipants = async () => {
     const { data } = await supabase.from('tournament_participants')
-      .select('user_id, profiles:user_id(display_name, avatar_url)')
+      .select('user_id, chat_role, profiles:user_id(display_name, avatar_url)')
       .eq('tournament_id', id!);
     setParticipants((data as any) || []);
   };
 
+  const me = participants.find(p => p.user_id === user?.id);
+  const isAdmin = me?.chat_role === 'admin';
+  const canSend = me && me.chat_role !== 'observer';
+
   const send = async () => {
-    if (!text.trim() || !user) return;
+    if (!text.trim() || !user || !canSend) return;
     const content = text.trim();
     setText('');
     const { data: inserted, error } = await supabase.from('mensagens').insert({
@@ -87,12 +90,26 @@ export default function MTournamentGroup() {
     toast.success('Silenciado');
   };
 
+  const setRole = async (uid: string, role: Role) => {
+    const { error } = await supabase.from('tournament_participants').update({ chat_role: role } as any)
+      .eq('tournament_id', id!).eq('user_id', uid);
+    if (error) toast.error(error.message); else toast.success('Permissão atualizada');
+  };
+
+  // Controles globais — não tocam em admins
+  const bulkSetRole = async (role: 'member' | 'observer') => {
+    if (!confirm(role === 'member' ? 'Transformar todos os observadores em membros?' : 'Transformar todos os membros em observadores?')) return;
+    const target: Role = role === 'member' ? 'observer' : 'member';
+    const { error } = await supabase.from('tournament_participants').update({ chat_role: role } as any)
+      .eq('tournament_id', id!).eq('chat_role', target);
+    if (error) toast.error(error.message); else { toast.success('Aplicado a todos (admins preservados)'); loadParticipants(); }
+  };
+
   if (!user) return <Navigate to="/m/auth" replace />;
   if (loading) return <div className="flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
   if (!tournament) return <div className="p-6 text-center text-muted-foreground">Torneio não encontrado</div>;
 
-  const amParticipant = participants.some((p: any) => p.user_id === user.id);
-  if (!amParticipant && !isMod) {
+  if (!me && !isAdmin) {
     return (
       <div className="p-6 text-center">
         <p className="text-sm text-muted-foreground mb-3">Apenas participantes acessam o grupo do torneio.</p>
@@ -102,6 +119,11 @@ export default function MTournamentGroup() {
   }
   const threadHeight = 'calc(100dvh - 57px - 56px - env(safe-area-inset-bottom))';
 
+  const RoleIcon = ({ r }: { r: Role }) =>
+    r === 'admin' ? <Crown className="h-3 w-3 text-yellow-500" /> :
+    r === 'member' ? <Shield className="h-3 w-3 text-primary" /> :
+    <Eye className="h-3 w-3 text-muted-foreground" />;
+
   return (
     <div className="flex flex-col overflow-hidden bg-background" style={{ height: threadHeight }}>
       <header className="shrink-0 backdrop-blur-xl bg-background/80 border-b border-border/50 px-3 py-2 flex items-center gap-3">
@@ -109,31 +131,49 @@ export default function MTournamentGroup() {
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold truncate flex items-center gap-1">
             🏆 {tournament.title}
-            {isMod && <Crown className="h-3 w-3 text-yellow-500" />}
+            {isAdmin && <Crown className="h-3 w-3 text-yellow-500" />}
           </p>
           <p className="text-[10px] text-muted-foreground">{participants.length} participantes</p>
         </div>
-        <button onClick={() => setShowSide(!showSide)} className="p-2"><ShieldCheck className="h-4 w-4 text-primary" /></button>
+        <button onClick={() => setShowSide(!showSide)} className="p-2"><Users className="h-4 w-4 text-primary" /></button>
       </header>
 
       {showSide && (
-        <div className="shrink-0 max-h-[40vh] overflow-y-auto border-b border-border bg-card/50 p-3">
-          <p className="text-xs font-bold uppercase text-muted-foreground mb-2">Participantes</p>
-          <div className="space-y-1.5">
-            {participants.map((p: any) => (
-              <div key={p.user_id} className="flex items-center gap-2 text-sm">
-                <Link to={`/m/perfil/${p.user_id}`} className="flex items-center gap-2 flex-1 min-w-0">
-                  {p.profiles?.avatar_url ? <img src={p.profiles.avatar_url} alt="" className="w-6 h-6 rounded-full object-cover" /> : <div className="w-6 h-6 rounded-full bg-secondary" />}
-                  <span className="truncate">{p.profiles?.display_name || 'Usuário'}</span>
-                </Link>
-                {isMod && p.user_id !== user.id && (
-                  <>
-                    <button onClick={() => mute(p.user_id)} className="text-yellow-500" title="Silenciar"><VolumeX className="h-3.5 w-3.5" /></button>
-                    <button onClick={() => kick(p.user_id)} className="text-destructive"><UserMinus className="h-3.5 w-3.5" /></button>
-                  </>
-                )}
+        <div className="shrink-0 max-h-[55vh] overflow-y-auto border-b border-border bg-card/50 p-3 space-y-3">
+          {isAdmin && (
+            <div className="space-y-1.5">
+              <p className="text-[10px] font-bold uppercase text-muted-foreground">Controles rápidos</p>
+              <div className="flex gap-1.5">
+                <button onClick={() => bulkSetRole('member')} className="flex-1 py-2 rounded-lg bg-primary/15 text-primary text-[11px] font-semibold">Todos → Membros</button>
+                <button onClick={() => bulkSetRole('observer')} className="flex-1 py-2 rounded-lg bg-muted text-[11px] font-semibold">Todos → Observadores</button>
               </div>
-            ))}
+              <p className="text-[9px] text-muted-foreground">Administradores nunca são afetados pelos controles globais.</p>
+            </div>
+          )}
+          <div>
+            <p className="text-[10px] font-bold uppercase text-muted-foreground mb-2">Participantes</p>
+            <div className="space-y-1.5">
+              {participants.map(p => (
+                <div key={p.user_id} className="flex items-center gap-2 text-sm">
+                  <Link to={`/m/perfil/${p.user_id}`} className="flex items-center gap-2 flex-1 min-w-0">
+                    {p.profiles?.avatar_url ? <img src={p.profiles.avatar_url} alt="" className="w-6 h-6 rounded-full object-cover" /> : <div className="w-6 h-6 rounded-full bg-secondary" />}
+                    <span className="truncate flex items-center gap-1">{p.profiles?.display_name || 'Usuário'} <RoleIcon r={p.chat_role} /></span>
+                  </Link>
+                  {isAdmin && p.user_id !== user.id && (
+                    <>
+                      <select value={p.chat_role} onChange={e => setRole(p.user_id, e.target.value as Role)}
+                        className="text-[10px] bg-card border border-border rounded px-1 py-0.5">
+                        <option value="admin">Admin</option>
+                        <option value="member">Membro</option>
+                        <option value="observer">Observador</option>
+                      </select>
+                      <button onClick={() => mute(p.user_id)} className="text-yellow-500" title="Silenciar"><VolumeX className="h-3.5 w-3.5" /></button>
+                      <button onClick={() => kick(p.user_id)} className="text-destructive"><UserMinus className="h-3.5 w-3.5" /></button>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
@@ -155,7 +195,7 @@ export default function MTournamentGroup() {
                 <MentionText text={m.content} className="text-sm whitespace-pre-wrap break-words" />
                 <p className={`text-[9px] mt-0.5 ${own ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>{new Date(m.created_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</p>
               </div>
-              {isMod && !own && (
+              {isAdmin && !own && (
                 <button onClick={() => deleteMsg(m.id)} className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive p-1"><Trash2 className="h-3 w-3" /></button>
               )}
             </div>
@@ -165,15 +205,21 @@ export default function MTournamentGroup() {
       </div>
 
       <div className="shrink-0 backdrop-blur-xl bg-background/90 border-t border-border/50 px-2 py-2">
-        <div className="flex items-center gap-1.5">
-          <input value={text} onChange={e => setText(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), send())}
-            placeholder="Mensagem (use @)..." maxLength={1000}
-            className="flex-1 px-3 py-2.5 bg-card border border-border rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
-          <button onClick={send} disabled={!text.trim()} className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-accent text-primary-foreground flex items-center justify-center disabled:opacity-50">
-            <Send className="h-4 w-4" />
-          </button>
-        </div>
+        {!canSend ? (
+          <p className="text-center text-xs text-muted-foreground py-2 flex items-center justify-center gap-1.5">
+            <Eye className="h-3 w-3" /> Você é observador deste torneio.
+          </p>
+        ) : (
+          <div className="flex items-center gap-1.5">
+            <input value={text} onChange={e => setText(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), send())}
+              placeholder="Mensagem (use @)..." maxLength={1000}
+              className="flex-1 px-3 py-2.5 bg-card border border-border rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
+            <button onClick={send} disabled={!text.trim()} className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-accent text-primary-foreground flex items-center justify-center disabled:opacity-50">
+              <Send className="h-4 w-4" />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
