@@ -249,6 +249,7 @@ export default function MForumGame() {
         </div>
 
         <div className="flex p-1 bg-secondary/50 rounded-lg mt-4">
+          <button onClick={() => setTab('both')} className={`flex-1 py-2 rounded-md text-xs font-semibold ${tab === 'both' ? 'bg-gradient-to-r from-primary to-accent text-primary-foreground' : 'text-muted-foreground'}`}>✨ Ambos</button>
           <button onClick={() => setTab('forum')} className={`flex-1 py-2 rounded-md text-xs font-semibold ${tab === 'forum' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>💬 Fórum</button>
           <button onClick={() => setTab('reviews')} className={`flex-1 py-2 rounded-md text-xs font-semibold ${tab === 'reviews' ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'}`}>⭐ Reviews</button>
         </div>
