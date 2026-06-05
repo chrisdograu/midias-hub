@@ -23,7 +23,7 @@ export default function MForumGame() {
   const navigate = useNavigate();
   const [game, setGame] = useState<Game | null>(null);
   const [gameLoading, setGameLoading] = useState(true);
-  const [tab, setTab] = useState<'forum' | 'reviews'>('forum');
+  const [tab, setTab] = useState<'forum' | 'reviews' | 'both'>('both');
   const [posts, setPosts] = useState<Post[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [feedLoading, setFeedLoading] = useState(true);
