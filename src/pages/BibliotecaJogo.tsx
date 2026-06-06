@@ -10,6 +10,8 @@ import { useSubmitGuard } from '@/hooks/useSubmitGuard';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { InteractiveHalfStar } from '@/components/HalfStarRating';
+import { OpinionsPanel } from '@/components/social/OpinionsPanel';
+import { ScreenshotsPanel } from '@/components/social/ScreenshotsPanel';
 
 const STATUS_OPTIONS = [
   { v: 'quero_jogar', label: 'Quero jogar', tone: 'bg-blue-500/20 text-blue-300' },
@@ -242,6 +244,16 @@ export default function BibliotecaJogo() {
                 <Input placeholder="https://..." value={newScreenshotUrl} onChange={e => setNewScreenshotUrl(e.target.value)} />
                 <Button variant="outline" size="sm" onClick={addScreenshot}><Plus className="h-4 w-4" /></Button>
               </div>
+            </div>
+
+            {/* Fase 1.5 — Opiniões e Screenshots públicos do jogo */}
+            <div className="bg-card border border-border rounded-xl p-5">
+              <h3 className="font-semibold mb-3">Opiniões</h3>
+              <OpinionsPanel productId={productId!} />
+            </div>
+            <div className="bg-card border border-border rounded-xl p-5">
+              <h3 className="font-semibold mb-3">Screenshots da comunidade</h3>
+              <ScreenshotsPanel productId={productId!} />
             </div>
 
             {reviews.length > 0 && (

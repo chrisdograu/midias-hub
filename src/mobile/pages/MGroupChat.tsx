@@ -71,7 +71,7 @@ export default function MGroupChat() {
       content, group_id: id!, message_type: 'text',
     } as any).select('id').single();
     if (error) { toast.error(error.message); setSending(false); return; }
-    if (inserted) recordMentions({ text: content, mentionedBy: user.id, sourceType: 'message', sourceId: inserted.id });
+    if (inserted) recordMentions({ text: content, mentionedBy: user.id, sourceType: 'group_message', sourceId: inserted.id });
     setSending(false);
   };
 

@@ -295,6 +295,7 @@ export type Database = {
           description: string | null
           id: string
           image_url: string | null
+          images: string[]
           is_active: boolean
           price: number
           title: string
@@ -305,6 +306,7 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string | null
+          images?: string[]
           is_active?: boolean
           price?: number
           title: string
@@ -315,6 +317,7 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string | null
+          images?: string[]
           is_active?: boolean
           price?: number
           title?: string
@@ -1138,6 +1141,178 @@ export type Database = {
         }
         Relationships: []
       }
+      game_opinion_likes: {
+        Row: {
+          created_at: string
+          opinion_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          opinion_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          opinion_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_opinion_likes_opinion_id_fkey"
+            columns: ["opinion_id"]
+            isOneToOne: false
+            referencedRelation: "game_opinions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      game_opinion_replies: {
+        Row: {
+          created_at: string
+          id: string
+          images: string[] | null
+          opinion_id: string
+          responder_id: string
+          sender_id: string
+          text: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          images?: string[] | null
+          opinion_id: string
+          responder_id: string
+          sender_id: string
+          text: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          images?: string[] | null
+          opinion_id?: string
+          responder_id?: string
+          sender_id?: string
+          text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_opinion_replies_opinion_id_fkey"
+            columns: ["opinion_id"]
+            isOneToOne: false
+            referencedRelation: "game_opinions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      game_opinions: {
+        Row: {
+          created_at: string
+          id: string
+          images: string[] | null
+          likes_count: number
+          product_id: string
+          replies_count: number
+          text: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          images?: string[] | null
+          likes_count?: number
+          product_id: string
+          replies_count?: number
+          text: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          images?: string[] | null
+          likes_count?: number
+          product_id?: string
+          replies_count?: number
+          text?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_opinions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      game_screenshot_likes: {
+        Row: {
+          created_at: string
+          screenshot_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          screenshot_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          screenshot_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_screenshot_likes_screenshot_id_fkey"
+            columns: ["screenshot_id"]
+            isOneToOne: false
+            referencedRelation: "game_screenshots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      game_screenshots: {
+        Row: {
+          caption: string | null
+          created_at: string
+          id: string
+          images: string[]
+          likes_count: number
+          product_id: string
+          user_id: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          images: string[]
+          likes_count?: number
+          product_id: string
+          user_id: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          id?: string
+          images?: string[]
+          likes_count?: number
+          product_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_screenshots_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       game_suggestions: {
         Row: {
           admin_notes: string | null
@@ -1688,6 +1863,33 @@ export type Database = {
         }
         Relationships: []
       }
+      opinion_mutes: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          target_product_id: string | null
+          target_user_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          target_product_id?: string | null
+          target_user_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          target_product_id?: string | null
+          target_user_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       pedidos: {
         Row: {
           coupon_code: string | null
@@ -1760,6 +1962,30 @@ export type Database = {
           price?: number
           product_id?: string
           recorded_at?: string
+        }
+        Relationships: []
+      }
+      privacy_grants: {
+        Row: {
+          created_at: string
+          id: string
+          owner_id: string
+          scope: string
+          viewer_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          owner_id: string
+          scope: string
+          viewer_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          owner_id?: string
+          scope?: string
+          viewer_id?: string
         }
         Relationships: []
       }
@@ -1922,8 +2148,10 @@ export type Database = {
           gamer_personality: string | null
           id: string
           is_private: boolean
+          library_visibility: string
           monthly_favorites: string[] | null
           phone: string | null
+          privacy_exceptions: string[]
           push_notifications: boolean
           require_follow_approval: boolean
           seller_bio: string | null
@@ -1947,8 +2175,10 @@ export type Database = {
           gamer_personality?: string | null
           id: string
           is_private?: boolean
+          library_visibility?: string
           monthly_favorites?: string[] | null
           phone?: string | null
+          privacy_exceptions?: string[]
           push_notifications?: boolean
           require_follow_approval?: boolean
           seller_bio?: string | null
@@ -1972,8 +2202,10 @@ export type Database = {
           gamer_personality?: string | null
           id?: string
           is_private?: boolean
+          library_visibility?: string
           monthly_favorites?: string[] | null
           phone?: string | null
+          privacy_exceptions?: string[]
           push_notifications?: boolean
           require_follow_approval?: boolean
           seller_bio?: string | null
@@ -2594,6 +2826,38 @@ export type Database = {
         }
         Relationships: []
       }
+      tournament_reminder_log: {
+        Row: {
+          id: string
+          reminder_window: string
+          sent_at: string
+          tournament_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          reminder_window: string
+          sent_at?: string
+          tournament_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          reminder_window?: string
+          sent_at?: string
+          tournament_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_reminder_log_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_storylines: {
         Row: {
           auto_generated: boolean
@@ -2868,6 +3132,35 @@ export type Database = {
         }
         Relationships: []
       }
+      user_game_mutes: {
+        Row: {
+          created_at: string
+          product_id: string
+          scope: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          product_id: string
+          scope?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          product_id?: string
+          scope?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_game_mutes_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_playtime: {
         Row: {
           hours_played: number
@@ -3027,6 +3320,10 @@ export type Database = {
       }
       can_view_friend_content: {
         Args: { _owner: string; _viewer: string; _visibility: string }
+        Returns: boolean
+      }
+      can_view_scope: {
+        Args: { _owner: string; _scope: string; _viewer: string }
         Returns: boolean
       }
       check_and_award_badges: { Args: { _user_id: string }; Returns: undefined }

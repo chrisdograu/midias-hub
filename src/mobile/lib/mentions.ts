@@ -29,7 +29,7 @@ export async function resolveMentions(handles: string[]): Promise<{ id: string; 
 export async function recordMentions(opts: {
   text: string;
   mentionedBy: string;
-  sourceType: 'forum_post' | 'forum_reply' | 'review' | 'message' | 'review_comment';
+  sourceType: 'forum_post' | 'forum_reply' | 'review' | 'message' | 'review_comment' | 'group_message';
   sourceId: string;
 }) {
   const handles = extractMentionHandles(opts.text);
