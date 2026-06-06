@@ -244,6 +244,16 @@ export default function BibliotecaJogo() {
               </div>
             </div>
 
+            {/* Fase 1.5 — Opiniões e Screenshots públicos do jogo */}
+            <div className="bg-card border border-border rounded-xl p-5">
+              <h3 className="font-semibold mb-3">Opiniões</h3>
+              <OpinionsPanel productId={productId!} />
+            </div>
+            <div className="bg-card border border-border rounded-xl p-5">
+              <h3 className="font-semibold mb-3">Screenshots da comunidade</h3>
+              <ScreenshotsPanel productId={productId!} />
+            </div>
+
             {reviews.length > 0 && (
               <div className="bg-card border border-border rounded-xl p-5">
                 <h3 className="font-semibold mb-3 flex items-center gap-2"><Star className="h-4 w-4 text-yellow-500" /> Minhas avaliações públicas</h3>
