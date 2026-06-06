@@ -10,6 +10,8 @@ import { useSubmitGuard } from '@/hooks/useSubmitGuard';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { InteractiveHalfStar } from '@/components/HalfStarRating';
+import { OpinionsPanel } from '@/components/social/OpinionsPanel';
+import { ScreenshotsPanel } from '@/components/social/ScreenshotsPanel';
 
 const STATUS_OPTIONS = [
   { v: 'quero_jogar', label: 'Quero jogar', tone: 'bg-blue-500/20 text-blue-300' },
