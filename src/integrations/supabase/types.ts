@@ -290,18 +290,21 @@ export type Database = {
           blocker_id: string
           created_at: string
           id: string
+          scope: string
         }
         Insert: {
           blocked_id: string
           blocker_id: string
           created_at?: string
           id?: string
+          scope?: string
         }
         Update: {
           blocked_id?: string
           blocker_id?: string
           created_at?: string
           id?: string
+          scope?: string
         }
         Relationships: []
       }
@@ -500,6 +503,7 @@ export type Database = {
         Row: {
           anuncio_id: string | null
           category: string
+          channel: string
           created_at: string | null
           group_id: string | null
           has_active_report: boolean
@@ -516,6 +520,7 @@ export type Database = {
         Insert: {
           anuncio_id?: string | null
           category?: string
+          channel?: string
           created_at?: string | null
           group_id?: string | null
           has_active_report?: boolean
@@ -532,6 +537,7 @@ export type Database = {
         Update: {
           anuncio_id?: string | null
           category?: string
+          channel?: string
           created_at?: string | null
           group_id?: string | null
           has_active_report?: boolean
@@ -1785,6 +1791,7 @@ export type Database = {
           id: string
           mentioned_by: string
           mentioned_user_id: string
+          namespace: string
           source_id: string
           source_type: string
         }
@@ -1794,6 +1801,7 @@ export type Database = {
           id?: string
           mentioned_by: string
           mentioned_user_id: string
+          namespace?: string
           source_id: string
           source_type: string
         }
@@ -1803,6 +1811,7 @@ export type Database = {
           id?: string
           mentioned_by?: string
           mentioned_user_id?: string
+          namespace?: string
           source_id?: string
           source_type?: string
         }
@@ -2559,6 +2568,54 @@ export type Database = {
           updated_at?: string
           user_id?: string
           visibility?: string
+        }
+        Relationships: []
+      }
+      seller_profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          display_name: string
+          first_listing_at: string | null
+          handle: string
+          id: string
+          is_private: boolean
+          rating: number
+          total_sales: number
+          total_trades: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          display_name: string
+          first_listing_at?: string | null
+          handle: string
+          id?: string
+          is_private?: boolean
+          rating?: number
+          total_sales?: number
+          total_trades?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          display_name?: string
+          first_listing_at?: string | null
+          handle?: string
+          id?: string
+          is_private?: boolean
+          rating?: number
+          total_sales?: number
+          total_trades?: number
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -3620,6 +3677,30 @@ export type Database = {
           avg_rating: number
           total_reviews: number
         }[]
+      }
+      get_seller_profile: {
+        Args: { _user_id: string }
+        Returns: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          display_name: string
+          first_listing_at: string | null
+          handle: string
+          id: string
+          is_private: boolean
+          rating: number
+          total_sales: number
+          total_trades: number
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "seller_profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       has_active_certificate: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
