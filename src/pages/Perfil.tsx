@@ -127,6 +127,14 @@ export default function Perfil() {
           </div>
         )}
 
+        <SellerProfileSwitcher
+          userId={user?.id}
+          personalHandle={username || displayName}
+          sellerHandle={sellerHandle}
+          hasSeller={!!sellerHandle}
+          isOwn
+        />
+
         <Tabs defaultValue="conta" className="mb-6">
           <TabsList className="w-full grid grid-cols-5">
             <TabsTrigger value="conta"><User className="h-4 w-4 mr-1" />Conta</TabsTrigger>
