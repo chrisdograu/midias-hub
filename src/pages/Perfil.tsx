@@ -55,6 +55,9 @@ export default function Perfil() {
       }
       setLoaded(true);
     });
+    supabase.from('seller_profiles').select('handle').eq('user_id', user.id).maybeSingle().then(({ data }) => {
+      setSellerHandle(data?.handle || null);
+    });
   }
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
