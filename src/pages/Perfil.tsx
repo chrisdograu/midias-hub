@@ -122,11 +122,18 @@ export default function Perfil() {
         )}
 
         <Tabs defaultValue="conta" className="mb-6">
-          <TabsList className="w-full grid grid-cols-3">
+          <TabsList className="w-full grid grid-cols-4">
             <TabsTrigger value="conta"><User className="h-4 w-4 mr-1" />Conta</TabsTrigger>
+            <TabsTrigger value="privacidade"><Shield className="h-4 w-4 mr-1" />Privacidade</TabsTrigger>
             <TabsTrigger value="bloqueados"><UserX className="h-4 w-4 mr-1" />Bloqueados</TabsTrigger>
             <TabsTrigger value="reviews"><Star className="h-4 w-4 mr-1" />Avaliações</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="privacidade" className="mt-4">
+            <div className="bg-card border border-border rounded-xl p-6">
+              <PrivacyTab />
+            </div>
+          </TabsContent>
 
           <TabsContent value="bloqueados" className="mt-4">
             <div className="bg-card border border-border rounded-xl p-6">
@@ -141,6 +148,7 @@ export default function Perfil() {
               <MyReviewsTab />
             </div>
           </TabsContent>
+
 
           <TabsContent value="conta" className="mt-4 space-y-4">
 
