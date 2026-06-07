@@ -13,6 +13,7 @@ import PrivacyTab from '@/components/perfil/PrivacyTab';
 import NotificationPrefsTab from '@/components/perfil/NotificationPrefsTab';
 import LevelTitleBadge from '@/components/LevelTitleBadge';
 import ActiveTitleSelector from '@/components/ActiveTitleSelector';
+import SellerProfileSwitcher from '@/components/seller/SellerProfileSwitcher';
 
 export default function Perfil() {
   const { user, profile, updatePassword } = useAuth();
