@@ -7,6 +7,7 @@ import { HalfStarDisplay } from '@/components/HalfStarRating';
 import { ArrowLeft, Loader2, User, Star, Library, ShoppingBag, Lock, Calendar } from 'lucide-react';
 import LevelTitleBadge from '@/components/LevelTitleBadge';
 import FriendIdentityPanel from '@/components/social/FriendIdentityPanel';
+import SellerProfileSwitcher from '@/components/seller/SellerProfileSwitcher';
 
 const JA_JOGUEI = ['ja_joguei', 'zerado', 'jogando', 'pausado', 'abandonado'];
 const formatMemberSince = (iso?: string | null) => {
@@ -92,6 +93,16 @@ export default function PublicProfile() {
     enabled: !!userId,
   });
 
+  const { data: sellerHandle } = useQuery({
+    queryKey: ['public-seller-handle', userId],
+    enabled: !!userId,
+    queryFn: async () => {
+      const { data } = await supabase.from('seller_profiles' as any)
+        .select('handle').eq('user_id', userId!).maybeSingle();
+      return ((data as any)?.handle as string | undefined) ?? null;
+    },
+  });
+
   if (isLoading) return <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   if (!profile) return <div className="container mx-auto px-4 py-16 text-center"><p className="text-muted-foreground">Perfil não encontrado.</p></div>;
 
@@ -110,6 +121,14 @@ export default function PublicProfile() {
       <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors mb-6">
         <ArrowLeft className="h-4 w-4" /> Voltar
       </Link>
+
+      <SellerProfileSwitcher
+        userId={userId}
+        personalHandle={(profile.display_name || '').toLowerCase() || null}
+        sellerHandle={sellerHandle ?? null}
+        hasSeller={!!sellerHandle}
+        isOwn={isOwn}
+      />
 
       {/* Profile header */}
       <div className="bg-card border border-border rounded-xl p-6 mb-6 text-center">
