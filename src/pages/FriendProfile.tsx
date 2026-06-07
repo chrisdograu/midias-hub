@@ -12,13 +12,16 @@ import {
 import FriendIdentityPanel from '@/components/social/FriendIdentityPanel';
 import { HalfStarDisplay } from '@/components/HalfStarRating';
 import LevelTitleBadge from '@/components/LevelTitleBadge';
+import GameTimeline from '@/components/social/GameTimeline';
+import { Clock } from 'lucide-react';
 
-type Tab = 'overview' | 'biblioteca' | 'atividade' | 'estatisticas' | 'amizade';
+type Tab = 'overview' | 'biblioteca' | 'atividade' | 'timeline' | 'estatisticas' | 'amizade';
 
 const TABS: { id: Tab; label: string; icon: any }[] = [
   { id: 'overview', label: 'Visão Geral', icon: Sparkles },
   { id: 'biblioteca', label: 'Biblioteca', icon: Library },
   { id: 'atividade', label: 'Atividade', icon: Activity },
+  { id: 'timeline', label: 'Timeline', icon: Clock },
   { id: 'estatisticas', label: 'Estatísticas', icon: BarChart3 },
   { id: 'amizade', label: 'Amizade', icon: Heart },
 ];
