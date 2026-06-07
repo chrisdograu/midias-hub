@@ -9,8 +9,9 @@ import {
 import { Loader2, Users, Heart, Bookmark, EyeOff, Sparkles, Star, Library, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
+import SocialFavorites from '@/components/social/SocialFavorites';
 
-type Tab = 'new' | 'liked' | 'saved' | 'hidden';
+type Tab = 'new' | 'liked' | 'saved' | 'favoritos' | 'hidden';
 
 export default function SocialLibrary() {
   const { user } = useAuth();
@@ -110,6 +111,7 @@ export default function SocialLibrary() {
     { k: 'new', label: 'Novidades', icon: Sparkles, count: withState.filter(i => i.state === 'new').length },
     { k: 'liked', label: 'Curtidos', icon: Heart, count: withState.filter(i => i.state === 'liked').length },
     { k: 'saved', label: 'Salvos', icon: Bookmark, count: withState.filter(i => i.state === 'saved').length },
+    { k: 'favoritos', label: 'Favoritos', icon: Star, count: 0 },
     { k: 'hidden', label: 'Ocultos', icon: EyeOff, count: withState.filter(i => i.state === 'hidden').length },
   ];
 
@@ -143,7 +145,9 @@ export default function SocialLibrary() {
         })}
       </div>
 
-      {loadingFriends || loading ? (
+      {tab === 'favoritos' ? (
+        <SocialFavorites />
+      ) : loadingFriends || loading ? (
         <div className="flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin" /></div>
       ) : friendIds.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">

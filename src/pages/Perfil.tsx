@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import BlockedUsersTab from '@/components/perfil/BlockedUsersTab';
 import MyReviewsTab from '@/components/perfil/MyReviewsTab';
 import PrivacyTab from '@/components/perfil/PrivacyTab';
+import NotificationPrefsTab from '@/components/perfil/NotificationPrefsTab';
 import LevelTitleBadge from '@/components/LevelTitleBadge';
 import ActiveTitleSelector from '@/components/ActiveTitleSelector';
 
@@ -122,9 +123,10 @@ export default function Perfil() {
         )}
 
         <Tabs defaultValue="conta" className="mb-6">
-          <TabsList className="w-full grid grid-cols-4">
+          <TabsList className="w-full grid grid-cols-5">
             <TabsTrigger value="conta"><User className="h-4 w-4 mr-1" />Conta</TabsTrigger>
             <TabsTrigger value="privacidade"><Shield className="h-4 w-4 mr-1" />Privacidade</TabsTrigger>
+            <TabsTrigger value="notificacoes"><Bell className="h-4 w-4 mr-1" />Notificações</TabsTrigger>
             <TabsTrigger value="bloqueados"><UserX className="h-4 w-4 mr-1" />Bloqueados</TabsTrigger>
             <TabsTrigger value="reviews"><Star className="h-4 w-4 mr-1" />Avaliações</TabsTrigger>
           </TabsList>
@@ -132,6 +134,12 @@ export default function Perfil() {
           <TabsContent value="privacidade" className="mt-4">
             <div className="bg-card border border-border rounded-xl p-6">
               <PrivacyTab />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="notificacoes" className="mt-4">
+            <div className="bg-card border border-border rounded-xl p-6">
+              <NotificationPrefsTab />
             </div>
           </TabsContent>
 
@@ -148,6 +156,7 @@ export default function Perfil() {
               <MyReviewsTab />
             </div>
           </TabsContent>
+
 
 
           <TabsContent value="conta" className="mt-4 space-y-4">
