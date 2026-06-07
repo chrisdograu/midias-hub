@@ -96,6 +96,8 @@ const BibliotecaJogo = lazy(() => import("./pages/BibliotecaJogo"));
 const GameSocialHub = lazy(() => import("./pages/GameSocialHub"));
 const ReviewCompletaEditor = lazy(() => import("./pages/ReviewCompletaEditor"));
 const FriendProfile = lazy(() => import("./pages/FriendProfile"));
+const SellerProfile = lazy(() => import("./pages/SellerProfile"));
+const CriarVendedor = lazy(() => import("./pages/CriarVendedor"));
 
 const PageFallback = () => (
   <div className="min-h-[40vh] flex items-center justify-center">
@@ -201,6 +203,9 @@ const App = () => (
                 { path: '/perfil', el: <ProtectedRoute><Perfil /></ProtectedRoute> },
                 { path: '/perfil/:userId', el: <PublicProfile /> },
                 { path: '/profile/:userId', el: <PublicProfile /> },
+                { path: '/vendedor/criar', el: <ProtectedRoute><CriarVendedor mode="create" /></ProtectedRoute> },
+                { path: '/vendedor/editar', el: <ProtectedRoute><CriarVendedor mode="edit" /></ProtectedRoute> },
+                { path: '/vendedor/:handle', el: <SellerProfile /> },
                 { path: '/biblioteca', el: <ProtectedRoute><Biblioteca /></ProtectedRoute> },
                 { path: '/faq', el: <FAQ /> },
                 { path: '/contato', el: <Contato /> },
