@@ -26,6 +26,7 @@ export default function Perfil() {
   const [pushNotifications, setPushNotifications] = useState(true);
   const [emailNotifications, setEmailNotifications] = useState(false);
   const [bannedUntil, setBannedUntil] = useState<string | null>(null);
+  const [sellerHandle, setSellerHandle] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [loaded, setLoaded] = useState(false);
