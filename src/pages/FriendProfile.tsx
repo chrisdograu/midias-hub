@@ -302,7 +302,14 @@ export default function FriendProfile() {
             </Section>
           )}
 
+          {tab === 'timeline' && userId && (
+            <Section title="Linha do tempo nos jogos">
+              <GameTimeline userId={userId} />
+            </Section>
+          )}
+
           {tab === 'estatisticas' && (
+
             <div className="space-y-5">
               <Section title="Resumo">
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
