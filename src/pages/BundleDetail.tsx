@@ -9,12 +9,14 @@ import { toast } from 'sonner';
 
 interface BundleData {
   id: string; title: string; description: string | null; price: number; image_url: string | null;
+  images: string[];
   items: { product_id: string; title: string; image_url: string | null; price: number; category: string | null }[];
 }
 
 export default function BundleDetail() {
   const { id } = useParams<{ id: string }>();
   const [bundle, setBundle] = useState<BundleData | null>(null);
+  const [activeImg, setActiveImg] = useState(0);
   const [loading, setLoading] = useState(true);
   const cart = useCart();
   const { submitting, guard } = useSubmitGuard();
@@ -26,7 +28,7 @@ export default function BundleDetail() {
       setLoading(true);
       const { data: b } = await supabase
         .from('bundles' as any)
-        .select('id, title, description, price, image_url')
+        .select('id, title, description, price, image_url, images')
         .eq('id', id)
         .maybeSingle();
       if (!b || cancelled) { if (!cancelled) { setBundle(null); setLoading(false); } return; }
@@ -42,11 +44,13 @@ export default function BundleDetail() {
       const bd: any = b;
       setBundle({
         id: bd.id, title: bd.title, description: bd.description, price: Number(bd.price), image_url: bd.image_url,
+        images: (bd.images || []) as string[],
         items: (prods || []).map((p: any) => ({
           product_id: p.id, title: p.title, image_url: p.image_url,
           price: Number(p.price), category: p.category,
         })),
       });
+      setActiveImg(0);
       setLoading(false);
     })();
     return () => { cancelled = true; };
@@ -57,6 +61,11 @@ export default function BundleDetail() {
 
   const total = bundle.items.reduce((s, i) => s + i.price, 0);
   const saving = total > 0 ? Math.round((1 - bundle.price / total) * 100) : 0;
+
+  const gallery: string[] = [
+    ...(bundle.image_url ? [bundle.image_url] : []),
+    ...bundle.images.filter(u => u && u !== bundle.image_url),
+  ];
 
   const addAll = guard(async () => {
     for (const it of bundle.items) {
@@ -75,13 +84,29 @@ export default function BundleDetail() {
         <ArrowLeft className="h-4 w-4" /> Voltar
       </Link>
       <div className="grid md:grid-cols-2 gap-8">
-        <div className="aspect-video bg-secondary rounded-lg overflow-hidden">
-          {bundle.image_url ? (
-            <img src={bundle.image_url} alt={bundle.title} className="w-full h-full object-cover" />
-          ) : (
-            <div className="grid grid-cols-2 grid-rows-2 w-full h-full">
-              {bundle.items.slice(0, 4).map((it, i) => (
-                it.image_url ? <img key={i} src={it.image_url} alt="" className="w-full h-full object-cover" /> : <div key={i} className="bg-muted" />
+        <div className="space-y-3">
+          <div className="aspect-video bg-secondary rounded-lg overflow-hidden">
+            {gallery.length > 0 ? (
+              <img src={gallery[activeImg]} alt={bundle.title} className="w-full h-full object-cover" />
+            ) : (
+              <div className="grid grid-cols-2 grid-rows-2 w-full h-full">
+                {bundle.items.slice(0, 4).map((it, i) => (
+                  it.image_url ? <img key={i} src={it.image_url} alt="" className="w-full h-full object-cover" /> : <div key={i} className="bg-muted" />
+                ))}
+              </div>
+            )}
+          </div>
+          {gallery.length > 1 && (
+            <div className="grid grid-cols-5 sm:grid-cols-6 gap-2">
+              {gallery.slice(0, 12).map((src, i) => (
+                <button
+                  key={src + i}
+                  onClick={() => setActiveImg(i)}
+                  className={`relative aspect-video rounded-md overflow-hidden border-2 transition-all ${i === activeImg ? 'border-primary' : 'border-transparent opacity-70 hover:opacity-100'}`}
+                  aria-label={`Imagem ${i + 1}`}
+                >
+                  <img src={src} alt="" className="w-full h-full object-cover" />
+                </button>
               ))}
             </div>
           )}
