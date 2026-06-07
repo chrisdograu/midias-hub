@@ -11,7 +11,7 @@ import { AdminPageHeader } from '../components/AdminPageHeader';
 
 export default function LogsAdministrativos() {
   const { position } = useDesktopAuth();
-  const isAdminGeral = position === 'admin_geral';
+  const isAdminGeral = position === 'admin';
   const [rows, setRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
