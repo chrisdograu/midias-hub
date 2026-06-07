@@ -1,62 +1,93 @@
-## Escopo deste lote
 
-Vou entregar tudo descrito no prompt unificado em uma única rodada. Como é grande, divido em blocos. Confirme se algum bloco deve ser cortado ou priorizado.
+# Plano em duas etapas
 
----
+## ETAPA 1 — Fechar pendências da rodada anterior
 
-### Bloco A — Lembretes automáticos de torneio (pendência da fase anterior)
-- Edge Function `tournament-reminders`: varre torneios com `starts_at` em ~7d / ~1d / ~1h e cria notificações para cada participante (uma vez por janela, controlado por nova tabela `tournament_reminder_log`).
-- Cron job (pg_cron + pg_net) executando a cada 15 min.
+Itens do prompt unificado anterior que ainda não foram entregues. Vou implementar antes de tocar no documento novo.
 
----
+### 1.1 UI de Privacidade Granular (Web — Perfil)
+- Nova aba **Privacidade** em `src/pages/Perfil.tsx`:
+  - Toggle global `library_visibility` (público / amigos / privado)
+  - Lista de **exceções** (`profiles.privacy_exceptions`) — buscar amigo e adicionar
+  - Por exceção: checkboxes de escopo gravados em `privacy_grants` (reviews_completas, screenshots, opinions, stats, achievements, library_items, full)
+- Reaproveitar `can_view_scope` já existente no banco.
 
-### Bloco B — Fase 1.5: Opiniões & Screenshots (Web)
-Novas tabelas:
-- `game_opinions` (user_id, product_id, text, images[], likes_count, replies_count)
-- `game_opinion_replies` (opinion_id, sender_id, recipient_id, text, images[]) — conversa **privada par a par** (autor ↔ respondente). Outros amigos só veem contagem.
-- `game_opinion_likes`, `game_opinion_mutes_user`, `game_opinion_mutes_game`
-- `game_screenshots` já existe parcialmente como `game_clips` — vou criar `game_screenshots` dedicada (imagens + descrição, só curtidas, sem replies) + `game_screenshot_likes` + mutes.
+### 1.2 Feed Mobile 40/30/30 + "Não mostrar mais este jogo"
+- Refactor de `src/mobile/pages/MHome.tsx`:
+  - Três pools: biblioteca do usuário (40%), jogos de gêneros similares (30%), global (30%)
+  - Excluir tudo de `user_game_mutes` com escopo `feed|both`
+  - Intercalar mantendo proporção
+- Botão "Não mostrar mais conteúdo deste jogo" em `MForumGame.tsx`, `BibliotecaJogo.tsx` e `FriendProfile.tsx` (insere em `user_game_mutes`).
 
-UI Web:
-- `OpinionsPanel.tsx` e `ScreenshotsPanel.tsx` integrados em `BibliotecaJogo.tsx`, `FriendProfile.tsx` (rota /perfil/:id/jogo/:pid) e `SocialLibrary.tsx`.
-- Menu de ações (denunciar, copiar, silenciar jogo, silenciar usuário) via `ItemActionsMenu`.
-- Conversa privada renderizada como mini-chat embutido na Opinião quando o viewer é autor ou respondente.
-
-Feed da Biblioteca Social ganha filtros: Tudo / Reviews / Opiniões / Screenshots / Atividades.
-
----
-
-### Bloco C — Privacidade granular
-- `profiles.library_visibility` (`public|friends|private`) + `profiles.privacy_exceptions` (uuid[]) — usuários que sempre veem tudo mesmo quando privado.
-- Tabela `privacy_grants` (owner_id, viewer_id, scope) com escopos: `reviews_completas`, `screenshots`, `opinions`, `stats`, `achievements`, `library_items` — para o modo granular do Web.
-- Atualizar `can_view_friend_content` para checar exceções e grants.
-- UI na página de Perfil: aba "Privacidade" com toggle global + lista de exceções e, por exceção, checkboxes de escopo.
+### 1.3 Múltiplas imagens em Bundles
+- Adicionar coluna `images text[]` em `bundles` (migration).
+- Renderizar galeria em `src/pages/BundleDetail.tsx` via `ProductGallery`.
+- Garantir uso de `ProductGallery` em `GameDetail.tsx` (já existe `produto_imagens`).
 
 ---
 
-### Bloco D — Menções: restringir notificações
-- Atualizar trigger `notify_mention`: só dispara notificação quando `source_type` ∈ {`forum_post`, `forum_reply`, `review`, `review_comment`, `group_message`}. Menções em chat privado e em grupos onde o usuário não é membro não notificam (checa `group_members`).
+## ETAPA 2 — Documento novo (Painel Admin + Sistemas Sociais)
+
+Implementação faseada. Cada fase é independente e termina entregando UI utilizável.
+
+### Fase A — Reestruturação da navegação do Desktop Admin
+Sidebar agrupada conforme spec:
+- Dashboard
+- **Cadastros**: Produtos, Funcionários, Clientes, Fornecedores, Categorias
+- **Comercial**: Cupons, Promoções, **Bundles** (nova página `BundlesAdmin.tsx`)
+- **Jogos**: Jogos (estado: Ativo/Oculto/Somente Fórum/Somente Loja/Descontinuado), Solicitações, **Criar Jogo**
+- **Marketplace**: Anúncios, **Trocas**, **Trocas Arquivadas**, Avaliações Comerciais
+- **Biblioteca Social** (admin viewer — read-only com justificativa)
+- **Torneios**: Eventos (histórico), Atuais, Criar Torneio
+- Moderação / Denúncias (separados)
+- **Tickets**: Mobile (chat) / Web (email)
+- Notificações (comum, destacada, especial com banner/CTA)
+- **Análises e Auditoria**: Analytics, Relatórios, **Logs Administrativos** (com reverter — só admin geral)
+- **XP e Recompensas**: Mobile, Web, Badges, Títulos, Recompensas
+- Certificados: Solicitações / Ativos / Retidos
+- Integrações (Steam, Xbox, PSN, Discord, Twitch, YouTube)
+- Configurações
+
+### Fase B — Schema novo para suportar o doc
+Migrations:
+- `produtos.estado_publicacao` enum (`ativo|oculto|somente_forum|somente_loja|descontinuado`)
+- `admin_logs` (admin_id, action, entity, entity_id, reason, payload jsonb, reverted_by, reverted_at) — trigger genérico via wrappers
+- `tickets` (user_id, channel `mobile|web`, status, subject, body, attachments[]) + `ticket_messages`
+- `social_content_states` (user_id, content_type, content_id, state `novo|visto|curtido|oculto`) — único por (user, type, id); regra "uma vez novo"
+- `social_favorites` (user_id, content_type, content_id)
+- `game_timeline_events` (user_id, product_id, kind, payload, created_at)
+- `notification_preferences` granular (categorias do doc)
+- `notifications.kind` enum (`comum|destacada|especial`) + colunas `banner_url`, `cta_label`, `cta_url`
+- `friendship_state` view derivada de `user_follows` (mútuo = amizade); trigger que quando alguém deixa de seguir remove acessos
+- `biblioteca_usuario.status` enum expandido (`jogando|pausado|zerado|platinado|abandonado|quero_jogar`) + `is_favorite`
+
+### Fase C — Sistemas sociais novos
+- **Estados NOVO/VISTO/CURTIDO/OCULTO** com regra de não-repetição (trigger bloqueia voltar para "novo").
+- **Timeline por jogo** em `FriendProfile.tsx` → aba Timeline.
+- **Histórico agregado por jogo** na Biblioteca Social.
+- **Favoritos sociais** (aba nova em `SocialLibrary.tsx`).
+- **Bloqueio bilateral**: estender `blocked_users` para bloquear menções, convites a grupo, visualização de reviews públicas.
+- **Menção visual** `@user` com cartão (avatar + nome + handle) — componente `MentionAutocomplete.tsx` reutilizado em fórum, reviews, comentários, chats, grupos.
+- **Notificações personalizáveis** por categoria + **MIDIAS Especiais** com banner/CTA.
+- **Amizade ao deixar de seguir**: revoga acessos privados, mantém público.
+
+### Fase D — Páginas Admin novas
+- `BundlesAdmin.tsx`, `TrocasAdmin.tsx`, `TrocasArquivadas.tsx`, `AvaliacoesComerciais.tsx`
+- `JogosAdmin.tsx` (substitui `Produtos.tsx` para o domínio jogos, com estado de publicação)
+- `BibliotecaSocialAdmin.tsx` (viewer read-only com justificativa obrigatória → log)
+- `TorneiosEventos.tsx`, `TorneiosAtuais.tsx`, `CriarTorneio.tsx`
+- `TicketsMobile.tsx` (chat), `TicketsWeb.tsx` (email)
+- `NotificacoesEspeciais.tsx` (criação com banner/CTA)
+- `LogsAdministrativos.tsx` (com botão Reverter — só `admin_geral`)
+- `XPMobile.tsx`, `XPWeb.tsx`, `BadgesAdmin.tsx`, `TitulosAdmin.tsx`, `RecompensasAdmin.tsx`
+- `IntegracoesAdmin.tsx`
 
 ---
 
-### Bloco E — Feed mobile 40/30/30 + "Não mostrar mais este jogo"
-- Tabela `user_game_mutes` (user_id, product_id, scope `feed|social_library|both`).
-- Refactor de `MHome.tsx` para montar feed com três pools (biblioteca / gêneros similares / global) e intercalar conforme proporção, excluindo jogos mutados.
-- Botão "Não mostrar mais conteúdo deste jogo" em `MForumGame.tsx` e em `BibliotecaJogo.tsx`/`FriendProfile.tsx` (escopo web aplica em `social_library`).
+## Observações
+- Escopo enorme; cada fase será uma rodada separada para manter qualidade.
+- Vou começar pela **Etapa 1** inteira + **Fase A** (sidebar) + **Fase B** (migrations) nesta rodada.
+- Fases C e D nas rodadas seguintes.
+- Sem cores hardcoded — tokens semânticos do design system.
 
----
-
-### Bloco F — Múltiplas imagens em jogos e bundles
-- `produto_imagens` já existe; garantir uso de galeria/carrossel em `GameDetail.tsx`, `BibliotecaJogo.tsx`, `MMarketplaceItem.tsx` e `BundleDetail.tsx` via `ProductGallery`.
-- Adicionar coluna `images text[]` em `bundles` + UI admin (`BundleStoreGrid` já mostra capa; adicionar galeria em `BundleDetail`).
-
----
-
-### Riscos / observações
-- Volume muito grande para uma única rodada; pode haver retrabalho iterativo após você testar.
-- Vou usar tokens semânticos do design system existente (sem cores hardcoded).
-- Migrações virão em arquivos separados por bloco para facilitar rollback.
-
----
-
-**Confirma para eu prosseguir com tudo, ou quer recortar algum bloco?**
+**Confirma para eu prosseguir nesta ordem, ou quer reordenar/recortar?**

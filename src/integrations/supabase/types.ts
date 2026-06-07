@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_logs: {
+        Row: {
+          action: string
+          admin_id: string
+          created_at: string
+          entity: string
+          entity_id: string | null
+          id: string
+          payload: Json | null
+          reason: string | null
+          reverted_at: string | null
+          reverted_by: string | null
+        }
+        Insert: {
+          action: string
+          admin_id: string
+          created_at?: string
+          entity: string
+          entity_id?: string | null
+          id?: string
+          payload?: Json | null
+          reason?: string | null
+          reverted_at?: string | null
+          reverted_by?: string | null
+        }
+        Update: {
+          action?: string
+          admin_id?: string
+          created_at?: string
+          entity?: string
+          entity_id?: string | null
+          id?: string
+          payload?: Json | null
+          reason?: string | null
+          reverted_at?: string | null
+          reverted_by?: string | null
+        }
+        Relationships: []
+      }
       anuncios: {
         Row: {
           accepts_counteroffer: boolean
@@ -1358,6 +1397,41 @@ export type Database = {
         }
         Relationships: []
       }
+      game_timeline_events: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          payload: Json | null
+          product_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          payload?: Json | null
+          product_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          payload?: Json | null
+          product_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_timeline_events_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       games_catalog: {
         Row: {
           cover_url: string | null
@@ -1827,12 +1901,85 @@ export type Database = {
           },
         ]
       }
+      notification_preferences: {
+        Row: {
+          created_at: string
+          forum_mentions: boolean
+          forum_replies: boolean
+          forum_topics: boolean
+          library_activity: boolean
+          library_opinion: boolean
+          library_review_completa: boolean
+          library_screenshot: boolean
+          midias_especiais: boolean
+          social_follows: boolean
+          social_likes: boolean
+          social_replies: boolean
+          tournament_1d: boolean
+          tournament_1h: boolean
+          tournament_7d: boolean
+          tournament_match: boolean
+          tournament_result: boolean
+          tournament_signup: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          forum_mentions?: boolean
+          forum_replies?: boolean
+          forum_topics?: boolean
+          library_activity?: boolean
+          library_opinion?: boolean
+          library_review_completa?: boolean
+          library_screenshot?: boolean
+          midias_especiais?: boolean
+          social_follows?: boolean
+          social_likes?: boolean
+          social_replies?: boolean
+          tournament_1d?: boolean
+          tournament_1h?: boolean
+          tournament_7d?: boolean
+          tournament_match?: boolean
+          tournament_result?: boolean
+          tournament_signup?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          forum_mentions?: boolean
+          forum_replies?: boolean
+          forum_topics?: boolean
+          library_activity?: boolean
+          library_opinion?: boolean
+          library_review_completa?: boolean
+          library_screenshot?: boolean
+          midias_especiais?: boolean
+          social_follows?: boolean
+          social_likes?: boolean
+          social_replies?: boolean
+          tournament_1d?: boolean
+          tournament_1h?: boolean
+          tournament_7d?: boolean
+          tournament_match?: boolean
+          tournament_result?: boolean
+          tournament_signup?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
+          banner_url: string | null
           body: string | null
           created_at: string
+          cta_label: string | null
+          cta_url: string | null
           id: string
           is_read: boolean
+          kind: Database["public"]["Enums"]["notification_kind"]
           reference_id: string | null
           reference_type: string | null
           title: string
@@ -1840,10 +1987,14 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          banner_url?: string | null
           body?: string | null
           created_at?: string
+          cta_label?: string | null
+          cta_url?: string | null
           id?: string
           is_read?: boolean
+          kind?: Database["public"]["Enums"]["notification_kind"]
           reference_id?: string | null
           reference_type?: string | null
           title: string
@@ -1851,10 +2002,14 @@ export type Database = {
           user_id: string
         }
         Update: {
+          banner_url?: string | null
           body?: string | null
           created_at?: string
+          cta_label?: string | null
+          cta_url?: string | null
           id?: string
           is_read?: boolean
+          kind?: Database["public"]["Enums"]["notification_kind"]
           reference_id?: string | null
           reference_type?: string | null
           title?: string
@@ -2043,6 +2198,7 @@ export type Database = {
           created_at: string
           description: string | null
           discount: number
+          estado_publicacao: Database["public"]["Enums"]["produto_estado"]
           featured: boolean
           id: string
           image_url: string | null
@@ -2069,6 +2225,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           discount?: number
+          estado_publicacao?: Database["public"]["Enums"]["produto_estado"]
           featured?: boolean
           id?: string
           image_url?: string | null
@@ -2095,6 +2252,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           discount?: number
+          estado_publicacao?: Database["public"]["Enums"]["produto_estado"]
           featured?: boolean
           id?: string
           image_url?: string | null
@@ -2425,6 +2583,125 @@ export type Database = {
           updated_at?: string
           updated_by?: string | null
           value?: Json
+        }
+        Relationships: []
+      }
+      social_content_states: {
+        Row: {
+          content_id: string
+          content_type: string
+          state: Database["public"]["Enums"]["social_content_state"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content_id: string
+          content_type: string
+          state?: Database["public"]["Enums"]["social_content_state"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content_id?: string
+          content_type?: string
+          state?: Database["public"]["Enums"]["social_content_state"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      social_favorites: {
+        Row: {
+          content_id: string
+          content_type: string
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          content_id: string
+          content_type: string
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          content_id?: string
+          content_type?: string
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ticket_messages: {
+        Row: {
+          attachments: string[]
+          content: string
+          created_at: string
+          id: string
+          sender_id: string
+          ticket_id: string
+        }
+        Insert: {
+          attachments?: string[]
+          content: string
+          created_at?: string
+          id?: string
+          sender_id: string
+          ticket_id: string
+        }
+        Update: {
+          attachments?: string[]
+          content?: string
+          created_at?: string
+          id?: string
+          sender_id?: string
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tickets: {
+        Row: {
+          assigned_to: string | null
+          attachments: string[]
+          body: string | null
+          channel: Database["public"]["Enums"]["ticket_channel"]
+          created_at: string
+          id: string
+          status: Database["public"]["Enums"]["ticket_status"]
+          subject: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          attachments?: string[]
+          body?: string | null
+          channel: Database["public"]["Enums"]["ticket_channel"]
+          created_at?: string
+          id?: string
+          status?: Database["public"]["Enums"]["ticket_status"]
+          subject: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assigned_to?: string | null
+          attachments?: string[]
+          body?: string | null
+          channel?: Database["public"]["Enums"]["ticket_channel"]
+          created_at?: string
+          id?: string
+          status?: Database["public"]["Enums"]["ticket_status"]
+          subject?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -3388,6 +3665,7 @@ export type Database = {
         | "estoquista"
         | "atendente"
       group_role: "admin" | "member" | "observer"
+      notification_kind: "comum" | "destacada" | "especial"
       notification_type:
         | "nova_mensagem"
         | "proposta_aceita"
@@ -3405,8 +3683,22 @@ export type Database = {
         | "delivered"
         | "cancelled"
       product_type: "digital" | "physical" | "subscription"
+      produto_estado:
+        | "ativo"
+        | "oculto"
+        | "somente_forum"
+        | "somente_loja"
+        | "descontinuado"
+      social_content_state: "novo" | "visto" | "curtido" | "oculto"
       stock_movement_type: "entrada" | "saida" | "ajuste"
       suggestion_status: "pendente" | "aprovado" | "rejeitado"
+      ticket_channel: "mobile" | "web"
+      ticket_status:
+        | "aberto"
+        | "em_andamento"
+        | "aguardando_usuario"
+        | "resolvido"
+        | "fechado"
       tournament_chat_role: "admin" | "member" | "observer"
     }
     CompositeTypes: {
@@ -3552,6 +3844,7 @@ export const Constants = {
         "atendente",
       ],
       group_role: ["admin", "member", "observer"],
+      notification_kind: ["comum", "destacada", "especial"],
       notification_type: [
         "nova_mensagem",
         "proposta_aceita",
@@ -3571,8 +3864,24 @@ export const Constants = {
         "cancelled",
       ],
       product_type: ["digital", "physical", "subscription"],
+      produto_estado: [
+        "ativo",
+        "oculto",
+        "somente_forum",
+        "somente_loja",
+        "descontinuado",
+      ],
+      social_content_state: ["novo", "visto", "curtido", "oculto"],
       stock_movement_type: ["entrada", "saida", "ajuste"],
       suggestion_status: ["pendente", "aprovado", "rejeitado"],
+      ticket_channel: ["mobile", "web"],
+      ticket_status: [
+        "aberto",
+        "em_andamento",
+        "aguardando_usuario",
+        "resolvido",
+        "fechado",
+      ],
       tournament_chat_role: ["admin", "member", "observer"],
     },
   },
