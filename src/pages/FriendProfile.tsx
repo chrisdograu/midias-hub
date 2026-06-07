@@ -13,6 +13,7 @@ import FriendIdentityPanel from '@/components/social/FriendIdentityPanel';
 import { HalfStarDisplay } from '@/components/HalfStarRating';
 import LevelTitleBadge from '@/components/LevelTitleBadge';
 import GameTimeline from '@/components/social/GameTimeline';
+import SellerProfileSwitcher from '@/components/seller/SellerProfileSwitcher';
 import { Clock } from 'lucide-react';
 
 type Tab = 'overview' | 'biblioteca' | 'atividade' | 'timeline' | 'estatisticas' | 'amizade';
@@ -121,6 +122,16 @@ export default function FriendProfile() {
     },
   });
 
+  const { data: sellerHandle } = useQuery({
+    queryKey: ['friend-seller-handle', userId],
+    enabled: !!userId,
+    queryFn: async () => {
+      const { data } = await supabase.from('seller_profiles' as any)
+        .select('handle').eq('user_id', userId!).maybeSingle();
+      return ((data as any)?.handle as string | undefined) ?? null;
+    },
+  });
+
   const libEnriched = useMemo(
     () => biblioteca.map((b: any) => ({ ...b, game: games.find(g => g.id === b.product_id) })).filter(b => b.game),
     [biblioteca, games]
@@ -150,6 +161,13 @@ export default function FriendProfile() {
       <Link to="/social" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary mb-4">
         <ArrowLeft className="h-4 w-4" /> Biblioteca Social
       </Link>
+
+      <SellerProfileSwitcher
+        userId={userId}
+        personalHandle={(profile?.display_name || '').toLowerCase() || null}
+        sellerHandle={sellerHandle ?? null}
+        hasSeller={!!sellerHandle}
+      />
 
       {/* Banner + identidade */}
       <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
