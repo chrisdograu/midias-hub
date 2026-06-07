@@ -13,6 +13,7 @@ import PrivacyTab from '@/components/perfil/PrivacyTab';
 import NotificationPrefsTab from '@/components/perfil/NotificationPrefsTab';
 import LevelTitleBadge from '@/components/LevelTitleBadge';
 import ActiveTitleSelector from '@/components/ActiveTitleSelector';
+import SellerProfileSwitcher from '@/components/seller/SellerProfileSwitcher';
 
 export default function Perfil() {
   const { user, profile, updatePassword } = useAuth();
@@ -25,6 +26,7 @@ export default function Perfil() {
   const [pushNotifications, setPushNotifications] = useState(true);
   const [emailNotifications, setEmailNotifications] = useState(false);
   const [bannedUntil, setBannedUntil] = useState<string | null>(null);
+  const [sellerHandle, setSellerHandle] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -52,6 +54,9 @@ export default function Perfil() {
         setBannedUntil(data.banned_until || null);
       }
       setLoaded(true);
+    });
+    supabase.from('seller_profiles').select('handle').eq('user_id', user.id).maybeSingle().then(({ data }) => {
+      setSellerHandle(data?.handle || null);
     });
   }
 
@@ -121,6 +126,14 @@ export default function Perfil() {
             </div>
           </div>
         )}
+
+        <SellerProfileSwitcher
+          userId={user?.id}
+          personalHandle={username || displayName}
+          sellerHandle={sellerHandle}
+          hasSeller={!!sellerHandle}
+          isOwn
+        />
 
         <Tabs defaultValue="conta" className="mb-6">
           <TabsList className="w-full grid grid-cols-5">

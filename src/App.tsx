@@ -84,6 +84,25 @@ const Configuracoes = lazy(() => import("./desktop/pages/Configuracoes"));
 const BadgesAdmin = lazy(() => import("./desktop/pages/Badges"));
 const Promocoes = lazy(() => import("./desktop/pages/Promocoes"));
 const TorneiosAdmin = lazy(() => import("./desktop/pages/Torneios"));
+const JogosAdmin = lazy(() => import("./desktop/pages/JogosAdmin"));
+const CriarJogo = lazy(() => import("./desktop/pages/CriarJogo"));
+const BundlesAdmin = lazy(() => import("./desktop/pages/BundlesAdmin"));
+const TrocasArquivadas = lazy(() => import("./desktop/pages/TrocasArquivadas"));
+const BibliotecaSocialAdmin = lazy(() => import("./desktop/pages/BibliotecaSocialAdmin"));
+const TorneiosEventos = lazy(() => import("./desktop/pages/TorneiosEventos"));
+const TorneiosAtuais = lazy(() => import("./desktop/pages/TorneiosAtuais"));
+const CriarTorneio = lazy(() => import("./desktop/pages/CriarTorneio"));
+const TicketsMobile = lazy(() => import("./desktop/pages/TicketsMobile"));
+const TicketsWeb = lazy(() => import("./desktop/pages/TicketsWeb"));
+const Denuncias = lazy(() => import("./desktop/pages/Denuncias"));
+const NotificacoesEspeciais = lazy(() => import("./desktop/pages/NotificacoesEspeciais"));
+const LogsAdministrativos = lazy(() => import("./desktop/pages/LogsAdministrativos"));
+const Analytics = lazy(() => import("./desktop/pages/Analytics"));
+const XPMobile = lazy(() => import("./desktop/pages/XPMobile"));
+const XPWeb = lazy(() => import("./desktop/pages/XPWeb"));
+const TitulosAdmin = lazy(() => import("./desktop/pages/TitulosAdmin"));
+const RecompensasAdmin = lazy(() => import("./desktop/pages/RecompensasAdmin"));
+const IntegracoesAdmin = lazy(() => import("./desktop/pages/IntegracoesAdmin"));
 const EmAlta = lazy(() => import("./pages/EmAlta"));
 const ParaVoce = lazy(() => import("./pages/ParaVoce"));
 const Social = lazy(() => import("./pages/SocialLibrary"));
@@ -173,6 +192,25 @@ const App = () => (
                 <Route path="badges" element={<BadgesAdmin />} />
                 <Route path="promocoes" element={<Promocoes />} />
                 <Route path="torneios" element={<TorneiosAdmin />} />
+                <Route path="torneios/atuais" element={<TorneiosAtuais />} />
+                <Route path="torneios/eventos" element={<TorneiosEventos />} />
+                <Route path="torneios/novo" element={<CriarTorneio />} />
+                <Route path="jogos" element={<JogosAdmin />} />
+                <Route path="jogos/novo" element={<CriarJogo />} />
+                <Route path="bundles" element={<BundlesAdmin />} />
+                <Route path="trocas-arquivadas" element={<TrocasArquivadas />} />
+                <Route path="biblioteca-social" element={<BibliotecaSocialAdmin />} />
+                <Route path="tickets/mobile" element={<TicketsMobile />} />
+                <Route path="tickets/web" element={<TicketsWeb />} />
+                <Route path="denuncias" element={<Denuncias />} />
+                <Route path="notificacoes/especiais" element={<NotificacoesEspeciais />} />
+                <Route path="logs" element={<LogsAdministrativos />} />
+                <Route path="analytics" element={<Analytics />} />
+                <Route path="xp/mobile" element={<XPMobile />} />
+                <Route path="xp/web" element={<XPWeb />} />
+                <Route path="titulos" element={<TitulosAdmin />} />
+                <Route path="recompensas" element={<RecompensasAdmin />} />
+                <Route path="integracoes" element={<IntegracoesAdmin />} />
               </Route>
 
               {/* Web E-commerce Routes */}
