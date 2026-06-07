@@ -5,6 +5,7 @@ import {
   Award, LogOut, Gamepad2, ChevronLeft, ChevronRight,
   Megaphone, ArrowLeftRight, MessageSquare, Star, Bell, MessageCircle,
   Sun, Moon, Settings, Loader2, Ticket, Lightbulb, Trophy, Zap,
+  Library, FileText, AlertTriangle, LifeBuoy, Plug, Sparkles, Boxes,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useTheme } from '@/hooks/useTheme';
@@ -20,6 +21,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 
 type PendingKey = keyof PendingCounts;
 
+// Estrutura conforme PROMPT UNIFICADO MIDIAS — Painel Admin Desktop
 const navSections: {
   label: string;
   items: { title: string; url: string; icon: typeof LayoutDashboard; route: string; pendingKey?: PendingKey }[];
@@ -38,10 +40,93 @@ const navSections: {
       { title: 'Clientes', url: '/desktop/clientes', icon: Users, route: 'clientes' },
       { title: 'Fornecedores', url: '/desktop/fornecedores', icon: Truck, route: 'fornecedores' },
       { title: 'Categorias', url: '/desktop/categorias', icon: Tags, route: 'categorias' },
+    ],
+  },
+  {
+    label: 'Comercial',
+    items: [
       { title: 'Cupons', url: '/desktop/cupons', icon: Ticket, route: 'cupons' },
-      { title: 'Promoções & Bundles', url: '/desktop/promocoes', icon: Zap, route: 'promocoes' },
+      { title: 'Promoções', url: '/desktop/promocoes', icon: Zap, route: 'promocoes' },
+      { title: 'Bundles', url: '/desktop/bundles', icon: Boxes, route: 'bundles' },
+    ],
+  },
+  {
+    label: 'Jogos',
+    items: [
+      { title: 'Jogos', url: '/desktop/jogos', icon: Gamepad2, route: 'jogos' },
+      { title: 'Solicitações', url: '/desktop/sugestoes', icon: Lightbulb, route: 'sugestoes', pendingKey: 'sugestoes' },
+      { title: 'Criar Jogo', url: '/desktop/jogos/novo', icon: Sparkles, route: 'jogos' },
+    ],
+  },
+  {
+    label: 'Marketplace',
+    items: [
+      { title: 'Anúncios', url: '/desktop/anuncios', icon: Megaphone, route: 'anuncios' },
+      { title: 'Trocas', url: '/desktop/propostas', icon: ArrowLeftRight, route: 'propostas', pendingKey: 'propostas' },
+      { title: 'Trocas Arquivadas', url: '/desktop/trocas-arquivadas', icon: Library, route: 'propostas' },
+      { title: 'Avaliações Comerciais', url: '/desktop/avaliacoes-usuario', icon: Star, route: 'avaliacoes-usuario' },
+    ],
+  },
+  {
+    label: 'Biblioteca Social',
+    items: [
+      { title: 'Biblioteca Social', url: '/desktop/biblioteca-social', icon: Library, route: 'biblioteca-social' },
+    ],
+  },
+  {
+    label: 'Torneios',
+    items: [
+      { title: 'Eventos', url: '/desktop/torneios/eventos', icon: Trophy, route: 'torneios' },
+      { title: 'Atuais', url: '/desktop/torneios', icon: Trophy, route: 'torneios' },
+      { title: 'Criar Torneio', url: '/desktop/torneios/novo', icon: Sparkles, route: 'torneios' },
+    ],
+  },
+  {
+    label: 'Moderação',
+    items: [
+      { title: 'Moderação', url: '/desktop/moderacao', icon: Shield, route: 'moderacao' },
+      { title: 'Denúncias', url: '/desktop/denuncias', icon: AlertTriangle, route: 'moderacao', pendingKey: 'denuncias' },
+    ],
+  },
+  {
+    label: 'Suporte',
+    items: [
+      { title: 'Tickets Mobile', url: '/desktop/tickets/mobile', icon: LifeBuoy, route: 'tickets' },
+      { title: 'Tickets Web', url: '/desktop/tickets/web', icon: LifeBuoy, route: 'tickets' },
+    ],
+  },
+  {
+    label: 'Comunicação',
+    items: [
+      { title: 'Notificações', url: '/desktop/notificacoes', icon: Bell, route: 'notificacoes' },
+      { title: 'Mensagens', url: '/desktop/mensagens', icon: MessageSquare, route: 'mensagens' },
+      { title: 'Fórum', url: '/desktop/forum', icon: MessageCircle, route: 'forum' },
+    ],
+  },
+  {
+    label: 'Análises e Auditoria',
+    items: [
+      { title: 'Analytics', url: '/desktop/analytics', icon: BarChart3, route: 'relatorios' },
+      { title: 'Relatórios', url: '/desktop/relatorios', icon: FileText, route: 'relatorios' },
+      { title: 'Logs Administrativos', url: '/desktop/logs', icon: Shield, route: 'configuracoes' },
+    ],
+  },
+  {
+    label: 'XP e Recompensas',
+    items: [
+      { title: 'XP Mobile', url: '/desktop/xp/mobile', icon: Zap, route: 'badges' },
+      { title: 'XP Web', url: '/desktop/xp/web', icon: Zap, route: 'badges' },
       { title: 'Badges', url: '/desktop/badges', icon: Trophy, route: 'badges' },
-      { title: 'Torneios', url: '/desktop/torneios', icon: Trophy, route: 'torneios' },
+      { title: 'Títulos', url: '/desktop/titulos', icon: Award, route: 'badges' },
+      { title: 'Recompensas', url: '/desktop/recompensas', icon: Sparkles, route: 'badges' },
+    ],
+  },
+  {
+    label: 'Certificados',
+    items: [
+      { title: 'Solicitações', url: '/desktop/certificados?tab=solicitacoes', icon: Award, route: 'certificados', pendingKey: 'certificados' },
+      { title: 'Ativos', url: '/desktop/certificados?tab=ativos', icon: Award, route: 'certificados' },
+      { title: 'Retidos', url: '/desktop/certificados?tab=retidos', icon: Award, route: 'certificados' },
     ],
   },
   {
@@ -52,23 +137,9 @@ const navSections: {
     ],
   },
   {
-    label: 'Marketplace Mobile',
+    label: 'Sistema',
     items: [
-      { title: 'Anúncios', url: '/desktop/anuncios', icon: Megaphone, route: 'anuncios' },
-      { title: 'Propostas de Troca', url: '/desktop/propostas', icon: ArrowLeftRight, route: 'propostas', pendingKey: 'propostas' },
-      { title: 'Mensagens', url: '/desktop/mensagens', icon: MessageSquare, route: 'mensagens' },
-      { title: 'Avaliações Usuários', url: '/desktop/avaliacoes-usuario', icon: Star, route: 'avaliacoes-usuario' },
-      { title: 'Notificações', url: '/desktop/notificacoes', icon: Bell, route: 'notificacoes' },
-      { title: 'Fórum', url: '/desktop/forum', icon: MessageCircle, route: 'forum' },
-      { title: 'Sugestões de Jogos', url: '/desktop/sugestoes', icon: Lightbulb, route: 'sugestoes', pendingKey: 'sugestoes' },
-    ],
-  },
-  {
-    label: 'Administração',
-    items: [
-      { title: 'Moderação', url: '/desktop/moderacao', icon: Shield, route: 'moderacao', pendingKey: 'denuncias' },
-      { title: 'Relatórios', url: '/desktop/relatorios', icon: BarChart3, route: 'relatorios' },
-      { title: 'Certificados', url: '/desktop/certificados', icon: Award, route: 'certificados', pendingKey: 'certificados' },
+      { title: 'Integrações', url: '/desktop/integracoes', icon: Plug, route: 'configuracoes' },
       { title: 'Configurações', url: '/desktop/configuracoes', icon: Settings, route: 'configuracoes' },
     ],
   },
