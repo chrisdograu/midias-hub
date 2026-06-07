@@ -192,6 +192,25 @@ const App = () => (
                 <Route path="badges" element={<BadgesAdmin />} />
                 <Route path="promocoes" element={<Promocoes />} />
                 <Route path="torneios" element={<TorneiosAdmin />} />
+                <Route path="torneios/atuais" element={<TorneiosAtuais />} />
+                <Route path="torneios/eventos" element={<TorneiosEventos />} />
+                <Route path="torneios/novo" element={<CriarTorneio />} />
+                <Route path="jogos" element={<JogosAdmin />} />
+                <Route path="jogos/novo" element={<CriarJogo />} />
+                <Route path="bundles" element={<BundlesAdmin />} />
+                <Route path="trocas-arquivadas" element={<TrocasArquivadas />} />
+                <Route path="biblioteca-social" element={<BibliotecaSocialAdmin />} />
+                <Route path="tickets/mobile" element={<TicketsMobile />} />
+                <Route path="tickets/web" element={<TicketsWeb />} />
+                <Route path="denuncias" element={<Denuncias />} />
+                <Route path="notificacoes/especiais" element={<NotificacoesEspeciais />} />
+                <Route path="logs" element={<LogsAdministrativos />} />
+                <Route path="analytics" element={<Analytics />} />
+                <Route path="xp/mobile" element={<XPMobile />} />
+                <Route path="xp/web" element={<XPWeb />} />
+                <Route path="titulos" element={<TitulosAdmin />} />
+                <Route path="recompensas" element={<RecompensasAdmin />} />
+                <Route path="integracoes" element={<IntegracoesAdmin />} />
               </Route>
 
               {/* Web E-commerce Routes */}
