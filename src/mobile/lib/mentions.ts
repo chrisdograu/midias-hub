@@ -1,30 +1,54 @@
-// Sistema de menções compartilhado — Fase 6
+// Sistema de menções compartilhado — suporta @usuario (pessoal) e $vendedor (seller)
 import { supabase } from '@/integrations/supabase/client';
 
-const MENTION_RE = /@([a-zA-Z0-9_.-]{2,32})/g;
+const MENTION_RE = /([@$])([a-zA-Z0-9_.-]{2,32})/g;
 
-export function extractMentionHandles(text: string): string[] {
-  const set = new Set<string>();
+export type MentionKind = 'personal' | 'seller';
+
+export function extractMentionHandles(text: string): { handle: string; kind: MentionKind }[] {
+  const seen = new Set<string>();
+  const out: { handle: string; kind: MentionKind }[] = [];
   let m: RegExpExecArray | null;
-  while ((m = MENTION_RE.exec(text)) !== null) set.add(m[1].toLowerCase());
-  return [...set];
+  const re = new RegExp(MENTION_RE.source, 'g');
+  while ((m = re.exec(text)) !== null) {
+    const kind: MentionKind = m[1] === '$' ? 'seller' : 'personal';
+    const key = `${kind}:${m[2].toLowerCase()}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push({ handle: m[2].toLowerCase(), kind });
+  }
+  return out;
 }
 
 /**
- * Resolve handles em user_ids consultando profiles.display_name (case-insensitive).
+ * Resolve handles em ids consultando tabelas certas.
+ * - personal: profiles.display_name
+ * - seller: seller_profiles.handle (devolve user_id como id)
  */
-export async function resolveMentions(handles: string[]): Promise<{ id: string; handle: string }[]> {
-  if (!handles.length) return [];
-  const { data } = await supabase
-    .from('profiles')
-    .select('id, display_name')
-    .or(handles.map(h => `display_name.ilike.${h}`).join(','))
-    .limit(50);
-  return (data || []).map(p => ({ id: p.id as string, handle: (p.display_name || '').toLowerCase() }));
+export async function resolveMentions(items: { handle: string; kind: MentionKind }[]) {
+  if (!items.length) return [] as { id: string; handle: string; kind: MentionKind }[];
+  const personal = items.filter(i => i.kind === 'personal').map(i => i.handle);
+  const sellers = items.filter(i => i.kind === 'seller').map(i => i.handle);
+  const results: { id: string; handle: string; kind: MentionKind }[] = [];
+  if (personal.length) {
+    const { data } = await supabase
+      .from('profiles').select('id, display_name')
+      .or(personal.map(h => `display_name.ilike.${h}`).join(','))
+      .limit(50);
+    (data || []).forEach(p => results.push({ id: p.id as string, handle: (p.display_name || '').toLowerCase(), kind: 'personal' }));
+  }
+  if (sellers.length) {
+    const { data } = await supabase
+      .from('seller_profiles' as any).select('user_id, handle')
+      .in('handle', sellers).limit(50);
+    ((data as any[]) || []).forEach(p => results.push({ id: p.user_id, handle: (p.handle || '').toLowerCase(), kind: 'seller' }));
+  }
+  return results;
 }
 
 /**
  * Registra menções para um conteúdo. As menções disparam trigger de notificação no banco.
+ * Namespace separa interações pessoais (@) das comerciais ($).
  */
 export async function recordMentions(opts: {
   text: string;
@@ -44,16 +68,15 @@ export async function recordMentions(opts: {
       source_type: opts.sourceType,
       source_id: opts.sourceId,
       context_preview: opts.text.slice(0, 140),
+      namespace: r.kind,
     }));
   if (!rows.length) return;
   await supabase.from('mentions').insert(rows as any);
 }
 
-/**
- * Renderiza texto com menções como spans clicáveis (lado consumidor faz parsing).
- * Retorna array de partes para renderização React.
- */
-export type MentionPart = { kind: 'text'; value: string } | { kind: 'mention'; handle: string };
+export type MentionPart =
+  | { kind: 'text'; value: string }
+  | { kind: 'mention'; handle: string; mentionKind: MentionKind };
 
 export function parseMentionParts(text: string): MentionPart[] {
   const parts: MentionPart[] = [];
@@ -62,7 +85,7 @@ export function parseMentionParts(text: string): MentionPart[] {
   const re = new RegExp(MENTION_RE.source, 'g');
   while ((m = re.exec(text)) !== null) {
     if (m.index > last) parts.push({ kind: 'text', value: text.slice(last, m.index) });
-    parts.push({ kind: 'mention', handle: m[1] });
+    parts.push({ kind: 'mention', handle: m[2], mentionKind: m[1] === '$' ? 'seller' : 'personal' });
     last = m.index + m[0].length;
   }
   if (last < text.length) parts.push({ kind: 'text', value: text.slice(last) });
