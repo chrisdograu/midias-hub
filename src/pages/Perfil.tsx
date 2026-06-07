@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import BlockedUsersTab from '@/components/perfil/BlockedUsersTab';
 import MyReviewsTab from '@/components/perfil/MyReviewsTab';
+import PrivacyTab from '@/components/perfil/PrivacyTab';
 import LevelTitleBadge from '@/components/LevelTitleBadge';
 import ActiveTitleSelector from '@/components/ActiveTitleSelector';
 
