@@ -84,7 +84,7 @@ export default function MChat() {
     if (!user) return;
     setLoading(true);
     const { data: convs } = await supabase
-      .from('conversas').select('id, participant_1, participant_2, anuncio_id, last_message, last_message_at, status, tournament_id, is_admin_chat')
+      .from('conversas').select('id, participant_1, participant_2, anuncio_id, last_message, last_message_at, status, tournament_id, is_admin_chat, channel')
       .or(`participant_1.eq.${user.id},participant_2.eq.${user.id}`)
       .order('last_message_at', { ascending: false, nullsFirst: false });
     if (!convs) { setLoading(false); return; }
