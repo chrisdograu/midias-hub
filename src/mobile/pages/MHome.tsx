@@ -97,11 +97,26 @@ export default function MHome() {
     return () => { cancel = true; };
   }, []);
 
-  const visible = feed.filter(i => {
-    if (filter === 'all') return true;
-    if (filter === 'following') return followingIds.has(i.authorId);
-    return i.kind === filter;
-  });
+  // Mix 40/30/30 (fórum/reviews/anúncios) intercalando por buckets quando filtro 'all'.
+  const visible = (() => {
+    const base = feed.filter(i => {
+      if (filter === 'all') return true;
+      if (filter === 'following') return followingIds.has(i.authorId);
+      return i.kind === filter;
+    });
+    if (filter !== 'all') return base;
+    const forum = base.filter(i => i.kind === 'forum');
+    const reviews = base.filter(i => i.kind === 'review');
+    const ads = base.filter(i => i.kind === 'ad');
+    const out: FeedItem[] = [];
+    // padrão por bloco de 10: 4 fórum, 3 review, 3 anúncio
+    while (forum.length || reviews.length || ads.length) {
+      for (let i = 0; i < 4 && forum.length; i++) out.push(forum.shift()!);
+      for (let i = 0; i < 3 && reviews.length; i++) out.push(reviews.shift()!);
+      for (let i = 0; i < 3 && ads.length; i++) out.push(ads.shift()!);
+    }
+    return out;
+  })();
 
   return (
     <div className="px-4 py-5 space-y-6">
