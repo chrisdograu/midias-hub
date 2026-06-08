@@ -15,6 +15,7 @@ interface Conv {
   unread: number; ad_title: string | null;
   tournament_id: string | null; is_admin_chat: boolean; tournament_title: string | null;
   favorited: boolean; archived: boolean; muted: boolean;
+  channel: 'personal' | 'seller' | null;
 }
 
 type Filter = 'all' | 'favorites' | 'unread' | 'archived';
