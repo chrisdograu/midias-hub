@@ -15,6 +15,7 @@ interface Conv {
   unread: number; ad_title: string | null;
   tournament_id: string | null; is_admin_chat: boolean; tournament_title: string | null;
   favorited: boolean; archived: boolean; muted: boolean;
+  channel: 'personal' | 'seller' | null;
 }
 
 type Filter = 'all' | 'favorites' | 'unread' | 'archived';
@@ -73,6 +74,7 @@ export default function MChat() {
         is_admin_chat: !!c.is_admin_chat,
         tournament_title: c.tournament_id ? (tournMap.get(c.tournament_id) as string) || null : null,
         favorited: !!s?.favorited, archived: !!s?.archived, muted: !!s?.muted,
+        channel: (c as any).channel ?? null,
       };
     }));
 
@@ -82,7 +84,7 @@ export default function MChat() {
     if (!user) return;
     setLoading(true);
     const { data: convs } = await supabase
-      .from('conversas').select('id, participant_1, participant_2, anuncio_id, last_message, last_message_at, status, tournament_id, is_admin_chat')
+      .from('conversas').select('id, participant_1, participant_2, anuncio_id, last_message, last_message_at, status, tournament_id, is_admin_chat, channel')
       .or(`participant_1.eq.${user.id},participant_2.eq.${user.id}`)
       .order('last_message_at', { ascending: false, nullsFirst: false });
     if (!convs) { setLoading(false); return; }
@@ -125,8 +127,11 @@ export default function MChat() {
   const pending = conversas.filter(c => c.status === 'pending' && c.participant_2 === user.id);
   const active = conversas.filter(c => c.status === 'accepted');
   const tournamentConvs = active.filter(c => c.tournament_id);
-  const vendorConvs = active.filter(c => !c.tournament_id && c.anuncio_id);
-  const friendsConvs = active.filter(c => !c.tournament_id && !c.anuncio_id);
+  // Split por canal: usa 'channel' quando definido, com fallback ao heurístico (anuncio_id ⇒ seller)
+  const sellerCh = (c: Conv) => c.channel === 'seller' || (!c.channel && !!c.anuncio_id);
+  const personalCh = (c: Conv) => c.channel === 'personal' || (!c.channel && !c.anuncio_id);
+  const vendorConvs = active.filter(c => !c.tournament_id && sellerCh(c));
+  const friendsConvs = active.filter(c => !c.tournament_id && personalCh(c));
   const tournamentUnread = tournamentConvs.reduce((s, c) => s + c.unread, 0);
   const vendorUnread = vendorConvs.reduce((s, c) => s + c.unread, 0);
   const friendsUnread = friendsConvs.reduce((s, c) => s + c.unread, 0);
