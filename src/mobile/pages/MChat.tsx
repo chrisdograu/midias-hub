@@ -127,8 +127,11 @@ export default function MChat() {
   const pending = conversas.filter(c => c.status === 'pending' && c.participant_2 === user.id);
   const active = conversas.filter(c => c.status === 'accepted');
   const tournamentConvs = active.filter(c => c.tournament_id);
-  const vendorConvs = active.filter(c => !c.tournament_id && c.anuncio_id);
-  const friendsConvs = active.filter(c => !c.tournament_id && !c.anuncio_id);
+  // Split por canal: usa 'channel' quando definido, com fallback ao heurístico (anuncio_id ⇒ seller)
+  const sellerCh = (c: Conv) => c.channel === 'seller' || (!c.channel && !!c.anuncio_id);
+  const personalCh = (c: Conv) => c.channel === 'personal' || (!c.channel && !c.anuncio_id);
+  const vendorConvs = active.filter(c => !c.tournament_id && sellerCh(c));
+  const friendsConvs = active.filter(c => !c.tournament_id && personalCh(c));
   const tournamentUnread = tournamentConvs.reduce((s, c) => s + c.unread, 0);
   const vendorUnread = vendorConvs.reduce((s, c) => s + c.unread, 0);
   const friendsUnread = friendsConvs.reduce((s, c) => s + c.unread, 0);
