@@ -74,6 +74,7 @@ export default function MChat() {
         is_admin_chat: !!c.is_admin_chat,
         tournament_title: c.tournament_id ? (tournMap.get(c.tournament_id) as string) || null : null,
         favorited: !!s?.favorited, archived: !!s?.archived, muted: !!s?.muted,
+        channel: (c as any).channel ?? null,
       };
     }));
 
