@@ -1,93 +1,55 @@
+# Plano — Rodada Final (6 sub-rodadas)
 
-# Plano em duas etapas
+São muitos pedidos. Vou dividir em 6 sub-rodadas executáveis. Confirme e eu executo **todas** em sequência neste mesmo fluxo.
 
-## ETAPA 1 — Fechar pendências da rodada anterior
-
-Itens do prompt unificado anterior que ainda não foram entregues. Vou implementar antes de tocar no documento novo.
-
-### 1.1 UI de Privacidade Granular (Web — Perfil)
-- Nova aba **Privacidade** em `src/pages/Perfil.tsx`:
-  - Toggle global `library_visibility` (público / amigos / privado)
-  - Lista de **exceções** (`profiles.privacy_exceptions`) — buscar amigo e adicionar
-  - Por exceção: checkboxes de escopo gravados em `privacy_grants` (reviews_completas, screenshots, opinions, stats, achievements, library_items, full)
-- Reaproveitar `can_view_scope` já existente no banco.
-
-### 1.2 Feed Mobile 40/30/30 + "Não mostrar mais este jogo"
-- Refactor de `src/mobile/pages/MHome.tsx`:
-  - Três pools: biblioteca do usuário (40%), jogos de gêneros similares (30%), global (30%)
-  - Excluir tudo de `user_game_mutes` com escopo `feed|both`
-  - Intercalar mantendo proporção
-- Botão "Não mostrar mais conteúdo deste jogo" em `MForumGame.tsx`, `BibliotecaJogo.tsx` e `FriendProfile.tsx` (insere em `user_game_mutes`).
-
-### 1.3 Múltiplas imagens em Bundles
-- Adicionar coluna `images text[]` em `bundles` (migration).
-- Renderizar galeria em `src/pages/BundleDetail.tsx` via `ProductGallery`.
-- Garantir uso de `ProductGallery` em `GameDetail.tsx` (já existe `produto_imagens`).
+## Esclarecendo dúvidas que você levantou
+- **"Paginação/ordenação universais com filtros persistidos"** = toda página admin terá: controles de ordenar coluna ↑↓, paginação (20/pág, Anterior/Próxima), e os filtros (busca, status, datas) ficam salvos em `localStorage` por página, então ao sair e voltar tudo continua como estava.
+- **"Tela de detalhes com timeline"** = clicar em uma linha (denúncia, ban, jogo, troca, ticket) abre painel lateral mostrando todos os `admin_logs` daquele `entity_id` em ordem cronológica (quem fez, quando, motivo).
+- **"IntegracoesAdmin completa"** = sair do placeholder; tabela `integration_webhooks` (url, evento, secret, ativo), CRUD, botão "Testar conexão" (faz POST de ping e mostra status), export CSV, tudo logado.
 
 ---
 
-## ETAPA 2 — Documento novo (Painel Admin + Sistemas Sociais)
+## Rodada 1 — Backend (migrations)
+1. `tournament_chat_messages` já existe → adicionar índice por tournament_id+created_at e habilitar realtime para histórico/paginação.
+2. Novas tabelas:
+   - `tournament_waitlist` (tournament_id, user_id, position, created_at)
+   - `tournament_confirmations` (tournament_id, user_id, stage `7d|1d|1h`, confirmed_at, expires_at)
+   - `integration_webhooks` (name, url, event, secret, active, created_by)
+   - `forum_categories` (slug, name, order, is_community) + seed "Comunidade" com 4 subcategorias
+   - `review_completa_visibility` (review_id, user_id) para lista personalizada
+   - Adicionar em `tournaments`: `kind` (`weekly|monthly`), `entry_price`, `prize_distribution` (jsonb), `refund_policy_ack`.
+   - Adicionar em `biblioteca_usuario`: `badge_completed`, `badge_platinum`, `badge_verified_source`.
+3. Trigger `revoke_seat_on_missed_confirmation()` + libera próximo da fila.
+4. Função `award_xp` ajustada para nova tabela de níveis (1→17 com Rei do 67 / Imperador do 67).
+5. Bloquear criação de anúncio sem `seller_profile`: policy em `anuncios` exigindo `EXISTS seller_profiles WHERE user_id=auth.uid()`.
 
-Implementação faseada. Cada fase é independente e termina entregando UI utilizável.
+## Rodada 2 — Admin universal
+- Helper `useAdminTable` (busca+filtros+sort+page persistidos em localStorage).
+- Helper `requireAdminAction(scope)` — se papel não pode, registra `admin_logs.action='denied_*'` e mostra toast.
+- Aplicar nas 18 páginas admin (JogosAdmin, BundlesAdmin, Denuncias, etc).
+- Painel lateral `<EntityTimelineDrawer entity entity_id />` lendo `admin_logs`.
+- IntegracoesAdmin: CRUD real + "Testar conexão" + export.
 
-### Fase A — Reestruturação da navegação do Desktop Admin
-Sidebar agrupada conforme spec:
-- Dashboard
-- **Cadastros**: Produtos, Funcionários, Clientes, Fornecedores, Categorias
-- **Comercial**: Cupons, Promoções, **Bundles** (nova página `BundlesAdmin.tsx`)
-- **Jogos**: Jogos (estado: Ativo/Oculto/Somente Fórum/Somente Loja/Descontinuado), Solicitações, **Criar Jogo**
-- **Marketplace**: Anúncios, **Trocas**, **Trocas Arquivadas**, Avaliações Comerciais
-- **Biblioteca Social** (admin viewer — read-only com justificativa)
-- **Torneios**: Eventos (histórico), Atuais, Criar Torneio
-- Moderação / Denúncias (separados)
-- **Tickets**: Mobile (chat) / Web (email)
-- Notificações (comum, destacada, especial com banner/CTA)
-- **Análises e Auditoria**: Analytics, Relatórios, **Logs Administrativos** (com reverter — só admin geral)
-- **XP e Recompensas**: Mobile, Web, Badges, Títulos, Recompensas
-- Certificados: Solicitações / Ativos / Retidos
-- Integrações (Steam, Xbox, PSN, Discord, Twitch, YouTube)
-- Configurações
+## Rodada 3 — Torneio Mensal Pago
+- `CreateTournamentDialog`: campo kind, entry_price, editor de distribuição (1º/2º/3º + margem calculada ao vivo).
+- Página de inscrição (`/torneios/:id/inscrever`): checkbox 18+, regras de reembolso visíveis, simulação de pagamento (Pix/Cartão como no checkout simulado da loja).
+- Fila de espera: botão "Entrar na fila", lista ordenada, notificação quando vaga abre.
+- Edge function `tournament-reminders` (já existe): expandir para mandar 7d/1d/1h com botão de confirmar + liberar vaga + reembolso 50%.
 
-### Fase B — Schema novo para suportar o doc
-Migrations:
-- `produtos.estado_publicacao` enum (`ativo|oculto|somente_forum|somente_loja|descontinuado`)
-- `admin_logs` (admin_id, action, entity, entity_id, reason, payload jsonb, reverted_by, reverted_at) — trigger genérico via wrappers
-- `tickets` (user_id, channel `mobile|web`, status, subject, body, attachments[]) + `ticket_messages`
-- `social_content_states` (user_id, content_type, content_id, state `novo|visto|curtido|oculto`) — único por (user, type, id); regra "uma vez novo"
-- `social_favorites` (user_id, content_type, content_id)
-- `game_timeline_events` (user_id, product_id, kind, payload, created_at)
-- `notification_preferences` granular (categorias do doc)
-- `notifications.kind` enum (`comum|destacada|especial`) + colunas `banner_url`, `cta_label`, `cta_url`
-- `friendship_state` view derivada de `user_follows` (mútuo = amizade); trigger que quando alguém deixa de seguir remove acessos
-- `biblioteca_usuario.status` enum expandido (`jogando|pausado|zerado|platinado|abandonado|quero_jogar`) + `is_favorite`
+## Rodada 4 — Detalhe de torneio + chat persistente
+- `TournamentDetail.tsx`: ranking (vitórias/derrotas/pontos), estatísticas (participantes, MVP, predições), timeline de eventos (`tournament_match_events`).
+- `LiveTournamentChat`: persistir em `tournament_chat_messages`, paginação infinita (cursor created_at), barra de busca por texto.
 
-### Fase C — Sistemas sociais novos
-- **Estados NOVO/VISTO/CURTIDO/OCULTO** com regra de não-repetição (trigger bloqueia voltar para "novo").
-- **Timeline por jogo** em `FriendProfile.tsx` → aba Timeline.
-- **Histórico agregado por jogo** na Biblioteca Social.
-- **Favoritos sociais** (aba nova em `SocialLibrary.tsx`).
-- **Bloqueio bilateral**: estender `blocked_users` para bloquear menções, convites a grupo, visualização de reviews públicas.
-- **Menção visual** `@user` com cartão (avatar + nome + handle) — componente `MentionAutocomplete.tsx` reutilizado em fórum, reviews, comentários, chats, grupos.
-- **Notificações personalizáveis** por categoria + **MIDIAS Especiais** com banner/CTA.
-- **Amizade ao deixar de seguir**: revoga acessos privados, mantém público.
+## Rodada 5 — Social/Biblioteca
+- `OpinionsPanel` + `ScreenshotsPanel` em `FriendProfile` e `SocialLibrary` com mesmo `ItemActionsMenu` e privacidade.
+- `BibliotecaJogo`: ao mudar status/marcar conquista, criar `game_timeline_events` + entrada no `social_content_states` que o `GameTimeline` e MHome consomem como "momento de amigo".
+- Sistema de status com 7 valores + insígnias Completado/Platinado (canto direito do card), respeitando `badge_verified_source`.
 
-### Fase D — Páginas Admin novas
-- `BundlesAdmin.tsx`, `TrocasAdmin.tsx`, `TrocasArquivadas.tsx`, `AvaliacoesComerciais.tsx`
-- `JogosAdmin.tsx` (substitui `Produtos.tsx` para o domínio jogos, com estado de publicação)
-- `BibliotecaSocialAdmin.tsx` (viewer read-only com justificativa obrigatória → log)
-- `TorneiosEventos.tsx`, `TorneiosAtuais.tsx`, `CriarTorneio.tsx`
-- `TicketsMobile.tsx` (chat), `TicketsWeb.tsx` (email)
-- `NotificacoesEspeciais.tsx` (criação com banner/CTA)
-- `LogsAdministrativos.tsx` (com botão Reverter — só `admin_geral`)
-- `XPMobile.tsx`, `XPWeb.tsx`, `BadgesAdmin.tsx`, `TitulosAdmin.tsx`, `RecompensasAdmin.tsx`
-- `IntegracoesAdmin.tsx`
+## Rodada 6 — Fórum Geral + Review Completa Web + XP
+- Fórum: categoria "Comunidade" fixa no topo do MForum com 4 subcategorias.
+- Review Completa: botão "Criar Review Completa" em `BibliotecaJogo` (web) para jogos com status ≠ "Quero Jogar"; já existe `ReviewCompletaEditor` — só ligar visibilidade (`friends` ou `custom_list`).
+- Atualizar tabela de níveis no `award_xp` e em qualquer UI que liste níveis (LevelBadge tooltip).
 
 ---
 
-## Observações
-- Escopo enorme; cada fase será uma rodada separada para manter qualidade.
-- Vou começar pela **Etapa 1** inteira + **Fase A** (sidebar) + **Fase B** (migrations) nesta rodada.
-- Fases C e D nas rodadas seguintes.
-- Sem cores hardcoded — tokens semânticos do design system.
-
-**Confirma para eu prosseguir nesta ordem, ou quer reordenar/recortar?**
+**Pode dar OK que eu rodo as 6 sub-rodadas em sequência?** Vou começar pela Rodada 1 (migrations) — depois que você aprovar a migration, sigo direto nas demais sem parar.

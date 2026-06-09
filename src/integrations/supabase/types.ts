@@ -231,6 +231,9 @@ export type Database = {
       biblioteca_usuario: {
         Row: {
           acquired_at: string
+          badge_completed: boolean
+          badge_platinum: boolean
+          badge_verified_source: string | null
           completed_at: string | null
           hours_played: number
           id: string
@@ -246,6 +249,9 @@ export type Database = {
         }
         Insert: {
           acquired_at?: string
+          badge_completed?: boolean
+          badge_platinum?: boolean
+          badge_verified_source?: string | null
           completed_at?: string | null
           hours_played?: number
           id?: string
@@ -261,6 +267,9 @@ export type Database = {
         }
         Update: {
           acquired_at?: string
+          badge_completed?: boolean
+          badge_platinum?: boolean
+          badge_verified_source?: string | null
           completed_at?: string | null
           hours_played?: number
           id?: string
@@ -958,6 +967,39 @@ export type Database = {
         }
         Relationships: []
       }
+      forum_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_order: number
+          id: string
+          is_community: boolean
+          name: string
+          parent_slug: string | null
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_community?: boolean
+          name: string
+          parent_slug?: string | null
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          is_community?: boolean
+          name?: string
+          parent_slug?: string | null
+          slug?: string
+        }
+        Relationships: []
+      }
       forum_post_likes: {
         Row: {
           created_at: string
@@ -981,6 +1023,7 @@ export type Database = {
       }
       forum_posts: {
         Row: {
+          category_slug: string | null
           content: string
           created_at: string | null
           id: string
@@ -994,6 +1037,7 @@ export type Database = {
           visibility: string
         }
         Insert: {
+          category_slug?: string | null
           content: string
           created_at?: string | null
           id?: string
@@ -1007,6 +1051,7 @@ export type Database = {
           visibility?: string
         }
         Update: {
+          category_slug?: string | null
           content?: string
           created_at?: string | null
           id?: string
@@ -1020,6 +1065,13 @@ export type Database = {
           visibility?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "forum_posts_category_slug_fkey"
+            columns: ["category_slug"]
+            isOneToOne: false
+            referencedRelation: "forum_categories"
+            referencedColumns: ["slug"]
+          },
           {
             foreignKeyName: "forum_posts_product_id_fkey"
             columns: ["product_id"]
@@ -1670,6 +1722,48 @@ export type Database = {
           image_url?: string | null
           name?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      integration_webhooks: {
+        Row: {
+          active: boolean
+          created_at: string
+          created_by: string | null
+          event: string
+          id: string
+          last_test_at: string | null
+          last_test_status: string | null
+          name: string
+          secret: string | null
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          event: string
+          id?: string
+          last_test_at?: string | null
+          last_test_status?: string | null
+          name: string
+          secret?: string | null
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          event?: string
+          id?: string
+          last_test_at?: string | null
+          last_test_status?: string | null
+          name?: string
+          secret?: string | null
+          updated_at?: string
+          url?: string
         }
         Relationships: []
       }
@@ -2413,6 +2507,35 @@ export type Database = {
           },
         ]
       }
+      review_completa_visibility: {
+        Row: {
+          created_at: string
+          id: string
+          review_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          review_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          review_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "review_completa_visibility_review_id_fkey"
+            columns: ["review_id"]
+            isOneToOne: false
+            referencedRelation: "reviews_completas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       review_likes: {
         Row: {
           created_at: string
@@ -2833,6 +2956,44 @@ export type Database = {
           },
         ]
       }
+      tournament_confirmations: {
+        Row: {
+          confirmed_at: string | null
+          expires_at: string | null
+          id: string
+          sent_at: string
+          stage: string
+          tournament_id: string
+          user_id: string
+        }
+        Insert: {
+          confirmed_at?: string | null
+          expires_at?: string | null
+          id?: string
+          sent_at?: string
+          stage: string
+          tournament_id: string
+          user_id: string
+        }
+        Update: {
+          confirmed_at?: string | null
+          expires_at?: string | null
+          id?: string
+          sent_at?: string
+          stage?: string
+          tournament_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_confirmations_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_duplicate_alerts: {
         Row: {
           created_at: string
@@ -3222,6 +3383,44 @@ export type Database = {
         }
         Relationships: []
       }
+      tournament_waitlist: {
+        Row: {
+          created_at: string
+          id: string
+          offer_expires_at: string | null
+          offered_at: string | null
+          position: number
+          tournament_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          offer_expires_at?: string | null
+          offered_at?: string | null
+          position: number
+          tournament_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          offer_expires_at?: string | null
+          offered_at?: string | null
+          position?: number
+          tournament_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_waitlist_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournaments: {
         Row: {
           archived_at: string | null
@@ -3231,20 +3430,24 @@ export type Database = {
           created_by: string | null
           description: string | null
           ends_at: string | null
+          entry_price: number
           event_state: string
           forum_thread_id: string | null
           hype_score: number
           id: string
+          kind: string
           max_participants: number
           narrative: string | null
           prize: string | null
           prize_badge_id: string | null
           prize_coupon_id: string | null
+          prize_distribution: Json
           prize_game_id: string | null
           prize_pool_amount: number | null
           prize_title: string | null
           prize_types: string[]
           prize_xp_bonus: number
+          refund_policy: string | null
           rewards_distributed: boolean
           runner_up_id: string | null
           starts_at: string | null
@@ -3268,20 +3471,24 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           ends_at?: string | null
+          entry_price?: number
           event_state?: string
           forum_thread_id?: string | null
           hype_score?: number
           id?: string
+          kind?: string
           max_participants?: number
           narrative?: string | null
           prize?: string | null
           prize_badge_id?: string | null
           prize_coupon_id?: string | null
+          prize_distribution?: Json
           prize_game_id?: string | null
           prize_pool_amount?: number | null
           prize_title?: string | null
           prize_types?: string[]
           prize_xp_bonus?: number
+          refund_policy?: string | null
           rewards_distributed?: boolean
           runner_up_id?: string | null
           starts_at?: string | null
@@ -3305,20 +3512,24 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           ends_at?: string | null
+          entry_price?: number
           event_state?: string
           forum_thread_id?: string | null
           hype_score?: number
           id?: string
+          kind?: string
           max_participants?: number
           narrative?: string | null
           prize?: string | null
           prize_badge_id?: string | null
           prize_coupon_id?: string | null
+          prize_distribution?: Json
           prize_game_id?: string | null
           prize_pool_amount?: number | null
           prize_title?: string | null
           prize_types?: string[]
           prize_xp_bonus?: number
+          refund_policy?: string | null
           rewards_distributed?: boolean
           runner_up_id?: string | null
           starts_at?: string | null
@@ -3606,6 +3817,24 @@ export type Database = {
           reference_type?: string | null
           user_id?: string
           xp?: number
+        }
+        Relationships: []
+      }
+      xp_levels: {
+        Row: {
+          level: number
+          title: string
+          xp_required: number
+        }
+        Insert: {
+          level: number
+          title: string
+          xp_required: number
+        }
+        Update: {
+          level?: number
+          title?: string
+          xp_required?: number
         }
         Relationships: []
       }

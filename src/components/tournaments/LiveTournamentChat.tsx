@@ -1,70 +1,99 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send, Sparkles } from 'lucide-react';
+import { Send, Search, X, ChevronUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useDebounce } from '@/hooks/useDebounce';
 
 interface Msg {
   id: string; user_id: string; content: string; kind: string;
-  created_at: string; payload?: any;
+  created_at: string; match_id?: string | null; payload?: any;
 }
 interface Profile { id: string; display_name: string | null; avatar_url: string | null }
 
 const HYPE_EMOJIS = ['🔥', '⚡', '👑', '💥', '🎯', '😱'];
+const PAGE = 50;
 
 export default function LiveTournamentChat({ tournamentId, matchId }: { tournamentId: string; matchId?: string }) {
   const { user } = useAuth();
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
   const [text, setText] = useState('');
+  const [search, setSearch] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const dq = useDebounce(search, 250);
 
+  const hydrateProfiles = useCallback(async (items: Msg[]) => {
+    const ids = [...new Set(items.map(m => m.user_id))].filter(id => !profiles[id]);
+    if (!ids.length) return;
+    const { data: profs } = await supabase.from('profiles').select('id, display_name, avatar_url').in('id', ids);
+    setProfiles(prev => ({ ...prev, ...Object.fromEntries((profs || []).map(p => [p.id, p as Profile])) }));
+  }, [profiles]);
+
+  const loadPage = useCallback(async (before?: string) => {
+    let q = supabase.from('tournament_chat_messages' as any).select('*')
+      .eq('tournament_id', tournamentId).order('created_at', { ascending: false }).limit(PAGE);
+    if (matchId) q = q.eq('match_id', matchId);
+    if (before) q = q.lt('created_at', before);
+    const { data } = await q;
+    const items = ((data as any) || []).reverse() as Msg[];
+    return items;
+  }, [tournamentId, matchId]);
+
+  // Carga inicial + realtime
   useEffect(() => {
+    let mounted = true;
     (async () => {
-      let q = supabase.from('tournament_chat_messages' as any).select('*')
-        .eq('tournament_id', tournamentId).order('created_at', { ascending: true }).limit(200);
-      if (matchId) q = q.eq('match_id', matchId);
-      const { data } = await q;
-      const items = ((data as any) || []) as Msg[];
-      setMsgs(items);
-      const uids = [...new Set(items.map(m => m.user_id))];
-      if (uids.length) {
-        const { data: profs } = await supabase.from('profiles').select('id, display_name, avatar_url').in('id', uids);
-        setProfiles(Object.fromEntries((profs || []).map(p => [p.id, p as Profile])));
-      }
+      const items = await loadPage();
+      if (!mounted) return;
+      setMsgs(items); setHasMore(items.length === PAGE);
+      await hydrateProfiles(items);
+      requestAnimationFrame(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight }));
     })();
-
     const ch = supabase.channel(`tournament-chat-${tournamentId}-${matchId || 'all'}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tournament_chat_messages', filter: `tournament_id=eq.${tournamentId}` },
         async (payload) => {
           const m = payload.new as Msg;
-          if (matchId && (m as any).match_id !== matchId) return;
-          setMsgs(prev => [...prev, m]);
-          if (!profiles[m.user_id]) {
-            const { data: p } = await supabase.from('profiles').select('id, display_name, avatar_url').eq('id', m.user_id).maybeSingle();
-            if (p) setProfiles(prev => ({ ...prev, [m.user_id]: p as Profile }));
-          }
+          if (matchId && m.match_id !== matchId) return;
+          setMsgs(prev => prev.some(x => x.id === m.id) ? prev : [...prev, m]);
+          await hydrateProfiles([m]);
         })
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
-  }, [tournamentId, matchId]);
+    return () => { mounted = false; supabase.removeChannel(ch); };
+  }, [tournamentId, matchId, loadPage, hydrateProfiles]);
 
-  useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
-  }, [msgs.length]);
+  const loadMore = async () => {
+    if (loadingMore || !hasMore || msgs.length === 0) return;
+    setLoadingMore(true);
+    const el = scrollRef.current; const prevHeight = el?.scrollHeight || 0;
+    const older = await loadPage(msgs[0].created_at);
+    setMsgs(prev => [...older, ...prev]);
+    setHasMore(older.length === PAGE);
+    await hydrateProfiles(older);
+    requestAnimationFrame(() => {
+      if (el) el.scrollTop = el.scrollHeight - prevHeight;
+    });
+    setLoadingMore(false);
+  };
 
   const send = async (kind: string = 'message', content?: string) => {
     if (!user) return;
     const body = content ?? text.trim();
     if (!body) return;
     await supabase.from('tournament_chat_messages' as any).insert({
-      tournament_id: tournamentId, match_id: matchId || null,
-      user_id: user.id, kind, content: body,
+      tournament_id: tournamentId, match_id: matchId || null, user_id: user.id, kind, content: body,
     });
     if (kind === 'message') setText('');
   };
+
+  const visible = dq.trim()
+    ? msgs.filter(m => m.content.toLowerCase().includes(dq.trim().toLowerCase()))
+    : msgs;
 
   return (
     <div className="flex flex-col bg-card/40 backdrop-blur-md border border-border/60 rounded-xl overflow-hidden h-[480px]">
@@ -76,12 +105,29 @@ export default function LiveTournamentChat({ tournamentId, matchId }: { tourname
           </span>
           <span className="text-xs font-bold tracking-[0.2em] uppercase">Chat ao vivo</span>
         </div>
-        <span className="text-[10px] text-muted-foreground">{msgs.length} mensagens</span>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setShowSearch(s => !s)} className="text-muted-foreground hover:text-foreground">
+            {showSearch ? <X className="h-4 w-4" /> : <Search className="h-4 w-4" />}
+          </button>
+          <span className="text-[10px] text-muted-foreground">{visible.length}/{msgs.length}</span>
+        </div>
       </div>
 
+      {showSearch && (
+        <div className="px-3 py-2 border-b border-border/60 bg-background/40">
+          <Input autoFocus value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar mensagens..." className="h-8 text-xs" />
+        </div>
+      )}
+
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-2 space-y-1.5">
+        {hasMore && !dq.trim() && (
+          <button onClick={loadMore} disabled={loadingMore}
+            className="w-full text-xs text-muted-foreground hover:text-primary flex items-center justify-center gap-1 py-1.5">
+            <ChevronUp className="h-3 w-3" />{loadingMore ? 'Carregando...' : 'Carregar mensagens antigas'}
+          </button>
+        )}
         <AnimatePresence initial={false}>
-          {msgs.map(m => {
+          {visible.map(m => {
             const p = profiles[m.user_id];
             const isHype = m.kind === 'hype';
             return (
@@ -103,7 +149,11 @@ export default function LiveTournamentChat({ tournamentId, matchId }: { tourname
             );
           })}
         </AnimatePresence>
-        {msgs.length === 0 && <p className="text-center text-xs text-muted-foreground py-8">Seja o primeiro a animar!</p>}
+        {visible.length === 0 && (
+          <p className="text-center text-xs text-muted-foreground py-8">
+            {dq.trim() ? 'Nada encontrado.' : 'Seja o primeiro a animar!'}
+          </p>
+        )}
       </div>
 
       <div className="border-t border-border/60 p-2 space-y-2 bg-background/40">

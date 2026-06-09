@@ -21,6 +21,7 @@ export default function MNewAd() {
   const [adType, setAdType] = useState<'venda' | 'troca'>('venda');
   const [protegido, setProtegido] = useState(false);
   const [hasCert, setHasCert] = useState(false);
+  const [hasSeller, setHasSeller] = useState<boolean | null>(null);
   const [form, setForm] = useState({
     title: '', description: '', price: '', condition: 'novo', category: 'jogo_digital',
     desired_item: '', accepts_counteroffer: false,
@@ -35,6 +36,8 @@ export default function MNewAd() {
     if (!user) return;
     supabase.from('certificados').select('status').eq('user_id', user.id).eq('status', 'ativo').limit(1)
       .then(({ data }) => setHasCert(!!data?.length));
+    supabase.from('seller_profiles').select('id').eq('user_id', user.id).maybeSingle()
+      .then(({ data }) => setHasSeller(!!data));
   }, [user]);
 
   // Autocomplete a partir do games_catalog
@@ -64,6 +67,11 @@ export default function MNewAd() {
 
   const submit = async () => {
     if (!user) return;
+    if (!hasSeller) {
+      toast.error('Você precisa criar um perfil de vendedor ($) antes de anunciar');
+      navigate('/criar-vendedor');
+      return;
+    }
     const parsed = schema.safeParse({
       title: form.title, description: form.description, price: Number(form.price || 0),
     });
@@ -110,6 +118,15 @@ export default function MNewAd() {
   };
 
   if (!user) return <div className="p-6 text-center text-muted-foreground">Entre para anunciar.</div>;
+  if (hasSeller === false) return (
+    <div className="px-4 py-10 text-center space-y-4">
+      <h2 className="font-display text-lg font-bold gradient-text">Crie seu perfil de vendedor</h2>
+      <p className="text-sm text-muted-foreground">Para publicar anúncios no marketplace você precisa primeiro criar seu perfil $vendedor — separado do seu perfil pessoal @usuario.</p>
+      <button onClick={() => navigate('/criar-vendedor')} className="px-4 py-2 rounded-xl bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold">
+        Criar perfil de vendedor
+      </button>
+    </div>
+  );
 
   return (
     <div className="px-4 py-5 space-y-4 pb-12">
