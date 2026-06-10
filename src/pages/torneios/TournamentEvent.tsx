@@ -51,7 +51,11 @@ export default function TournamentEvent() {
       const { data: profs } = await supabase.from('profiles').select('id, display_name, avatar_url').in('id', [...uids]);
       setProfiles(Object.fromEntries((profs || []).map(p => [p.id, p])));
     }
-    if (user) setJoined(parts.some((p: any) => p.user_id === user.id));
+    if (user) {
+      setJoined(parts.some((p: any) => p.user_id === user.id));
+      const { data: wl } = await supabase.from('tournament_waitlist' as any).select('id').eq('tournament_id', id).eq('user_id', user.id).maybeSingle();
+      setWaitlisted(!!wl);
+    }
     setLoading(false);
   };
 
