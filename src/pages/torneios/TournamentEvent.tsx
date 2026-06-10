@@ -11,6 +11,8 @@ import HypeMeter from '@/components/tournaments/HypeMeter';
 import StorylinesPanel from '@/components/tournaments/StorylinesPanel';
 import CinematicBracket from '@/components/tournaments/CinematicBracket';
 import LiveTournamentChat from '@/components/tournaments/LiveTournamentChat';
+import TournamentRegistration from '@/components/tournaments/TournamentRegistration';
+import TournamentStatsPanel from '@/components/tournaments/TournamentStatsPanel';
 
 export default function TournamentEvent() {
   const { id } = useParams();
@@ -23,6 +25,8 @@ export default function TournamentEvent() {
   const [participants, setParticipants] = useState<any[]>([]);
   const [profiles, setProfiles] = useState<Record<string, any>>({});
   const [joined, setJoined] = useState(false);
+  const [waitlisted, setWaitlisted] = useState(false);
+  const [regOpen, setRegOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
@@ -47,7 +51,11 @@ export default function TournamentEvent() {
       const { data: profs } = await supabase.from('profiles').select('id, display_name, avatar_url').in('id', [...uids]);
       setProfiles(Object.fromEntries((profs || []).map(p => [p.id, p])));
     }
-    if (user) setJoined(parts.some((p: any) => p.user_id === user.id));
+    if (user) {
+      setJoined(parts.some((p: any) => p.user_id === user.id));
+      const { data: wl } = await supabase.from('tournament_waitlist' as any).select('id').eq('tournament_id', id).eq('user_id', user.id).maybeSingle();
+      setWaitlisted(!!wl);
+    }
     setLoading(false);
   };
 
@@ -65,17 +73,15 @@ export default function TournamentEvent() {
   if (loading) return <div className="flex justify-center py-32"><Loader2 className="h-7 w-7 animate-spin text-primary" /></div>;
   if (!t) return <div className="text-center py-32 text-muted-foreground">Torneio não encontrado.</div>;
 
-  const join = async () => {
-    if (!user) { toast.error('Entre para participar'); return; }
-    const { error } = await supabase.from('tournament_participants' as any).insert({ tournament_id: id, user_id: user.id });
-    if (error) return toast.error(error.message);
-    toast.success('Inscrito!');
-    load();
-  };
-
+  const isFull = participants.length >= (t.max_participants || 0);
   const isLive = t.event_state === 'live' || t.status === 'running';
   const isFinished = t.event_state === 'finished' || t.status === 'closed';
   const stateLabel: any = { registration: 'Inscrições abertas', confirmation: 'Confirmação', live: 'AO VIVO', finished: 'Finalizado', archived: 'Arquivado' };
+
+  const openRegistration = () => {
+    if (!user) { toast.error('Entre para participar'); return; }
+    setRegOpen(true);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -122,14 +128,20 @@ export default function TournamentEvent() {
                 <Stat icon={<Award className="h-3.5 w-3.5" />} label="Prêmio" value={t.prize_pool_amount ? `R$ ${Number(t.prize_pool_amount).toFixed(0)}` : (t.prize || '—')} />
                 <Stat icon={<Trophy className="h-3.5 w-3.5" />} label="XP Campeão" value={`+${t.xp_champion || 500}`} />
               </div>
-              {t.event_state === 'registration' && !joined && (
-                <Button onClick={join} size="lg" className="w-full bg-gradient-to-r from-primary to-purple-500 hover:opacity-90">
-                  <Sparkles className="h-4 w-4 mr-2" /> Inscreva-se agora
+              {t.event_state === 'registration' && !joined && !waitlisted && (
+                <Button onClick={openRegistration} size="lg" className="w-full bg-gradient-to-r from-primary to-purple-500 hover:opacity-90">
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  {isFull ? 'Entrar na fila' : Number(t.entry_price || 0) > 0 ? `Inscrever — R$ ${Number(t.entry_price).toFixed(2)}` : 'Inscreva-se agora'}
                 </Button>
               )}
               {joined && (
                 <div className="text-center text-sm text-primary font-bold py-2 border border-primary/30 rounded-lg bg-primary/10">
                   ✓ Você está inscrito
+                </div>
+              )}
+              {waitlisted && !joined && (
+                <div className="text-center text-sm text-amber-300 font-bold py-2 border border-amber-500/30 rounded-lg bg-amber-500/10">
+                  ⏳ Você está na fila de espera
                 </div>
               )}
               {isFinished && t.forum_thread_id && (
@@ -152,10 +164,15 @@ export default function TournamentEvent() {
         <Tabs defaultValue="bracket">
           <TabsList>
             <TabsTrigger value="bracket">Chaveamento</TabsTrigger>
+            <TabsTrigger value="stats">Estatísticas</TabsTrigger>
             {isLive && <TabsTrigger value="chat">Chat ao vivo</TabsTrigger>}
             <TabsTrigger value="highlights">Highlights</TabsTrigger>
             <TabsTrigger value="participants">Participantes ({participants.length})</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="stats" className="mt-6">
+            <TournamentStatsPanel tournamentId={t.id} matches={matches} profiles={profiles} />
+          </TabsContent>
 
           <TabsContent value="bracket" className="mt-6">
             {matches.length === 0 ? (
@@ -231,6 +248,14 @@ export default function TournamentEvent() {
           </section>
         )}
       </div>
+
+      <TournamentRegistration
+        open={regOpen}
+        onOpenChange={setRegOpen}
+        tournament={t}
+        isFull={isFull}
+        onSuccess={load}
+      />
     </div>
   );
 }
