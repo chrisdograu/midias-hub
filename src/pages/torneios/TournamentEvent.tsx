@@ -248,6 +248,14 @@ export default function TournamentEvent() {
           </section>
         )}
       </div>
+
+      <TournamentRegistration
+        open={regOpen}
+        onOpenChange={setRegOpen}
+        tournament={t}
+        isFull={isFull}
+        onSuccess={load}
+      />
     </div>
   );
 }
