@@ -73,17 +73,15 @@ export default function TournamentEvent() {
   if (loading) return <div className="flex justify-center py-32"><Loader2 className="h-7 w-7 animate-spin text-primary" /></div>;
   if (!t) return <div className="text-center py-32 text-muted-foreground">Torneio não encontrado.</div>;
 
-  const join = async () => {
-    if (!user) { toast.error('Entre para participar'); return; }
-    const { error } = await supabase.from('tournament_participants' as any).insert({ tournament_id: id, user_id: user.id });
-    if (error) return toast.error(error.message);
-    toast.success('Inscrito!');
-    load();
-  };
-
+  const isFull = participants.length >= (t.max_participants || 0);
   const isLive = t.event_state === 'live' || t.status === 'running';
   const isFinished = t.event_state === 'finished' || t.status === 'closed';
   const stateLabel: any = { registration: 'Inscrições abertas', confirmation: 'Confirmação', live: 'AO VIVO', finished: 'Finalizado', archived: 'Arquivado' };
+
+  const openRegistration = () => {
+    if (!user) { toast.error('Entre para participar'); return; }
+    setRegOpen(true);
+  };
 
   return (
     <div className="min-h-screen bg-background">
