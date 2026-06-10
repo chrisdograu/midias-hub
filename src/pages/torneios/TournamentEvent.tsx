@@ -128,14 +128,20 @@ export default function TournamentEvent() {
                 <Stat icon={<Award className="h-3.5 w-3.5" />} label="Prêmio" value={t.prize_pool_amount ? `R$ ${Number(t.prize_pool_amount).toFixed(0)}` : (t.prize || '—')} />
                 <Stat icon={<Trophy className="h-3.5 w-3.5" />} label="XP Campeão" value={`+${t.xp_champion || 500}`} />
               </div>
-              {t.event_state === 'registration' && !joined && (
-                <Button onClick={join} size="lg" className="w-full bg-gradient-to-r from-primary to-purple-500 hover:opacity-90">
-                  <Sparkles className="h-4 w-4 mr-2" /> Inscreva-se agora
+              {t.event_state === 'registration' && !joined && !waitlisted && (
+                <Button onClick={openRegistration} size="lg" className="w-full bg-gradient-to-r from-primary to-purple-500 hover:opacity-90">
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  {isFull ? 'Entrar na fila' : Number(t.entry_price || 0) > 0 ? `Inscrever — R$ ${Number(t.entry_price).toFixed(2)}` : 'Inscreva-se agora'}
                 </Button>
               )}
               {joined && (
                 <div className="text-center text-sm text-primary font-bold py-2 border border-primary/30 rounded-lg bg-primary/10">
                   ✓ Você está inscrito
+                </div>
+              )}
+              {waitlisted && !joined && (
+                <div className="text-center text-sm text-amber-300 font-bold py-2 border border-amber-500/30 rounded-lg bg-amber-500/10">
+                  ⏳ Você está na fila de espera
                 </div>
               )}
               {isFinished && t.forum_thread_id && (
