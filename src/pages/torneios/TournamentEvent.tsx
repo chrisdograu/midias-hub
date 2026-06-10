@@ -164,10 +164,15 @@ export default function TournamentEvent() {
         <Tabs defaultValue="bracket">
           <TabsList>
             <TabsTrigger value="bracket">Chaveamento</TabsTrigger>
+            <TabsTrigger value="stats">Estatísticas</TabsTrigger>
             {isLive && <TabsTrigger value="chat">Chat ao vivo</TabsTrigger>}
             <TabsTrigger value="highlights">Highlights</TabsTrigger>
             <TabsTrigger value="participants">Participantes ({participants.length})</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="stats" className="mt-6">
+            <TournamentStatsPanel tournamentId={t.id} matches={matches} profiles={profiles} />
+          </TabsContent>
 
           <TabsContent value="bracket" className="mt-6">
             {matches.length === 0 ? (
