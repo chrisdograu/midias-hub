@@ -11,6 +11,8 @@ import HypeMeter from '@/components/tournaments/HypeMeter';
 import StorylinesPanel from '@/components/tournaments/StorylinesPanel';
 import CinematicBracket from '@/components/tournaments/CinematicBracket';
 import LiveTournamentChat from '@/components/tournaments/LiveTournamentChat';
+import TournamentRegistration from '@/components/tournaments/TournamentRegistration';
+import TournamentStatsPanel from '@/components/tournaments/TournamentStatsPanel';
 
 export default function TournamentEvent() {
   const { id } = useParams();
