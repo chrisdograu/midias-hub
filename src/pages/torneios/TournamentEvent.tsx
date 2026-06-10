@@ -25,6 +25,8 @@ export default function TournamentEvent() {
   const [participants, setParticipants] = useState<any[]>([]);
   const [profiles, setProfiles] = useState<Record<string, any>>({});
   const [joined, setJoined] = useState(false);
+  const [waitlisted, setWaitlisted] = useState(false);
+  const [regOpen, setRegOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
