@@ -39,6 +39,7 @@ export default function MForum() {
   const [reviews, setReviews] = useState<ForumReview[]>([]);
   const [loading, setLoading] = useState(true);
   const [communityHits, setCommunityHits] = useState<{ id: string; title: string; image_url: string | null }[]>([]);
+  const [communityCats, setCommunityCats] = useState<{ slug: string; name: string; description: string | null; parent_slug: string | null }[]>([]);
   const navigate = useNavigate();
   const { user } = useAuth();
   const [suggestOpen, setSuggestOpen] = useState(false);

@@ -61,7 +61,7 @@ export default function FriendProfile() {
     enabled: !!userId && accessible,
     queryFn: async () => {
       const { data } = await supabase.from('biblioteca_usuario')
-        .select('product_id,status,status_updated_at,personal_note')
+        .select('product_id,status,status_updated_at,personal_note,badge_completed,badge_platinum,badge_verified_source')
         .eq('user_id', userId!);
       return (data as any[]) || [];
     },
@@ -271,8 +271,14 @@ export default function FriendProfile() {
               ) : (
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
                   {libEnriched.map((b: any) => (
-                    <Link key={b.product_id} to={`/jogo/${b.product_id}/social`} className="group">
+                    <Link key={b.product_id} to={`/jogo/${b.product_id}/social`} className="group relative">
                       <img src={b.game.image} className="w-full aspect-[3/4] object-cover rounded-lg group-hover:ring-2 ring-primary transition-all" alt="" />
+                      {(b.badge_platinum || b.badge_completed) && (
+                        <span className="absolute top-1 right-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-lg text-white"
+                          style={{ background: b.badge_platinum ? 'linear-gradient(135deg,#22d3ee,#0891b2)' : 'linear-gradient(135deg,#a855f7,#7e22ce)' }}>
+                          {b.badge_platinum ? '💎' : '✓'}
+                        </span>
+                      )}
                       <p className="text-[11px] text-foreground line-clamp-1 mt-1">{b.game.title}</p>
                       <p className="text-[10px] text-muted-foreground">{b.status}</p>
                     </Link>
