@@ -60,6 +60,11 @@ export default function MForum() {
 
   useEffect(() => { if (user) loadMySuggestions(user.id); else setMySuggestions([]); }, [user?.id]);
 
+  useEffect(() => {
+    supabase.from('forum_categories').select('slug,name,description,parent_slug').eq('is_community', true).order('display_order')
+      .then(({ data }) => setCommunityCats((data as any) || []));
+  }, []);
+
   const submitSuggestion = async () => {
     if (!user) { toast.error('Entre para sugerir'); navigate('/m/auth'); return; }
     const title = suggestTitle.trim();
@@ -181,7 +186,25 @@ export default function MForum() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Buscar posts, reviews, jogos..." className="w-full pl-10 pr-3 py-2.5 bg-card border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
       </div>
+      {communityCats.length > 0 && (
+        <section className="rounded-xl border border-accent/40 bg-gradient-to-br from-accent/10 to-primary/5 p-3">
+          <h2 className="text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5 gradient-text">
+            <Users className="h-3.5 w-3.5" /> Comunidade
+          </h2>
+          <p className="text-[10px] text-muted-foreground mb-2">Discussões gerais MIDIAS — não atreladas a um jogo específico.</p>
+          <div className="grid grid-cols-2 gap-1.5">
+            {communityCats.filter(c => c.parent_slug).map(c => (
+              <Link key={c.slug} to={`/m/forum-comunidade/${c.slug}`}
+                className="glass rounded-lg p-2 hover:border-accent/40 transition-colors">
+                <p className="text-[11px] font-semibold truncate">{c.name}</p>
+                {c.description && <p className="text-[9px] text-muted-foreground line-clamp-1">{c.description}</p>}
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
+      
       {communityHits.length > 0 && (
         <section>
           <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5"><Users className="h-3.5 w-3.5 text-accent" /> Comunidades</h2>
