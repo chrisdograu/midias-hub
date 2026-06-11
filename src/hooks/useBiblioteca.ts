@@ -26,7 +26,7 @@ export function useBiblioteca() {
       if (!user) return [];
       const { data, error } = await supabase
         .from('biblioteca_usuario')
-        .select('*, produto:product_id(title, image_url, platform, category)')
+        .select('*, badge_completed, badge_platinum, badge_verified_source, produto:product_id(title, image_url, platform, category)')
         .eq('user_id', user.id)
         .order('acquired_at', { ascending: false });
       if (error) throw error;

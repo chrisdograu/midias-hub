@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Library, Loader2, Star, Trophy, MessageSquare, Users, ArrowLeft, Save, Clock, Calendar, Camera, X, Plus, Sparkles } from 'lucide-react';
+import { Library, Loader2, Star, Trophy, MessageSquare, Users, ArrowLeft, Save, Clock, Calendar, Camera, X, Plus, Sparkles, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -18,6 +18,8 @@ const STATUS_OPTIONS = [
   { v: 'jogando', label: 'Jogando atualmente', tone: 'bg-green-500/20 text-green-300' },
   { v: 'pausado', label: 'Pausado', tone: 'bg-yellow-500/20 text-yellow-300' },
   { v: 'zerado', label: 'Completado', tone: 'bg-purple-500/20 text-purple-300' },
+  { v: 'platinado', label: 'Platinado', tone: 'bg-cyan-500/20 text-cyan-300' },
+  { v: 'rejogando', label: 'Rejogando', tone: 'bg-pink-500/20 text-pink-300' },
   { v: 'abandonado', label: 'Abandonado', tone: 'bg-red-500/20 text-red-300' },
 ];
 
@@ -218,6 +220,14 @@ export default function BibliotecaJogo() {
             <Button className="w-full" disabled={submitting} onClick={save}>
               <Save className="h-4 w-4 mr-2" /> Salvar jornada
             </Button>
+
+            {status !== 'quero_jogar' && (
+              <Link to={`/jogo/${productId}/review-completa`} className="block">
+                <Button variant="outline" className="w-full">
+                  <BookOpen className="h-4 w-4 mr-2" /> Criar Review Completa
+                </Button>
+              </Link>
+            )}
           </section>
 
           {/* Coluna direita — galeria + social */}

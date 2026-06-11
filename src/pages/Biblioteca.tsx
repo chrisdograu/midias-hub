@@ -61,12 +61,25 @@ export default function Biblioteca() {
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-          {filtered.map((item, i) => (
+          {filtered.map((item, i) => {
+            const platinum = (item as any).badge_platinum;
+            const completed = (item as any).badge_completed;
+            return (
             <motion.div key={item.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
               className="bg-card border border-border rounded-lg overflow-hidden hover:border-primary/50 transition-colors">
               <Link to={`/biblioteca/${item.product_id}`}>
-                <div className="aspect-[3/4] overflow-hidden">
+                <div className="aspect-[3/4] overflow-hidden relative">
                   <img src={item.produto?.image_url || '/placeholder.svg'} alt={item.produto?.title || ''} className="w-full h-full object-cover hover:scale-105 transition-transform" loading="lazy" />
+                  {(platinum || completed) && (
+                    <div className="absolute top-1.5 right-1.5 flex flex-col gap-1">
+                      {platinum && (
+                        <span title="Platinado" className="text-[10px] font-bold bg-gradient-to-br from-cyan-400 to-cyan-600 text-white px-1.5 py-0.5 rounded-full shadow-lg">💎 PLAT</span>
+                      )}
+                      {completed && !platinum && (
+                        <span title="Completado" className="text-[10px] font-bold bg-gradient-to-br from-purple-500 to-purple-700 text-white px-1.5 py-0.5 rounded-full shadow-lg">✓ 100%</span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </Link>
               <div className="p-3 space-y-2">
@@ -82,13 +95,15 @@ export default function Biblioteca() {
                   className="w-full px-2 py-1.5 bg-secondary border border-border rounded text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50">
                   <option value="quero_jogar">Quero Jogar</option>
                   <option value="jogando">Jogando</option>
-                  <option value="zerado">Completado</option>
                   <option value="pausado">Pausado</option>
+                  <option value="zerado">Completado</option>
+                  <option value="platinado">Platinado</option>
+                  <option value="rejogando">Rejogando</option>
                   <option value="abandonado">Abandonado</option>
                 </select>
               </div>
             </motion.div>
-          ))}
+          );})}
         </div>
       )}
     </div>
