@@ -117,6 +117,9 @@ const ReviewCompletaEditor = lazy(() => import("./pages/ReviewCompletaEditor"));
 const FriendProfile = lazy(() => import("./pages/FriendProfile"));
 const SellerProfile = lazy(() => import("./pages/SellerProfile"));
 const CriarVendedor = lazy(() => import("./pages/CriarVendedor"));
+const BuscaGlobal = lazy(() => import("./pages/BuscaGlobal"));
+const OpinionsConversations = lazy(() => import("./pages/OpinionsConversations"));
+const OpinionConversation = lazy(() => import("./pages/OpinionConversation"));
 
 const PageFallback = () => (
   <div className="min-h-[40vh] flex items-center justify-center">
@@ -228,6 +231,10 @@ const App = () => (
                 { path: '/jogo/:id', el: <GameDetail /> },
                 { path: '/jogo/:id/social', el: <ProtectedRoute><GameSocialHub /></ProtectedRoute> },
                 { path: '/jogo/:id/review-completa', el: <ProtectedRoute><ReviewCompletaEditor /></ProtectedRoute> },
+                { path: '/jogo/:productId/review-completa', el: <ProtectedRoute><ReviewCompletaEditor /></ProtectedRoute> },
+                { path: '/busca', el: <BuscaGlobal /> },
+                { path: '/conversas-opinioes', el: <ProtectedRoute><OpinionsConversations /></ProtectedRoute> },
+                { path: '/perfil/:userId/jogo/:productId/opniao/:opinionId/conversa/:convId', el: <ProtectedRoute><OpinionConversation /></ProtectedRoute> },
                 { path: '/amigo/:userId', el: <ProtectedRoute><FriendProfile /></ProtectedRoute> },
                 { path: '/bundle/:id', el: <BundleDetail /> },
                 { path: '/biblioteca/:productId', el: <ProtectedRoute><BibliotecaJogo /></ProtectedRoute> },

@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { User, Save, Loader2, Camera, Lock, Bell, Eye, EyeOff, Shield, UserX, Star, Ban } from 'lucide-react';
+import { User, Save, Loader2, Camera, Lock, Bell, Eye, EyeOff, Shield, UserX, Star, Ban, Heart } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Switch } from '@/components/ui/switch';
@@ -11,6 +11,7 @@ import BlockedUsersTab from '@/components/perfil/BlockedUsersTab';
 import MyReviewsTab from '@/components/perfil/MyReviewsTab';
 import PrivacyTab from '@/components/perfil/PrivacyTab';
 import NotificationPrefsTab from '@/components/perfil/NotificationPrefsTab';
+import FriendFavoritesTab from '@/components/perfil/FriendFavoritesTab';
 import LevelTitleBadge from '@/components/LevelTitleBadge';
 import ActiveTitleSelector from '@/components/ActiveTitleSelector';
 import SellerProfileSwitcher from '@/components/seller/SellerProfileSwitcher';
@@ -136,13 +137,23 @@ export default function Perfil() {
         />
 
         <Tabs defaultValue="conta" className="mb-6">
-          <TabsList className="w-full grid grid-cols-5">
+          <TabsList className="w-full grid grid-cols-6">
             <TabsTrigger value="conta"><User className="h-4 w-4 mr-1" />Conta</TabsTrigger>
+            <TabsTrigger value="amigos"><Heart className="h-4 w-4 mr-1" />Amigos ⭐</TabsTrigger>
             <TabsTrigger value="privacidade"><Shield className="h-4 w-4 mr-1" />Privacidade</TabsTrigger>
             <TabsTrigger value="notificacoes"><Bell className="h-4 w-4 mr-1" />Notificações</TabsTrigger>
             <TabsTrigger value="bloqueados"><UserX className="h-4 w-4 mr-1" />Bloqueados</TabsTrigger>
             <TabsTrigger value="reviews"><Star className="h-4 w-4 mr-1" />Avaliações</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="amigos" className="mt-4">
+            <div className="bg-card border border-border rounded-xl p-6">
+              <h2 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
+                <Star className="h-4 w-4 text-yellow-400" /> Amigos favoritos
+              </h2>
+              <FriendFavoritesTab />
+            </div>
+          </TabsContent>
 
           <TabsContent value="privacidade" className="mt-4">
             <div className="bg-card border border-border rounded-xl p-6">
