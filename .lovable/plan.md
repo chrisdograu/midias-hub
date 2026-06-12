@@ -1,55 +1,66 @@
-# Plano — Rodada Final (6 sub-rodadas)
+# Plano Final — Revisão MIDIAS (aprovado)
 
-São muitos pedidos. Vou dividir em 6 sub-rodadas executáveis. Confirme e eu executo **todas** em sequência neste mesmo fluxo.
+## Decisões do usuário
+- **Amigos favoritos**: gerenciados apenas pelo próprio usuário, configuráveis somente em `/perfil` (Web).
+- **Busca Global Única**: indexa Mobile + Web, mostra ambos com tag `📱 Mobile` / `🖥 Web`. Ao clicar, abre direto se a plataforma atual tiver o destino; senão mostra "Abrir versão Web/Mobile".
+- **Opiniões → conversa privada**:
+  - Cada resposta inicia conversa vinculada permanente à opinião.
+  - Opinião original sempre fica fixa no topo da conversa.
+  - Acesso via Web em área dedicada "Conversas de Opiniões".
+  - Rota canônica: `/perfil/:userId/jogo/:productId/opniao/:opinionId/conversa/:convId`.
+  - Nunca misturar com DM normal nem virar comentário público.
+- **Wrapped Gamer / Cápsula do Tempo / Primeiros Marcos**: adiados (não nesta fase).
 
-## Esclarecendo dúvidas que você levantou
-- **"Paginação/ordenação universais com filtros persistidos"** = toda página admin terá: controles de ordenar coluna ↑↓, paginação (20/pág, Anterior/Próxima), e os filtros (busca, status, datas) ficam salvos em `localStorage` por página, então ao sair e voltar tudo continua como estava.
-- **"Tela de detalhes com timeline"** = clicar em uma linha (denúncia, ban, jogo, troca, ticket) abre painel lateral mostrando todos os `admin_logs` daquele `entity_id` em ordem cronológica (quem fez, quando, motivo).
-- **"IntegracoesAdmin completa"** = sair do placeholder; tabela `integration_webhooks` (url, evento, secret, ativo), CRUD, botão "Testar conexão" (faz POST de ping e mostra status), export CSV, tudo logado.
+## Rodada A1 — Pendências técnicas do topo do `ras.txt`
+1. Notificação quando vaga da fila do torneio é liberada (trigger em `tournament_waitlist`).
+2. Insígnias PLAT / ✓ 100% e badges de status consistentes em Biblioteca, FriendProfile, SocialLibrary e mobile (componente único).
+3. Página `/jogo/:productId/review-completa` (formulário, save em `reviews_completas`, exibir card na BibliotecaJogo).
+4. Busca, filtros e paginação na seção Comunidade do MForum.
+5. Export CSV das Estatísticas do torneio (ranking + timeline).
+6. Filtros/ordenação na aba Estatísticas (busca por participante, período, vitórias, partidas).
 
----
+## Rodada A2 — Identidade Mobile vs Web
+- Auditar nav/headers e remover sobreposições.
+- Mobile = Fórum, Reviews, Marketplace, Chat, Torneios, Descoberta.
+- Web = Biblioteca Social, Perfil Gamer, Páginas de Jogo do Usuário, Loja, Histórico.
+- Remover comportamento de feed viral de `Social.tsx`/`SocialLibrary.tsx`.
 
-## Rodada 1 — Backend (migrations)
-1. `tournament_chat_messages` já existe → adicionar índice por tournament_id+created_at e habilitar realtime para histórico/paginação.
-2. Novas tabelas:
-   - `tournament_waitlist` (tournament_id, user_id, position, created_at)
-   - `tournament_confirmations` (tournament_id, user_id, stage `7d|1d|1h`, confirmed_at, expires_at)
-   - `integration_webhooks` (name, url, event, secret, active, created_by)
-   - `forum_categories` (slug, name, order, is_community) + seed "Comunidade" com 4 subcategorias
-   - `review_completa_visibility` (review_id, user_id) para lista personalizada
-   - Adicionar em `tournaments`: `kind` (`weekly|monthly`), `entry_price`, `prize_distribution` (jsonb), `refund_policy_ack`.
-   - Adicionar em `biblioteca_usuario`: `badge_completed`, `badge_platinum`, `badge_verified_source`.
-3. Trigger `revoke_seat_on_missed_confirmation()` + libera próximo da fila.
-4. Função `award_xp` ajustada para nova tabela de níveis (1→17 com Rei do 67 / Imperador do 67).
-5. Bloquear criação de anúncio sem `seller_profile`: policy em `anuncios` exigindo `EXISTS seller_profiles WHERE user_id=auth.uid()`.
+## Rodada A3 — Biblioteca Social como "casa pessoal"
+- Tirar trending/scroll infinito.
+- Modos de exploração: por amigo, jogo, ano, tipo, favorito.
+- Sugestões = reviews de amigo não vistas, jogos em comum, memórias antigas.
+- Copy/empty states com metáfora de biblioteca.
 
-## Rodada 2 — Admin universal
-- Helper `useAdminTable` (busca+filtros+sort+page persistidos em localStorage).
-- Helper `requireAdminAction(scope)` — se papel não pode, registra `admin_logs.action='denied_*'` e mostra toast.
-- Aplicar nas 18 páginas admin (JogosAdmin, BundlesAdmin, Denuncias, etc).
-- Painel lateral `<EntityTimelineDrawer entity entity_id />` lendo `admin_logs`.
-- IntegracoesAdmin: CRUD real + "Testar conexão" + export.
+## Rodada A4 — Amizades = Follow Mútuo + Amigos Favoritos
+- View `v_friendships` (mutual follows) reusada por todas as consultas de amigos.
+- Tabela `friend_favorites (user_id, friend_id)` — gerida só em `/perfil` Web.
+- Gate de acesso (Biblioteca Social, FriendProfile, BibliotecaJogo) por mutualidade.
 
-## Rodada 3 — Torneio Mensal Pago
-- `CreateTournamentDialog`: campo kind, entry_price, editor de distribuição (1º/2º/3º + margem calculada ao vivo).
-- Página de inscrição (`/torneios/:id/inscrever`): checkbox 18+, regras de reembolso visíveis, simulação de pagamento (Pix/Cartão como no checkout simulado da loja).
-- Fila de espera: botão "Entrar na fila", lista ordenada, notificação quando vaga abre.
-- Edge function `tournament-reminders` (já existe): expandir para mandar 7d/1d/1h com botão de confirmar + liberar vaga + reembolso 50%.
+## Rodada A5 — Perfil Gamer (memória)
+- Linha do Tempo Gamer (agrupada por ano) usando `game_timeline_events`.
+- Destaques do usuário: tabela `profile_highlights (user_id, type, ref_id, order)` — jogos, reviews, screenshots, opiniões.
+- Wrapped / Cápsula / Marcos → adiados.
 
-## Rodada 4 — Detalhe de torneio + chat persistente
-- `TournamentDetail.tsx`: ranking (vitórias/derrotas/pontos), estatísticas (participantes, MVP, predições), timeline de eventos (`tournament_match_events`).
-- `LiveTournamentChat`: persistir em `tournament_chat_messages`, paginação infinita (cursor created_at), barra de busca por texto.
+## Rodada A6 — Página do Jogo do Usuário + Opiniões + Páginas de Jogo separadas
+- Reforçar `BibliotecaJogo` como "identidade do jogo dentro da pessoa".
+- Refatorar `OpinionsPanel`:
+  - Resposta cria conversa privada permanente vinculada à opinião.
+  - Tabela `opinion_conversations (id, opinion_id, author_id, responder_id, created_at)` agrupando mensagens.
+  - Mensagens em `game_opinion_replies` já existem — ligar via `conversation_id`.
+  - Externos só veem contador "X pessoas responderam".
+  - Rota canônica `/perfil/:userId/jogo/:productId/opniao/:opinionId/conversa/:convId`.
+  - Página dedicada `/conversas-opinioes` listando todas as conversas do usuário.
+- Garantir múltiplas páginas por jogo sem fundir (Loja, Fórum, Reviews, Biblioteca do Usuário, Hub Social).
 
-## Rodada 5 — Social/Biblioteca
-- `OpinionsPanel` + `ScreenshotsPanel` em `FriendProfile` e `SocialLibrary` com mesmo `ItemActionsMenu` e privacidade.
-- `BibliotecaJogo`: ao mudar status/marcar conquista, criar `game_timeline_events` + entrada no `social_content_states` que o `GameTimeline` e MHome consomem como "momento de amigo".
-- Sistema de status com 7 valores + insígnias Completado/Platinado (canto direito do card), respeitando `badge_verified_source`.
+## Rodada A7 — Busca Global + @user vs $seller + Privacidade + Marketplace + Tutoriais
+- Rota `/busca?q=` com abas: Tudo | Jogos | Usuários | Vendedores | Reviews | Fórum | Marketplace.
+- RPC `global_search(q)` indexando Mobile + Web.
+- Cada resultado marcado com `📱 Mobile` / `🖥 Web` (pode ter ambos).
+- Click inteligente: abre na plataforma atual se disponível; senão CTA "Abrir versão X".
+- `@user` vs `$seller` com cor/ícone distintos.
+- Privacidade centralizada em `/perfil/privacidade`.
+- Marketplace: histórico, avaliações, indicadores objetivos (sem ranking agressivo).
+- Tutoriais em `/config/tutoriais` + hook de primeiro uso `useFirstUseTutorial`.
 
-## Rodada 6 — Fórum Geral + Review Completa Web + XP
-- Fórum: categoria "Comunidade" fixa no topo do MForum com 4 subcategorias.
-- Review Completa: botão "Criar Review Completa" em `BibliotecaJogo` (web) para jogos com status ≠ "Quero Jogar"; já existe `ReviewCompletaEditor` — só ligar visibilidade (`friends` ou `custom_list`).
-- Atualizar tabela de níveis no `award_xp` e em qualquer UI que liste níveis (LevelBadge tooltip).
-
----
-
-**Pode dar OK que eu rodo as 6 sub-rodadas em sequência?** Vou começar pela Rodada 1 (migrations) — depois que você aprovar a migration, sigo direto nas demais sem parar.
+## Ordem de execução
+A1+A2 → A3+A4 → A5+A6 → A7. Backend (migrations) primeiro a cada par.
