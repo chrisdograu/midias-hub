@@ -1202,6 +1202,24 @@ export type Database = {
         }
         Relationships: []
       }
+      friend_favorites: {
+        Row: {
+          created_at: string
+          friend_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          friend_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          friend_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       game_clips: {
         Row: {
           created_at: string
@@ -1266,6 +1284,7 @@ export type Database = {
       }
       game_opinion_replies: {
         Row: {
+          conversation_id: string | null
           created_at: string
           id: string
           images: string[] | null
@@ -1275,6 +1294,7 @@ export type Database = {
           text: string
         }
         Insert: {
+          conversation_id?: string | null
           created_at?: string
           id?: string
           images?: string[] | null
@@ -1284,6 +1304,7 @@ export type Database = {
           text: string
         }
         Update: {
+          conversation_id?: string | null
           created_at?: string
           id?: string
           images?: string[] | null
@@ -1293,6 +1314,13 @@ export type Database = {
           text?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "game_opinion_replies_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "opinion_conversations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "game_opinion_replies_opinion_id_fkey"
             columns: ["opinion_id"]
@@ -2121,6 +2149,41 @@ export type Database = {
         }
         Relationships: []
       }
+      opinion_conversations: {
+        Row: {
+          author_id: string
+          created_at: string
+          id: string
+          opinion_id: string
+          responder_id: string
+          updated_at: string
+        }
+        Insert: {
+          author_id: string
+          created_at?: string
+          id?: string
+          opinion_id: string
+          responder_id: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string
+          created_at?: string
+          id?: string
+          opinion_id?: string
+          responder_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "opinion_conversations_opinion_id_fkey"
+            columns: ["opinion_id"]
+            isOneToOne: false
+            referencedRelation: "game_opinions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       opinion_mutes: {
         Row: {
           created_at: string
@@ -2390,6 +2453,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      profile_highlights: {
+        Row: {
+          created_at: string
+          id: string
+          position: number
+          ref_id: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          position?: number
+          ref_id: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          position?: number
+          ref_id?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -3594,6 +3684,24 @@ export type Database = {
           },
         ]
       }
+      tutorials_seen: {
+        Row: {
+          seen_at: string
+          tutorial_key: string
+          user_id: string
+        }
+        Insert: {
+          seen_at?: string
+          tutorial_key: string
+          user_id: string
+        }
+        Update: {
+          seen_at?: string
+          tutorial_key?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_achievements: {
         Row: {
           achievement_description: string | null
@@ -3844,6 +3952,14 @@ export type Database = {
         Row: {
           actions_count: number | null
           total_xp: number | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
+      v_friendships: {
+        Row: {
+          friend_id: string | null
+          since: string | null
           user_id: string | null
         }
         Relationships: []
