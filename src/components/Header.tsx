@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Search, User, Menu, X, Gamepad2, LogOut, Heart, Package, Library, Sun, Moon, Sparkles, Ban, AtSign } from 'lucide-react';
+import { ShoppingCart, Search, User, Menu, X, Gamepad2, LogOut, Heart, Package, Library, Sun, Moon, Sparkles, Ban, AtSign, MessageSquare } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
@@ -34,16 +34,15 @@ export default function Header() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchQuery.trim().startsWith('@')) {
-      const q = searchQuery.trim().slice(1);
-      if (userResults[0]) { navigate(`/perfil/${userResults[0].id}`); setSearchOpen(false); return; }
-      if (q) { /* no exact match */ }
-      return;
+    const q = searchQuery.trim();
+    if (!q) return;
+    if (q.startsWith('@') && userResults[0]) {
+      navigate(`/perfil/${userResults[0].id}`);
+    } else {
+      // Busca Global Única (Mobile + Web)
+      navigate(`/busca?q=${encodeURIComponent(q)}`);
     }
-    if (searchQuery.trim()) {
-      navigate(`/catalogo?q=${encodeURIComponent(searchQuery)}`);
-      setSearchOpen(false);
-    }
+    setSearchOpen(false);
   };
 
   useEffect(() => {
@@ -106,7 +105,7 @@ export default function Header() {
               <input type="text" value={searchQuery}
                 onChange={e => { setSearchQuery(e.target.value); setSearchOpen(true); }}
                 onFocus={() => setSearchOpen(true)}
-                placeholder="Buscar jogos ou @usuário..."
+                placeholder="Buscar em todo MIDIAS — jogos, @usuário, vendedores..."
                 className="w-full pl-10 pr-4 py-2 bg-secondary border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" />
               {searchOpen && searchQuery.startsWith('@') && userResults.length > 0 && (
                 <div className="absolute left-0 right-0 top-full mt-1 bg-card border border-border rounded-lg shadow-xl overflow-hidden z-50 max-h-80 overflow-y-auto">
@@ -178,6 +177,9 @@ export default function Header() {
                         </Link>
                         <Link to="/favoritos" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-secondary transition-colors">
                           <Heart className="h-4 w-4" /> Favoritos
+                        </Link>
+                        <Link to="/conversas-opinioes" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-secondary transition-colors">
+                          <MessageSquare className="h-4 w-4" /> Conversas de Opiniões
                         </Link>
                       </div>
                       <div className="border-t border-border">
