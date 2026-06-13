@@ -13,6 +13,7 @@ import FriendIdentityPanel from '@/components/social/FriendIdentityPanel';
 import { HalfStarDisplay } from '@/components/HalfStarRating';
 import LevelTitleBadge from '@/components/LevelTitleBadge';
 import GameTimeline from '@/components/social/GameTimeline';
+import HighlightsStrip from '@/components/social/HighlightsStrip';
 import SellerProfileSwitcher from '@/components/seller/SellerProfileSwitcher';
 import { Clock } from 'lucide-react';
 
@@ -238,7 +239,9 @@ export default function FriendProfile() {
 
           {tab === 'overview' && (
             <div className="space-y-5">
+              {userId && <HighlightsStrip userId={userId} />}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+
                 <Stat icon={Library} label="Biblioteca" value={biblioteca.length} />
                 <Stat icon={Star} label="Reviews" value={reviews.length} />
                 <Stat icon={BookOpen} label="Reviews Completas" value={reviewsCompletas.length} />

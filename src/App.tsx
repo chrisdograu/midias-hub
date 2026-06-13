@@ -50,6 +50,7 @@ const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Pedidos = lazy(() => import("./pages/Pedidos"));
 const Favoritos = lazy(() => import("./pages/Favoritos"));
 const Perfil = lazy(() => import("./pages/Perfil"));
+const TimelineGamer = lazy(() => import("./pages/TimelineGamer"));
 const Biblioteca = lazy(() => import("./pages/Biblioteca"));
 const FAQ = lazy(() => import("./pages/FAQ"));
 const Contato = lazy(() => import("./pages/Contato"));
@@ -246,6 +247,7 @@ const App = () => (
                 { path: '/pedidos', el: <ProtectedRoute><Pedidos /></ProtectedRoute> },
                 { path: '/favoritos', el: <ProtectedRoute><Favoritos /></ProtectedRoute> },
                 { path: '/perfil', el: <ProtectedRoute><Perfil /></ProtectedRoute> },
+                { path: '/perfil/timeline', el: <ProtectedRoute><TimelineGamer /></ProtectedRoute> },
                 { path: '/perfil/:userId', el: <PublicProfile /> },
                 { path: '/profile/:userId', el: <PublicProfile /> },
                 { path: '/vendedor/criar', el: <ProtectedRoute><CriarVendedor mode="create" /></ProtectedRoute> },
