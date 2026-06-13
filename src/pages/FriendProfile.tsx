@@ -13,6 +13,7 @@ import FriendIdentityPanel from '@/components/social/FriendIdentityPanel';
 import { HalfStarDisplay } from '@/components/HalfStarRating';
 import LevelTitleBadge from '@/components/LevelTitleBadge';
 import GameTimeline from '@/components/social/GameTimeline';
+import HighlightsStrip from '@/components/social/HighlightsStrip';
 import SellerProfileSwitcher from '@/components/seller/SellerProfileSwitcher';
 import { Clock } from 'lucide-react';
 

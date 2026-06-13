@@ -1,7 +1,8 @@
 import { useState, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { User, Save, Loader2, Camera, Lock, Bell, Eye, EyeOff, Shield, UserX, Star, Ban, Heart } from 'lucide-react';
+import { User, Save, Loader2, Camera, Lock, Bell, Eye, EyeOff, Shield, UserX, Star, Ban, Heart, Sparkles, Clock } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Switch } from '@/components/ui/switch';
@@ -12,6 +13,7 @@ import MyReviewsTab from '@/components/perfil/MyReviewsTab';
 import PrivacyTab from '@/components/perfil/PrivacyTab';
 import NotificationPrefsTab from '@/components/perfil/NotificationPrefsTab';
 import FriendFavoritesTab from '@/components/perfil/FriendFavoritesTab';
+import HighlightsEditor from '@/components/perfil/HighlightsEditor';
 import LevelTitleBadge from '@/components/LevelTitleBadge';
 import ActiveTitleSelector from '@/components/ActiveTitleSelector';
 import SellerProfileSwitcher from '@/components/seller/SellerProfileSwitcher';
@@ -137,14 +139,30 @@ export default function Perfil() {
         />
 
         <Tabs defaultValue="conta" className="mb-6">
-          <TabsList className="w-full grid grid-cols-6">
+          <TabsList className="w-full grid grid-cols-7">
             <TabsTrigger value="conta"><User className="h-4 w-4 mr-1" />Conta</TabsTrigger>
+            <TabsTrigger value="destaques"><Sparkles className="h-4 w-4 mr-1" />Destaques</TabsTrigger>
             <TabsTrigger value="amigos"><Heart className="h-4 w-4 mr-1" />Amigos ⭐</TabsTrigger>
             <TabsTrigger value="privacidade"><Shield className="h-4 w-4 mr-1" />Privacidade</TabsTrigger>
-            <TabsTrigger value="notificacoes"><Bell className="h-4 w-4 mr-1" />Notificações</TabsTrigger>
-            <TabsTrigger value="bloqueados"><UserX className="h-4 w-4 mr-1" />Bloqueados</TabsTrigger>
-            <TabsTrigger value="reviews"><Star className="h-4 w-4 mr-1" />Avaliações</TabsTrigger>
+            <TabsTrigger value="notificacoes"><Bell className="h-4 w-4 mr-1" />Notif.</TabsTrigger>
+            <TabsTrigger value="bloqueados"><UserX className="h-4 w-4 mr-1" />Bloq.</TabsTrigger>
+            <TabsTrigger value="reviews"><Star className="h-4 w-4 mr-1" />Reviews</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="destaques" className="mt-4">
+            <div className="bg-card border border-border rounded-xl p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" /> Destaques do perfil
+                </h2>
+                <Link to="/perfil/timeline" className="text-xs text-primary hover:underline inline-flex items-center gap-1">
+                  <Clock className="h-3 w-3" /> Ver minha timeline
+                </Link>
+              </div>
+              <HighlightsEditor />
+            </div>
+          </TabsContent>
+
 
           <TabsContent value="amigos" className="mt-4">
             <div className="bg-card border border-border rounded-xl p-6">

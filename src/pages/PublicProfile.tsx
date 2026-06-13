@@ -8,6 +8,7 @@ import { ArrowLeft, Loader2, User, Star, Library, ShoppingBag, Lock, Calendar } 
 import LevelTitleBadge from '@/components/LevelTitleBadge';
 import FriendIdentityPanel from '@/components/social/FriendIdentityPanel';
 import SellerProfileSwitcher from '@/components/seller/SellerProfileSwitcher';
+import HighlightsStrip from '@/components/social/HighlightsStrip';
 
 const JA_JOGUEI = ['ja_joguei', 'zerado', 'jogando', 'pausado', 'abandonado'];
 const formatMemberSince = (iso?: string | null) => {
@@ -167,6 +168,8 @@ export default function PublicProfile() {
         </div>
       ) : (
       <>
+        {userId && <HighlightsStrip userId={userId} />}
+
 
 
       {/* Stats */}
