@@ -239,7 +239,9 @@ export default function FriendProfile() {
 
           {tab === 'overview' && (
             <div className="space-y-5">
+              {userId && <HighlightsStrip userId={userId} />}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+
                 <Stat icon={Library} label="Biblioteca" value={biblioteca.length} />
                 <Stat icon={Star} label="Reviews" value={reviews.length} />
                 <Stat icon={BookOpen} label="Reviews Completas" value={reviewsCompletas.length} />
