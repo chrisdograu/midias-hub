@@ -1837,6 +1837,30 @@ export type Database = {
           },
         ]
       }
+      library_custom_covers: {
+        Row: {
+          cover_url: string
+          created_at: string
+          id: string
+          product_id: string
+          user_id: string
+        }
+        Insert: {
+          cover_url: string
+          created_at?: string
+          id?: string
+          product_id: string
+          user_id: string
+        }
+        Update: {
+          cover_url?: string
+          created_at?: string
+          id?: string
+          product_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       mensagens: {
         Row: {
           anuncio_id: string | null
@@ -2503,9 +2527,12 @@ export type Database = {
           monthly_favorites: string[] | null
           phone: string | null
           privacy_exceptions: string[]
+          profile_cover_url: string | null
           push_notifications: boolean
           require_follow_approval: boolean
           seller_bio: string | null
+          theme_color: string | null
+          trophy_showcase: string[] | null
           updated_at: string
           username: string | null
         }
@@ -2530,9 +2557,12 @@ export type Database = {
           monthly_favorites?: string[] | null
           phone?: string | null
           privacy_exceptions?: string[]
+          profile_cover_url?: string | null
           push_notifications?: boolean
           require_follow_approval?: boolean
           seller_bio?: string | null
+          theme_color?: string | null
+          trophy_showcase?: string[] | null
           updated_at?: string
           username?: string | null
         }
@@ -2557,9 +2587,12 @@ export type Database = {
           monthly_favorites?: string[] | null
           phone?: string | null
           privacy_exceptions?: string[]
+          profile_cover_url?: string | null
           push_notifications?: boolean
           require_follow_approval?: boolean
           seller_bio?: string | null
+          theme_color?: string | null
+          trophy_showcase?: string[] | null
           updated_at?: string
           username?: string | null
         }
@@ -3686,17 +3719,23 @@ export type Database = {
       }
       tutorials_seen: {
         Row: {
+          completed: boolean | null
           seen_at: string
+          step: number | null
           tutorial_key: string
           user_id: string
         }
         Insert: {
+          completed?: boolean | null
           seen_at?: string
+          step?: number | null
           tutorial_key: string
           user_id: string
         }
         Update: {
+          completed?: boolean | null
           seen_at?: string
+          step?: number | null
           tutorial_key?: string
           user_id?: string
         }

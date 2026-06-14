@@ -128,6 +128,30 @@ export default function Configuracoes() {
             </CardContent>
           </Card>
 
+          <Card className="border-primary/30 bg-primary/5">
+            <CardHeader>
+              <CardTitle className="text-base">🧪 Popular conta admin com dados de teste</CardTitle>
+              <CardDescription>
+                Cria 6 amigos artificiais para <code>admin2@midias.com</code> com biblioteca, torneios, conversas (vendedor + comprador), opiniões e screenshots. Idempotente.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button
+                variant="outline"
+                onClick={async () => {
+                  toast.loading('Populando dados...', { id: 'seed' });
+                  const { data, error } = await supabase.functions.invoke('seed-admin-friends');
+                  if (error) toast.error('Erro: ' + error.message, { id: 'seed' });
+                  else toast.success(`✓ ${(data as any)?.message || 'Seed completo'}`, { id: 'seed', duration: 6000 });
+                }}
+              >
+                🌱 Popular amigos do admin master
+              </Button>
+            </CardContent>
+          </Card>
+
+
+
           <Card className="border-border/50">
             <CardHeader><CardTitle className="text-base">Alterar Senha</CardTitle></CardHeader>
             <CardContent className="space-y-4">
