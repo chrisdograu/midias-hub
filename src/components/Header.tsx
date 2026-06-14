@@ -181,6 +181,9 @@ export default function Header() {
                         <Link to="/conversas-opinioes" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-secondary transition-colors">
                           <MessageSquare className="h-4 w-4" /> Conversas de Opiniões
                         </Link>
+                        <Link to="/tutoriais" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-secondary transition-colors">
+                          <span className="text-base leading-none">🎓</span> Tutoriais
+                        </Link>
                       </div>
                       <div className="border-t border-border">
                         <button onClick={handleSignOut}
