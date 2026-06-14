@@ -121,6 +121,9 @@ const CriarVendedor = lazy(() => import("./pages/CriarVendedor"));
 const BuscaGlobal = lazy(() => import("./pages/BuscaGlobal"));
 const OpinionsConversations = lazy(() => import("./pages/OpinionsConversations"));
 const OpinionConversation = lazy(() => import("./pages/OpinionConversation"));
+const Tutoriais = lazy(() => import("./pages/Tutoriais"));
+const Tutorial = lazy(() => import("./pages/Tutorial"));
+import { TutorialProvider } from "@/components/tutorial/TutorialContext";
 
 const PageFallback = () => (
   <div className="min-h-[40vh] flex items-center justify-center">
@@ -135,6 +138,7 @@ const App = () => (
     <ThemeProvider>
     <TooltipProvider>
       <AuthProvider>
+        <TutorialProvider>
         <CartProvider>
           <Toaster />
           <Sonner />
@@ -257,6 +261,8 @@ const App = () => (
                 { path: '/faq', el: <FAQ /> },
                 { path: '/contato', el: <Contato /> },
                 { path: '/termos', el: <TermosDeUso /> },
+                { path: '/tutoriais', el: <Tutoriais /> },
+                { path: '/tutorial/:key', el: <Tutorial /> },
               ] as const).map(r => (
                 <Route key={r.path} path={r.path} element={
                   <div className="min-h-screen flex flex-col">
@@ -271,6 +277,7 @@ const App = () => (
             </Suspense>
           </BrowserRouter>
         </CartProvider>
+        </TutorialProvider>
       </AuthProvider>
     </TooltipProvider>
     </ThemeProvider>
