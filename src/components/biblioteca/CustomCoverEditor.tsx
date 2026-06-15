@@ -27,9 +27,9 @@ export default function CustomCoverEditor({ productId, productTitle, defaultImag
     (async () => {
       const { data } = await supabase
         .from('library_custom_covers' as any)
-        .select('image_url')
+        .select("cover_url")
         .eq('user_id', user.id).eq('product_id', productId).maybeSingle();
-      setCurrent((data as any)?.image_url || null);
+      setCurrent((data as any)?.cover_url || null);
       setLoading(false);
     })();
   }, [open, user?.id, productId]);
@@ -44,7 +44,7 @@ export default function CustomCoverEditor({ productId, productTitle, defaultImag
     if (upErr) { toast.error('Erro ao enviar'); setUploading(false); return; }
     const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(path);
     const { error } = await supabase.from('library_custom_covers' as any).upsert({
-      user_id: user.id, product_id: productId, image_url: publicUrl,
+      user_id: user.id, product_id: productId, cover_url: publicUrl,
     }, { onConflict: 'user_id,product_id' });
     setUploading(false);
     if (error) { toast.error('Erro ao salvar'); return; }
