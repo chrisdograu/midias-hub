@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Loader2, Save, Sun, Moon, ShieldCheck, Camera, User, ShieldOff, ChevronRight, Store } from 'lucide-react';
+import { Loader2, Save, Sun, Moon, ShieldCheck, Camera, User, ShieldOff, ChevronRight, Store, GraduationCap } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import { toast } from 'sonner';
+import { TUTORIALS } from '@/components/tutorial/TutorialContext';
 
 export default function MConfig() {
   const { user } = useAuth();
@@ -172,6 +173,25 @@ export default function MConfig() {
         </div>
         <ChevronRight className="h-4 w-4 text-muted-foreground" />
       </Link>
+
+      <Section title={<span className="flex items-center gap-1.5"><GraduationCap className="h-3.5 w-3.5 text-accent" />Tutoriais práticos</span>}>
+        <p className="text-[11px] text-muted-foreground -mt-1">Cada tutorial abre um playground interativo. Aprenda fazendo, sem medo de quebrar nada.</p>
+        <div className="space-y-1.5">
+          {TUTORIALS.filter(t => t.area === 'mobile').map(t => (
+            <Link key={t.key} to={t.replicaRoute}
+              className="flex items-center gap-2 p-2.5 rounded-lg bg-card border border-border hover:border-primary/40 transition-colors">
+              <span className="text-xl">🎓</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold truncate">{t.title}</p>
+                <p className="text-[10px] text-muted-foreground line-clamp-1">{t.description}</p>
+              </div>
+              <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+            </Link>
+          ))}
+          <Link to="/tutoriais" className="block text-center text-[11px] text-primary mt-2">Ver todos os tutoriais (web + mobile) →</Link>
+        </div>
+      </Section>
+
 
       <button onClick={save} disabled={saving} className="w-full py-3 rounded-xl bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold flex items-center justify-center gap-2 glow-primary disabled:opacity-50">
         {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Salvar alterações

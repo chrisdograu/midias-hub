@@ -123,6 +123,8 @@ const OpinionsConversations = lazy(() => import("./pages/OpinionsConversations")
 const OpinionConversation = lazy(() => import("./pages/OpinionConversation"));
 const Tutoriais = lazy(() => import("./pages/Tutoriais"));
 const Tutorial = lazy(() => import("./pages/Tutorial"));
+const PrivacidadeCentral = lazy(() => import("./pages/PrivacidadeCentral"));
+const ForumGeral = lazy(() => import("./pages/ForumGeral"));
 import { TutorialProvider } from "@/components/tutorial/TutorialContext";
 
 const PageFallback = () => (
@@ -263,6 +265,8 @@ const App = () => (
                 { path: '/termos', el: <TermosDeUso /> },
                 { path: '/tutoriais', el: <Tutoriais /> },
                 { path: '/tutorial/:key', el: <Tutorial /> },
+                { path: '/privacidade', el: <ProtectedRoute><PrivacidadeCentral /></ProtectedRoute> },
+                { path: '/forum', el: <ForumGeral /> },
               ] as const).map(r => (
                 <Route key={r.path} path={r.path} element={
                   <div className="min-h-screen flex flex-col">

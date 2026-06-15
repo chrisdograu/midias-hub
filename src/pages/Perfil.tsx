@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { User, Save, Loader2, Camera, Lock, Bell, Eye, EyeOff, Shield, UserX, Star, Ban, Heart, Sparkles, Clock } from 'lucide-react';
+import { User, Save, Loader2, Camera, Lock, Bell, Eye, EyeOff, Shield, UserX, Star, Ban, Heart, Sparkles, Clock, Palette, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
@@ -14,6 +14,7 @@ import PrivacyTab from '@/components/perfil/PrivacyTab';
 import NotificationPrefsTab from '@/components/perfil/NotificationPrefsTab';
 import FriendFavoritesTab from '@/components/perfil/FriendFavoritesTab';
 import HighlightsEditor from '@/components/perfil/HighlightsEditor';
+import CustomizacaoTab from '@/components/perfil/CustomizacaoTab';
 import LevelTitleBadge from '@/components/LevelTitleBadge';
 import ActiveTitleSelector from '@/components/ActiveTitleSelector';
 import SellerProfileSwitcher from '@/components/seller/SellerProfileSwitcher';
@@ -138,16 +139,33 @@ export default function Perfil() {
           isOwn
         />
 
+        <Link to="/privacidade" className="mb-4 flex items-center gap-3 p-4 bg-card border border-border rounded-xl hover:border-primary/40 transition-colors">
+          <Shield className="h-5 w-5 text-primary" />
+          <div className="flex-1">
+            <p className="text-sm font-semibold">Privacidade e segurança</p>
+            <p className="text-xs text-muted-foreground">Visibilidade, notificações, bloqueios e exceções num só lugar</p>
+          </div>
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        </Link>
+
         <Tabs defaultValue="conta" className="mb-6">
-          <TabsList className="w-full grid grid-cols-7">
+          <TabsList className="w-full grid grid-cols-5">
             <TabsTrigger value="conta"><User className="h-4 w-4 mr-1" />Conta</TabsTrigger>
+            <TabsTrigger value="customizacao"><Palette className="h-4 w-4 mr-1" />Visual</TabsTrigger>
             <TabsTrigger value="destaques"><Sparkles className="h-4 w-4 mr-1" />Destaques</TabsTrigger>
             <TabsTrigger value="amigos"><Heart className="h-4 w-4 mr-1" />Amigos ⭐</TabsTrigger>
-            <TabsTrigger value="privacidade"><Shield className="h-4 w-4 mr-1" />Privacidade</TabsTrigger>
-            <TabsTrigger value="notificacoes"><Bell className="h-4 w-4 mr-1" />Notif.</TabsTrigger>
-            <TabsTrigger value="bloqueados"><UserX className="h-4 w-4 mr-1" />Bloq.</TabsTrigger>
             <TabsTrigger value="reviews"><Star className="h-4 w-4 mr-1" />Reviews</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="customizacao" className="mt-4">
+            <div className="bg-card border border-border rounded-xl p-6">
+              <h2 className="text-base font-semibold text-foreground mb-1 flex items-center gap-2">
+                <Palette className="h-4 w-4 text-primary" /> Personalização visual
+              </h2>
+              <p className="text-xs text-muted-foreground mb-4">Banner, cor de destaque e vitrine de troféus do seu perfil público.</p>
+              <CustomizacaoTab />
+            </div>
+          </TabsContent>
 
           <TabsContent value="destaques" className="mt-4">
             <div className="bg-card border border-border rounded-xl p-6 space-y-4">
@@ -173,24 +191,6 @@ export default function Perfil() {
             </div>
           </TabsContent>
 
-          <TabsContent value="privacidade" className="mt-4">
-            <div className="bg-card border border-border rounded-xl p-6">
-              <PrivacyTab />
-            </div>
-          </TabsContent>
-
-          <TabsContent value="notificacoes" className="mt-4">
-            <div className="bg-card border border-border rounded-xl p-6">
-              <NotificationPrefsTab />
-            </div>
-          </TabsContent>
-
-          <TabsContent value="bloqueados" className="mt-4">
-            <div className="bg-card border border-border rounded-xl p-6">
-              <h2 className="text-base font-semibold text-foreground mb-4">Usuários bloqueados</h2>
-              <BlockedUsersTab />
-            </div>
-          </TabsContent>
 
           <TabsContent value="reviews" className="mt-4">
             <div className="bg-card border border-border rounded-xl p-6">
