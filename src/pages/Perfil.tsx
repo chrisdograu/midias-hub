@@ -191,24 +191,6 @@ export default function Perfil() {
             </div>
           </TabsContent>
 
-          <TabsContent value="privacidade" className="mt-4">
-            <div className="bg-card border border-border rounded-xl p-6">
-              <PrivacyTab />
-            </div>
-          </TabsContent>
-
-          <TabsContent value="notificacoes" className="mt-4">
-            <div className="bg-card border border-border rounded-xl p-6">
-              <NotificationPrefsTab />
-            </div>
-          </TabsContent>
-
-          <TabsContent value="bloqueados" className="mt-4">
-            <div className="bg-card border border-border rounded-xl p-6">
-              <h2 className="text-base font-semibold text-foreground mb-4">Usuários bloqueados</h2>
-              <BlockedUsersTab />
-            </div>
-          </TabsContent>
 
           <TabsContent value="reviews" className="mt-4">
             <div className="bg-card border border-border rounded-xl p-6">
