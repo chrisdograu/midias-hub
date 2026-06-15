@@ -117,8 +117,12 @@ export default function PublicProfile() {
   const queroJogar = libGames.filter(b => b.status === 'quero_jogar');
   const favoritos = libGames.filter(b => b.status === 'favoritos');
 
+  const themeColor = (profile as any).theme_color || null;
+  const coverUrl = (profile as any).profile_cover_url || null;
+  const accentStyle = themeColor ? ({ ['--profile-accent' as any]: themeColor } as React.CSSProperties) : undefined;
+
   return (
-    <div className="container mx-auto px-4 py-6 max-w-2xl">
+    <div className="container mx-auto px-4 py-6 max-w-2xl" style={accentStyle}>
       <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors mb-6">
         <ArrowLeft className="h-4 w-4" /> Voltar
       </Link>
@@ -131,13 +135,21 @@ export default function PublicProfile() {
         isOwn={isOwn}
       />
 
+      {/* Banner customizado */}
+      {coverUrl && (
+        <div className="rounded-xl overflow-hidden mb-4 h-32 sm:h-40 relative">
+          <img src={coverUrl} alt="" className="w-full h-full object-cover" />
+          {themeColor && <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${themeColor}30, transparent)` }} />}
+        </div>
+      )}
+
       {/* Profile header */}
-      <div className="bg-card border border-border rounded-xl p-6 mb-6 text-center">
-        <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-3">
+      <div className="bg-card border-2 rounded-xl p-6 mb-6 text-center" style={themeColor ? { borderColor: `${themeColor}60` } : undefined}>
+        <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-3" style={{ background: themeColor ? `${themeColor}30` : undefined }}>
           {profile.avatar_url ? (
             <img src={profile.avatar_url} alt="" className="w-full h-full rounded-full object-cover" />
           ) : (
-            <User className="h-8 w-8 text-primary" />
+            <User className="h-8 w-8" style={themeColor ? { color: themeColor } : undefined} />
           )}
         </div>
         <h1 className="text-xl font-bold text-foreground">{profile.display_name || 'Usuário'}</h1>

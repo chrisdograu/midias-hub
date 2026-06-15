@@ -1,15 +1,30 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useBiblioteca } from '@/hooks/useBiblioteca';
-import { Library, Gamepad2, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { Library, Gamepad2, Loader2, Camera } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import CustomCoverEditor from '@/components/biblioteca/CustomCoverEditor';
 
 type StatusFilter = 'todos' | 'ja_joguei' | 'quero_jogar';
 
 export default function Biblioteca() {
   const { biblioteca, updateStatus, isLoading } = useBiblioteca();
+  const { user } = useAuth();
   const [filter, setFilter] = useState<StatusFilter>('todos');
+  const [editingCover, setEditingCover] = useState<{ id: string; title: string; image: string | null } | null>(null);
+  const [customCovers, setCustomCovers] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from('library_custom_covers' as any).select('product_id, cover_url').eq('user_id', user.id).then(({ data }) => {
+      const map: Record<string, string> = {};
+      ((data as any[]) || []).forEach(r => { map[r.product_id] = r.cover_url; });
+      setCustomCovers(map);
+    });
+  }, [user?.id]);
 
   const JA_JOGUEI_STATUSES = ['ja_joguei', 'zerado', 'jogando', 'pausado', 'abandonado'];
   const filtered = filter === 'todos'
@@ -66,10 +81,13 @@ export default function Biblioteca() {
             const completed = (item as any).badge_completed;
             return (
             <motion.div key={item.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-              className="bg-card border border-border rounded-lg overflow-hidden hover:border-primary/50 transition-colors">
+              className="bg-card border border-border rounded-lg overflow-hidden hover:border-primary/50 transition-colors group">
               <Link to={`/biblioteca/${item.product_id}`}>
                 <div className="aspect-[3/4] overflow-hidden relative">
-                  <img src={item.produto?.image_url || '/placeholder.svg'} alt={item.produto?.title || ''} className="w-full h-full object-cover hover:scale-105 transition-transform" loading="lazy" />
+                  <img src={customCovers[item.product_id] || item.produto?.image_url || '/placeholder.svg'} alt={item.produto?.title || ''} className="w-full h-full object-cover hover:scale-105 transition-transform" loading="lazy" />
+                  {customCovers[item.product_id] && (
+                    <span className="absolute bottom-1.5 left-1.5 text-[9px] px-1.5 py-0.5 rounded bg-primary/80 text-primary-foreground font-semibold">CUSTOM</span>
+                  )}
                   {(platinum || completed) && (
                     <div className="absolute top-1.5 right-1.5 flex flex-col gap-1">
                       {platinum && (
@@ -101,10 +119,28 @@ export default function Biblioteca() {
                   <option value="rejogando">Rejogando</option>
                   <option value="abandonado">Abandonado</option>
                 </select>
+                <button onClick={() => setEditingCover({ id: item.product_id, title: item.produto?.title || '', image: item.produto?.image_url || null })}
+                  className="w-full px-2 py-1 bg-secondary hover:bg-primary/20 border border-border rounded text-[10px] font-medium flex items-center justify-center gap-1">
+                  <Camera className="h-3 w-3" /> {customCovers[item.product_id] ? 'Editar capa' : 'Capa custom'}
+                </button>
               </div>
             </motion.div>
           );})}
         </div>
+      )}
+      {editingCover && (
+        <CustomCoverEditor
+          productId={editingCover.id}
+          productTitle={editingCover.title}
+          defaultImage={editingCover.image}
+          open
+          onClose={() => setEditingCover(null)}
+          onSaved={(url) => setCustomCovers(prev => {
+            const next = { ...prev };
+            if (url) next[editingCover.id] = url; else delete next[editingCover.id];
+            return next;
+          })}
+        />
       )}
     </div>
   );

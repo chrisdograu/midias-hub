@@ -43,8 +43,21 @@ export default function BuscaGlobal() {
     setParams(p => { if (debounced) p.set('q', debounced); else p.delete('q'); p.set('cat', tab); return p; }, { replace: true });
   }, [debounced, tab, setParams]);
 
+  // Parser de prefixos: @user → aba Usuários, $vendedor → aba Vendedores
+  const parsed = (() => {
+    const t = debounced.trim();
+    if (t.startsWith('@')) return { prefix: '@' as const, term: t.slice(1), forceTab: 'users' as Category };
+    if (t.startsWith('$')) return { prefix: '$' as const, term: t.slice(1), forceTab: 'sellers' as Category };
+    return { prefix: null, term: t, forceTab: null };
+  })();
+
   useEffect(() => {
-    const term = debounced.trim();
+    if (parsed.forceTab && tab !== parsed.forceTab) setTab(parsed.forceTab);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [parsed.prefix]);
+
+  useEffect(() => {
+    const term = parsed.term;
     if (term.length < 2) { setResults([]); return; }
     setLoading(true);
     let cancel = false;
