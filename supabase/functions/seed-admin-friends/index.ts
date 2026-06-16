@@ -107,6 +107,21 @@ Deno.serve(async (req) => {
       }, { onConflict: 'user_id,product_id' });
     }
 
+    // 5b) Timeline events para cada amigo
+    for (const fid of Object.values(friendIds)) {
+      for (const p of prods.slice(0, 3)) {
+        const { data: ex } = await admin.from('game_timeline_events')
+          .select('id').eq('user_id', fid).eq('product_id', p.id).limit(1);
+        if (!ex || ex.length === 0) {
+          await admin.from('game_timeline_events').insert([
+            { user_id: fid, product_id: p.id, event_type: 'status_change', payload: { status: 'jogando', hours: 12 } as any },
+            { user_id: fid, product_id: p.id, event_type: 'achievement', payload: { name: 'Primeira vitória', icon: '🏆' } as any },
+          ]);
+        }
+      }
+    }
+
+
     // 6) Opiniões + respostas (cria conversas de opinião)
     let opCount = 0;
     if (prods.length > 0 && friendIds.reviewer) {
