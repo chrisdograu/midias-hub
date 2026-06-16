@@ -14,7 +14,9 @@ interface Tournament {
   prize: string | null; max_participants: number; starts_at: string | null; ends_at: string | null;
   xp_signup?: number | null; xp_match_win?: number | null; xp_champion?: number | null;
   verified?: boolean | null; prize_types?: string[] | null;
+  product_id?: string | null;
 }
+interface GameOpt { id: string; title: string; image_url: string | null }
 
 function fingerprint() {
   try {
@@ -31,11 +33,20 @@ export default function Torneios() {
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Tournament | null>(null);
   const [myIds, setMyIds] = useState<Set<string>>(new Set());
+  const [gameFilter, setGameFilter] = useState<string>('all');
+  const [games, setGames] = useState<GameOpt[]>([]);
 
   const load = async () => {
     setLoading(true);
     const { data } = await supabase.from('tournaments' as any).select('*').order('created_at', { ascending: false });
-    setList(((data as any) || []) as Tournament[]);
+    const items = ((data as any) || []) as Tournament[];
+    setList(items);
+    // Build distinct games options from products referenced
+    const pids = [...new Set(items.map(t => t.product_id).filter(Boolean) as string[])];
+    if (pids.length) {
+      const { data: ps } = await supabase.from('produtos').select('id,title,image_url').in('id', pids);
+      setGames((ps as any) || []);
+    } else setGames([]);
     if (user) {
       const { data: parts } = await supabase.from('tournament_participants' as any).select('tournament_id').eq('user_id', user.id);
       setMyIds(new Set(((parts as any) || []).map((p: any) => p.tournament_id)));
@@ -168,11 +179,12 @@ export default function Torneios() {
     );
   };
 
+  const filterByGame = (l: Tournament[]) => gameFilter === 'all' ? l : l.filter(t => t.product_id === gameFilter);
   const tabs = {
-    open: list.filter(t => t.status === 'open'),
-    running: list.filter(t => t.status === 'running'),
-    closed: list.filter(t => t.status === 'closed'),
-    mine: list.filter(t => myIds.has(t.id)),
+    open: filterByGame(list.filter(t => t.status === 'open')),
+    running: filterByGame(list.filter(t => t.status === 'running')),
+    closed: filterByGame(list.filter(t => t.status === 'closed')),
+    mine: filterByGame(list.filter(t => myIds.has(t.id))),
   };
 
   const grid = (l: Tournament[]) => l.length === 0
@@ -191,6 +203,25 @@ export default function Torneios() {
         </div>
         {user && <CreateTournamentDialog onCreated={load} />}
       </div>
+
+      {games.length > 0 && (
+        <div className="mb-4 flex items-center gap-2 overflow-x-auto pb-1">
+          <span className="text-xs text-muted-foreground shrink-0">Filtrar por jogo:</span>
+          <button onClick={() => setGameFilter('all')} className={`px-3 py-1.5 rounded-full text-xs font-semibold shrink-0 ${gameFilter==='all'?'bg-primary text-primary-foreground':'bg-secondary'}`}>
+            Todos ({list.length})
+          </button>
+          {games.map(g => {
+            const count = list.filter(t => t.product_id === g.id).length;
+            return (
+              <button key={g.id} onClick={() => setGameFilter(g.id)}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold shrink-0 inline-flex items-center gap-1.5 ${gameFilter===g.id?'bg-primary text-primary-foreground':'bg-secondary'}`}>
+                {g.image_url && <img src={g.image_url} alt="" className="w-4 h-4 rounded object-cover" />}
+                {g.title} ({count})
+              </button>
+            );
+          })}
+        </div>
+      )}
       {loading ? <div className="flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin" /></div> : (
         <Tabs defaultValue="open">
           <TabsList>
