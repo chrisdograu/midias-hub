@@ -60,15 +60,16 @@ Deno.serve(async (req) => {
       friendIds[f.persona] = uid;
       await admin.from('profiles').update({
         display_name: f.display_name, bio: f.bio, is_private: false,
+        library_visibility: 'public',
+        social_visibility: 'public',
         theme_color: f.persona === 'gamer' ? '#A855F7' : '#14B8A6',
-      }).eq('id', uid);
+      } as any).eq('id', uid);
     }
 
     // 3) Follow mútuo: admin <-> cada amigo (cria conversa accepted)
     for (const fid of Object.values(friendIds)) {
       await admin.from('user_follows').insert({ follower_id: ADMIN_ID, following_id: fid }).select().maybeSingle();
       await admin.from('user_follows').insert({ follower_id: fid, following_id: ADMIN_ID }).select().maybeSingle();
-      // criar conversa accepted entre admin e amigo
       const [p1, p2] = [ADMIN_ID, fid].sort();
       const { data: existingConv } = await admin.from('conversas')
         .select('id').eq('participant_1', p1).eq('participant_2', p2).maybeSingle();
