@@ -107,6 +107,15 @@ export default function MChatInfo() {
       </section>
 
       <section className="space-y-2">
+        <button onClick={toggleMute} className="w-full p-3 rounded-xl bg-card border border-border text-sm font-semibold flex items-center justify-between">
+          <span className="flex items-center gap-2">
+            {muted ? <BellOff className="h-4 w-4 text-muted-foreground" /> : <Bell className="h-4 w-4 text-primary" />}
+            Silenciar notificações
+          </span>
+          <span className={`relative w-10 h-5 rounded-full transition-colors ${muted ? 'bg-primary' : 'bg-secondary'}`}>
+            <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${muted ? 'translate-x-5' : ''}`} />
+          </span>
+        </button>
         <button onClick={block} className="w-full p-3 rounded-xl bg-card border border-border text-sm font-semibold flex items-center justify-center gap-2 text-destructive">
           <ShieldOff className="h-4 w-4" /> {blocked ? 'Desbloquear usuário' : 'Bloquear usuário'}
         </button>
