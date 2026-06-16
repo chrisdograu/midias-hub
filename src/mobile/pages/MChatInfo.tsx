@@ -61,6 +61,15 @@ export default function MChatInfo() {
     }
   };
 
+  const toggleMute = async () => {
+    const next = !muted;
+    await supabase.from('conversation_settings').upsert({
+      conversation_id: conversationId!, user_id: user.id, muted: next,
+    } as any, { onConflict: 'conversation_id,user_id' });
+    setMuted(next);
+    toast.success(next ? '🔕 Notificações silenciadas' : '🔔 Notificações ativas');
+  };
+
   return (
     <div className="px-4 py-5 space-y-4 pb-24">
       <Link to={`/m/chat/${conversationId}`} className="inline-flex items-center gap-1 text-sm text-muted-foreground"><ArrowLeft className="h-4 w-4" /> Voltar à conversa</Link>
