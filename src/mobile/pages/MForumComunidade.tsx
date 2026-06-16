@@ -42,7 +42,7 @@ export default function MForumComunidade() {
         ? await supabase.from('profiles').select('id,display_name').in('id', uids)
         : { data: [] as any };
       const map = new Map((profs || []).map((p: any) => [p.id, p.display_name || 'Usuário']));
-      setPosts((ps || []).map(p => ({ ...p, author: map.get(p.user_id) || 'Usuário' })));
+      setPosts((ps || []).map(p => ({ ...p, author: (map.get(p.user_id) || 'Usuário') as string })));
     } else {
       setCat(null); setPosts([]);
     }
