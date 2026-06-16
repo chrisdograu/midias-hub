@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Loader2, Image as ImageIcon, FileText, Sparkles, ShieldAlert, ShieldOff } from 'lucide-react';
+import { ArrowLeft, Loader2, Image as ImageIcon, FileText, Sparkles, ShieldAlert, ShieldOff, BellOff, Bell } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -16,6 +16,7 @@ export default function MChatInfo() {
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [loading, setLoading] = useState(true);
   const [blocked, setBlocked] = useState(false);
+  const [muted, setMuted] = useState(false);
   const [tab, setTab] = useState<'images'|'gifs'|'files'>('images');
 
   useEffect(() => {
@@ -25,16 +26,18 @@ export default function MChatInfo() {
       if (!c) { setLoading(false); return; }
       setConv(c);
       const otherId = c.participant_1 === user.id ? c.participant_2 : c.participant_1;
-      const [{ data: p }, { data: ms }, { data: b }] = await Promise.all([
+      const [{ data: p }, { data: ms }, { data: b }, { data: cs }] = await Promise.all([
         supabase.from('profiles').select('id, display_name, avatar_url, bio').eq('id', otherId).maybeSingle(),
         supabase.from('mensagens').select('id, content, image_url, message_type, created_at')
           .or(`and(sender_id.eq.${user.id},receiver_id.eq.${otherId}),and(sender_id.eq.${otherId},receiver_id.eq.${user.id})`)
           .order('created_at', { ascending: false }).limit(300),
         supabase.from('blocked_users').select('id').eq('blocker_id', user.id).eq('blocked_id', otherId).maybeSingle(),
+        supabase.from('conversation_settings').select('muted').eq('conversation_id', conversationId).eq('user_id', user.id).maybeSingle(),
       ]);
       setOther(p);
       setMsgs((ms || []) as any);
       setBlocked(!!b);
+      setMuted(!!cs?.muted);
       setLoading(false);
     })();
   }, [user?.id, conversationId]);
@@ -56,6 +59,15 @@ export default function MChatInfo() {
       await supabase.from('blocked_users').insert({ blocker_id: user.id, blocked_id: other.id } as any);
       toast.success('Bloqueado'); setBlocked(true);
     }
+  };
+
+  const toggleMute = async () => {
+    const next = !muted;
+    await supabase.from('conversation_settings').upsert({
+      conversation_id: conversationId!, user_id: user.id, muted: next,
+    } as any, { onConflict: 'conversation_id,user_id' });
+    setMuted(next);
+    toast.success(next ? '🔕 Notificações silenciadas' : '🔔 Notificações ativas');
   };
 
   return (
@@ -95,6 +107,15 @@ export default function MChatInfo() {
       </section>
 
       <section className="space-y-2">
+        <button onClick={toggleMute} className="w-full p-3 rounded-xl bg-card border border-border text-sm font-semibold flex items-center justify-between">
+          <span className="flex items-center gap-2">
+            {muted ? <BellOff className="h-4 w-4 text-muted-foreground" /> : <Bell className="h-4 w-4 text-primary" />}
+            Silenciar notificações
+          </span>
+          <span className={`relative w-10 h-5 rounded-full transition-colors ${muted ? 'bg-primary' : 'bg-secondary'}`}>
+            <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${muted ? 'translate-x-5' : ''}`} />
+          </span>
+        </button>
         <button onClick={block} className="w-full p-3 rounded-xl bg-card border border-border text-sm font-semibold flex items-center justify-center gap-2 text-destructive">
           <ShieldOff className="h-4 w-4" /> {blocked ? 'Desbloquear usuário' : 'Bloquear usuário'}
         </button>

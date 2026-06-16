@@ -35,6 +35,9 @@ import MGroupChat from "./mobile/pages/MGroupChat";
 import MGroupInfo from "./mobile/pages/MGroupInfo";
 import MChatInfo from "./mobile/pages/MChatInfo";
 import MTournamentGroup from "./mobile/pages/MTournamentGroup";
+import MTutoriais from "./mobile/pages/MTutoriais";
+import MTutorial from "./mobile/pages/MTutorial";
+import MForumComunidade from "./mobile/pages/MForumComunidade";
 
 import MNotFound from "./mobile/pages/MNotFound";
 import NotFound from "./pages/NotFound";
@@ -125,6 +128,7 @@ const Tutoriais = lazy(() => import("./pages/Tutoriais"));
 const Tutorial = lazy(() => import("./pages/Tutorial"));
 const PrivacidadeCentral = lazy(() => import("./pages/PrivacidadeCentral"));
 const ForumGeral = lazy(() => import("./pages/ForumGeral"));
+const VendedorConfig = lazy(() => import("./pages/VendedorConfig"));
 import { TutorialProvider } from "@/components/tutorial/TutorialContext";
 
 const PageFallback = () => (
@@ -174,6 +178,11 @@ const App = () => (
               <Route path="/m/favoritos" element={<MobileLayout><ProtectedRoute redirectTo="/m/auth"><MFavoritos /></ProtectedRoute></MobileLayout>} />
               <Route path="/m/amigos" element={<MobileLayout><ProtectedRoute redirectTo="/m/auth"><MFriends /></ProtectedRoute></MobileLayout>} />
               <Route path="/m/friends" element={<MobileLayout><ProtectedRoute redirectTo="/m/auth"><MFriends /></ProtectedRoute></MobileLayout>} />
+              <Route path="/m/tutoriais" element={<MobileLayout><ProtectedRoute redirectTo="/m/auth"><MTutoriais /></ProtectedRoute></MobileLayout>} />
+              <Route path="/m/tutorial/:key" element={<MobileLayout><ProtectedRoute redirectTo="/m/auth"><MTutorial /></ProtectedRoute></MobileLayout>} />
+              <Route path="/m/forum-comunidade" element={<MobileLayout><MForumComunidade /></MobileLayout>} />
+              <Route path="/m/forum-comunidade/:slug" element={<MobileLayout><MForumComunidade /></MobileLayout>} />
+              <Route path="/m/vendedor" element={<MobileLayout><ProtectedRoute redirectTo="/m/auth"><VendedorConfig /></ProtectedRoute></MobileLayout>} />
               <Route path="/m/*" element={<MobileLayout><MNotFound /></MobileLayout>} />
 
               {/* Desktop Backoffice Routes */}
@@ -267,6 +276,7 @@ const App = () => (
                 { path: '/tutorial/:key', el: <Tutorial /> },
                 { path: '/privacidade', el: <ProtectedRoute><PrivacidadeCentral /></ProtectedRoute> },
                 { path: '/forum', el: <ForumGeral /> },
+                { path: '/vendedor', el: <ProtectedRoute><VendedorConfig /></ProtectedRoute> },
               ] as const).map(r => (
                 <Route key={r.path} path={r.path} element={
                   <div className="min-h-screen flex flex-col">
