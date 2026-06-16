@@ -175,22 +175,27 @@ export default function MConfig() {
       </Link>
 
       <Section title={<span className="flex items-center gap-1.5"><GraduationCap className="h-3.5 w-3.5 text-accent" />Tutoriais práticos</span>}>
-        <p className="text-[11px] text-muted-foreground -mt-1">Cada tutorial abre um playground interativo. Aprenda fazendo, sem medo de quebrar nada.</p>
-        <div className="space-y-1.5">
-          {TUTORIALS.filter(t => t.area === 'mobile').map(t => (
-            <Link key={t.key} to={t.replicaRoute}
-              className="flex items-center gap-2 p-2.5 rounded-lg bg-card border border-border hover:border-primary/40 transition-colors">
-              <span className="text-xl">🎓</span>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold truncate">{t.title}</p>
-                <p className="text-[10px] text-muted-foreground line-clamp-1">{t.description}</p>
-              </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
-            </Link>
-          ))}
-          <Link to="/tutoriais" className="block text-center text-[11px] text-primary mt-2">Ver todos os tutoriais (web + mobile) →</Link>
-        </div>
+        <p className="text-[11px] text-muted-foreground -mt-1">Cada tutorial abre um playground interativo passo-a-passo e termina com um link direto para a página real.</p>
+        <Link to="/m/tutoriais" className="flex items-center gap-2 p-3 rounded-lg bg-card border border-primary/40 hover:bg-primary/5 transition-colors">
+          <span className="text-xl">🎓</span>
+          <div className="flex-1">
+            <p className="text-sm font-semibold">Abrir tutoriais mobile</p>
+            <p className="text-[10px] text-muted-foreground">{TUTORIALS.filter(t => t.area === 'mobile').length} guias interativos</p>
+          </div>
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        </Link>
       </Section>
+
+      <Link to="/m/vendedor" className="glass rounded-2xl p-4 flex items-center gap-3 hover:border-accent/40 transition-colors">
+        <div className="w-10 h-10 rounded-xl bg-accent/15 text-accent flex items-center justify-center">
+          <Store className="h-5 w-5" />
+        </div>
+        <div className="flex-1">
+          <p className="text-sm font-semibold">Perfil $vendedor</p>
+          <p className="text-[11px] text-muted-foreground">Crie, edite e gerencie sua loja no marketplace</p>
+        </div>
+        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+      </Link>
 
 
       <button onClick={save} disabled={saving} className="w-full py-3 rounded-xl bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold flex items-center justify-center gap-2 glow-primary disabled:opacity-50">
