@@ -1,0 +1,173 @@
+// Configuração do perfil $vendedor + onboarding para quem ainda não criou.
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Store, Loader2, Save, ExternalLink, ShieldCheck, Plus, ArrowLeft, Eye, EyeOff, Trash2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
+
+export default function VendedorConfig() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [seller, setSeller] = useState<any>(null);
+  const [cert, setCert] = useState<'none'|'pending'|'active'>('none');
+  const [activeAds, setActiveAds] = useState(0);
+  const [bio, setBio] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState('');
+  const [isPrivate, setIsPrivate] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const [{ data: sp }, { data: c }, { count }] = await Promise.all([
+        supabase.from('seller_profiles').select('*').eq('user_id', user.id).maybeSingle(),
+        supabase.from('certificados').select('status').eq('user_id', user.id).order('created_at', { ascending: false }).limit(1),
+        supabase.from('anuncios').select('id', { count: 'exact', head: true }).eq('seller_id', user.id).eq('status', 'active'),
+      ]);
+      setSeller(sp);
+      if (sp) {
+        setBio(sp.bio || ''); setDisplayName(sp.display_name); setAvatarUrl(sp.avatar_url || '');
+        setIsPrivate(sp.is_private);
+      }
+      const last = c?.[0]?.status;
+      setCert(last === 'ativo' ? 'active' : last === 'pendente' ? 'pending' : 'none');
+      setActiveAds(count || 0);
+      setLoading(false);
+    })();
+  }, [user?.id]);
+
+  const save = async () => {
+    if (!user || !seller) return;
+    setSaving(true);
+    const { error } = await supabase.from('seller_profiles').update({
+      display_name: displayName.trim(), bio: bio.trim() || null,
+      avatar_url: avatarUrl || null, is_private: isPrivate,
+    }).eq('user_id', user.id);
+    setSaving(false);
+    if (error) return toast.error('Erro ao salvar');
+    toast.success('Perfil $vendedor atualizado');
+  };
+
+  if (!user) return <div className="p-6 text-center text-muted-foreground">Entre para gerenciar seu perfil $vendedor.</div>;
+  if (loading) return <div className="flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
+
+  // Onboarding — usuário não tem perfil $vendedor
+  if (!seller) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-2xl">
+        <Link to="/perfil" className="inline-flex items-center gap-1 text-sm text-muted-foreground mb-4"><ArrowLeft className="h-4 w-4" /> Perfil</Link>
+        <div className="bg-card border border-border rounded-2xl p-8 text-center space-y-4">
+          <div className="w-16 h-16 mx-auto rounded-full bg-accent/15 flex items-center justify-center">
+            <Store className="h-8 w-8 text-accent" />
+          </div>
+          <h1 className="text-2xl font-display font-bold">Vire um $vendedor</h1>
+          <p className="text-sm text-muted-foreground max-w-md mx-auto">
+            Para vender no marketplace você precisa de um <b>perfil $vendedor</b> separado do seu @usuario.
+            Isso permite usar um nome de loja diferente, ter bio comercial e métricas próprias de reputação.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 max-w-2xl mx-auto text-left">
+            {[
+              { i: '🛒', t: '$handle único', d: 'Ex: $sualoja, separado do seu @user pessoal.' },
+              { i: '🛡️', t: 'Reputação isolada', d: 'Avaliações de comprador não afetam @user.' },
+              { i: '💬', t: 'Conversas próprias', d: 'Chat de marketplace separado do chat social.' },
+            ].map(b => (
+              <div key={b.t} className="p-3 rounded-lg bg-secondary/40">
+                <p className="text-xl mb-1">{b.i}</p>
+                <p className="text-sm font-semibold">{b.t}</p>
+                <p className="text-[11px] text-muted-foreground">{b.d}</p>
+              </div>
+            ))}
+          </div>
+          <button onClick={() => navigate('/vendedor/criar')}
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-accent text-accent-foreground font-semibold">
+            <Plus className="h-4 w-4" /> Criar meu $vendedor
+          </button>
+          <p className="text-[11px] text-muted-foreground">Você pode desativá-lo a qualquer momento sem perder seu @user.</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-8 max-w-3xl space-y-6">
+      <Link to="/perfil" className="inline-flex items-center gap-1 text-sm text-muted-foreground"><ArrowLeft className="h-4 w-4" /> Perfil</Link>
+
+      <header className="flex items-center gap-4">
+        <div className="w-16 h-16 rounded-full bg-accent/15 flex items-center justify-center overflow-hidden">
+          {avatarUrl ? <img src={avatarUrl} className="w-full h-full object-cover" /> : <Store className="h-7 w-7 text-accent" />}
+        </div>
+        <div className="flex-1">
+          <h1 className="text-2xl font-display font-bold">Config $vendedor</h1>
+          <p className="text-sm text-muted-foreground">
+            <Link to={`/vendedor/${seller.handle}`} className="text-accent hover:underline">${seller.handle}</Link> · {activeAds} anúncio(s) ativo(s)
+          </p>
+        </div>
+        <Link to={`/vendedor/${seller.handle}`} className="inline-flex items-center gap-1 px-3 py-2 rounded-lg bg-secondary text-xs font-semibold">
+          <ExternalLink className="h-3 w-3" /> Ver pública
+        </Link>
+      </header>
+
+      {/* Status */}
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="p-4 rounded-xl bg-card border border-border">
+          <p className="text-[10px] uppercase text-muted-foreground">Anúncios ativos</p>
+          <p className="text-2xl font-bold mt-1">{activeAds}</p>
+        </div>
+        <div className="p-4 rounded-xl bg-card border border-border">
+          <p className="text-[10px] uppercase text-muted-foreground">Certificado</p>
+          <p className="text-sm font-semibold mt-2 flex items-center gap-1.5">
+            {cert === 'active' ? <><ShieldCheck className="h-4 w-4 text-success" /> Ativo</>
+              : cert === 'pending' ? <span className="text-warning">⏳ Em análise</span>
+              : <span className="text-muted-foreground">— Sem certificado</span>}
+          </p>
+        </div>
+        <div className="p-4 rounded-xl bg-card border border-border">
+          <p className="text-[10px] uppercase text-muted-foreground">Visibilidade</p>
+          <p className="text-sm font-semibold mt-2 flex items-center gap-1.5">
+            {isPrivate ? <><EyeOff className="h-4 w-4" /> Privado</> : <><Eye className="h-4 w-4" /> Público</>}
+          </p>
+        </div>
+      </section>
+
+      {/* Edição */}
+      <section className="bg-card border border-border rounded-2xl p-5 space-y-4">
+        <h2 className="font-bold">Dados do $vendedor</h2>
+        <div>
+          <label className="text-xs uppercase tracking-wide text-muted-foreground">$handle</label>
+          <p className="mt-1 text-sm font-mono">${seller.handle} <span className="text-muted-foreground text-xs">(não editável)</span></p>
+        </div>
+        <div>
+          <label className="text-xs uppercase tracking-wide text-muted-foreground">Nome de exibição</label>
+          <input value={displayName} onChange={e => setDisplayName(e.target.value)} maxLength={60}
+            className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-sm" />
+        </div>
+        <div>
+          <label className="text-xs uppercase tracking-wide text-muted-foreground">Bio comercial</label>
+          <textarea value={bio} onChange={e => setBio(e.target.value)} rows={3} maxLength={500}
+            className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-sm resize-none" />
+        </div>
+        <label className="flex items-center justify-between p-3 bg-muted/40 rounded-lg cursor-pointer">
+          <span className="text-sm">Perfil $vendedor privado <span className="text-[11px] text-muted-foreground">(quem chega via anúncio ainda vê)</span></span>
+          <input type="checkbox" checked={isPrivate} onChange={e => setIsPrivate(e.target.checked)} className="h-4 w-4 accent-accent" />
+        </label>
+
+        <button onClick={save} disabled={saving}
+          className="w-full py-3 rounded-xl bg-accent text-accent-foreground font-semibold inline-flex items-center justify-center gap-2 disabled:opacity-50">
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Salvar
+        </button>
+      </section>
+
+      <section className="bg-card border border-border rounded-2xl p-5 space-y-3">
+        <h2 className="font-bold">Atalhos</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+          <Link to="/vendedor/editar" className="p-3 rounded-lg bg-secondary text-sm font-semibold text-center">Editar avatar/handle</Link>
+          <Link to="/m/marketplace/novo" className="p-3 rounded-lg bg-secondary text-sm font-semibold text-center">+ Novo anúncio</Link>
+          <Link to={`/vendedor/${seller.handle}`} className="p-3 rounded-lg bg-secondary text-sm font-semibold text-center">Minha página pública</Link>
+        </div>
+      </section>
+    </div>
+  );
+}
