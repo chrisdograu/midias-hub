@@ -29,7 +29,7 @@ export default function Header() {
     { to: '/em-alta', label: 'Em Alta' },
     { to: '/pra-voce', label: 'Pra Você' },
     { to: '/torneios', label: 'Torneios' },
-    { to: '/forum', label: 'Fórum' },
+    
     { to: '/social', label: 'Social' },
   ];
 

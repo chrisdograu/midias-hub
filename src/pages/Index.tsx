@@ -133,23 +133,9 @@ export default function Index() {
             <h1 className="font-display text-4xl md:text-6xl font-bold mb-4">
               <span className="gradient-text">MIDIAS</span>
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground mb-8">
+            <p className="text-lg md:text-xl text-muted-foreground">
               Jogos digitais com os melhores preços. Entrega instantânea de chaves.
             </p>
-            <div className="flex flex-wrap justify-center gap-3">
-              <Link
-                to="/catalogo"
-                className="px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-lg hover:opacity-90 transition-all glow-primary"
-              >
-                Ver Catálogo
-              </Link>
-              <Link
-                to="/ofertas"
-                className="px-6 py-3 bg-secondary text-secondary-foreground font-semibold rounded-lg hover:bg-secondary/80 transition-all border border-border"
-              >
-                Ofertas do Dia
-              </Link>
-            </div>
           </motion.div>
         </div>
       </section>

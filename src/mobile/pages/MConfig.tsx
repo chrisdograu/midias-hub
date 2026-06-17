@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Loader2, Save, Sun, Moon, ShieldCheck, Camera, User, ShieldOff, ChevronRight, Store, GraduationCap } from 'lucide-react';
+import { Loader2, Save, Sun, Moon, Camera, User, ShieldOff, ChevronRight, Store, GraduationCap } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
@@ -20,17 +20,12 @@ export default function MConfig() {
     require_follow_approval: false,
   });
   const [saving, setSaving] = useState(false);
-  const [certifying, setCertifying] = useState(false);
-  const [hasCert, setHasCert] = useState<'none' | 'pending' | 'active'>('none');
 
   useEffect(() => {
     if (!user) return;
     let cancel = false;
     (async () => {
-      const [{ data: p }, { data: c }] = await Promise.all([
-        supabase.from('profiles').select('*').eq('id', user.id).maybeSingle(),
-        supabase.from('certificados').select('status').eq('user_id', user.id).order('created_at', { ascending: false }).limit(1),
-      ]);
+      const { data: p } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle();
       if (cancel) return;
       if (p) {
         setForm({
@@ -43,8 +38,6 @@ export default function MConfig() {
         });
         setAvatarUrl(p.avatar_url || null);
       }
-      const last = c?.[0]?.status;
-      setHasCert(last === 'ativo' ? 'active' : last === 'pendente' ? 'pending' : 'none');
       setLoading(false);
     })();
     return () => { cancel = true; };
@@ -73,15 +66,6 @@ export default function MConfig() {
     setSaving(false);
   };
 
-  const requestCert = async () => {
-    if (!user) return;
-    if (!form.cpf || !form.phone) { toast.error('Preencha CPF e telefone primeiro'); return; }
-    setCertifying(true);
-    await supabase.from('profiles').update({ cpf: form.cpf, phone: form.phone }).eq('id', user.id);
-    const { error } = await supabase.from('certificados').insert({ user_id: user.id, status: 'pendente' });
-    if (error) toast.error('Erro ao solicitar'); else { toast.success('Solicitação enviada para análise'); setHasCert('pending'); }
-    setCertifying(false);
-  };
 
   if (!user) return <div className="p-6 text-center text-muted-foreground">Entre para acessar configurações.</div>;
   if (loading) return <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
@@ -115,27 +99,7 @@ export default function MConfig() {
         <Field label="CPF (apenas para vendedor protegido)" value={form.cpf} onChange={v => setForm({ ...form, cpf: v })} />
       </Section>
 
-      <Section title={<span className="flex items-center gap-1.5"><Store className="h-3.5 w-3.5 text-accent" />Perfil de vendedor</span>}>
-        <p className="text-[11px] text-muted-foreground -mt-1">
-          Esta bio aparece quando alguém abre seu perfil no modo <strong>Vendedor</strong>. Use para descrever sua loja, formas de troca, garantias etc.
-        </p>
-        <Field label="Bio de vendedor" value={form.seller_bio} onChange={v => setForm({ ...form, seller_bio: v })} multiline />
-      </Section>
 
-      <Section title="🛡️ Vendedor protegido">
-        <p className="text-xs text-muted-foreground">
-          Anúncios "protegidos pela loja" exigem verificação de identidade. Sem certificação você ainda pode anunciar, mas a loja não responde por reembolsos em caso de problema.
-        </p>
-        {hasCert === 'active' ? (
-          <div className="flex items-center gap-2 text-success text-sm font-semibold"><ShieldCheck className="h-4 w-4" />Você é vendedor verificado</div>
-        ) : hasCert === 'pending' ? (
-          <div className="text-sm text-warning">⏳ Solicitação em análise pelos moderadores</div>
-        ) : (
-          <button onClick={requestCert} disabled={certifying} className="w-full py-2.5 rounded-lg bg-success text-white text-sm font-semibold disabled:opacity-50">
-            {certifying ? 'Enviando...' : 'Solicitar certificação'}
-          </button>
-        )}
-      </Section>
 
       <Section title="🔔 Notificações">
         <Toggle label="Notificações push" checked={form.push_notifications} onChange={v => setForm({ ...form, push_notifications: v })} />

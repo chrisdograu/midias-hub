@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Flame, ShoppingBag, MessagesSquare, Star, Loader2, ArrowRight, ThumbsUp, MessageSquare } from 'lucide-react';
+import { Flame, ShoppingBag, Star, Loader2, ArrowRight, ThumbsUp, MessageSquare } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { MobileBadge, MobileChip, MForumTag } from '@/mobile/lib/badge';
@@ -129,14 +129,6 @@ export default function MHome() {
         <div className="relative">
           <h2 className="font-display text-2xl font-bold gradient-text leading-tight">Bem-vindo à MIDIAS</h2>
           <p className="text-sm text-muted-foreground mt-1">Comunidade, marketplace e reviews num só lugar.</p>
-          <div className="flex gap-2 mt-4">
-            <Link to="/m/marketplace" className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg bg-primary text-primary-foreground">
-              <ShoppingBag className="h-3.5 w-3.5" /> Marketplace
-            </Link>
-            <Link to="/m/forum" className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg bg-accent text-accent-foreground">
-              <MessagesSquare className="h-3.5 w-3.5" /> Fórum
-            </Link>
-          </div>
         </div>
       </motion.section>
 

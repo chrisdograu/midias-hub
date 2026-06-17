@@ -19,18 +19,29 @@ export default function VendedorConfig() {
   const [isPrivate, setIsPrivate] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  const [profileCpf, setProfileCpf] = useState('');
+  const [profilePhone, setProfilePhone] = useState('');
+  const [certifying, setCertifying] = useState(false);
+  const [sellerBio, setSellerBio] = useState('');
+
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const [{ data: sp }, { data: c }, { count }] = await Promise.all([
+      const [{ data: sp }, { data: c }, { count }, { data: prof }] = await Promise.all([
         supabase.from('seller_profiles').select('*').eq('user_id', user.id).maybeSingle(),
         supabase.from('certificados').select('status').eq('user_id', user.id).order('created_at', { ascending: false }).limit(1),
         supabase.from('anuncios').select('id', { count: 'exact', head: true }).eq('seller_id', user.id).eq('status', 'active'),
+        supabase.from('profiles').select('cpf,phone,seller_bio').eq('id', user.id).maybeSingle(),
       ]);
       setSeller(sp);
       if (sp) {
         setBio(sp.bio || ''); setDisplayName(sp.display_name); setAvatarUrl(sp.avatar_url || '');
         setIsPrivate(sp.is_private);
+      }
+      if (prof) {
+        setProfileCpf((prof as any).cpf || '');
+        setProfilePhone((prof as any).phone || '');
+        setSellerBio((prof as any).seller_bio || '');
       }
       const last = c?.[0]?.status;
       setCert(last === 'ativo' ? 'active' : last === 'pendente' ? 'pending' : 'none');
@@ -39,15 +50,31 @@ export default function VendedorConfig() {
     })();
   }, [user?.id]);
 
+  const requestCert = async () => {
+    if (!user) return;
+    if (!profileCpf || !profilePhone) { toast.error('Preencha CPF e telefone abaixo primeiro'); return; }
+    setCertifying(true);
+    await supabase.from('profiles').update({ cpf: profileCpf, phone: profilePhone }).eq('id', user.id);
+    const { error } = await supabase.from('certificados').insert({ user_id: user.id, status: 'pendente' });
+    if (error) toast.error('Erro ao solicitar'); else { toast.success('Solicitação enviada para análise'); setCert('pending'); }
+    setCertifying(false);
+  };
+
   const save = async () => {
     if (!user || !seller) return;
     setSaving(true);
-    const { error } = await supabase.from('seller_profiles').update({
-      display_name: displayName.trim(), bio: bio.trim() || null,
-      avatar_url: avatarUrl || null, is_private: isPrivate,
-    }).eq('user_id', user.id);
+    const [{ error }, { error: pErr }] = await Promise.all([
+      supabase.from('seller_profiles').update({
+        display_name: displayName.trim(), bio: bio.trim() || null,
+        avatar_url: avatarUrl || null, is_private: isPrivate,
+      }).eq('user_id', user.id),
+      supabase.from('profiles').update({
+        seller_bio: sellerBio.trim() || null,
+        cpf: profileCpf || null, phone: profilePhone || null,
+      } as any).eq('id', user.id),
+    ]);
     setSaving(false);
-    if (error) return toast.error('Erro ao salvar');
+    if (error || pErr) return toast.error('Erro ao salvar');
     toast.success('Perfil $vendedor atualizado');
   };
 
@@ -149,14 +176,50 @@ export default function VendedorConfig() {
           <textarea value={bio} onChange={e => setBio(e.target.value)} rows={3} maxLength={500}
             className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-sm resize-none" />
         </div>
+        <div>
+          <label className="text-xs uppercase tracking-wide text-muted-foreground">Bio de vendedor (exibida no modo Vendedor)</label>
+          <textarea value={sellerBio} onChange={e => setSellerBio(e.target.value)} rows={3} maxLength={500}
+            placeholder="Descreva sua loja, formas de troca, garantias etc."
+            className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-sm resize-none" />
+        </div>
         <label className="flex items-center justify-between p-3 bg-muted/40 rounded-lg cursor-pointer">
           <span className="text-sm">Perfil $vendedor privado <span className="text-[11px] text-muted-foreground">(quem chega via anúncio ainda vê)</span></span>
           <input type="checkbox" checked={isPrivate} onChange={e => setIsPrivate(e.target.checked)} className="h-4 w-4 accent-accent" />
         </label>
+      </section>
+
+      {/* Certificação — junto com a loja */}
+      <section className="bg-card border border-border rounded-2xl p-5 space-y-4">
+        <h2 className="font-bold flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-success" /> Vendedor protegido (certificação)</h2>
+        <p className="text-xs text-muted-foreground">
+          Anúncios "protegidos pela loja" exigem verificação de identidade. Sem certificação você ainda pode anunciar, mas a loja não responde por reembolsos.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs uppercase tracking-wide text-muted-foreground">CPF</label>
+            <input value={profileCpf} onChange={e => setProfileCpf(e.target.value)} maxLength={14}
+              className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-sm" />
+          </div>
+          <div>
+            <label className="text-xs uppercase tracking-wide text-muted-foreground">Telefone</label>
+            <input value={profilePhone} onChange={e => setProfilePhone(e.target.value)} maxLength={20}
+              className="w-full mt-1 px-3 py-2 bg-background border border-border rounded-lg text-sm" />
+          </div>
+        </div>
+        {cert === 'active' ? (
+          <div className="flex items-center gap-2 text-success text-sm font-semibold"><ShieldCheck className="h-4 w-4" /> Você é vendedor verificado</div>
+        ) : cert === 'pending' ? (
+          <div className="text-sm text-warning">⏳ Solicitação em análise pelos moderadores</div>
+        ) : (
+          <button onClick={requestCert} disabled={certifying}
+            className="w-full py-2.5 rounded-lg bg-success text-white text-sm font-semibold disabled:opacity-50">
+            {certifying ? 'Enviando...' : 'Solicitar certificação'}
+          </button>
+        )}
 
         <button onClick={save} disabled={saving}
           className="w-full py-3 rounded-xl bg-accent text-accent-foreground font-semibold inline-flex items-center justify-center gap-2 disabled:opacity-50">
-          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Salvar
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Salvar tudo
         </button>
       </section>
 
