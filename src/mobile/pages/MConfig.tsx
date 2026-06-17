@@ -116,20 +116,6 @@ export default function MConfig() {
       </Section>
 
 
-      <Section title="🛡️ Vendedor protegido">
-        <p className="text-xs text-muted-foreground">
-          Anúncios "protegidos pela loja" exigem verificação de identidade. Sem certificação você ainda pode anunciar, mas a loja não responde por reembolsos em caso de problema.
-        </p>
-        {hasCert === 'active' ? (
-          <div className="flex items-center gap-2 text-success text-sm font-semibold"><ShieldCheck className="h-4 w-4" />Você é vendedor verificado</div>
-        ) : hasCert === 'pending' ? (
-          <div className="text-sm text-warning">⏳ Solicitação em análise pelos moderadores</div>
-        ) : (
-          <button onClick={requestCert} disabled={certifying} className="w-full py-2.5 rounded-lg bg-success text-white text-sm font-semibold disabled:opacity-50">
-            {certifying ? 'Enviando...' : 'Solicitar certificação'}
-          </button>
-        )}
-      </Section>
 
       <Section title="🔔 Notificações">
         <Toggle label="Notificações push" checked={form.push_notifications} onChange={v => setForm({ ...form, push_notifications: v })} />
