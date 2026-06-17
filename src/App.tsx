@@ -127,7 +127,7 @@ const OpinionConversation = lazy(() => import("./pages/OpinionConversation"));
 const Tutoriais = lazy(() => import("./pages/Tutoriais"));
 const Tutorial = lazy(() => import("./pages/Tutorial"));
 const PrivacidadeCentral = lazy(() => import("./pages/PrivacidadeCentral"));
-const ForumGeral = lazy(() => import("./pages/ForumGeral"));
+
 const VendedorConfig = lazy(() => import("./pages/VendedorConfig"));
 import { TutorialProvider } from "@/components/tutorial/TutorialContext";
 
