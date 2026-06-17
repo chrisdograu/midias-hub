@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Loader2, Save, Sun, Moon, ShieldCheck, Camera, User, ShieldOff, ChevronRight, Store, GraduationCap } from 'lucide-react';
+import { Loader2, Save, Sun, Moon, Camera, User, ShieldOff, ChevronRight, Store, GraduationCap } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
@@ -20,17 +20,12 @@ export default function MConfig() {
     require_follow_approval: false,
   });
   const [saving, setSaving] = useState(false);
-  const [certifying, setCertifying] = useState(false);
-  const [hasCert, setHasCert] = useState<'none' | 'pending' | 'active'>('none');
 
   useEffect(() => {
     if (!user) return;
     let cancel = false;
     (async () => {
-      const [{ data: p }, { data: c }] = await Promise.all([
-        supabase.from('profiles').select('*').eq('id', user.id).maybeSingle(),
-        supabase.from('certificados').select('status').eq('user_id', user.id).order('created_at', { ascending: false }).limit(1),
-      ]);
+      const { data: p } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle();
       if (cancel) return;
       if (p) {
         setForm({
@@ -43,8 +38,6 @@ export default function MConfig() {
         });
         setAvatarUrl(p.avatar_url || null);
       }
-      const last = c?.[0]?.status;
-      setHasCert(last === 'ativo' ? 'active' : last === 'pendente' ? 'pending' : 'none');
       setLoading(false);
     })();
     return () => { cancel = true; };
@@ -73,15 +66,6 @@ export default function MConfig() {
     setSaving(false);
   };
 
-  const requestCert = async () => {
-    if (!user) return;
-    if (!form.cpf || !form.phone) { toast.error('Preencha CPF e telefone primeiro'); return; }
-    setCertifying(true);
-    await supabase.from('profiles').update({ cpf: form.cpf, phone: form.phone }).eq('id', user.id);
-    const { error } = await supabase.from('certificados').insert({ user_id: user.id, status: 'pendente' });
-    if (error) toast.error('Erro ao solicitar'); else { toast.success('Solicitação enviada para análise'); setHasCert('pending'); }
-    setCertifying(false);
-  };
 
   if (!user) return <div className="p-6 text-center text-muted-foreground">Entre para acessar configurações.</div>;
   if (loading) return <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
