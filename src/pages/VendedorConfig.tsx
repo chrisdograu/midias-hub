@@ -19,18 +19,29 @@ export default function VendedorConfig() {
   const [isPrivate, setIsPrivate] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  const [profileCpf, setProfileCpf] = useState('');
+  const [profilePhone, setProfilePhone] = useState('');
+  const [certifying, setCertifying] = useState(false);
+  const [sellerBio, setSellerBio] = useState('');
+
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const [{ data: sp }, { data: c }, { count }] = await Promise.all([
+      const [{ data: sp }, { data: c }, { count }, { data: prof }] = await Promise.all([
         supabase.from('seller_profiles').select('*').eq('user_id', user.id).maybeSingle(),
         supabase.from('certificados').select('status').eq('user_id', user.id).order('created_at', { ascending: false }).limit(1),
         supabase.from('anuncios').select('id', { count: 'exact', head: true }).eq('seller_id', user.id).eq('status', 'active'),
+        supabase.from('profiles').select('cpf,phone,seller_bio').eq('id', user.id).maybeSingle(),
       ]);
       setSeller(sp);
       if (sp) {
         setBio(sp.bio || ''); setDisplayName(sp.display_name); setAvatarUrl(sp.avatar_url || '');
         setIsPrivate(sp.is_private);
+      }
+      if (prof) {
+        setProfileCpf((prof as any).cpf || '');
+        setProfilePhone((prof as any).phone || '');
+        setSellerBio((prof as any).seller_bio || '');
       }
       const last = c?.[0]?.status;
       setCert(last === 'ativo' ? 'active' : last === 'pendente' ? 'pending' : 'none');
@@ -38,6 +49,16 @@ export default function VendedorConfig() {
       setLoading(false);
     })();
   }, [user?.id]);
+
+  const requestCert = async () => {
+    if (!user) return;
+    if (!profileCpf || !profilePhone) { toast.error('Preencha CPF e telefone abaixo primeiro'); return; }
+    setCertifying(true);
+    await supabase.from('profiles').update({ cpf: profileCpf, phone: profilePhone }).eq('id', user.id);
+    const { error } = await supabase.from('certificados').insert({ user_id: user.id, status: 'pendente' });
+    if (error) toast.error('Erro ao solicitar'); else { toast.success('Solicitação enviada para análise'); setCert('pending'); }
+    setCertifying(false);
+  };
 
   const save = async () => {
     if (!user || !seller) return;
