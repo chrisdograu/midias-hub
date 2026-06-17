@@ -63,12 +63,18 @@ export default function VendedorConfig() {
   const save = async () => {
     if (!user || !seller) return;
     setSaving(true);
-    const { error } = await supabase.from('seller_profiles').update({
-      display_name: displayName.trim(), bio: bio.trim() || null,
-      avatar_url: avatarUrl || null, is_private: isPrivate,
-    }).eq('user_id', user.id);
+    const [{ error }, { error: pErr }] = await Promise.all([
+      supabase.from('seller_profiles').update({
+        display_name: displayName.trim(), bio: bio.trim() || null,
+        avatar_url: avatarUrl || null, is_private: isPrivate,
+      }).eq('user_id', user.id),
+      supabase.from('profiles').update({
+        seller_bio: sellerBio.trim() || null,
+        cpf: profileCpf || null, phone: profilePhone || null,
+      } as any).eq('id', user.id),
+    ]);
     setSaving(false);
-    if (error) return toast.error('Erro ao salvar');
+    if (error || pErr) return toast.error('Erro ao salvar');
     toast.success('Perfil $vendedor atualizado');
   };
 
