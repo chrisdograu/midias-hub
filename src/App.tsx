@@ -275,7 +275,7 @@ const App = () => (
                 { path: '/tutoriais', el: <Tutoriais /> },
                 { path: '/tutorial/:key', el: <Tutorial /> },
                 { path: '/privacidade', el: <ProtectedRoute><PrivacidadeCentral /></ProtectedRoute> },
-                { path: '/forum', el: <ForumGeral /> },
+                
                 { path: '/vendedor', el: <ProtectedRoute><VendedorConfig /></ProtectedRoute> },
               ] as const).map(r => (
                 <Route key={r.path} path={r.path} element={

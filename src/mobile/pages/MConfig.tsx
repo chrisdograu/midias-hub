@@ -115,12 +115,6 @@ export default function MConfig() {
         <Field label="CPF (apenas para vendedor protegido)" value={form.cpf} onChange={v => setForm({ ...form, cpf: v })} />
       </Section>
 
-      <Section title={<span className="flex items-center gap-1.5"><Store className="h-3.5 w-3.5 text-accent" />Perfil de vendedor</span>}>
-        <p className="text-[11px] text-muted-foreground -mt-1">
-          Esta bio aparece quando alguém abre seu perfil no modo <strong>Vendedor</strong>. Use para descrever sua loja, formas de troca, garantias etc.
-        </p>
-        <Field label="Bio de vendedor" value={form.seller_bio} onChange={v => setForm({ ...form, seller_bio: v })} multiline />
-      </Section>
 
       <Section title="🛡️ Vendedor protegido">
         <p className="text-xs text-muted-foreground">
