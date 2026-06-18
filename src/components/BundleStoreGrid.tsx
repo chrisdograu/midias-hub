@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Package } from 'lucide-react';
+import { Package, Loader2 } from 'lucide-react';
 
 interface Bundle {
   id: string; title: string; price: number; image_url: string | null;
@@ -9,49 +9,63 @@ interface Bundle {
   total_original: number;
 }
 
+async function fetchBundles(limit: number): Promise<Bundle[]> {
+  const { data: bds, error } = await supabase
+    .from('bundles' as any)
+    .select('id, title, price, image_url')
+    .eq('is_active', true)
+    .limit(limit);
+  if (error) throw error;
+  const bundlesRaw = (bds as any[]) || [];
+  if (!bundlesRaw.length) return [];
+
+  const ids = bundlesRaw.map(b => b.id);
+  const { data: bis, error: biErr } = await supabase
+    .from('bundle_items' as any)
+    .select('bundle_id, product_id')
+    .in('bundle_id', ids);
+  if (biErr) throw biErr;
+
+  const pids = [...new Set(((bis as any[]) || []).map(x => x.product_id))];
+  const { data: prods, error: pErr } = pids.length
+    ? await supabase.from('produtos').select('id, title, image_url, price').in('id', pids)
+    : { data: [] as any[], error: null };
+  if (pErr) throw pErr;
+
+  const prodMap = new Map((prods || []).map((p: any) => [p.id, p]));
+  const byBundle = new Map<string, any[]>();
+  ((bis as any[]) || []).forEach((row: any) => {
+    const p = prodMap.get(row.product_id);
+    if (!p) return;
+    const arr = byBundle.get(row.bundle_id) || [];
+    arr.push({ product_id: row.product_id, title: p.title, image_url: p.image_url, price: Number(p.price) });
+    byBundle.set(row.bundle_id, arr);
+  });
+
+  return bundlesRaw.map((b: any) => {
+    const items = byBundle.get(b.id) || [];
+    return {
+      id: b.id, title: b.title, price: Number(b.price), image_url: b.image_url,
+      items, total_original: items.reduce((s, i) => s + i.price, 0),
+    };
+  });
+}
+
 export default function BundleStoreGrid({ limit = 8 }: { limit?: number }) {
-  const [bundles, setBundles] = useState<Bundle[]>([]);
+  const { data: bundles = [], isLoading, isError } = useQuery({
+    queryKey: ['bundles', 'store-grid', limit],
+    queryFn: () => fetchBundles(limit),
+    staleTime: 60_000,
+  });
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const { data: bds } = await supabase
-        .from('bundles' as any)
-        .select('id, title, price, image_url')
-        .eq('is_active', true)
-        .limit(limit);
-      const bundlesRaw = (bds as any[]) || [];
-      if (!bundlesRaw.length) { if (!cancelled) setBundles([]); return; }
-      const ids = bundlesRaw.map(b => b.id);
-      const { data: bis } = await supabase
-        .from('bundle_items' as any)
-        .select('bundle_id, product_id')
-        .in('bundle_id', ids);
-      const pids = [...new Set(((bis as any[]) || []).map(x => x.product_id))];
-      const { data: prods } = pids.length
-        ? await supabase.from('produtos').select('id, title, image_url, price').in('id', pids)
-        : { data: [] as any[] };
-      const prodMap = new Map((prods || []).map((p: any) => [p.id, p]));
-      const byBundle = new Map<string, any[]>();
-      ((bis as any[]) || []).forEach((row: any) => {
-        const p = prodMap.get(row.product_id);
-        if (!p) return;
-        const arr = byBundle.get(row.bundle_id) || [];
-        arr.push({ product_id: row.product_id, title: p.title, image_url: p.image_url, price: Number(p.price) });
-        byBundle.set(row.bundle_id, arr);
-      });
-      if (cancelled) return;
-      setBundles(bundlesRaw.map((b: any) => {
-        const items = byBundle.get(b.id) || [];
-        return {
-          id: b.id, title: b.title, price: Number(b.price), image_url: b.image_url,
-          items, total_original: items.reduce((s, i) => s + i.price, 0),
-        };
-      }));
-    })();
-    return () => { cancelled = true; };
-  }, [limit]);
-
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-8" aria-label="Carregando bundles">
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+  if (isError) return null;
   if (!bundles.length) return null;
 
   return (
