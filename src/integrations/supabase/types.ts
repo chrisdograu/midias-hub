@@ -3912,6 +3912,7 @@ export type Database = {
           name: string
           source: string
           tournament_id: string | null
+          unlock_rule: Json | null
           user_id: string
         }
         Insert: {
@@ -3921,6 +3922,7 @@ export type Database = {
           name: string
           source?: string
           tournament_id?: string | null
+          unlock_rule?: Json | null
           user_id: string
         }
         Update: {
@@ -3930,6 +3932,7 @@ export type Database = {
           name?: string
           source?: string
           tournament_id?: string | null
+          unlock_rule?: Json | null
           user_id?: string
         }
         Relationships: []
@@ -4035,6 +4038,10 @@ export type Database = {
           xp_match_win: number
           xp_signup: number
         }[]
+      }
+      can_equip_title: {
+        Args: { _title: string; _user: string }
+        Returns: boolean
       }
       can_view_friend_content: {
         Args: { _owner: string; _viewer: string; _visibility: string }

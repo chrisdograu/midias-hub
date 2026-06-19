@@ -22,9 +22,9 @@
     --secondary-foreground: 210 20% 85%;
 
     --muted: 220 15% 14%;
-    --muted-foreground: 215 15% 55%;
+    --muted-foreground: 215 15% 60%;
 
-    --accent: 270 60% 55%;
+    --accent: 270 65% 62%;
     --accent-foreground: 210 20% 95%;
 
     --destructive: 0 72% 51%;
@@ -47,63 +47,87 @@
 
     /* Custom tokens */
     --glow-primary: 170 80% 50%;
-    --glow-accent: 270 60% 55%;
+    --glow-accent: 270 65% 62%;
     --surface-hover: 220 15% 13%;
     --gradient-start: 170 80% 50%;
-    --gradient-end: 270 60% 55%;
+    --gradient-end: 270 65% 62%;
     --success: 142 71% 45%;
     --warning: 38 92% 50%;
     --price: 48 96% 53%;
+
+    /* Neon intensity tokens (Phase 7) — dark mode pode brilhar forte */
+    --neon-glow-strength: 0.32;
+    --neon-glow-spread: 0.12;
+    --neon-border-opacity: 1;
+    --neon-pill-bg: 0.7;
+    --neon-pill-shadow: 0.33;
+
+    /* Platform brand colors via tokens (semantic, theme-aware) */
+    --plat-ps: 200 78% 64%;
+    --plat-xbox: 122 70% 56%;
+    --plat-switch: 0 100% 67%;
 
     font-family: 'Inter', system-ui, sans-serif;
   }
 
   .light {
-    --background: 220 14% 93%;
-    --foreground: 220 20% 12%;
+    --background: 220 20% 97%;
+    --foreground: 220 25% 10%;
 
-    --card: 0 0% 99%;
-    --card-foreground: 220 20% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 25% 10%;
 
-    --popover: 0 0% 99%;
-    --popover-foreground: 220 20% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 25% 10%;
 
-    --primary: 170 80% 40%;
+    /* Mais saturado e mais escuro p/ WCAG AA sobre fundo claro */
+    --primary: 172 88% 30%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 13% 87%;
-    --secondary-foreground: 220 15% 25%;
+    --secondary: 220 16% 92%;
+    --secondary-foreground: 220 20% 20%;
 
-    --muted: 220 13% 89%;
-    --muted-foreground: 215 15% 40%;
+    --muted: 220 16% 94%;
+    --muted-foreground: 220 12% 32%;
 
-    --accent: 270 60% 50%;
+    --accent: 270 70% 42%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 0 75% 45%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 82%;
-    --input: 220 13% 84%;
-    --ring: 170 80% 40%;
+    --border: 220 14% 84%;
+    --input: 220 14% 86%;
+    --ring: 172 88% 30%;
 
-    --sidebar-background: 220 13% 90%;
-    --sidebar-foreground: 220 15% 25%;
-    --sidebar-primary: 170 80% 40%;
+    --sidebar-background: 220 18% 95%;
+    --sidebar-foreground: 220 20% 20%;
+    --sidebar-primary: 172 88% 30%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 13% 86%;
-    --sidebar-accent-foreground: 220 15% 25%;
-    --sidebar-border: 220 13% 82%;
-    --sidebar-ring: 170 80% 40%;
+    --sidebar-accent: 220 14% 90%;
+    --sidebar-accent-foreground: 220 20% 20%;
+    --sidebar-border: 220 14% 84%;
+    --sidebar-ring: 172 88% 30%;
 
-    --glow-primary: 170 80% 40%;
-    --glow-accent: 270 60% 50%;
-    --surface-hover: 220 13% 88%;
-    --gradient-start: 170 80% 40%;
-    --gradient-end: 270 60% 50%;
-    --success: 142 71% 35%;
-    --warning: 38 92% 45%;
-    --price: 48 96% 40%;
+    --glow-primary: 172 88% 30%;
+    --glow-accent: 270 70% 42%;
+    --surface-hover: 220 16% 92%;
+    --gradient-start: 172 88% 30%;
+    --gradient-end: 270 70% 42%;
+    --success: 142 71% 32%;
+    --warning: 32 92% 38%;
+    --price: 32 96% 32%;
+
+    /* Neon mais discreto no claro — evita "queimar" os olhos */
+    --neon-glow-strength: 0.14;
+    --neon-glow-spread: 0.05;
+    --neon-border-opacity: 0.85;
+    --neon-pill-bg: 0.92;
+    --neon-pill-shadow: 0.12;
+
+    --plat-ps: 208 80% 38%;
+    --plat-xbox: 122 60% 30%;
+    --plat-switch: 0 75% 42%;
   }
 }
 
@@ -121,10 +145,14 @@
     font-family: 'Orbitron', sans-serif;
   }
   .glow-primary {
-    box-shadow: 0 0 20px hsl(var(--glow-primary) / 0.3), 0 0 60px hsl(var(--glow-primary) / 0.1);
+    box-shadow:
+      0 0 20px hsl(var(--glow-primary) / var(--neon-glow-strength)),
+      0 0 60px hsl(var(--glow-primary) / var(--neon-glow-spread));
   }
   .glow-accent {
-    box-shadow: 0 0 20px hsl(var(--glow-accent) / 0.3), 0 0 60px hsl(var(--glow-accent) / 0.1);
+    box-shadow:
+      0 0 20px hsl(var(--glow-accent) / var(--neon-glow-strength)),
+      0 0 60px hsl(var(--glow-accent) / var(--neon-glow-spread));
   }
   .gradient-text {
     background: linear-gradient(135deg, hsl(var(--gradient-start)), hsl(var(--gradient-end)));
@@ -148,17 +176,33 @@
     border-radius: 3px;
   }
 
-  /* Platform pill tokens (semantic, brand-aware) */
+  /* Platform pill tokens (semantic, brand-aware, theme-aware) */
   .platform-pill {
     @apply text-[10px] font-semibold px-1.5 py-0.5 rounded backdrop-blur-sm border;
-    background: hsl(var(--card) / 0.7);
+    background: hsl(var(--card) / var(--neon-pill-bg));
     color: hsl(var(--foreground));
     border-color: hsl(var(--border) / 0.6);
   }
-  .platform-ps      { color: #5BC0EB; border-color: #5BC0EB66; box-shadow: 0 0 8px #5BC0EB33; }
-  .platform-xbox    { color: #6FE26F; border-color: #6FE26F66; box-shadow: 0 0 8px #6FE26F33; }
-  .platform-switch  { color: #FF5A5A; border-color: #FF5A5A66; box-shadow: 0 0 8px #FF5A5A33; }
-  .platform-pc      { color: hsl(var(--primary)); border-color: hsl(var(--primary) / 0.5); box-shadow: 0 0 8px hsl(var(--primary) / 0.25); }
+  .platform-ps {
+    color: hsl(var(--plat-ps));
+    border-color: hsl(var(--plat-ps) / 0.55);
+    box-shadow: 0 0 8px hsl(var(--plat-ps) / var(--neon-pill-shadow));
+  }
+  .platform-xbox {
+    color: hsl(var(--plat-xbox));
+    border-color: hsl(var(--plat-xbox) / 0.55);
+    box-shadow: 0 0 8px hsl(var(--plat-xbox) / var(--neon-pill-shadow));
+  }
+  .platform-switch {
+    color: hsl(var(--plat-switch));
+    border-color: hsl(var(--plat-switch) / 0.55);
+    box-shadow: 0 0 8px hsl(var(--plat-switch) / var(--neon-pill-shadow));
+  }
+  .platform-pc {
+    color: hsl(var(--primary));
+    border-color: hsl(var(--primary) / 0.5);
+    box-shadow: 0 0 8px hsl(var(--primary) / var(--neon-pill-shadow));
+  }
 
   /* Animated neon border on hover */
   @keyframes neon-border-spin {
@@ -177,10 +221,10 @@
     padding: 1.5px;
     background: linear-gradient(
       90deg,
-      hsl(var(--primary)),
-      hsl(var(--accent)),
-      hsl(var(--primary)),
-      hsl(var(--accent))
+      hsl(var(--primary) / var(--neon-border-opacity)),
+      hsl(var(--accent) / var(--neon-border-opacity)),
+      hsl(var(--primary) / var(--neon-border-opacity)),
+      hsl(var(--accent) / var(--neon-border-opacity))
     );
     background-size: 200% 100%;
     -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);

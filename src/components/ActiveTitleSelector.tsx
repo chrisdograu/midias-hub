@@ -1,14 +1,30 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Sparkles } from 'lucide-react';
+import { Loader2, Sparkles, Lock } from 'lucide-react';
 import { toast } from 'sonner';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-interface TitleRow { id: string; name: string; source: string }
+interface TitleRow {
+  id: string;
+  name: string;
+  source: string;
+  unlock_rule: any | null;
+}
 
 interface Particle { id: number; px: number; py: number; left: number; top: number }
 
+function ruleLabel(rule: any): string {
+  if (!rule || rule.type === 'none') return 'Liberado';
+  if (rule.type === 'achievement') return `Conquista "${rule.achievement_name}" necessária`;
+  if (rule.type === 'achievement_id') return 'Conquista específica necessária';
+  if (rule.type === 'playtime') return `${rule.min_hours ?? 0}h jogadas necessárias`;
+  if (rule.type === 'xp') return `${rule.min_xp ?? 0} XP necessários`;
+  return 'Bloqueado';
+}
+
 export default function ActiveTitleSelector({ userId }: { userId: string }) {
   const [titles, setTitles] = useState<TitleRow[]>([]);
+  const [allowed, setAllowed] = useState<Record<string, boolean>>({});
   const [activeId, setActiveId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -18,11 +34,22 @@ export default function ActiveTitleSelector({ userId }: { userId: string }) {
   useEffect(() => {
     (async () => {
       const [{ data: ts }, { data: p }] = await Promise.all([
-        supabase.from('user_titles' as any).select('id, name, source').eq('user_id', userId).order('awarded_at', { ascending: false }),
+        supabase.from('user_titles' as any).select('id, name, source, unlock_rule').eq('user_id', userId).order('awarded_at', { ascending: false }),
         supabase.from('profiles').select('active_title_id').eq('id', userId).maybeSingle(),
       ]);
-      setTitles((ts as any) || []);
+      const list = ((ts as any) || []) as TitleRow[];
+      setTitles(list);
       setActiveId((p as any)?.active_title_id || null);
+
+      const checks = await Promise.all(
+        list.map(t =>
+          supabase
+            .rpc('can_equip_title' as any, { _user: userId, _title: t.id })
+            .then(({ data, error }) => [t.id, error ? !t.unlock_rule : Boolean(data)] as const)
+            .catch(() => [t.id, !t.unlock_rule] as const),
+        ),
+      );
+      setAllowed(Object.fromEntries(checks));
       setLoading(false);
     })();
   }, [userId]);
@@ -45,6 +72,10 @@ export default function ActiveTitleSelector({ userId }: { userId: string }) {
   };
 
   const updateTitle = async (newId: string | null) => {
+    if (newId && allowed[newId] === false) {
+      toast.error('Título bloqueado — complete os requisitos para desbloquear');
+      return;
+    }
     setSaving(true);
     const { error } = await supabase.from('profiles').update({ active_title_id: newId } as any).eq('id', userId);
     setSaving(false);
@@ -79,37 +110,61 @@ export default function ActiveTitleSelector({ userId }: { userId: string }) {
   };
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-        <Sparkles className="h-4 w-4 text-primary" />
-        Título de conquista exibido
-      </div>
-      {titles.length === 0 ? (
-        <p className="text-xs text-muted-foreground italic">Você ainda não conquistou nenhum título. Vença torneios ou acumule XP para desbloquear.</p>
-      ) : (
-        <div className="space-y-2">
-          <button
-            disabled={saving}
-            onClick={() => updateTitle(null)}
-            className={`relative overflow-visible w-full text-left px-3 py-2 rounded-lg border text-sm transition-all ${activeId === null ? 'border-primary bg-primary/10 text-foreground' : 'border-border bg-secondary/30 text-muted-foreground hover:border-primary/40'}`}
-          >
-            <span className={activeId === null && burstKey === '__none__' ? 'chromatic-pulse inline-block' : ''}>Nenhum título</span>
-            {renderParticles('__none__')}
-          </button>
-          {titles.map(t => (
-            <button
-              key={t.id}
-              disabled={saving}
-              onClick={() => updateTitle(t.id)}
-              className={`relative overflow-visible w-full text-left px-3 py-2 rounded-lg border text-sm transition-all flex items-center justify-between ${activeId === t.id ? 'border-primary bg-gradient-to-r from-primary/15 to-accent/15 text-foreground' : 'border-border bg-secondary/30 hover:border-primary/40'}`}
-            >
-              <span className={`font-medium gradient-text ${activeId === t.id && burstKey === t.id ? 'chromatic-pulse inline-block' : ''}`}>{t.name}</span>
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{t.source === 'achievement' ? 'Conquista' : 'XP'}</span>
-              {renderParticles(t.id)}
-            </button>
-          ))}
+    <TooltipProvider delayDuration={150}>
+      <div className="space-y-3">
+        <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+          <Sparkles className="h-4 w-4 text-primary" />
+          Título de conquista exibido
         </div>
-      )}
-    </div>
+        {titles.length === 0 ? (
+          <p className="text-xs text-muted-foreground italic">Você ainda não conquistou nenhum título. Vença torneios ou acumule XP para desbloquear.</p>
+        ) : (
+          <div className="space-y-2">
+            <button
+              disabled={saving}
+              onClick={() => updateTitle(null)}
+              className={`relative overflow-visible w-full text-left px-3 py-2 rounded-lg border text-sm transition-all ${activeId === null ? 'border-primary bg-primary/10 text-foreground' : 'border-border bg-secondary/30 text-muted-foreground hover:border-primary/40'}`}
+            >
+              <span className={activeId === null && burstKey === '__none__' ? 'chromatic-pulse inline-block' : ''}>Nenhum título</span>
+              {renderParticles('__none__')}
+            </button>
+            {titles.map(t => {
+              const isLocked = allowed[t.id] === false;
+              const inner = (
+                <button
+                  disabled={saving || isLocked}
+                  onClick={() => updateTitle(t.id)}
+                  className={`relative overflow-visible w-full text-left px-3 py-2 rounded-lg border text-sm transition-all flex items-center justify-between ${
+                    isLocked
+                      ? 'border-border bg-secondary/20 opacity-60 cursor-not-allowed'
+                      : activeId === t.id
+                        ? 'border-primary bg-gradient-to-r from-primary/15 to-accent/15 text-foreground'
+                        : 'border-border bg-secondary/30 hover:border-primary/40'
+                  }`}
+                >
+                  <span className="flex items-center gap-2 min-w-0">
+                    {isLocked && <Lock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
+                    <span className={`font-medium truncate ${isLocked ? 'text-muted-foreground' : 'gradient-text'} ${activeId === t.id && burstKey === t.id ? 'chromatic-pulse inline-block' : ''}`}>{t.name}</span>
+                  </span>
+                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground shrink-0 ml-2">{t.source === 'achievement' ? 'Conquista' : 'XP'}</span>
+                  {renderParticles(t.id)}
+                </button>
+              );
+              if (!isLocked) return <div key={t.id}>{inner}</div>;
+              return (
+                <Tooltip key={t.id}>
+                  <TooltipTrigger asChild>
+                    <div>{inner}</div>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="text-xs">
+                    🔒 {ruleLabel(t.unlock_rule)}
+                  </TooltipContent>
+                </Tooltip>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </TooltipProvider>
   );
 }
