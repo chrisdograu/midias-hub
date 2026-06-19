@@ -42,12 +42,14 @@ export default function ActiveTitleSelector({ userId }: { userId: string }) {
       setActiveId((p as any)?.active_title_id || null);
 
       const checks = await Promise.all(
-        list.map(t =>
-          supabase
-            .rpc('can_equip_title' as any, { _user: userId, _title: t.id })
-            .then(({ data, error }) => [t.id, error ? !t.unlock_rule : Boolean(data)] as const)
-            .catch(() => [t.id, !t.unlock_rule] as const),
-        ),
+        list.map(async t => {
+          try {
+            const { data, error } = await supabase.rpc('can_equip_title' as any, { _user: userId, _title: t.id });
+            return [t.id, error ? !t.unlock_rule : Boolean(data)] as const;
+          } catch {
+            return [t.id, !t.unlock_rule] as const;
+          }
+        }),
       );
       setAllowed(Object.fromEntries(checks));
       setLoading(false);
