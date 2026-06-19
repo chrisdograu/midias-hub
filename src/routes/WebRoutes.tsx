@@ -44,6 +44,7 @@ const Tutoriais = lazy(() => import("@/pages/Tutoriais"));
 const Tutorial = lazy(() => import("@/pages/Tutorial"));
 const PrivacidadeCentral = lazy(() => import("@/pages/PrivacidadeCentral"));
 const VendedorConfig = lazy(() => import("@/pages/VendedorConfig"));
+const Oportunidades = lazy(() => import("@/pages/Oportunidades"));
 
 const shell = (el: React.ReactNode) => (
   <div className="min-h-screen flex flex-col">
@@ -96,6 +97,7 @@ const entries: { path: string; el: React.ReactNode }[] = [
   { path: '/tutorial/:key', el: <Tutorial /> },
   { path: '/privacidade', el: <ProtectedRoute><PrivacidadeCentral /></ProtectedRoute> },
   { path: '/vendedor', el: <ProtectedRoute><VendedorConfig /></ProtectedRoute> },
+  { path: '/oportunidades', el: <Oportunidades /> },
 ];
 
 function GlobalCatchAll() {

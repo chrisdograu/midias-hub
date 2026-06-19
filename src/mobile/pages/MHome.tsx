@@ -8,6 +8,7 @@ import { MobileBadge, MobileChip, MForumTag } from '@/mobile/lib/badge';
 import { timeAgo } from '@/mobile/lib/time';
 import { HalfStarDisplay } from '@/components/HalfStarRating';
 import { getFollowingIds } from '@/mobile/lib/useFollow';
+import OrbitRadar from '@/components/radar/OrbitRadar';
 
 type FeedItem =
   | { kind: 'forum'; id: string; created_at: string; content: string; author: string; authorId: string; product: string; likes: number; replies: number }
@@ -131,6 +132,9 @@ export default function MHome() {
           <p className="text-sm text-muted-foreground mt-1">Comunidade, marketplace e reviews num só lugar.</p>
         </div>
       </motion.section>
+
+      {/* Radar de Órbita */}
+      <OrbitRadar limit={4} compact />
 
       {/* Top games */}
       {topGames.length > 0 && (

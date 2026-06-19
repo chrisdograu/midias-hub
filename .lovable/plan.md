@@ -1,91 +1,101 @@
-## Rodada A8 — Plano completo
+# Avaliação honesta antes do plano
 
-Você apontou 10 problemas distintos. Vou resolver todos numa rodada, agrupados em 4 blocos.
+Concordo com a maior parte da filosofia (bem-estar digital, explicabilidade, silêncio gracioso, antispoiler, identidade gamificada) — encaixa perfeitamente com o que o MIDIAS já é. Mas há pontos que **discordo** e quero ajustar antes de começar:
 
----
+1. **"Apenas 2 entidades de primeira classe (games + profiles)"** — irrealista para o estado atual. Já temos `produtos`, `profiles`, `seller_profiles`, `anuncios`, `tournaments`, `biblioteca_usuario`, `reviews_completas` etc. Vou **mapear** sua ontologia para o que já existe (games ≈ `produtos`, profiles ≈ `profiles`) em vez de migrar/duplicar tabelas. Reescrever schema quebraria 90% do app.
+2. **"Sem carrinho/checkout"** — você mesmo já tem um checkout simulado (Pix/CC, requisito do TCC). Vou **manter** o existente e apenas adicionar a "Loja = Opportunity Center" como uma **camada paralela** (scanner de oportunidades) na Home, sem remover nada.
+3. **"Redirect para Steam/Epic/Nuuvem"** — fora do escopo TCC (100% online interno). Vou implementar as 4 prateleiras **dentro do catálogo MIDIAS**, com o mesmo conceito (drops, velocidade, órbita, fora da bolha), o que cumpre a intenção sem links externos quebráveis.
+4. **`delta_score`/`gravity_score`** — não precisa coluna nova. Calculo **on-the-fly** com `useQuery` agregando `product_views`, `forum_posts.created_at`, `avaliacoes.created_at` das últimas 24h/72h. Performático e zero migração.
+5. **Energia do card (dot sólido → oco ao clicar)** — uso `localStorage` por usuário, não tabela. Stateful no cliente, evita escrita ruidosa no banco.
 
-### Bloco 1 — Customização do perfil e biblioteca (UI real)
-
-**Onde vive hoje:** colunas `theme_color`, `profile_cover_url`, `trophy_showcase` em `profiles` e tabela `library_custom_covers` já existem (migração da rodada anterior), mas **não há UI**. Vou criar:
-
-1. **`src/components/perfil/CustomizacaoTab.tsx`** — nova aba "Customização" em `/perfil`:
-   - Color picker (input nativo `type=color` + 8 presets) para `theme_color` → aplicado como CSS var `--profile-accent` no `PublicProfile`/`FriendProfile`.
-   - Uploader de banner (`profile_cover_url`) usando bucket `avatars` (subpasta `covers/`).
-   - Editor da Vitrine de Troféus: seleciona até 6 badges/títulos (`trophy_showcase` jsonb).
-2. **`src/components/biblioteca/CustomCoverEditor.tsx`** — botão "Capa custom" em cada card da `Biblioteca.tsx`; abre modal com upload (bucket `product-images`, pasta `custom-covers/{userId}/`) → grava em `library_custom_covers`. Cards e `BibliotecaJogo` passam a usar a capa custom quando existe.
-3. **`PublicProfile`/`FriendProfile`** — leem `theme_color`+`profile_cover_url`+`trophy_showcase` e renderizam banner + acento de cor + vitrine.
+Tudo o mais (antispoiler, diário com toque humano, locks cosméticos, chat second-screen, marketplace quick-glance, skeletons, prefetch, neon polish) está dentro do escopo e faz total sentido.
 
 ---
 
-### Bloco 2 — Privacidade central + Busca Global @/$
+# Plano
 
-4. **`src/pages/PrivacidadeCentral.tsx`** (rota `/privacidade`) — agrega num só lugar:
-   - `PrivacyTab` (visibilidade biblioteca + exceções + grants já existentes).
-   - `NotificationPrefsTab`, `BlockedUsersTab`, toggle `require_follow_approval`, toggle `is_private`, toggle "permitir mensagens de não-amigos".
-   - Link a partir de `Perfil.tsx` ("Privacidade & Segurança →").
-5. **`BuscaGlobal.tsx`** — parser de prefixos:
-   - `@nome` → força aba Usuários, busca por `username`/`display_name`.
-   - `$handle` → força aba Vendedores, busca por `seller_profiles.handle`.
-   - Chip visual mostrando "Buscando usuário: @x" / "Buscando vendedor: $x" com botão limpar.
+## Fase 1 — Radar de Órbita + Energia (Home Web + Mobile)
 
----
+**Componente novo:** `src/components/radar/OrbitRadar.tsx`
+- `useQuery(['radar-delta'])` que faz **3 queries paralelas** das últimas 72h em `product_views`, `forum_posts`, `avaliacoes` agrupadas por `product_id`.
+- Score = `count_24h * 3 + count_72h * 1`. Top 4 produtos.
+- Renderiza carrossel horizontal fixo, **nunca muda ordem** após primeiro render (estabilidade visual).
+- Cada card: thumb + título + **evidência explicável** ("12 views + 3 reviews nas últimas 24h"), dot de energia (sólido → oco via `localStorage` `radar-seen-{userId}`).
+- Estado vazio: `🛰️ Você está em dia. Última varredura: HH:mm`.
+- Inserido no topo de `src/pages/Index.tsx` e `src/mobile/pages/MHome.tsx`.
 
-### Bloco 3 — Tutoriais práticos (não mais "só texto")
+## Fase 2 — Opportunity Center (4 prateleiras dinâmicas)
 
-6. **Refatorar `Tutorial.tsx`** — cada tutorial vira **passo-a-passo interativo** com:
-   - Stepper (1/N, próximo/anterior).
-   - Mini-réplica funcional do componente real (ex.: tutorial de Biblioteca mostra 3 cards filler com botões "Mudar status", "Adicionar capa custom" funcionando localmente).
-   - Tooltips destacando cada elemento.
-   - Botão "Ir para a versão real" no final → marca `tutorials_seen`.
-7. **`MConfig.tsx`** — adicionar seção "🎓 Tutoriais" listando os 6 tutoriais mobile, cada um abrindo `/tutorial/:key` específico (não um link genérico).
-8. **`Tutoriais.tsx`** — separar visualmente Web vs Mobile com preview/descrição de cada um.
+**Componente novo:** `src/components/opportunity/OpportunityCenter.tsx` com 4 sub-prateleiras:
+1. `💰 Grandes Oportunidades` — `produtos` ordenado por `discount DESC`, limit 8.
+2. `🚀 Em Movimento` — reusa o cálculo de delta da Fase 1 (cache compartilhado via mesma queryKey).
+3. `🎯 Próximos da Sua Órbita` — `favoritos` do user + `biblioteca_usuario` de amigos (`conversas` status=accepted) cruzando `category`/`tags`.
+4. `✨ Fora da Sua Bolha` — `produtos` com `rating >= 4.25` (≈85%) de categorias **fora** do histórico do user.
 
----
+- **Ordem dinâmica** das 4 linhas: pesa quantidade de itens em cada → linha com mais "calor" no topo.
+- Cada prateleira mostra evidência ("Drop de 35% hoje", "3 amigos jogando").
+- Linhas vazias **ocultas** (graceful silence).
+- Plugado em nova rota `/oportunidades` + card destacado na Home substituindo a área "Loja" atual.
 
-### Bloco 4 — Auditoria de páginas faltantes / configurações
+## Fase 3 — Antispoiler Filter
 
-9. **Fórum Geral** — hoje só existe `MForum` (por jogo) e `ForumAdmin` (desktop). Criar:
-   - **`src/pages/ForumGeral.tsx`** (rota `/forum`) — lista todas categorias de `forum_categories` + posts recentes cross-game.
-   - **`src/mobile/pages/MForumGeral.tsx`** (rota `/m/forum`) — mesma coisa em layout mobile. Hoje `/m/forum` cai num componente que assume produto.
-   - Link no `Header` (web) e no bottom-nav (mobile).
-10. **Configurações de grupos e chats:**
-    - `MChatInfo` já existe; verificar se tem mute/block/leave. Adicionar o que faltar (mute notif, apagar histórico local, bloquear, sair).
-    - `MGroupInfo` — adicionar: mute, sair do grupo, editar nome (se admin), transferir admin, link de convite.
-11. **Página de Torneios** — `Torneios.tsx` existe; auditar e garantir que mostra: ativos, próximos, inscritos por mim, histórico. Adicionar filtro por jogo e CTA "Criar torneio" (se admin) / "Inscrever-se".
-12. **`$vendedor` — onde configura/cria:**
-    - Página `CriarVendedor.tsx` já existe (criação). 
-    - Criar **aba "Vendedor" em `/perfil`** que mostra: se já é vendedor → mostra `SellerProfileSwitcher` + link "Gerenciar perfil $handle"; se não é → CTA "Tornar-se vendedor" → `/criar-vendedor`.
-13. **Biblioteca social dos perfis-teste vazia** — o seed `seed-admin-friends` cria `biblioteca_usuario` mas talvez não emita timeline events nem set `is_public_in_library`. Vou:
-    - Revisar `seed-admin-friends/index.ts` para também inserir `game_timeline_events`, `game_screenshots` (1-2 por amigo), 1 `reviews_completas`, 1 `game_opinions`, e marcar `library_visibility='public'` nos profiles dos amigos artificiais.
-    - Redeployar a função; usuário re-roda o botão "Popular conta admin".
+**Componente novo:** `src/components/spoiler/SpoilerGuard.tsx` (wrapper).
+- Migração leve: `ALTER TABLE forum_posts ADD COLUMN is_spoiler boolean DEFAULT false, achievement_lock uuid REFERENCES user_achievements(id)`. Mesma coisa em `avaliacoes` + `reviews_completas`. **Com GRANTs** explícitos.
+- Wrapper checa: se `is_spoiler` OU (`achievement_lock` && user não tem aquele achievement) → renderiza filho com `filter: blur(12px)` + overlay button "⚠️ Alerta de Spoiler — Clique para revelar".
+- Aplicado em: `ForumGeral`, `MForumPost`, `MReview`, `GameDetail` reviews.
+- Toggle no editor de post/review: checkbox "Conteúdo sensível / spoiler" + select opcional "Liberar para quem desbloqueou: [achievement]".
 
----
+## Fase 4 — Diário de Bordo (toque humano)
 
-### Arquivos novos
-- `src/components/perfil/CustomizacaoTab.tsx`
-- `src/components/perfil/VendedorTab.tsx`
-- `src/components/biblioteca/CustomCoverEditor.tsx`
-- `src/pages/PrivacidadeCentral.tsx`
-- `src/pages/ForumGeral.tsx`
-- `src/mobile/pages/MForumGeral.tsx`
-- `src/components/tutorial/TutorialStep.tsx` (stepper interativo)
+**Componente novo:** `src/components/profile/PassiveTimelineHumanized.tsx`
+- Reaproveita `GameTimeline` existente, agrupa eventos do dia em parágrafo automático ("Você jogou 6h de Celeste e desbloqueou 2 conquistas").
+- Abaixo: ícone de lápis → input inline "Como foi esse dia? Deixe uma memória" → salva em **nova coluna** `game_timeline_events.user_note text` (migração + GRANT).
+- Render: nota aparece em itálico ao lado do bloco automático, com badge "📝 memória pessoal".
+- Plugado em `TimelineGamer.tsx` e `Perfil.tsx`.
 
-### Arquivos editados
-- `src/pages/Perfil.tsx` (novas abas Customização + Vendedor + link Privacidade)
-- `src/pages/Biblioteca.tsx`, `src/pages/BibliotecaJogo.tsx` (usar capa custom)
-- `src/pages/PublicProfile.tsx`, `src/pages/FriendProfile.tsx` (aplicar theme_color/cover/trophies)
-- `src/pages/BuscaGlobal.tsx` (parser @/$)
-- `src/pages/Tutorial.tsx`, `src/pages/Tutoriais.tsx` (passo-a-passo real)
-- `src/mobile/pages/MConfig.tsx` (seção tutoriais específicos)
-- `src/mobile/pages/MChatInfo.tsx`, `src/mobile/pages/MGroupInfo.tsx` (configurações faltantes)
-- `src/pages/Torneios.tsx` (auditoria + filtros)
-- `src/App.tsx` (rotas /privacidade, /forum, /m/forum-geral)
-- `src/components/Header.tsx` + `src/mobile/MobileLayout.tsx` (links)
-- `supabase/functions/seed-admin-friends/index.ts` (seed mais rico)
+## Fase 5 — Cosmetic Locks por achievement/playtime
 
-### Sem migração nova
-Tudo usa schema/buckets existentes.
+- **Já temos** `user_titles` + `user_achievements` + `user_playtime`. Falta a **regra de unlock**.
+- Migração: `ALTER TABLE user_titles ADD COLUMN unlock_rule jsonb` (ex: `{"type":"achievement","achievement_id":"..."}` ou `{"type":"playtime","product_id":"...","min_hours":20}`).
+- Função SQL `public.can_equip_title(_user uuid, _title uuid) returns boolean` security definer.
+- `ActiveTitleSelector` filtra opções: bloqueadas aparecem com 🔒 + tooltip explicando regra ("Complete Cyberpunk 2077 para desbloquear [Netrunner]").
+- Reuso no chat (`MChatThread`, `MChat`) e reviews — títulos ativos já são exibidos via `LevelTitleBadge`, vou expandir para mostrar nos cabeçalhos de mensagem.
+
+## Fase 6 — Skeletons + Prefetch
+
+- Criar `src/components/skeletons/` com: `GameCardSkeleton`, `FeedItemSkeleton`, `RadarSkeleton`, `OpportunityRowSkeleton`, `TimelineSkeleton`, `ProfileSkeleton`.
+- Substituir os `<Loader2 spin>` atuais em: `MHome`, `Index`, `Catalogo`, `Perfil`, `Biblioteca`, `MForum`, `Torneios`.
+- **Prefetch de rotas** no `Header`/bottom-nav: ao `onMouseEnter` (web) ou `onTouchStart` (mobile) em links principais, disparar `queryClient.prefetchQuery` da query daquela página + `import()` do chunk lazy.
+- Rotas alvo: `/catalogo`, `/biblioteca`, `/perfil`, `/m/forum`, `/m/marketplace`.
+
+## Fase 7 — Neon Polish (contraste + acessibilidade light/dark)
+
+- Auditar `--primary`/`--accent` no **modo light**: hoje teal 40% / purple 50% sobre `bg 93%` falha WCAG AA em texto pequeno. Subir saturação e baixar lightness do primary para 35%, accent para 45%.
+- Reduzir intensidade do `glow-primary` no light mode (`opacity 0.15` em vez de `0.3`) — neon "queima" em fundo claro.
+- Variáveis novas em `:root` e `.light`: `--neon-glow-intensity` e `--neon-border-opacity`, usadas nas utilities `.glow-primary`, `.neon-border-hover`, `.platform-pill`.
+- Revisar `platform-ps/xbox/switch/pc`: cores fixas hex viram tokens semânticos com fallback por tema.
+- Teste visual com Playwright capturando Home/Catálogo/Perfil em ambos os temas.
 
 ---
 
-Posso seguir?
+## Ordem sugerida & dependências
+
+```text
+Fase 1 (Radar) ──┐
+                 ├─→ Fase 2 (Opportunity) usa o mesmo cache
+Fase 3 (Spoiler) ┘   independente
+Fase 4 (Diário) ─── independente, mas precisa de Fase 6 (skeleton)
+Fase 5 (Locks) ──── independente
+Fase 6 (Skeletons + Prefetch) ─── transversal, faço por último de UX
+Fase 7 (Neon Polish) ─── transversal, faço por último (depois de Fase 6 existirem todos os componentes novos)
+```
+
+## Detalhes técnicos (resumo)
+- **Sem novas tabelas grandes**: 3 migrations pequenas (`is_spoiler`+`achievement_lock`, `user_note`, `unlock_rule`) com GRANTs corretos.
+- **Sem mexer no checkout** existente, sem mexer no Desktop/Backoffice.
+- **Cache compartilhado** entre Radar e "Em Movimento" via mesma queryKey reduz queries.
+- **localStorage** para estado de "card visto no radar" — não polui banco.
+
+---
+
+Por onde começo? Recomendo **Fase 1 + Fase 2 juntas** (compartilham cache e entregam o impacto visual mais alto na Home), depois Fase 7 para o polish neon, e o resto incremental. Confirma a ordem ou prefere outra?

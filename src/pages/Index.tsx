@@ -5,6 +5,7 @@ import GameCard from "@/components/GameCard";
 import { motion } from "framer-motion";
 import { ChevronRight, Flame, TrendingUp, Zap, Loader2, Sparkles, Clock, Package } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import OrbitRadar from "@/components/radar/OrbitRadar";
 
 interface FlashPromo {
   id: string;
@@ -139,6 +140,8 @@ export default function Index() {
           </motion.div>
         </div>
       </section>
+      {/* Radar de Órbita */}
+      <OrbitRadar limit={4} />
       {/* Flash Promo banner */}
       {flashPromo &&
         (() => {
