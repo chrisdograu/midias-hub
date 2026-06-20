@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { motion, AnimatePresence } from 'framer-motion';
 import NotificationBell from './NotificationBell';
 import { supabase } from '@/integrations/supabase/client';
+import { usePrefetchRoute } from '@/hooks/usePrefetchRoute';
 
 export default function Header() {
   const { itemCount } = useCart();
@@ -20,6 +21,7 @@ export default function Header() {
   const searchRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const navigate = useNavigate();
+  const prefetch = usePrefetchRoute();
 
   const isBanned = profile?.banned_until && new Date(profile.banned_until) > new Date();
 
@@ -92,6 +94,8 @@ export default function Header() {
           <nav className="hidden lg:flex items-center gap-1">
             {navLinks.map(link => (
               <Link key={link.to} to={link.to}
+                onMouseEnter={() => prefetch(link.to)}
+                onFocus={() => prefetch(link.to)}
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                   location.pathname === link.to || (link.to !== '/' && location.pathname.startsWith(link.to))
                     ? 'text-primary bg-primary/10' : 'text-muted-foreground hover:text-foreground hover:bg-secondary'}`}>

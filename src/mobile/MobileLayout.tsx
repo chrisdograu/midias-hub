@@ -106,6 +106,8 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
                 key={t.to}
                 to={t.to}
                 end={t.end}
+                onTouchStart={() => prefetch(t.to)}
+                onMouseEnter={() => prefetch(t.to)}
                 className={({ isActive }) =>
                   `relative flex flex-col items-center justify-center py-2.5 gap-0.5 text-[10px] font-medium transition-colors ${
                     isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
