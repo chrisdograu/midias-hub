@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import NotificationBell from '@/components/NotificationBell';
+import { usePrefetchRoute } from '@/hooks/usePrefetchRoute';
 
 const ROUTES_WITH_BELL = new Set(['/m', '/m/']);
 
@@ -26,6 +27,7 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
   const { user } = useAuth();
   const location = useLocation();
   const [unreadChat, setUnreadChat] = useState(0);
+  const prefetch = usePrefetchRoute();
 
   useEffect(() => {
     if (!user) { setUnreadChat(0); return; }
