@@ -118,36 +118,49 @@ export type Database = {
       }
       avaliacoes: {
         Row: {
+          achievement_lock: string | null
           comment: string | null
           created_at: string
           id: string
           is_approved: boolean
+          is_spoiler: boolean
           product_id: string
           rating: number
           updated_at: string
           user_id: string
         }
         Insert: {
+          achievement_lock?: string | null
           comment?: string | null
           created_at?: string
           id?: string
           is_approved?: boolean
+          is_spoiler?: boolean
           product_id: string
           rating: number
           updated_at?: string
           user_id: string
         }
         Update: {
+          achievement_lock?: string | null
           comment?: string | null
           created_at?: string
           id?: string
           is_approved?: boolean
+          is_spoiler?: boolean
           product_id?: string
           rating?: number
           updated_at?: string
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "avaliacoes_achievement_lock_fkey"
+            columns: ["achievement_lock"]
+            isOneToOne: false
+            referencedRelation: "user_achievements"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "avaliacoes_product_id_fkey"
             columns: ["product_id"]
@@ -1023,11 +1036,13 @@ export type Database = {
       }
       forum_posts: {
         Row: {
+          achievement_lock: string | null
           category_slug: string | null
           content: string
           created_at: string | null
           id: string
           is_pinned: boolean
+          is_spoiler: boolean
           likes_count: number
           product_id: string | null
           title: string | null
@@ -1037,11 +1052,13 @@ export type Database = {
           visibility: string
         }
         Insert: {
+          achievement_lock?: string | null
           category_slug?: string | null
           content: string
           created_at?: string | null
           id?: string
           is_pinned?: boolean
+          is_spoiler?: boolean
           likes_count?: number
           product_id?: string | null
           title?: string | null
@@ -1051,11 +1068,13 @@ export type Database = {
           visibility?: string
         }
         Update: {
+          achievement_lock?: string | null
           category_slug?: string | null
           content?: string
           created_at?: string | null
           id?: string
           is_pinned?: boolean
+          is_spoiler?: boolean
           likes_count?: number
           product_id?: string | null
           title?: string | null
@@ -1065,6 +1084,13 @@ export type Database = {
           visibility?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "forum_posts_achievement_lock_fkey"
+            columns: ["achievement_lock"]
+            isOneToOne: false
+            referencedRelation: "user_achievements"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "forum_posts_category_slug_fkey"
             columns: ["category_slug"]
@@ -1491,6 +1517,7 @@ export type Database = {
           payload: Json | null
           product_id: string
           user_id: string
+          user_note: string | null
         }
         Insert: {
           created_at?: string
@@ -1499,6 +1526,7 @@ export type Database = {
           payload?: Json | null
           product_id: string
           user_id: string
+          user_note?: string | null
         }
         Update: {
           created_at?: string
@@ -1507,6 +1535,7 @@ export type Database = {
           payload?: Json | null
           product_id?: string
           user_id?: string
+          user_note?: string | null
         }
         Relationships: [
           {
