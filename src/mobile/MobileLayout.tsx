@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import NotificationBell from '@/components/NotificationBell';
+import { usePrefetchRoute } from '@/hooks/usePrefetchRoute';
 
 const ROUTES_WITH_BELL = new Set(['/m', '/m/']);
 
@@ -26,6 +27,7 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
   const { user } = useAuth();
   const location = useLocation();
   const [unreadChat, setUnreadChat] = useState(0);
+  const prefetch = usePrefetchRoute();
 
   useEffect(() => {
     if (!user) { setUnreadChat(0); return; }
@@ -106,6 +108,8 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
                 key={t.to}
                 to={t.to}
                 end={t.end}
+                onTouchStart={() => prefetch(t.to)}
+                onMouseEnter={() => prefetch(t.to)}
                 className={({ isActive }) =>
                   `relative flex flex-col items-center justify-center py-2.5 gap-0.5 text-[10px] font-medium transition-colors ${
                     isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
