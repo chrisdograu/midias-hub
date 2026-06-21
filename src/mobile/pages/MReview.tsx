@@ -284,7 +284,7 @@ export default function MReview() {
     await supabase.from('biblioteca_usuario')
       .upsert({ user_id: user.id, product_id: productId, status: 'ja_joguei' }, { onConflict: 'user_id,product_id' });
     toast.success(existing ? '✏️ Review atualizada' : '⭐ Review publicada — adicionada como "já joguei"');
-    setMyComment('');
+    setMyComment(''); setMySpoiler(false); setMyAchievement(null);
     load();
   };
 
