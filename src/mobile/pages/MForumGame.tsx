@@ -142,14 +142,23 @@ export default function MForumGame() {
 
   const submitPost = async () => {
     if (!user || !postText.trim() || !gameId) return;
-    const { error } = await supabase.from('forum_posts').insert({ user_id: user.id, product_id: gameId, content: postText.trim().slice(0, 2000) });
+    const { error } = await supabase.from('forum_posts').insert({
+      user_id: user.id, product_id: gameId, content: postText.trim().slice(0, 2000),
+      is_spoiler: postSpoiler,
+      spoiler_achievement_name: postAchievement,
+    } as any);
     if (error) { toast.error(error.message); return; }
-    toast.success('Post criado'); setPostOpen(false); setPostText(''); loadFeed();
+    toast.success('Post criado'); setPostOpen(false); setPostText(''); setPostSpoiler(false); setPostAchievement(null); loadFeed();
   };
   const submitReview = async () => {
     if (!user || !gameId) return;
     const existing = reviews.find(r => r.user_id === user.id);
-    const payload = { user_id: user.id, product_id: gameId, rating: reviewRating, comment: reviewText.trim().slice(0, 1000) || null };
+    const payload = {
+      user_id: user.id, product_id: gameId, rating: reviewRating,
+      comment: reviewText.trim().slice(0, 1000) || null,
+      is_spoiler: reviewSpoiler,
+      spoiler_achievement_name: reviewAchievement,
+    } as any;
     const { error } = existing
       ? await supabase.from('avaliacoes').update(payload).eq('id', existing.id)
       : await supabase.from('avaliacoes').insert(payload);
@@ -159,7 +168,7 @@ export default function MForumGame() {
       .upsert({ user_id: user.id, product_id: gameId, status: 'ja_joguei' }, { onConflict: 'user_id,product_id' });
     setLibStatus('ja_joguei');
     toast.success(existing ? 'Review atualizada' : 'Review publicada — adicionada como "já joguei"');
-    setReviewOpen(false); setReviewText(''); loadFeed();
+    setReviewOpen(false); setReviewText(''); setReviewSpoiler(false); setReviewAchievement(null); loadFeed();
   };
 
   const togglePostLike = async (post: Post) => {
