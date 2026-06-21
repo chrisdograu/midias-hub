@@ -9,6 +9,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { useAuth } from '@/hooks/useAuth';
 import { ItemActionsMenu } from '@/components/ItemActionsMenu';
 import { toast } from 'sonner';
+import SpoilerGuard from '@/components/spoiler/SpoilerGuard';
 
 type Sort = 'popular' | 'recent' | 'commented';
 type Tab = 'tudo' | 'posts' | 'reviews';
@@ -22,10 +23,12 @@ interface TopGame { id: string; title: string; image_url: string | null; postCou
 interface ForumPost {
   id: string; content: string; created_at: string; likes_count: number; user_id: string;
   product_id: string; replies_count: number; author: string; product: string;
+  is_spoiler: boolean; spoiler_achievement_name: string | null;
 }
 interface ForumReview {
   id: string; rating: number; comment: string | null; created_at: string; user_id: string;
   product_id: string; author: string; product: string; likes: number;
+  is_spoiler: boolean; spoiler_achievement_name: string | null;
 }
 
 export default function MForum() {
