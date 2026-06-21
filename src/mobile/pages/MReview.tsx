@@ -11,6 +11,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { ItemActionsMenu } from '@/components/ItemActionsMenu';
+import SpoilerGuard from '@/components/spoiler/SpoilerGuard';
+import SpoilerComposerControls from '@/components/spoiler/SpoilerComposerControls';
 
 interface Produto {
   id: string;
