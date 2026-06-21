@@ -6,9 +6,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { timeAgo } from '@/mobile/lib/time';
+import SpoilerGuard from '@/components/spoiler/SpoilerGuard';
+import SpoilerComposerControls from '@/components/spoiler/SpoilerComposerControls';
 
 interface Cat { slug: string; name: string; description: string | null }
-interface Post { id: string; title: string | null; content: string; created_at: string; likes_count: number; user_id: string; author: string }
+interface Post { id: string; title: string | null; content: string; created_at: string; likes_count: number; user_id: string; author: string; is_spoiler: boolean }
 
 const ICONS: Record<string, string> = {
   novidades: '📰', 'off-topic': '☕', sugestoes: '💡', apresentacoes: '👋', comunidade: '🌐',
