@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { useLoginGate } from '@/components/LoginGate';
 import { ItemActionsMenu } from '@/components/ItemActionsMenu';
 import { GifPicker } from '@/components/GifPicker';
+import SpoilerGuard from '@/components/spoiler/SpoilerGuard';
 
 const IMG_RE = /\[img:(https?:\/\/[^\]\s]+)\]/;
 function parseContent(raw: string): { text: string; image: string | null } {
