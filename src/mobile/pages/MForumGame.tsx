@@ -100,6 +100,7 @@ export default function MForumGame() {
       likes_count: p.likes_count, user_id: p.user_id,
       replies: rc.get(p.id) || 0, author: pm.get(p.user_id) || 'Usuário',
       iLiked: postLikedSet.has(p.id),
+      is_spoiler: !!p.is_spoiler, spoiler_achievement_name: p.spoiler_achievement_name || null,
     })));
     setReviews((rs || []).map((r: any) => {
       const likeSet = likesMap.get(r.id) || new Set();
@@ -111,6 +112,7 @@ export default function MForumGame() {
         id: r.id, rating: Number(r.rating), comment: r.comment, created_at: r.created_at,
         user_id: r.user_id, author: pm.get(r.user_id) || 'Usuário',
         likes: likeSet.size, dislikes: disSet.size, myReaction,
+        is_spoiler: !!r.is_spoiler, spoiler_achievement_name: r.spoiler_achievement_name || null,
       };
     }));
     setFeedLoading(false);
