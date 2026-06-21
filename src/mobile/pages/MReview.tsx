@@ -38,6 +38,8 @@ interface ReviewItem {
   likes: number;
   dislikes: number;
   myReaction: 'like' | 'dislike' | null;
+  is_spoiler: boolean;
+  spoiler_achievement_name: string | null;
 }
 
 type Sort = 'popular' | 'recent' | 'top';
