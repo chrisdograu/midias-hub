@@ -3,9 +3,10 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { MessagesSquare, Loader2, Flame, Users, Gamepad2, MessageSquare } from 'lucide-react';
+import SpoilerGuard from '@/components/spoiler/SpoilerGuard';
 
 interface Cat { slug: string; name: string; description: string | null; parent_slug: string | null }
-interface RecentPost { id: string; title: string | null; content: string; created_at: string; product_id: string | null; user_id: string; author: string; product_title: string | null; image_url: string | null }
+interface RecentPost { id: string; title: string | null; content: string; created_at: string; product_id: string | null; user_id: string; author: string; product_title: string | null; image_url: string | null; is_spoiler: boolean; spoiler_achievement_name: string | null }
 
 export default function ForumGeral() {
   const [cats, setCats] = useState<Cat[]>([]);
