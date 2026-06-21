@@ -126,6 +126,7 @@ export type Database = {
           is_spoiler: boolean
           product_id: string
           rating: number
+          spoiler_achievement_name: string | null
           updated_at: string
           user_id: string
         }
@@ -138,6 +139,7 @@ export type Database = {
           is_spoiler?: boolean
           product_id: string
           rating: number
+          spoiler_achievement_name?: string | null
           updated_at?: string
           user_id: string
         }
@@ -150,6 +152,7 @@ export type Database = {
           is_spoiler?: boolean
           product_id?: string
           rating?: number
+          spoiler_achievement_name?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -1045,6 +1048,7 @@ export type Database = {
           is_spoiler: boolean
           likes_count: number
           product_id: string | null
+          spoiler_achievement_name: string | null
           title: string | null
           tournament_id: string | null
           updated_at: string | null
@@ -1061,6 +1065,7 @@ export type Database = {
           is_spoiler?: boolean
           likes_count?: number
           product_id?: string | null
+          spoiler_achievement_name?: string | null
           title?: string | null
           tournament_id?: string | null
           updated_at?: string | null
@@ -1077,6 +1082,7 @@ export type Database = {
           is_spoiler?: boolean
           likes_count?: number
           product_id?: string | null
+          spoiler_achievement_name?: string | null
           title?: string | null
           tournament_id?: string | null
           updated_at?: string | null
