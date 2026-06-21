@@ -10,10 +10,12 @@ import { HalfStarDisplay, InteractiveHalfStar } from '@/components/HalfStarRatin
 import LevelBadge from '@/components/LevelBadge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
+import SpoilerGuard from '@/components/spoiler/SpoilerGuard';
+import SpoilerComposerControls from '@/components/spoiler/SpoilerComposerControls';
 
 interface Game { id: string; title: string; image_url: string | null; description: string | null; rating: number | null }
-interface Post { id: string; content: string; created_at: string; likes_count: number; user_id: string; replies: number; author: string; iLiked: boolean }
-interface Review { id: string; rating: number; comment: string | null; created_at: string; user_id: string; author: string; likes: number; dislikes: number; myReaction: 'like' | 'dislike' | null }
+interface Post { id: string; content: string; created_at: string; likes_count: number; user_id: string; replies: number; author: string; iLiked: boolean; is_spoiler: boolean; spoiler_achievement_name: string | null }
+interface Review { id: string; rating: number; comment: string | null; created_at: string; user_id: string; author: string; likes: number; dislikes: number; myReaction: 'like' | 'dislike' | null; is_spoiler: boolean; spoiler_achievement_name: string | null }
 
 type Sort = 'popular' | 'recent';
 
