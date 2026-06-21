@@ -32,8 +32,12 @@ export default function MForumGame() {
   const [postOpen, setPostOpen] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [postText, setPostText] = useState('');
+  const [postSpoiler, setPostSpoiler] = useState(false);
+  const [postAchievement, setPostAchievement] = useState<string | null>(null);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewText, setReviewText] = useState('');
+  const [reviewSpoiler, setReviewSpoiler] = useState(false);
+  const [reviewAchievement, setReviewAchievement] = useState<string | null>(null);
   const [sort, setSort] = useState<Sort>('popular');
   const [period, setPeriod] = useState<Period>('all');
   const [libStatus, setLibStatus] = useState<'none' | 'quero_jogar' | 'ja_joguei'>('none');
