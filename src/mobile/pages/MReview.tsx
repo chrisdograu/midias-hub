@@ -69,6 +69,8 @@ export default function MReview() {
 
   const [myRating, setMyRating] = useState(0);
   const [myComment, setMyComment] = useState('');
+  const [mySpoiler, setMySpoiler] = useState(false);
+  const [myAchievement, setMyAchievement] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const canDeleteReview = (reviewUserId: string) => !!user && user.id === reviewUserId;
   const canReportReview = (reviewUserId: string) => !user || user.id !== reviewUserId;
