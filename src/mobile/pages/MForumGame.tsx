@@ -312,7 +312,9 @@ export default function MForumGame() {
               <div key={`p-${p.id}`} className="glass rounded-xl p-3 hover:border-primary/40 transition-colors">
                 <Link to={`/m/forum/post/${p.id}`} className="block">
                   <div className="flex items-center justify-between text-[10px] text-muted-foreground"><span className="flex items-center gap-1.5"><span className="px-1.5 py-0.5 rounded bg-primary/15 text-primary text-[9px] font-bold">FÓRUM</span><b className="text-foreground">{p.author}</b><LevelBadge userId={p.user_id} size="sm" /></span><span>{timeAgo(p.created_at)}</span></div>
-                  <p className="text-sm mt-1.5 line-clamp-3">{p.content}</p>
+                  <SpoilerGuard isSpoiler={p.is_spoiler} achievementName={p.spoiler_achievement_name} productId={gameId} className="mt-1.5">
+                    <p className="text-sm line-clamp-3">{p.content}</p>
+                  </SpoilerGuard>
                 </Link>
                 <div className="flex items-center gap-3 mt-2 text-[11px] text-muted-foreground">
                   <button onClick={() => togglePostLike(p)} className={`flex items-center gap-1 hover:text-primary ${p.iLiked ? 'text-primary' : ''}`}>
