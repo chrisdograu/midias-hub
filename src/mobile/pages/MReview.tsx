@@ -453,6 +453,15 @@ export default function MReview() {
             rows={3}
             className="w-full px-3 py-2 bg-background/60 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
           />
+          {user && (
+            <div className="mt-2">
+              <SpoilerComposerControls
+                isSpoiler={mySpoiler} onIsSpoilerChange={setMySpoiler}
+                achievementName={myAchievement} onAchievementNameChange={setMyAchievement}
+                productId={productId}
+              />
+            </div>
+          )}
           <div className="flex justify-end mt-2">
             <button
               onClick={submitReview}
