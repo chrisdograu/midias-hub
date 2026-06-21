@@ -181,7 +181,9 @@ export default function MForumPost() {
             </span>
             <span>{post.author}</span>
           </Link>
-          <p className="text-base mt-2 whitespace-pre-wrap">{post.content}</p>
+          <SpoilerGuard isSpoiler={post.is_spoiler} achievementName={post.spoiler_achievement_name} productId={post.product_id} className="mt-2">
+            <p className="text-base whitespace-pre-wrap">{post.content}</p>
+          </SpoilerGuard>
           <div className="flex items-center gap-3 mt-3 text-xs text-muted-foreground">
             <button onClick={togglePostLike} className={`flex items-center gap-1 hover:text-primary transition-colors ${post.iLiked ? 'text-primary' : ''}`}>
               <ThumbsUp className={`h-3.5 w-3.5 ${post.iLiked ? 'fill-current' : ''}`} />{post.likes_count}
