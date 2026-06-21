@@ -18,7 +18,7 @@ export default function ForumGeral() {
     (async () => {
       const [{ data: cs }, { data: ps }] = await Promise.all([
         supabase.from('forum_categories').select('slug,name,description,parent_slug').eq('is_community', true).order('display_order'),
-        supabase.from('forum_posts').select('id,title,content,created_at,product_id,user_id').order('created_at', { ascending: false }).limit(20),
+        supabase.from('forum_posts').select('id,title,content,created_at,product_id,user_id,is_spoiler,spoiler_achievement_name').order('created_at', { ascending: false }).limit(20),
       ]);
       setCats((cs as any) || []);
       const userIds = new Set<string>(); const prodIds = new Set<string>();
@@ -29,10 +29,12 @@ export default function ForumGeral() {
       ]);
       const profMap = new Map((profs || []).map(p => [p.id, p.display_name || 'Usuário']));
       const prodMap = new Map((prods || []).map(p => [p.id, p]));
-      setPosts((ps || []).map(p => ({
+      setPosts((ps || []).map((p: any) => ({
         ...p, author: profMap.get(p.user_id) || 'Usuário',
         product_title: p.product_id ? prodMap.get(p.product_id)?.title || null : null,
         image_url: p.product_id ? prodMap.get(p.product_id)?.image_url || null : null,
+        is_spoiler: !!p.is_spoiler,
+        spoiler_achievement_name: p.spoiler_achievement_name || null,
       })));
 
       const countByGame = new Map<string, number>();
