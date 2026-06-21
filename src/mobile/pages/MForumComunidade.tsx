@@ -38,14 +38,14 @@ export default function MForumComunidade() {
       const found = subcats.find(c => c.slug === slug) || null;
       setCat(found);
       const { data: ps } = await supabase.from('forum_posts')
-        .select('id,title,content,created_at,likes_count,user_id')
+        .select('id,title,content,created_at,likes_count,user_id,is_spoiler')
         .eq('category_slug', slug).order('created_at', { ascending: false }).limit(50);
       const uids = [...new Set((ps || []).map(p => p.user_id))];
       const { data: profs } = uids.length
         ? await supabase.from('profiles').select('id,display_name').in('id', uids)
         : { data: [] as any };
       const map = new Map((profs || []).map((p: any) => [p.id, p.display_name || 'Usuário']));
-      setPosts((ps || []).map(p => ({ ...p, author: (map.get(p.user_id) || 'Usuário') as string })));
+      setPosts((ps || []).map((p: any) => ({ ...p, is_spoiler: !!p.is_spoiler, author: (map.get(p.user_id) || 'Usuário') as string })));
     } else {
       setCat(null); setPosts([]);
     }
