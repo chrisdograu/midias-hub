@@ -61,11 +61,12 @@ export default function MForumComunidade() {
     const { error } = await supabase.from('forum_posts').insert({
       user_id: user.id, category_slug: cat.slug,
       title: title.trim() || null, content: content.trim(),
-    });
+      is_spoiler: composeSpoiler,
+    } as any);
     setSubmitting(false);
     if (error) { toast.error('Erro ao publicar'); return; }
     toast.success('Postado! 🎉');
-    setTitle(''); setContent(''); setComposeOpen(false);
+    setTitle(''); setContent(''); setComposeSpoiler(false); setComposeOpen(false);
     load();
   };
 
