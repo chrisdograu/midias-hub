@@ -93,8 +93,8 @@ export default function MForum() {
       const sinceISO = since ? since.toISOString() : '1970-01-01';
 
       const [{ data: rawPosts }, { data: rawReviews }] = await Promise.all([
-        supabase.from('forum_posts').select('id, content, created_at, likes_count, user_id, product_id').gte('created_at', sinceISO).limit(100),
-        supabase.from('avaliacoes').select('id, rating, comment, created_at, user_id, product_id').eq('is_approved', true).gte('created_at', sinceISO).limit(100),
+        supabase.from('forum_posts').select('id, content, created_at, likes_count, user_id, product_id, is_spoiler, spoiler_achievement_name').gte('created_at', sinceISO).limit(100),
+        supabase.from('avaliacoes').select('id, rating, comment, created_at, user_id, product_id, is_spoiler, spoiler_achievement_name').eq('is_approved', true).gte('created_at', sinceISO).limit(100),
       ]);
 
       const userIds = new Set<string>();
