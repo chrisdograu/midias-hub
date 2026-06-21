@@ -65,8 +65,8 @@ export default function MForumGame() {
     if (!gameId) { setFeedLoading(false); return; }
     setFeedLoading(true);
     const [{ data: ps }, { data: rs }] = await Promise.all([
-      supabase.from('forum_posts').select('id, content, created_at, likes_count, user_id, product_id').eq('product_id', gameId).order('created_at', { ascending: false }).limit(100),
-      supabase.from('avaliacoes').select('id, rating, comment, created_at, user_id').eq('product_id', gameId).eq('is_approved', true).order('created_at', { ascending: false }).limit(100),
+      supabase.from('forum_posts').select('id, content, created_at, likes_count, user_id, product_id, is_spoiler, spoiler_achievement_name').eq('product_id', gameId).order('created_at', { ascending: false }).limit(100),
+      supabase.from('avaliacoes').select('id, rating, comment, created_at, user_id, is_spoiler, spoiler_achievement_name').eq('product_id', gameId).eq('is_approved', true).order('created_at', { ascending: false }).limit(100),
     ]);
     const userIds = new Set<string>();
     ps?.forEach(p => userIds.add(p.user_id));
