@@ -122,7 +122,9 @@ export default function MForumComunidade() {
             <Link key={p.id} to={`/m/forum/post/${p.id}`}
               className="block p-3 rounded-xl bg-card border border-border hover:border-primary/40 transition-colors">
               {p.title && <p className="text-sm font-semibold">{p.title}</p>}
-              <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{p.content}</p>
+              <SpoilerGuard isSpoiler={p.is_spoiler}>
+                <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{p.content}</p>
+              </SpoilerGuard>
               <div className="flex items-center gap-2 mt-1.5 text-[10px] text-muted-foreground">
                 <span>{p.author}</span>
                 <span>·</span>
@@ -136,7 +138,7 @@ export default function MForumComunidade() {
 
       {composeOpen && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-end" onClick={() => setComposeOpen(false)}>
-          <div className="w-full bg-card rounded-t-2xl p-4 space-y-3" onClick={e => e.stopPropagation()}>
+          <div className="w-full bg-card rounded-t-2xl p-4 space-y-3 max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <p className="font-bold text-sm">Novo post em {cat.name}</p>
               <button onClick={() => setComposeOpen(false)}><X className="h-4 w-4" /></button>
@@ -145,6 +147,10 @@ export default function MForumComunidade() {
               className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm" />
             <textarea value={content} onChange={e => setContent(e.target.value)} placeholder="Conteúdo..." rows={4} maxLength={2000}
               className="w-full px-3 py-2 bg-background border border-border rounded-lg text-sm resize-none" />
+            <SpoilerComposerControls
+              isSpoiler={composeSpoiler} onIsSpoilerChange={setComposeSpoiler}
+              achievementName={null} onAchievementNameChange={() => {}}
+            />
             <button onClick={submit} disabled={submitting}
               className="w-full py-2.5 rounded-xl bg-gradient-to-r from-primary to-accent text-primary-foreground text-sm font-semibold disabled:opacity-50">
               {submitting ? 'Publicando...' : 'Publicar'}
