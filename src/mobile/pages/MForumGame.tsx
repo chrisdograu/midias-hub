@@ -333,7 +333,11 @@ export default function MForumGame() {
                   <span className="text-[10px] text-muted-foreground">{timeAgo(r.created_at)}</span>
                 </div>
                 <div className="flex items-center gap-2 mb-1"><HalfStarDisplay rating={r.rating} size={13} /><span className="text-xs font-semibold text-price">{r.rating.toFixed(1)}</span></div>
-                {r.comment && <p className="text-sm">{r.comment}</p>}
+                {r.comment && (
+                  <SpoilerGuard isSpoiler={r.is_spoiler} achievementName={r.spoiler_achievement_name} productId={gameId}>
+                    <p className="text-sm">{r.comment}</p>
+                  </SpoilerGuard>
+                )}
                 <div className="flex items-center gap-3 mt-2 text-[11px] text-muted-foreground">
                   <button onClick={(e) => { e.preventDefault(); reactReview(r, 'like'); }} className={`flex items-center gap-1 hover:text-primary ${r.myReaction === 'like' ? 'text-primary' : ''}`}>
                     <ThumbsUp className={`h-3 w-3 ${r.myReaction === 'like' ? 'fill-current' : ''}`} />{r.likes}
