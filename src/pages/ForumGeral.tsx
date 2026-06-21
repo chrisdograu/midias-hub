@@ -112,7 +112,9 @@ export default function ForumGeral() {
                       {p.image_url && <div className="w-12 h-16 rounded bg-muted overflow-hidden shrink-0"><img src={p.image_url} alt="" className="w-full h-full object-cover" /></div>}
                       <div className="flex-1 min-w-0">
                         {p.title && <p className="font-semibold text-sm">{p.title}</p>}
-                        <p className="text-sm text-muted-foreground line-clamp-2">{p.content}</p>
+                        <SpoilerGuard isSpoiler={p.is_spoiler} achievementName={p.spoiler_achievement_name} productId={p.product_id}>
+                          <p className="text-sm text-muted-foreground line-clamp-2">{p.content}</p>
+                        </SpoilerGuard>
                         <div className="flex items-center gap-2 mt-1.5 text-[10px] text-muted-foreground">
                           <span>{p.author}</span>
                           {p.product_title && <><span>·</span><span className="text-primary">{p.product_title}</span></>}
