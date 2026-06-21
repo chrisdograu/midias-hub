@@ -439,7 +439,11 @@ function ReviewCard({ r }: { r: ForumReview }) {
         <HalfStarDisplay rating={r.rating} size={13} />
         <span className="text-xs font-bold text-price">{r.rating.toFixed(1)}</span>
       </div>
-      {r.comment && <p className="text-sm text-foreground line-clamp-3">{r.comment}</p>}
+      {r.comment && (
+        <SpoilerGuard isSpoiler={r.is_spoiler} achievementName={r.spoiler_achievement_name} productId={r.product_id}>
+          <p className="text-sm text-foreground line-clamp-3">{r.comment}</p>
+        </SpoilerGuard>
+      )}
       <div className="flex items-center gap-3 mt-2 text-[11px] text-muted-foreground">
         <span>por <b className="text-foreground">{r.author}</b></span>
         <span className="flex items-center gap-1"><ThumbsUp className="h-3 w-3" />{r.likes}</span>
