@@ -88,7 +88,7 @@ export default function MReview() {
     if (prod) {
       const { data: revs } = await supabase
         .from('avaliacoes')
-        .select('id, rating, comment, created_at, user_id')
+        .select('id, rating, comment, created_at, user_id, is_spoiler, spoiler_achievement_name')
         .eq('product_id', productId)
         .eq('is_approved', true)
         .order('created_at', { ascending: false });
