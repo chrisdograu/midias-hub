@@ -26,6 +26,7 @@ export default function MForumComunidade() {
   const [composeOpen, setComposeOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [composeSpoiler, setComposeSpoiler] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const load = async () => {
