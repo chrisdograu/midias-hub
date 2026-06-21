@@ -22,7 +22,7 @@ interface Reply {
   id: string; content: string; created_at: string; user_id: string; likes_count: number;
   author: string; reply_to_user?: string | null; iLiked: boolean;
 }
-interface Post { id: string; content: string; created_at: string; likes_count: number; user_id: string; product_id: string; author: string; product: string; iLiked: boolean }
+interface Post { id: string; content: string; created_at: string; likes_count: number; user_id: string; product_id: string; author: string; product: string; iLiked: boolean; is_spoiler: boolean; spoiler_achievement_name: string | null }
 
 export default function MForumPost() {
   const { postId } = useParams();
