@@ -131,19 +131,21 @@ export default function MForum() {
         if (fallback?.length) top.push(...fallback.map(p => ({ id: p.id, title: p.title, image_url: p.image_url, postCount: 0 })));
       }
 
-      const postsList: ForumPost[] = (rawPosts || []).map(p => ({
+      const postsList: ForumPost[] = (rawPosts || []).map((p: any) => ({
         id: p.id, content: p.content, created_at: p.created_at || '',
         likes_count: p.likes_count, user_id: p.user_id, product_id: p.product_id,
         replies_count: replyCount.get(p.id) || 0,
         author: profileMap.get(p.user_id) || 'Usuário',
         product: productMap.get(p.product_id)?.title || 'Jogo',
+        is_spoiler: !!p.is_spoiler, spoiler_achievement_name: p.spoiler_achievement_name || null,
       }));
-      const reviewsList: ForumReview[] = (rawReviews || []).map(r => ({
+      const reviewsList: ForumReview[] = (rawReviews || []).map((r: any) => ({
         id: r.id, rating: Number(r.rating), comment: r.comment, created_at: r.created_at,
         user_id: r.user_id, product_id: r.product_id,
         author: profileMap.get(r.user_id) || 'Usuário',
         product: productMap.get(r.product_id)?.title || 'Jogo',
         likes: likeCount.get(r.id) || 0,
+        is_spoiler: !!r.is_spoiler, spoiler_achievement_name: r.spoiler_achievement_name || null,
       }));
       if (!cancel) { setTopGames(top); setPosts(postsList); setReviews(reviewsList); setLoading(false); }
     })();
