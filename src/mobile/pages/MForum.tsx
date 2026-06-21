@@ -412,7 +412,9 @@ function PostCard({ p, onDeleted }: { p: ForumPost; onDeleted?: () => void }) {
           />
         </div>
       </div>
-      <p className="text-sm text-foreground line-clamp-3">{p.content}</p>
+      <SpoilerGuard isSpoiler={p.is_spoiler} achievementName={p.spoiler_achievement_name} productId={p.product_id}>
+        <p className="text-sm text-foreground line-clamp-3">{p.content}</p>
+      </SpoilerGuard>
       <div className="flex items-center gap-3 mt-2 text-[11px] text-muted-foreground">
         <span>por <b className="text-foreground">{p.author}</b></span>
         <span className="flex items-center gap-1"><ThumbsUp className="h-3 w-3" />{p.likes_count}</span>
