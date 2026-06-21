@@ -570,7 +570,11 @@ export default function MReview() {
                     reportLabel="review"
                   />
                 </header>
-                {r.comment && <p className="text-sm text-foreground whitespace-pre-wrap">{r.comment}</p>}
+                {r.comment && (
+                  <SpoilerGuard isSpoiler={r.is_spoiler} achievementName={r.spoiler_achievement_name} productId={productId}>
+                    <p className="text-sm text-foreground whitespace-pre-wrap">{r.comment}</p>
+                  </SpoilerGuard>
+                )}
                 <footer className="flex items-center gap-2 mt-3">
                   <button
                     onClick={() => handleReact(r, 'like')}
