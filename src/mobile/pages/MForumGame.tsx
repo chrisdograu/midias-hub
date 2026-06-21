@@ -10,10 +10,12 @@ import { HalfStarDisplay, InteractiveHalfStar } from '@/components/HalfStarRatin
 import LevelBadge from '@/components/LevelBadge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
+import SpoilerGuard from '@/components/spoiler/SpoilerGuard';
+import SpoilerComposerControls from '@/components/spoiler/SpoilerComposerControls';
 
 interface Game { id: string; title: string; image_url: string | null; description: string | null; rating: number | null }
-interface Post { id: string; content: string; created_at: string; likes_count: number; user_id: string; replies: number; author: string; iLiked: boolean }
-interface Review { id: string; rating: number; comment: string | null; created_at: string; user_id: string; author: string; likes: number; dislikes: number; myReaction: 'like' | 'dislike' | null }
+interface Post { id: string; content: string; created_at: string; likes_count: number; user_id: string; replies: number; author: string; iLiked: boolean; is_spoiler: boolean; spoiler_achievement_name: string | null }
+interface Review { id: string; rating: number; comment: string | null; created_at: string; user_id: string; author: string; likes: number; dislikes: number; myReaction: 'like' | 'dislike' | null; is_spoiler: boolean; spoiler_achievement_name: string | null }
 
 type Sort = 'popular' | 'recent';
 
@@ -30,8 +32,12 @@ export default function MForumGame() {
   const [postOpen, setPostOpen] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [postText, setPostText] = useState('');
+  const [postSpoiler, setPostSpoiler] = useState(false);
+  const [postAchievement, setPostAchievement] = useState<string | null>(null);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewText, setReviewText] = useState('');
+  const [reviewSpoiler, setReviewSpoiler] = useState(false);
+  const [reviewAchievement, setReviewAchievement] = useState<string | null>(null);
   const [sort, setSort] = useState<Sort>('popular');
   const [period, setPeriod] = useState<Period>('all');
   const [libStatus, setLibStatus] = useState<'none' | 'quero_jogar' | 'ja_joguei'>('none');
@@ -63,8 +69,8 @@ export default function MForumGame() {
     if (!gameId) { setFeedLoading(false); return; }
     setFeedLoading(true);
     const [{ data: ps }, { data: rs }] = await Promise.all([
-      supabase.from('forum_posts').select('id, content, created_at, likes_count, user_id, product_id').eq('product_id', gameId).order('created_at', { ascending: false }).limit(100),
-      supabase.from('avaliacoes').select('id, rating, comment, created_at, user_id').eq('product_id', gameId).eq('is_approved', true).order('created_at', { ascending: false }).limit(100),
+      supabase.from('forum_posts').select('id, content, created_at, likes_count, user_id, product_id, is_spoiler, spoiler_achievement_name').eq('product_id', gameId).order('created_at', { ascending: false }).limit(100),
+      supabase.from('avaliacoes').select('id, rating, comment, created_at, user_id, is_spoiler, spoiler_achievement_name').eq('product_id', gameId).eq('is_approved', true).order('created_at', { ascending: false }).limit(100),
     ]);
     const userIds = new Set<string>();
     ps?.forEach(p => userIds.add(p.user_id));
@@ -98,6 +104,7 @@ export default function MForumGame() {
       likes_count: p.likes_count, user_id: p.user_id,
       replies: rc.get(p.id) || 0, author: pm.get(p.user_id) || 'Usuário',
       iLiked: postLikedSet.has(p.id),
+      is_spoiler: !!p.is_spoiler, spoiler_achievement_name: p.spoiler_achievement_name || null,
     })));
     setReviews((rs || []).map((r: any) => {
       const likeSet = likesMap.get(r.id) || new Set();
@@ -109,6 +116,7 @@ export default function MForumGame() {
         id: r.id, rating: Number(r.rating), comment: r.comment, created_at: r.created_at,
         user_id: r.user_id, author: pm.get(r.user_id) || 'Usuário',
         likes: likeSet.size, dislikes: disSet.size, myReaction,
+        is_spoiler: !!r.is_spoiler, spoiler_achievement_name: r.spoiler_achievement_name || null,
       };
     }));
     setFeedLoading(false);
@@ -134,14 +142,23 @@ export default function MForumGame() {
 
   const submitPost = async () => {
     if (!user || !postText.trim() || !gameId) return;
-    const { error } = await supabase.from('forum_posts').insert({ user_id: user.id, product_id: gameId, content: postText.trim().slice(0, 2000) });
+    const { error } = await supabase.from('forum_posts').insert({
+      user_id: user.id, product_id: gameId, content: postText.trim().slice(0, 2000),
+      is_spoiler: postSpoiler,
+      spoiler_achievement_name: postAchievement,
+    } as any);
     if (error) { toast.error(error.message); return; }
-    toast.success('Post criado'); setPostOpen(false); setPostText(''); loadFeed();
+    toast.success('Post criado'); setPostOpen(false); setPostText(''); setPostSpoiler(false); setPostAchievement(null); loadFeed();
   };
   const submitReview = async () => {
     if (!user || !gameId) return;
     const existing = reviews.find(r => r.user_id === user.id);
-    const payload = { user_id: user.id, product_id: gameId, rating: reviewRating, comment: reviewText.trim().slice(0, 1000) || null };
+    const payload = {
+      user_id: user.id, product_id: gameId, rating: reviewRating,
+      comment: reviewText.trim().slice(0, 1000) || null,
+      is_spoiler: reviewSpoiler,
+      spoiler_achievement_name: reviewAchievement,
+    } as any;
     const { error } = existing
       ? await supabase.from('avaliacoes').update(payload).eq('id', existing.id)
       : await supabase.from('avaliacoes').insert(payload);
@@ -151,7 +168,7 @@ export default function MForumGame() {
       .upsert({ user_id: user.id, product_id: gameId, status: 'ja_joguei' }, { onConflict: 'user_id,product_id' });
     setLibStatus('ja_joguei');
     toast.success(existing ? 'Review atualizada' : 'Review publicada — adicionada como "já joguei"');
-    setReviewOpen(false); setReviewText(''); loadFeed();
+    setReviewOpen(false); setReviewText(''); setReviewSpoiler(false); setReviewAchievement(null); loadFeed();
   };
 
   const togglePostLike = async (post: Post) => {
@@ -295,7 +312,9 @@ export default function MForumGame() {
               <div key={`p-${p.id}`} className="glass rounded-xl p-3 hover:border-primary/40 transition-colors">
                 <Link to={`/m/forum/post/${p.id}`} className="block">
                   <div className="flex items-center justify-between text-[10px] text-muted-foreground"><span className="flex items-center gap-1.5"><span className="px-1.5 py-0.5 rounded bg-primary/15 text-primary text-[9px] font-bold">FÓRUM</span><b className="text-foreground">{p.author}</b><LevelBadge userId={p.user_id} size="sm" /></span><span>{timeAgo(p.created_at)}</span></div>
-                  <p className="text-sm mt-1.5 line-clamp-3">{p.content}</p>
+                  <SpoilerGuard isSpoiler={p.is_spoiler} achievementName={p.spoiler_achievement_name} productId={gameId} className="mt-1.5">
+                    <p className="text-sm line-clamp-3">{p.content}</p>
+                  </SpoilerGuard>
                 </Link>
                 <div className="flex items-center gap-3 mt-2 text-[11px] text-muted-foreground">
                   <button onClick={() => togglePostLike(p)} className={`flex items-center gap-1 hover:text-primary ${p.iLiked ? 'text-primary' : ''}`}>
@@ -314,7 +333,11 @@ export default function MForumGame() {
                   <span className="text-[10px] text-muted-foreground">{timeAgo(r.created_at)}</span>
                 </div>
                 <div className="flex items-center gap-2 mb-1"><HalfStarDisplay rating={r.rating} size={13} /><span className="text-xs font-semibold text-price">{r.rating.toFixed(1)}</span></div>
-                {r.comment && <p className="text-sm">{r.comment}</p>}
+                {r.comment && (
+                  <SpoilerGuard isSpoiler={r.is_spoiler} achievementName={r.spoiler_achievement_name} productId={gameId}>
+                    <p className="text-sm">{r.comment}</p>
+                  </SpoilerGuard>
+                )}
                 <div className="flex items-center gap-3 mt-2 text-[11px] text-muted-foreground">
                   <button onClick={(e) => { e.preventDefault(); reactReview(r, 'like'); }} className={`flex items-center gap-1 hover:text-primary ${r.myReaction === 'like' ? 'text-primary' : ''}`}>
                     <ThumbsUp className={`h-3 w-3 ${r.myReaction === 'like' ? 'fill-current' : ''}`} />{r.likes}
@@ -344,9 +367,14 @@ export default function MForumGame() {
 
       {postOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-end" onClick={() => setPostOpen(false)}>
-          <motion.div initial={{ y: 200 }} animate={{ y: 0 }} className="w-full bg-card rounded-t-2xl p-5 space-y-3" onClick={e => e.stopPropagation()}>
+          <motion.div initial={{ y: 200 }} animate={{ y: 0 }} className="w-full bg-card rounded-t-2xl p-5 space-y-3 max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <h3 className="font-bold">Criar post em M/{game.title.toLowerCase().replace(/\s+/g, '').slice(0, 12)}</h3>
             <textarea value={postText} onChange={e => setPostText(e.target.value)} maxLength={2000} rows={5} placeholder="Compartilhe algo sobre o jogo..." className="w-full p-3 bg-background border border-border rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/50" />
+            <SpoilerComposerControls
+              isSpoiler={postSpoiler} onIsSpoilerChange={setPostSpoiler}
+              achievementName={postAchievement} onAchievementNameChange={setPostAchievement}
+              productId={gameId}
+            />
             <div className="flex gap-2">
               <button onClick={() => setPostOpen(false)} className="flex-1 py-2.5 rounded-lg bg-secondary text-secondary-foreground text-sm font-semibold">Cancelar</button>
               <button onClick={submitPost} className="flex-1 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-semibold">Publicar</button>
@@ -356,10 +384,15 @@ export default function MForumGame() {
       )}
       {reviewOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-end" onClick={() => setReviewOpen(false)}>
-          <motion.div initial={{ y: 200 }} animate={{ y: 0 }} className="w-full bg-card rounded-t-2xl p-5 space-y-3" onClick={e => e.stopPropagation()}>
+          <motion.div initial={{ y: 200 }} animate={{ y: 0 }} className="w-full bg-card rounded-t-2xl p-5 space-y-3 max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <h3 className="font-bold">Avaliar {game.title}</h3>
             <div className="flex justify-center"><InteractiveHalfStar value={reviewRating} onChange={setReviewRating} /></div>
             <textarea value={reviewText} onChange={e => setReviewText(e.target.value)} maxLength={1000} rows={4} placeholder="Conte sua experiência (opcional)..." className="w-full p-3 bg-background border border-border rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-accent/50" />
+            <SpoilerComposerControls
+              isSpoiler={reviewSpoiler} onIsSpoilerChange={setReviewSpoiler}
+              achievementName={reviewAchievement} onAchievementNameChange={setReviewAchievement}
+              productId={gameId}
+            />
             <div className="flex gap-2">
               <button onClick={() => setReviewOpen(false)} className="flex-1 py-2.5 rounded-lg bg-secondary text-secondary-foreground text-sm font-semibold">Cancelar</button>
               <button onClick={submitReview} className="flex-1 py-2.5 rounded-lg bg-accent text-accent-foreground text-sm font-semibold">Publicar review</button>

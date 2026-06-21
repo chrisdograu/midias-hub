@@ -1,101 +1,98 @@
-# Avaliação honesta antes do plano
+# Plano — Spoilers + Recompensas Cosméticas
 
-Concordo com a maior parte da filosofia (bem-estar digital, explicabilidade, silêncio gracioso, antispoiler, identidade gamificada) — encaixa perfeitamente com o que o MIDIAS já é. Mas há pontos que **discordo** e quero ajustar antes de começar:
+## Parte 1 — Spoilers no fórum (corrigir bug)
 
-1. **"Apenas 2 entidades de primeira classe (games + profiles)"** — irrealista para o estado atual. Já temos `produtos`, `profiles`, `seller_profiles`, `anuncios`, `tournaments`, `biblioteca_usuario`, `reviews_completas` etc. Vou **mapear** sua ontologia para o que já existe (games ≈ `produtos`, profiles ≈ `profiles`) em vez de migrar/duplicar tabelas. Reescrever schema quebraria 90% do app.
-2. **"Sem carrinho/checkout"** — você mesmo já tem um checkout simulado (Pix/CC, requisito do TCC). Vou **manter** o existente e apenas adicionar a "Loja = Opportunity Center" como uma **camada paralela** (scanner de oportunidades) na Home, sem remover nada.
-3. **"Redirect para Steam/Epic/Nuuvem"** — fora do escopo TCC (100% online interno). Vou implementar as 4 prateleiras **dentro do catálogo MIDIAS**, com o mesmo conceito (drops, velocidade, órbita, fora da bolha), o que cumpre a intenção sem links externos quebráveis.
-4. **`delta_score`/`gravity_score`** — não precisa coluna nova. Calculo **on-the-fly** com `useQuery` agregando `product_views`, `forum_posts.created_at`, `avaliacoes.created_at` das últimas 24h/72h. Performático e zero migração.
-5. **Energia do card (dot sólido → oco ao clicar)** — uso `localStorage` por usuário, não tabela. Stateful no cliente, evita escrita ruidosa no banco.
+Hoje existe `SpoilerGuard` e colunas `is_spoiler` / `achievement_lock` em `forum_posts`, mas **nenhuma UI** marca o post como spoiler nem exibe o guard ao ler. Por isso "não consigo colocar spoiler".
 
-Tudo o mais (antispoiler, diário com toque humano, locks cosméticos, chat second-screen, marketplace quick-glance, skeletons, prefetch, neon polish) está dentro do escopo e faz total sentido.
+### Onde adicionar
 
----
+- **Criação de post (mobile)**: `MForumGame.tsx`, `MForumComunidade.tsx`, `MForum.tsx` — composer ganha:
+  - Toggle "⚠️ Marcar como spoiler" (manual — todos precisam clicar pra ver).
+  - Select opcional "Trancar por conquista" → lista as conquistas do jogo atual (`user_achievements` que existem no catálogo do produto). Só aparece em fóruns vinculados a um jogo.
+- **Leitura**: envolver o conteúdo de cada post em `<SpoilerGuard isSpoiler={p.is_spoiler} achievementLockId={p.achievement_lock}>` nas listagens (`MForum`, `MForumGame`, `MForumComunidade`, `MForumPost`, `ForumGeral`).
+- **Reviews**: mesma dupla de controles no editor de review (`MReview.tsx`) — já existe coluna em `avaliacoes`.
 
-# Plano
+### Resultado
 
-## Fase 1 — Radar de Órbita + Energia (Home Web + Mobile)
-
-**Componente novo:** `src/components/radar/OrbitRadar.tsx`
-- `useQuery(['radar-delta'])` que faz **3 queries paralelas** das últimas 72h em `product_views`, `forum_posts`, `avaliacoes` agrupadas por `product_id`.
-- Score = `count_24h * 3 + count_72h * 1`. Top 4 produtos.
-- Renderiza carrossel horizontal fixo, **nunca muda ordem** após primeiro render (estabilidade visual).
-- Cada card: thumb + título + **evidência explicável** ("12 views + 3 reviews nas últimas 24h"), dot de energia (sólido → oco via `localStorage` `radar-seen-{userId}`).
-- Estado vazio: `🛰️ Você está em dia. Última varredura: HH:mm`.
-- Inserido no topo de `src/pages/Index.tsx` e `src/mobile/pages/MHome.tsx`.
-
-## Fase 2 — Opportunity Center (4 prateleiras dinâmicas)
-
-**Componente novo:** `src/components/opportunity/OpportunityCenter.tsx` com 4 sub-prateleiras:
-1. `💰 Grandes Oportunidades` — `produtos` ordenado por `discount DESC`, limit 8.
-2. `🚀 Em Movimento` — reusa o cálculo de delta da Fase 1 (cache compartilhado via mesma queryKey).
-3. `🎯 Próximos da Sua Órbita` — `favoritos` do user + `biblioteca_usuario` de amigos (`conversas` status=accepted) cruzando `category`/`tags`.
-4. `✨ Fora da Sua Bolha` — `produtos` com `rating >= 4.25` (≈85%) de categorias **fora** do histórico do user.
-
-- **Ordem dinâmica** das 4 linhas: pesa quantidade de itens em cada → linha com mais "calor" no topo.
-- Cada prateleira mostra evidência ("Drop de 35% hoje", "3 amigos jogando").
-- Linhas vazias **ocultas** (graceful silence).
-- Plugado em nova rota `/oportunidades` + card destacado na Home substituindo a área "Loja" atual.
-
-## Fase 3 — Antispoiler Filter
-
-**Componente novo:** `src/components/spoiler/SpoilerGuard.tsx` (wrapper).
-- Migração leve: `ALTER TABLE forum_posts ADD COLUMN is_spoiler boolean DEFAULT false, achievement_lock uuid REFERENCES user_achievements(id)`. Mesma coisa em `avaliacoes` + `reviews_completas`. **Com GRANTs** explícitos.
-- Wrapper checa: se `is_spoiler` OU (`achievement_lock` && user não tem aquele achievement) → renderiza filho com `filter: blur(12px)` + overlay button "⚠️ Alerta de Spoiler — Clique para revelar".
-- Aplicado em: `ForumGeral`, `MForumPost`, `MReview`, `GameDetail` reviews.
-- Toggle no editor de post/review: checkbox "Conteúdo sensível / spoiler" + select opcional "Liberar para quem desbloqueou: [achievement]".
-
-## Fase 4 — Diário de Bordo (toque humano)
-
-**Componente novo:** `src/components/profile/PassiveTimelineHumanized.tsx`
-- Reaproveita `GameTimeline` existente, agrupa eventos do dia em parágrafo automático ("Você jogou 6h de Celeste e desbloqueou 2 conquistas").
-- Abaixo: ícone de lápis → input inline "Como foi esse dia? Deixe uma memória" → salva em **nova coluna** `game_timeline_events.user_note text` (migração + GRANT).
-- Render: nota aparece em itálico ao lado do bloco automático, com badge "📝 memória pessoal".
-- Plugado em `TimelineGamer.tsx` e `Perfil.tsx`.
-
-## Fase 5 — Cosmetic Locks por achievement/playtime
-
-- **Já temos** `user_titles` + `user_achievements` + `user_playtime`. Falta a **regra de unlock**.
-- Migração: `ALTER TABLE user_titles ADD COLUMN unlock_rule jsonb` (ex: `{"type":"achievement","achievement_id":"..."}` ou `{"type":"playtime","product_id":"...","min_hours":20}`).
-- Função SQL `public.can_equip_title(_user uuid, _title uuid) returns boolean` security definer.
-- `ActiveTitleSelector` filtra opções: bloqueadas aparecem com 🔒 + tooltip explicando regra ("Complete Cyberpunk 2077 para desbloquear [Netrunner]").
-- Reuso no chat (`MChatThread`, `MChat`) e reviews — títulos ativos já são exibidos via `LevelTitleBadge`, vou expandir para mostrar nos cabeçalhos de mensagem.
-
-## Fase 6 — Skeletons + Prefetch
-
-- Criar `src/components/skeletons/` com: `GameCardSkeleton`, `FeedItemSkeleton`, `RadarSkeleton`, `OpportunityRowSkeleton`, `TimelineSkeleton`, `ProfileSkeleton`.
-- Substituir os `<Loader2 spin>` atuais em: `MHome`, `Index`, `Catalogo`, `Perfil`, `Biblioteca`, `MForum`, `Torneios`.
-- **Prefetch de rotas** no `Header`/bottom-nav: ao `onMouseEnter` (web) ou `onTouchStart` (mobile) em links principais, disparar `queryClient.prefetchQuery` da query daquela página + `import()` do chunk lazy.
-- Rotas alvo: `/catalogo`, `/biblioteca`, `/perfil`, `/m/forum`, `/m/marketplace`.
-
-## Fase 7 — Neon Polish (contraste + acessibilidade light/dark)
-
-- Auditar `--primary`/`--accent` no **modo light**: hoje teal 40% / purple 50% sobre `bg 93%` falha WCAG AA em texto pequeno. Subir saturação e baixar lightness do primary para 35%, accent para 45%.
-- Reduzir intensidade do `glow-primary` no light mode (`opacity 0.15` em vez de `0.3`) — neon "queima" em fundo claro.
-- Variáveis novas em `:root` e `.light`: `--neon-glow-intensity` e `--neon-border-opacity`, usadas nas utilities `.glow-primary`, `.neon-border-hover`, `.platform-pill`.
-- Revisar `platform-ps/xbox/switch/pc`: cores fixas hex viram tokens semânticos com fallback por tema.
-- Teste visual com Playwright capturando Home/Catálogo/Perfil em ambos os temas.
+- Manual: qualquer leitor vê blur + "Toque para revelar".
+- Por conquista: leitores sem a conquista vêem blur; quem tem, vê direto.
 
 ---
 
-## Ordem sugerida & dependências
+## Parte 2 — Recompensas cosméticas por jogo (admin)
+
+Sistema novo: admin cadastra **rewards** (cosméticos) por jogo, com critério de desbloqueio. Usuário desbloqueia ao cumprir o critério (zerar, platinar, X reviews do jogo, X posts no fórum do jogo, etc.). Recompensas são **cumulativas** e aplicáveis ao perfil global E à página do jogo (do jogo origem **ou** de qualquer outro jogo onde ele aparece — ex: card raro de Zelda pode decorar a página do Elden Ring que ele também joga).
+
+### Tipos de cosmético (`reward_kind`)
+
+1. `avatar_frame` — moldura/borda animada do avatar
+2. `profile_banner` — banner do perfil
+3. `profile_accent` — cor de destaque
+4. `game_card_skin` — skin do card do jogo na biblioteca/perfil
+5. `game_page_theme` — tema da página de jogo (bg, partículas, accent)
+6. `character_icon` — ícone de personagem (pode virar avatar ou decorar cards)
+7. `sticker` — adesivo colável em posts/reviews/perfil
+
+### Critérios de desbloqueio (`unlock_criteria` jsonb)
+
+- `{ type: 'completed', product_id }` — zerou o jogo
+- `{ type: 'platinum', product_id }` — platinou
+- `{ type: 'playtime', product_id, min_hours }`
+- `{ type: 'reviews_for_game', product_id, count }`
+- `{ type: 'forum_posts_for_game', product_id, count }`
+- `{ type: 'achievement', achievement_name | product_id }`
+
+### Schema novo
 
 ```text
-Fase 1 (Radar) ──┐
-                 ├─→ Fase 2 (Opportunity) usa o mesmo cache
-Fase 3 (Spoiler) ┘   independente
-Fase 4 (Diário) ─── independente, mas precisa de Fase 6 (skeleton)
-Fase 5 (Locks) ──── independente
-Fase 6 (Skeletons + Prefetch) ─── transversal, faço por último de UX
-Fase 7 (Neon Polish) ─── transversal, faço por último (depois de Fase 6 existirem todos os componentes novos)
+game_rewards            (id, product_id, kind, name, description,
+                         asset_url, payload jsonb, unlock_criteria jsonb,
+                         rarity, created_at)
+user_game_rewards       (user_id, reward_id, unlocked_at)  -- inventário
+user_cosmetic_loadout   (user_id, slot, reward_id)
+                         -- slots: 'avatar_frame','profile_banner',
+                         -- 'profile_accent','sticker_1..3'
+user_game_page_loadout  (user_id, product_id, slot, reward_id)
+                         -- por página de jogo, escolhe quais cosméticos exibir
+                         -- (qualquer reward desbloqueado, vindo de qualquer jogo)
 ```
 
-## Detalhes técnicos (resumo)
-- **Sem novas tabelas grandes**: 3 migrations pequenas (`is_spoiler`+`achievement_lock`, `user_note`, `unlock_rule`) com GRANTs corretos.
-- **Sem mexer no checkout** existente, sem mexer no Desktop/Backoffice.
-- **Cache compartilhado** entre Radar e "Em Movimento" via mesma queryKey reduz queries.
-- **localStorage** para estado de "card visto no radar" — não polui banco.
+Função `check_game_reward_unlocks(_user, _product)` rodada via trigger nos eventos: `biblioteca_usuario.status`, `avaliacoes`, `forum_posts`, `user_playtime`, `user_achievements`. Insere em `user_game_rewards` quando bate o critério; cria notificação "🎁 Você desbloqueou X em &nbsp;".
+
+### Admin (Desktop)
+
+- **Nova aba na `JogosAdmin` → "Recompensas do jogo"** (drawer no item ou tab no editor):
+  - Lista `game_rewards` daquele produto, CRUD completo.
+  - Form: tipo, nome, descrição, upload de asset (bucket `game-rewards`), payload visual (cor/css/animação preset), seletor de critério.
+  - Preview ao vivo do cosmético (mini avatar + mini game card).
+
+### UI usuário
+
+- **Perfil → nova aba "Cosméticos"** (estende `CustomizacaoTab`): grid do inventário (`user_game_rewards`) agrupado por jogo de origem, com filtro por tipo. Equipar = grava em `user_cosmetic_loadout`.
+- **Página do jogo (`GameDetail` + `BibliotecaJogo` + `GameSocialHub`)**: novo botão "🎨 Personalizar esta página" (só dono da biblioteca) — modal escolhe banner/theme/stickers desse jogo a partir de **qualquer** reward desbloqueado.
+- **Renderização pública**: ao visitar `PublicProfile`/`FriendProfile`/`SellerProfile`, aplicar loadout global. Ao visitar `GameDetail` de outro usuário (ex: vendor page), aplicar loadout daquele jogo se houver.
+- `GameCard` ganha overlay opcional de skin/frame.
+- `Header`/`MobileLayout` avatar respeita `avatar_frame`.
+
+### Cumulatividade
+
+- Nada é consumido. `user_game_rewards` é append-only.
+- Loadout (`user_*_loadout`) escolhe o que está visível em cada superfície; resto fica no inventário.
 
 ---
 
-Por onde começo? Recomendo **Fase 1 + Fase 2 juntas** (compartilham cache e entregam o impacto visual mais alto na Home), depois Fase 7 para o polish neon, e o resto incremental. Confirma a ordem ou prefere outra?
+## Parte 3 — Ordem de execução
+
+1. **Fix spoilers** (Parte 1) — pequeno, resolve a queixa imediata.
+2. **Migration**: cria `game_rewards`, `user_game_rewards`, `user_cosmetic_loadout`, `user_game_page_loadout`, bucket `game-rewards`, triggers de desbloqueio.
+3. **Admin CRUD** em `JogosAdmin` (Desktop).
+4. **Inventário + loadout** em `CustomizacaoTab` (perfil) e modal de personalização na página de jogo.
+5. **Renderização**: aplicar cosméticos em `GameCard`, avatar, banner, página de jogo.
+
+---
+
+## Perguntas antes de começar
+
+1. Faço **tudo** (Parte 1 + 2 + 3) numa tacada? Ou só Parte 1 (spoiler) agora e Parte 2/3 num próximo passo? Parte 2 é grande — ~6-8 arquivos novos + migration densa.
+2. Os assets dos cosméticos (frames, banners, stickers) — eu **gero placeholders SVG/CSS** programáticos pra começar, ou você quer fazer upload de PNG/GIF reais via admin desde o início?
+3. Para o "loadout por página de jogo" (personalizar a página de cada jogo da minha biblioteca individualmente) — o usuário precisa ter o jogo na biblioteca pra customizar, certo? E só ele vê essa customização, ou amigos que visitam o perfil dele também veem?          resposta:quero poder colocar pngs, mas sim, coloque coisas genericas no começo. comesticos na pagina de perfil tambem, tanto no mobile quanto no web.  sim, ele precisa do jogo na bibliteoca pra personalizar. uam recompensa,pode ser,se ele tiver o jogo na bibliteoca, ter um post no forum com mais de 10 likes, uma review com mais de 100, ter mais de 100 horas naquele jogo, ou seja, inumeros jeitos de ganhar custmizaçao. quero um jeito de poder adicionar. adicione no minimo 10 jeitos de ganhar uma costumizaçao de um jogo, outro é ganhar todas as conquistas desse jogo em especifico. a customizacao todos vem, se nao nao tem sentido. mas tambem os amigos podem ter a opcao de ver a pagina de jogo sem nenhuma customizaçao no parte lateral esquerda no começo apenas. botao de ver costumizaçao ou pagina de jogo normal. faça parte 1 e 3 e depois a 2 em outra tacada. o spoiler que esat vinculado a uma conquista, a pessoa pode ver ,mesmo se nao tiver tal conquista. apenas tem uma tela de enfatizaçao maior que apenas a de spoiler sem nenhuma conquista, mas se a pessoa ja tiver tal conquista,nem aparece esse de spoiler de conquista,so aparece o nome da conquista likado a tal post. 

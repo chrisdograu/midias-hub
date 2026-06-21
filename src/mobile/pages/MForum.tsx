@@ -9,6 +9,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { useAuth } from '@/hooks/useAuth';
 import { ItemActionsMenu } from '@/components/ItemActionsMenu';
 import { toast } from 'sonner';
+import SpoilerGuard from '@/components/spoiler/SpoilerGuard';
 
 type Sort = 'popular' | 'recent' | 'commented';
 type Tab = 'tudo' | 'posts' | 'reviews';
@@ -22,10 +23,12 @@ interface TopGame { id: string; title: string; image_url: string | null; postCou
 interface ForumPost {
   id: string; content: string; created_at: string; likes_count: number; user_id: string;
   product_id: string; replies_count: number; author: string; product: string;
+  is_spoiler: boolean; spoiler_achievement_name: string | null;
 }
 interface ForumReview {
   id: string; rating: number; comment: string | null; created_at: string; user_id: string;
   product_id: string; author: string; product: string; likes: number;
+  is_spoiler: boolean; spoiler_achievement_name: string | null;
 }
 
 export default function MForum() {
@@ -90,8 +93,8 @@ export default function MForum() {
       const sinceISO = since ? since.toISOString() : '1970-01-01';
 
       const [{ data: rawPosts }, { data: rawReviews }] = await Promise.all([
-        supabase.from('forum_posts').select('id, content, created_at, likes_count, user_id, product_id').gte('created_at', sinceISO).limit(100),
-        supabase.from('avaliacoes').select('id, rating, comment, created_at, user_id, product_id').eq('is_approved', true).gte('created_at', sinceISO).limit(100),
+        supabase.from('forum_posts').select('id, content, created_at, likes_count, user_id, product_id, is_spoiler, spoiler_achievement_name').gte('created_at', sinceISO).limit(100),
+        supabase.from('avaliacoes').select('id, rating, comment, created_at, user_id, product_id, is_spoiler, spoiler_achievement_name').eq('is_approved', true).gte('created_at', sinceISO).limit(100),
       ]);
 
       const userIds = new Set<string>();
@@ -128,19 +131,21 @@ export default function MForum() {
         if (fallback?.length) top.push(...fallback.map(p => ({ id: p.id, title: p.title, image_url: p.image_url, postCount: 0 })));
       }
 
-      const postsList: ForumPost[] = (rawPosts || []).map(p => ({
+      const postsList: ForumPost[] = (rawPosts || []).map((p: any) => ({
         id: p.id, content: p.content, created_at: p.created_at || '',
         likes_count: p.likes_count, user_id: p.user_id, product_id: p.product_id,
         replies_count: replyCount.get(p.id) || 0,
         author: profileMap.get(p.user_id) || 'Usuário',
         product: productMap.get(p.product_id)?.title || 'Jogo',
+        is_spoiler: !!p.is_spoiler, spoiler_achievement_name: p.spoiler_achievement_name || null,
       }));
-      const reviewsList: ForumReview[] = (rawReviews || []).map(r => ({
+      const reviewsList: ForumReview[] = (rawReviews || []).map((r: any) => ({
         id: r.id, rating: Number(r.rating), comment: r.comment, created_at: r.created_at,
         user_id: r.user_id, product_id: r.product_id,
         author: profileMap.get(r.user_id) || 'Usuário',
         product: productMap.get(r.product_id)?.title || 'Jogo',
         likes: likeCount.get(r.id) || 0,
+        is_spoiler: !!r.is_spoiler, spoiler_achievement_name: r.spoiler_achievement_name || null,
       }));
       if (!cancel) { setTopGames(top); setPosts(postsList); setReviews(reviewsList); setLoading(false); }
     })();
@@ -407,7 +412,9 @@ function PostCard({ p, onDeleted }: { p: ForumPost; onDeleted?: () => void }) {
           />
         </div>
       </div>
-      <p className="text-sm text-foreground line-clamp-3">{p.content}</p>
+      <SpoilerGuard isSpoiler={p.is_spoiler} achievementName={p.spoiler_achievement_name} productId={p.product_id}>
+        <p className="text-sm text-foreground line-clamp-3">{p.content}</p>
+      </SpoilerGuard>
       <div className="flex items-center gap-3 mt-2 text-[11px] text-muted-foreground">
         <span>por <b className="text-foreground">{p.author}</b></span>
         <span className="flex items-center gap-1"><ThumbsUp className="h-3 w-3" />{p.likes_count}</span>
@@ -432,7 +439,11 @@ function ReviewCard({ r }: { r: ForumReview }) {
         <HalfStarDisplay rating={r.rating} size={13} />
         <span className="text-xs font-bold text-price">{r.rating.toFixed(1)}</span>
       </div>
-      {r.comment && <p className="text-sm text-foreground line-clamp-3">{r.comment}</p>}
+      {r.comment && (
+        <SpoilerGuard isSpoiler={r.is_spoiler} achievementName={r.spoiler_achievement_name} productId={r.product_id}>
+          <p className="text-sm text-foreground line-clamp-3">{r.comment}</p>
+        </SpoilerGuard>
+      )}
       <div className="flex items-center gap-3 mt-2 text-[11px] text-muted-foreground">
         <span>por <b className="text-foreground">{r.author}</b></span>
         <span className="flex items-center gap-1"><ThumbsUp className="h-3 w-3" />{r.likes}</span>

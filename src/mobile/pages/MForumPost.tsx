@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { useLoginGate } from '@/components/LoginGate';
 import { ItemActionsMenu } from '@/components/ItemActionsMenu';
 import { GifPicker } from '@/components/GifPicker';
+import SpoilerGuard from '@/components/spoiler/SpoilerGuard';
 
 const IMG_RE = /\[img:(https?:\/\/[^\]\s]+)\]/;
 function parseContent(raw: string): { text: string; image: string | null } {
@@ -21,7 +22,7 @@ interface Reply {
   id: string; content: string; created_at: string; user_id: string; likes_count: number;
   author: string; reply_to_user?: string | null; iLiked: boolean;
 }
-interface Post { id: string; content: string; created_at: string; likes_count: number; user_id: string; product_id: string; author: string; product: string; iLiked: boolean }
+interface Post { id: string; content: string; created_at: string; likes_count: number; user_id: string; product_id: string; author: string; product: string; iLiked: boolean; is_spoiler: boolean; spoiler_achievement_name: string | null }
 
 export default function MForumPost() {
   const { postId } = useParams();
@@ -62,7 +63,7 @@ export default function MForumPost() {
       return;
     }
     setLoading(true);
-    const { data: p } = await supabase.from('forum_posts').select('id, content, created_at, likes_count, user_id, product_id').eq('id', postId).maybeSingle();
+    const { data: p } = await supabase.from('forum_posts').select('id, content, created_at, likes_count, user_id, product_id, is_spoiler, spoiler_achievement_name').eq('id', postId).maybeSingle();
     if (!p) { setLoading(false); return; }
     const { data: rs } = await supabase.from('forum_replies').select('id, content, created_at, user_id, likes_count').eq('post_id', postId).order('created_at');
     const userIds = new Set<string>([p.user_id]); rs?.forEach((r: any) => userIds.add(r.user_id));
@@ -79,6 +80,8 @@ export default function MForumPost() {
       id: p.id, content: p.content, created_at: p.created_at || '', likes_count: p.likes_count,
       user_id: p.user_id, product_id: p.product_id, author: pm.get(p.user_id) || 'Usuário',
       product: prod?.title || 'Jogo', iLiked: (postLikes || []).length > 0,
+      is_spoiler: !!(p as any).is_spoiler,
+      spoiler_achievement_name: (p as any).spoiler_achievement_name || null,
     });
     setReplies((rs || []).map((r: any) => {
       const m = r.content.match(/^@(\S+)\s/);
@@ -178,7 +181,9 @@ export default function MForumPost() {
             </span>
             <span>{post.author}</span>
           </Link>
-          <p className="text-base mt-2 whitespace-pre-wrap">{post.content}</p>
+          <SpoilerGuard isSpoiler={post.is_spoiler} achievementName={post.spoiler_achievement_name} productId={post.product_id} className="mt-2">
+            <p className="text-base whitespace-pre-wrap">{post.content}</p>
+          </SpoilerGuard>
           <div className="flex items-center gap-3 mt-3 text-xs text-muted-foreground">
             <button onClick={togglePostLike} className={`flex items-center gap-1 hover:text-primary transition-colors ${post.iLiked ? 'text-primary' : ''}`}>
               <ThumbsUp className={`h-3.5 w-3.5 ${post.iLiked ? 'fill-current' : ''}`} />{post.likes_count}

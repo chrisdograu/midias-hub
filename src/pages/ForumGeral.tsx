@@ -3,9 +3,10 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { MessagesSquare, Loader2, Flame, Users, Gamepad2, MessageSquare } from 'lucide-react';
+import SpoilerGuard from '@/components/spoiler/SpoilerGuard';
 
 interface Cat { slug: string; name: string; description: string | null; parent_slug: string | null }
-interface RecentPost { id: string; title: string | null; content: string; created_at: string; product_id: string | null; user_id: string; author: string; product_title: string | null; image_url: string | null }
+interface RecentPost { id: string; title: string | null; content: string; created_at: string; product_id: string | null; user_id: string; author: string; product_title: string | null; image_url: string | null; is_spoiler: boolean; spoiler_achievement_name: string | null }
 
 export default function ForumGeral() {
   const [cats, setCats] = useState<Cat[]>([]);
@@ -17,7 +18,7 @@ export default function ForumGeral() {
     (async () => {
       const [{ data: cs }, { data: ps }] = await Promise.all([
         supabase.from('forum_categories').select('slug,name,description,parent_slug').eq('is_community', true).order('display_order'),
-        supabase.from('forum_posts').select('id,title,content,created_at,product_id,user_id').order('created_at', { ascending: false }).limit(20),
+        supabase.from('forum_posts').select('id,title,content,created_at,product_id,user_id,is_spoiler,spoiler_achievement_name').order('created_at', { ascending: false }).limit(20),
       ]);
       setCats((cs as any) || []);
       const userIds = new Set<string>(); const prodIds = new Set<string>();
@@ -28,10 +29,12 @@ export default function ForumGeral() {
       ]);
       const profMap = new Map((profs || []).map(p => [p.id, p.display_name || 'Usuário']));
       const prodMap = new Map((prods || []).map(p => [p.id, p]));
-      setPosts((ps || []).map(p => ({
+      setPosts((ps || []).map((p: any) => ({
         ...p, author: profMap.get(p.user_id) || 'Usuário',
         product_title: p.product_id ? prodMap.get(p.product_id)?.title || null : null,
         image_url: p.product_id ? prodMap.get(p.product_id)?.image_url || null : null,
+        is_spoiler: !!p.is_spoiler,
+        spoiler_achievement_name: p.spoiler_achievement_name || null,
       })));
 
       const countByGame = new Map<string, number>();
@@ -109,7 +112,9 @@ export default function ForumGeral() {
                       {p.image_url && <div className="w-12 h-16 rounded bg-muted overflow-hidden shrink-0"><img src={p.image_url} alt="" className="w-full h-full object-cover" /></div>}
                       <div className="flex-1 min-w-0">
                         {p.title && <p className="font-semibold text-sm">{p.title}</p>}
-                        <p className="text-sm text-muted-foreground line-clamp-2">{p.content}</p>
+                        <SpoilerGuard isSpoiler={p.is_spoiler} achievementName={p.spoiler_achievement_name} productId={p.product_id}>
+                          <p className="text-sm text-muted-foreground line-clamp-2">{p.content}</p>
+                        </SpoilerGuard>
                         <div className="flex items-center gap-2 mt-1.5 text-[10px] text-muted-foreground">
                           <span>{p.author}</span>
                           {p.product_title && <><span>·</span><span className="text-primary">{p.product_title}</span></>}

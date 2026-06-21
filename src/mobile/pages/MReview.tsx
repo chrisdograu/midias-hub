@@ -11,6 +11,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { ItemActionsMenu } from '@/components/ItemActionsMenu';
+import SpoilerGuard from '@/components/spoiler/SpoilerGuard';
+import SpoilerComposerControls from '@/components/spoiler/SpoilerComposerControls';
 
 interface Produto {
   id: string;
@@ -36,6 +38,8 @@ interface ReviewItem {
   likes: number;
   dislikes: number;
   myReaction: 'like' | 'dislike' | null;
+  is_spoiler: boolean;
+  spoiler_achievement_name: string | null;
 }
 
 type Sort = 'popular' | 'recent' | 'top';
@@ -65,6 +69,8 @@ export default function MReview() {
 
   const [myRating, setMyRating] = useState(0);
   const [myComment, setMyComment] = useState('');
+  const [mySpoiler, setMySpoiler] = useState(false);
+  const [myAchievement, setMyAchievement] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const canDeleteReview = (reviewUserId: string) => !!user && user.id === reviewUserId;
   const canReportReview = (reviewUserId: string) => !user || user.id !== reviewUserId;
@@ -84,7 +90,7 @@ export default function MReview() {
     if (prod) {
       const { data: revs } = await supabase
         .from('avaliacoes')
-        .select('id, rating, comment, created_at, user_id')
+        .select('id, rating, comment, created_at, user_id, is_spoiler, spoiler_achievement_name')
         .eq('product_id', productId)
         .eq('is_approved', true)
         .order('created_at', { ascending: false });
@@ -122,7 +128,7 @@ export default function MReview() {
         dislikesMap.get(d.review_id)!.add(d.user_id);
       });
 
-      const items: ReviewItem[] = (revs || []).map(r => {
+      const items: ReviewItem[] = (revs || []).map((r: any) => {
         const p = profileMap.get(r.user_id);
         const likeSet = likesMap.get(r.id) || new Set();
         const disSet = dislikesMap.get(r.id) || new Set();
@@ -140,6 +146,8 @@ export default function MReview() {
           likes: likeSet.size,
           dislikes: disSet.size,
           myReaction,
+          is_spoiler: !!r.is_spoiler,
+          spoiler_achievement_name: r.spoiler_achievement_name || null,
         };
       });
 
@@ -260,7 +268,12 @@ export default function MReview() {
 
     setSubmitting(true);
     const existing = reviews.find(r => r.user_id === user.id);
-    const payload = { product_id: productId, user_id: user.id, rating: myRating, comment: myComment.trim() || null };
+    const payload = {
+      product_id: productId, user_id: user.id, rating: myRating,
+      comment: myComment.trim() || null,
+      is_spoiler: mySpoiler,
+      spoiler_achievement_name: myAchievement,
+    } as any;
     const { error } = existing
       ? await supabase.from('avaliacoes').update(payload).eq('id', existing.id)
       : await supabase.from('avaliacoes').insert(payload);
@@ -271,7 +284,7 @@ export default function MReview() {
     await supabase.from('biblioteca_usuario')
       .upsert({ user_id: user.id, product_id: productId, status: 'ja_joguei' }, { onConflict: 'user_id,product_id' });
     toast.success(existing ? '✏️ Review atualizada' : '⭐ Review publicada — adicionada como "já joguei"');
-    setMyComment('');
+    setMyComment(''); setMySpoiler(false); setMyAchievement(null);
     load();
   };
 
@@ -440,6 +453,15 @@ export default function MReview() {
             rows={3}
             className="w-full px-3 py-2 bg-background/60 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
           />
+          {user && (
+            <div className="mt-2">
+              <SpoilerComposerControls
+                isSpoiler={mySpoiler} onIsSpoilerChange={setMySpoiler}
+                achievementName={myAchievement} onAchievementNameChange={setMyAchievement}
+                productId={productId}
+              />
+            </div>
+          )}
           <div className="flex justify-end mt-2">
             <button
               onClick={submitReview}
@@ -548,7 +570,11 @@ export default function MReview() {
                     reportLabel="review"
                   />
                 </header>
-                {r.comment && <p className="text-sm text-foreground whitespace-pre-wrap">{r.comment}</p>}
+                {r.comment && (
+                  <SpoilerGuard isSpoiler={r.is_spoiler} achievementName={r.spoiler_achievement_name} productId={productId}>
+                    <p className="text-sm text-foreground whitespace-pre-wrap">{r.comment}</p>
+                  </SpoilerGuard>
+                )}
                 <footer className="flex items-center gap-2 mt-3">
                   <button
                     onClick={() => handleReact(r, 'like')}
