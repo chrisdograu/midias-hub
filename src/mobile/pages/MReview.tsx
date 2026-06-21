@@ -126,7 +126,7 @@ export default function MReview() {
         dislikesMap.get(d.review_id)!.add(d.user_id);
       });
 
-      const items: ReviewItem[] = (revs || []).map(r => {
+      const items: ReviewItem[] = (revs || []).map((r: any) => {
         const p = profileMap.get(r.user_id);
         const likeSet = likesMap.get(r.id) || new Set();
         const disSet = dislikesMap.get(r.id) || new Set();
@@ -144,6 +144,8 @@ export default function MReview() {
           likes: likeSet.size,
           dislikes: disSet.size,
           myReaction,
+          is_spoiler: !!r.is_spoiler,
+          spoiler_achievement_name: r.spoiler_achievement_name || null,
         };
       });
 
