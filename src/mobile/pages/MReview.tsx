@@ -268,7 +268,12 @@ export default function MReview() {
 
     setSubmitting(true);
     const existing = reviews.find(r => r.user_id === user.id);
-    const payload = { product_id: productId, user_id: user.id, rating: myRating, comment: myComment.trim() || null };
+    const payload = {
+      product_id: productId, user_id: user.id, rating: myRating,
+      comment: myComment.trim() || null,
+      is_spoiler: mySpoiler,
+      spoiler_achievement_name: myAchievement,
+    } as any;
     const { error } = existing
       ? await supabase.from('avaliacoes').update(payload).eq('id', existing.id)
       : await supabase.from('avaliacoes').insert(payload);
