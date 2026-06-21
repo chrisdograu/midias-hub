@@ -367,9 +367,14 @@ export default function MForumGame() {
 
       {postOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-end" onClick={() => setPostOpen(false)}>
-          <motion.div initial={{ y: 200 }} animate={{ y: 0 }} className="w-full bg-card rounded-t-2xl p-5 space-y-3" onClick={e => e.stopPropagation()}>
+          <motion.div initial={{ y: 200 }} animate={{ y: 0 }} className="w-full bg-card rounded-t-2xl p-5 space-y-3 max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <h3 className="font-bold">Criar post em M/{game.title.toLowerCase().replace(/\s+/g, '').slice(0, 12)}</h3>
             <textarea value={postText} onChange={e => setPostText(e.target.value)} maxLength={2000} rows={5} placeholder="Compartilhe algo sobre o jogo..." className="w-full p-3 bg-background border border-border rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/50" />
+            <SpoilerComposerControls
+              isSpoiler={postSpoiler} onIsSpoilerChange={setPostSpoiler}
+              achievementName={postAchievement} onAchievementNameChange={setPostAchievement}
+              productId={gameId}
+            />
             <div className="flex gap-2">
               <button onClick={() => setPostOpen(false)} className="flex-1 py-2.5 rounded-lg bg-secondary text-secondary-foreground text-sm font-semibold">Cancelar</button>
               <button onClick={submitPost} className="flex-1 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-semibold">Publicar</button>
@@ -379,10 +384,15 @@ export default function MForumGame() {
       )}
       {reviewOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-end" onClick={() => setReviewOpen(false)}>
-          <motion.div initial={{ y: 200 }} animate={{ y: 0 }} className="w-full bg-card rounded-t-2xl p-5 space-y-3" onClick={e => e.stopPropagation()}>
+          <motion.div initial={{ y: 200 }} animate={{ y: 0 }} className="w-full bg-card rounded-t-2xl p-5 space-y-3 max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <h3 className="font-bold">Avaliar {game.title}</h3>
             <div className="flex justify-center"><InteractiveHalfStar value={reviewRating} onChange={setReviewRating} /></div>
             <textarea value={reviewText} onChange={e => setReviewText(e.target.value)} maxLength={1000} rows={4} placeholder="Conte sua experiência (opcional)..." className="w-full p-3 bg-background border border-border rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-accent/50" />
+            <SpoilerComposerControls
+              isSpoiler={reviewSpoiler} onIsSpoilerChange={setReviewSpoiler}
+              achievementName={reviewAchievement} onAchievementNameChange={setReviewAchievement}
+              productId={gameId}
+            />
             <div className="flex gap-2">
               <button onClick={() => setReviewOpen(false)} className="flex-1 py-2.5 rounded-lg bg-secondary text-secondary-foreground text-sm font-semibold">Cancelar</button>
               <button onClick={submitReview} className="flex-1 py-2.5 rounded-lg bg-accent text-accent-foreground text-sm font-semibold">Publicar review</button>
