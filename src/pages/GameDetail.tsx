@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useProduto, useProdutos } from '@/hooks/useProdutos';
@@ -6,7 +6,7 @@ import { useCart } from '@/hooks/useCart';
 import { useFavoritos } from '@/hooks/useFavoritos';
 import { useAvaliacoes } from '@/hooks/useAvaliacoes';
 import { useAuth } from '@/hooks/useAuth';
-import { ShoppingCart, ArrowLeft, Shield, Zap, Clock, Heart, Loader2, AlertTriangle, Users } from 'lucide-react';
+import { ShoppingCart, ArrowLeft, Shield, Zap, Clock, Heart, Loader2, AlertTriangle, Users, Sparkles } from 'lucide-react';
 import { HalfStarDisplay, InteractiveHalfStar } from '@/components/HalfStarRating';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -14,6 +14,9 @@ import GameCard from '@/components/GameCard';
 import PriceHistoryChart from '@/components/PriceHistoryChart';
 import ProductGallery from '@/components/ProductGallery';
 import ProductBundles from '@/components/ProductBundles';
+import { GamePageCustomizer } from '@/components/cosmetics/GamePageCustomizer';
+import { GamePageCosmeticOverlay } from '@/components/cosmetics/GamePageCosmeticOverlay';
+import { userOwnsGame } from '@/hooks/useCosmetics';
 
 export default function GameDetail() {
   const { id } = useParams();
@@ -24,9 +27,16 @@ export default function GameDetail() {
   const { isFavorito, toggleFavorito } = useFavoritos();
   const { avgRating, totalReviews, userRating, submitRating } = useAvaliacoes(id);
 
+  const [owns, setOwns] = useState(false);
+  const [customizerOpen, setCustomizerOpen] = useState(false);
+
   useEffect(() => {
     if (id) supabase.from('product_views' as any).insert({ product_id: id, user_id: user?.id || null });
   }, [id, user?.id]);
+
+  useEffect(() => {
+    if (user && id) userOwnsGame(user.id, id).then(setOwns);
+  }, [user?.id, id]);
 
   if (isLoading) return <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
 
@@ -63,10 +73,19 @@ export default function GameDetail() {
   const installmentValue = (game.price / installments).toFixed(2);
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8" data-game-cosmetic={game.id}>
+      <GamePageCosmeticOverlay ownerId={user?.id} productId={game.id} />
       <Link to="/catalogo" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors mb-6">
         <ArrowLeft className="h-4 w-4" /> Voltar ao catálogo
       </Link>
+
+      {owns && (
+        <button onClick={() => setCustomizerOpen(true)}
+          className="mb-4 inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-primary/40 bg-primary/5 hover:bg-primary/10 text-xs font-semibold text-primary">
+          <Sparkles className="h-4 w-4" /> Personalizar esta página
+        </button>
+      )}
+      <GamePageCustomizer productId={game.id} open={customizerOpen} onOpenChange={setCustomizerOpen} />
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="lg:col-span-2">
           <div className="relative">
