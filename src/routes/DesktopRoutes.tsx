@@ -45,6 +45,7 @@ const XPMobile = lazy(() => import("@/desktop/pages/XPMobile"));
 const XPWeb = lazy(() => import("@/desktop/pages/XPWeb"));
 const TitulosAdmin = lazy(() => import("@/desktop/pages/TitulosAdmin"));
 const RecompensasAdmin = lazy(() => import("@/desktop/pages/RecompensasAdmin"));
+const GameRewardsAdmin = lazy(() => import("@/desktop/pages/GameRewardsAdmin"));
 const IntegracoesAdmin = lazy(() => import("@/desktop/pages/IntegracoesAdmin"));
 
 export const desktopRoutes = (
