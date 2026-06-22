@@ -1406,6 +1406,59 @@ export type Database = {
           },
         ]
       }
+      game_rewards: {
+        Row: {
+          asset_url: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          kind: Database["public"]["Enums"]["reward_kind"]
+          name: string
+          payload: Json
+          product_id: string
+          rarity: Database["public"]["Enums"]["reward_rarity"]
+          unlock_criteria: Json
+          updated_at: string
+        }
+        Insert: {
+          asset_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          kind: Database["public"]["Enums"]["reward_kind"]
+          name: string
+          payload?: Json
+          product_id: string
+          rarity?: Database["public"]["Enums"]["reward_rarity"]
+          unlock_criteria?: Json
+          updated_at?: string
+        }
+        Update: {
+          asset_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          kind?: Database["public"]["Enums"]["reward_kind"]
+          name?: string
+          payload?: Json
+          product_id?: string
+          rarity?: Database["public"]["Enums"]["reward_rarity"]
+          unlock_criteria?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_rewards_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       game_screenshot_likes: {
         Row: {
           created_at: string
@@ -3838,6 +3891,38 @@ export type Database = {
           },
         ]
       }
+      user_cosmetic_loadout: {
+        Row: {
+          id: string
+          reward_id: string | null
+          slot: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          reward_id?: string | null
+          slot: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          reward_id?: string | null
+          slot?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_cosmetic_loadout_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "game_rewards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_follows: {
         Row: {
           created_at: string
@@ -3884,6 +3969,77 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_game_page_loadout: {
+        Row: {
+          id: string
+          product_id: string
+          reward_id: string | null
+          slot: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          product_id: string
+          reward_id?: string | null
+          slot: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          product_id?: string
+          reward_id?: string | null
+          slot?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_game_page_loadout_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_game_page_loadout_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "game_rewards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_game_rewards: {
+        Row: {
+          id: string
+          reward_id: string
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          reward_id: string
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          reward_id?: string
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_game_rewards_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "game_rewards"
             referencedColumns: ["id"]
           },
         ]
@@ -4087,6 +4243,10 @@ export type Database = {
         Returns: boolean
       }
       check_and_award_badges: { Args: { _user_id: string }; Returns: undefined }
+      check_game_reward_unlocks: {
+        Args: { _product_id: string; _user_id: string }
+        Returns: undefined
+      }
       get_employee_position: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["employee_position"]
@@ -4196,6 +4356,15 @@ export type Database = {
         | "somente_forum"
         | "somente_loja"
         | "descontinuado"
+      reward_kind:
+        | "avatar_frame"
+        | "profile_banner"
+        | "profile_accent"
+        | "game_card_skin"
+        | "game_page_theme"
+        | "character_icon"
+        | "sticker"
+      reward_rarity: "common" | "rare" | "epic" | "legendary" | "mythic"
       social_content_state: "novo" | "visto" | "curtido" | "oculto"
       stock_movement_type: "entrada" | "saida" | "ajuste"
       suggestion_status: "pendente" | "aprovado" | "rejeitado"
@@ -4378,6 +4547,16 @@ export const Constants = {
         "somente_loja",
         "descontinuado",
       ],
+      reward_kind: [
+        "avatar_frame",
+        "profile_banner",
+        "profile_accent",
+        "game_card_skin",
+        "game_page_theme",
+        "character_icon",
+        "sticker",
+      ],
+      reward_rarity: ["common", "rare", "epic", "legendary", "mythic"],
       social_content_state: ["novo", "visto", "curtido", "oculto"],
       stock_movement_type: ["entrada", "saida", "ajuste"],
       suggestion_status: ["pendente", "aprovado", "rejeitado"],
