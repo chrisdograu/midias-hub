@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useProduto, useProdutos } from '@/hooks/useProdutos';
@@ -6,7 +6,7 @@ import { useCart } from '@/hooks/useCart';
 import { useFavoritos } from '@/hooks/useFavoritos';
 import { useAvaliacoes } from '@/hooks/useAvaliacoes';
 import { useAuth } from '@/hooks/useAuth';
-import { ShoppingCart, ArrowLeft, Shield, Zap, Clock, Heart, Loader2, AlertTriangle, Users } from 'lucide-react';
+import { ShoppingCart, ArrowLeft, Shield, Zap, Clock, Heart, Loader2, AlertTriangle, Users, Sparkles } from 'lucide-react';
 import { HalfStarDisplay, InteractiveHalfStar } from '@/components/HalfStarRating';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
@@ -14,6 +14,9 @@ import GameCard from '@/components/GameCard';
 import PriceHistoryChart from '@/components/PriceHistoryChart';
 import ProductGallery from '@/components/ProductGallery';
 import ProductBundles from '@/components/ProductBundles';
+import { GamePageCustomizer } from '@/components/cosmetics/GamePageCustomizer';
+import { GamePageCosmeticOverlay } from '@/components/cosmetics/GamePageCosmeticOverlay';
+import { userOwnsGame } from '@/hooks/useCosmetics';
 
 export default function GameDetail() {
   const { id } = useParams();
