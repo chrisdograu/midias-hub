@@ -93,6 +93,7 @@ export const desktopRoutes = (
       <Route path="xp/web" element={<XPWeb />} />
       <Route path="titulos" element={<TitulosAdmin />} />
       <Route path="recompensas" element={<RecompensasAdmin />} />
+      <Route path="recompensas/jogos" element={<GameRewardsAdmin />} />
       <Route path="integracoes" element={<IntegracoesAdmin />} />
     </Route>
   </>
