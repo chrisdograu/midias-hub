@@ -158,6 +158,17 @@ export default function CustomizacaoTab() {
         {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
         Salvar personalização
       </button>
+
+      {/* Inventário de cosméticos desbloqueados em jogos */}
+      <section className="pt-4 border-t border-border">
+        <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-primary" /> Cosméticos de jogos
+        </h3>
+        <p className="text-[11px] text-muted-foreground mb-3">
+          Recompensas desbloqueadas pelos seus jogos. Clique para equipar no perfil.
+        </p>
+        <CosmeticInventoryGrid />
+      </section>
     </div>
   );
 }
