@@ -27,9 +27,16 @@ export default function GameDetail() {
   const { isFavorito, toggleFavorito } = useFavoritos();
   const { avgRating, totalReviews, userRating, submitRating } = useAvaliacoes(id);
 
+  const [owns, setOwns] = useState(false);
+  const [customizerOpen, setCustomizerOpen] = useState(false);
+
   useEffect(() => {
     if (id) supabase.from('product_views' as any).insert({ product_id: id, user_id: user?.id || null });
   }, [id, user?.id]);
+
+  useEffect(() => {
+    if (user && id) userOwnsGame(user.id, id).then(setOwns);
+  }, [user?.id, id]);
 
   if (isLoading) return <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
 
