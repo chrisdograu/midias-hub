@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 export default function RecompensasAdmin() {
   const navigate = useNavigate();
   const sections = [
+    { label: 'Cosméticos por jogo', desc: 'Frames, banners, temas e stickers desbloqueáveis', to: '/desktop/recompensas/jogos' },
     { label: 'Badges', desc: 'Conquistas visuais', to: '/desktop/badges' },
     { label: 'Títulos', desc: 'Títulos exclusivos', to: '/desktop/titulos' },
     { label: 'Cupons', desc: 'Códigos promocionais', to: '/desktop/cupons' },
