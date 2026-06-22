@@ -3,8 +3,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Loader2, Camera, Palette, Trophy, Save, X } from 'lucide-react';
+import { Loader2, Camera, Palette, Trophy, Save, X, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
+import { CosmeticInventoryGrid } from '@/components/cosmetics/CosmeticInventoryGrid';
 
 const PRESETS = ['#14B8A6', '#A855F7', '#EF4444', '#F97316', '#EAB308', '#22C55E', '#3B82F6', '#EC4899'];
 
