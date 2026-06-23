@@ -15,6 +15,7 @@ import NotificationPrefsTab from '@/components/perfil/NotificationPrefsTab';
 import FriendFavoritesTab from '@/components/perfil/FriendFavoritesTab';
 import HighlightsEditor from '@/components/perfil/HighlightsEditor';
 import CustomizacaoTab from '@/components/perfil/CustomizacaoTab';
+import { CosmeticUnlocksCenter } from '@/components/cosmetics/CosmeticUnlocksCenter';
 import LevelTitleBadge from '@/components/LevelTitleBadge';
 import ActiveTitleSelector from '@/components/ActiveTitleSelector';
 import SellerProfileSwitcher from '@/components/seller/SellerProfileSwitcher';
