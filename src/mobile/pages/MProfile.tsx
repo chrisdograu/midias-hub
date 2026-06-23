@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Loader2, ShoppingBag, Settings, LogOut, Send, Flag, ShieldOff, ArrowLeft, UserPlus, UserCheck, Users, Lock, Star, Newspaper, BookMarked } from 'lucide-react';
+import { Loader2, ShoppingBag, Settings, LogOut, Send, Flag, ShieldOff, ArrowLeft, UserPlus, UserCheck, Users, Lock, Star, Newspaper, BookMarked, Palette } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { HalfStarDisplay } from '@/components/HalfStarRating';
@@ -9,6 +9,10 @@ import LevelTitleBadge from '@/components/LevelTitleBadge';
 import UserBadges from '@/components/UserBadges';
 import { useFollow } from '@/mobile/lib/useFollow';
 import { toast } from 'sonner';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import CustomizacaoTab from '@/components/perfil/CustomizacaoTab';
+import { ProfileCosmeticOverlay } from '@/components/cosmetics/ProfileCosmeticOverlay';
+import { CosmeticUnlocksCenter } from '@/components/cosmetics/CosmeticUnlocksCenter';
 
 interface Profile { id: string; display_name: string | null; avatar_url: string | null; bio: string | null; seller_bio?: string | null; username: string | null; is_private?: boolean; created_at?: string | null }
 const JA_JOGUEI_STATUSES = ['ja_joguei', 'zerado', 'jogando', 'pausado', 'abandonado'];
