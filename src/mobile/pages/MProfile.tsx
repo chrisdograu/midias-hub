@@ -142,8 +142,15 @@ export default function MProfile() {
   const isSeller = mode === 'vendedor';
 
   return (
-    <div className="px-4 py-5 space-y-5">
+    <div className="px-4 py-5 space-y-5" data-profile-cosmetic={targetId}>
+      <ProfileCosmeticOverlay ownerId={targetId} />
       {!isOwn && <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-sm text-muted-foreground"><ArrowLeft className="h-4 w-4" /> Voltar</button>}
+
+      {isOwn && (
+        <div className="flex justify-end">
+          <CosmeticUnlocksCenter customizationHref="#" />
+        </div>
+      )}
 
       {/* Toggle de modo SEMPRE no topo */}
       <div className="flex gap-1 p-1 bg-secondary/40 rounded-full text-[11px] font-semibold">
