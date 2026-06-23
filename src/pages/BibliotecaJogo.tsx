@@ -45,6 +45,8 @@ export default function BibliotecaJogo() {
   const [posts, setPosts] = useState<any[]>([]);
   const [friendsActivity, setFriendsActivity] = useState<any[]>([]);
   const { submitting, guard } = useSubmitGuard();
+  const [customizerOpen, setCustomizerOpen] = useState(false);
+
 
   useEffect(() => {
     if (!user || !productId) return;
