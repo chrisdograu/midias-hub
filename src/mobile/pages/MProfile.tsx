@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Loader2, ShoppingBag, Settings, LogOut, Send, Flag, ShieldOff, ArrowLeft, UserPlus, UserCheck, Users, Lock, Star, Newspaper, BookMarked } from 'lucide-react';
+import { Loader2, ShoppingBag, Settings, LogOut, Send, Flag, ShieldOff, ArrowLeft, UserPlus, UserCheck, Users, Lock, Star, Newspaper, BookMarked, Palette } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { HalfStarDisplay } from '@/components/HalfStarRating';
@@ -9,6 +9,10 @@ import LevelTitleBadge from '@/components/LevelTitleBadge';
 import UserBadges from '@/components/UserBadges';
 import { useFollow } from '@/mobile/lib/useFollow';
 import { toast } from 'sonner';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import CustomizacaoTab from '@/components/perfil/CustomizacaoTab';
+import { ProfileCosmeticOverlay } from '@/components/cosmetics/ProfileCosmeticOverlay';
+import { CosmeticUnlocksCenter } from '@/components/cosmetics/CosmeticUnlocksCenter';
 
 interface Profile { id: string; display_name: string | null; avatar_url: string | null; bio: string | null; seller_bio?: string | null; username: string | null; is_private?: boolean; created_at?: string | null }
 const JA_JOGUEI_STATUSES = ['ja_joguei', 'zerado', 'jogando', 'pausado', 'abandonado'];
@@ -45,6 +49,7 @@ export default function MProfile() {
   useEffect(() => { try { localStorage.setItem('m:libFilter', libFilter); } catch {} setLibPage(1); }, [libFilter]);
   const [reportOpen, setReportOpen] = useState(false);
   const [reportText, setReportText] = useState('');
+  const [customizeOpen, setCustomizeOpen] = useState(false);
   const [followersOpen, setFollowersOpen] = useState<'followers' | 'following' | null>(null);
   const [followList, setFollowList] = useState<{ id: string; display_name: string | null; avatar_url: string | null }[]>([]);
 
@@ -137,8 +142,15 @@ export default function MProfile() {
   const isSeller = mode === 'vendedor';
 
   return (
-    <div className="px-4 py-5 space-y-5">
+    <div className="px-4 py-5 space-y-5" data-profile-cosmetic={targetId}>
+      <ProfileCosmeticOverlay ownerId={targetId} />
       {!isOwn && <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-sm text-muted-foreground"><ArrowLeft className="h-4 w-4" /> Voltar</button>}
+
+      {isOwn && (
+        <div className="flex justify-end">
+          <CosmeticUnlocksCenter customizationHref="#" />
+        </div>
+      )}
 
       {/* Toggle de modo SEMPRE no topo */}
       <div className="flex gap-1 p-1 bg-secondary/40 rounded-full text-[11px] font-semibold">
@@ -211,12 +223,20 @@ export default function MProfile() {
 
       {isOwn && (
         <div className="grid grid-cols-2 gap-2">
+          <button onClick={() => setCustomizeOpen(true)} className="glass rounded-xl p-3 flex flex-col items-center gap-1 hover:border-primary/40"><Palette className="h-5 w-5 text-primary" /><span className="text-xs font-semibold">Customização</span></button>
           <Link to="/m/favoritos" className="glass rounded-xl p-3 flex flex-col items-center gap-1 hover:border-primary/40"><span className="text-base">❤️</span><span className="text-xs font-semibold">Favoritos</span></Link>
           <Link to="/m/amigos" className="glass rounded-xl p-3 flex flex-col items-center gap-1 hover:border-accent/40"><Users className="h-5 w-5 text-accent" /><span className="text-xs font-semibold">Amigos</span></Link>
           <Link to="/m/marketplace/novo" className="glass rounded-xl p-3 flex flex-col items-center gap-1 hover:border-primary/40"><ShoppingBag className="h-5 w-5 text-primary" /><span className="text-xs font-semibold">Novo anúncio</span></Link>
           <Link to="/m/config" className="glass rounded-xl p-3 flex flex-col items-center gap-1 hover:border-accent/40"><Settings className="h-5 w-5 text-accent" /><span className="text-xs font-semibold">Configurações</span></Link>
         </div>
       )}
+
+      <Sheet open={customizeOpen} onOpenChange={setCustomizeOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+          <SheetHeader><SheetTitle className="flex items-center gap-2"><Palette className="h-4 w-4 text-primary" /> Customização</SheetTitle></SheetHeader>
+          <div className="mt-4"><CustomizacaoTab /></div>
+        </SheetContent>
+      </Sheet>
 
       {profile.is_private && !isOwn ? (
         <div className="glass rounded-xl p-6 text-center text-muted-foreground">

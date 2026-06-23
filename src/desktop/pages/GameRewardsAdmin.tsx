@@ -15,6 +15,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { AdminPageHeader } from '../components/AdminPageHeader';
 import { CosmeticPreview } from '@/components/cosmetics/CosmeticPreview';
+import { GamePagePreviewSimulator } from '@/components/cosmetics/GamePagePreviewSimulator';
 import { GameReward, RewardKind, RewardRarity, KIND_LABEL, RARITY_COLOR } from '@/hooks/useCosmetics';
 
 const KINDS: RewardKind[] = ['avatar_frame','profile_banner','profile_accent','game_card_skin','game_page_theme','character_icon','sticker'];
@@ -188,6 +189,10 @@ export default function GameRewardsAdmin() {
             </div>
           }
         </CardContent></Card>
+      )}
+
+      {productId && rewards.length > 0 && (
+        <GamePagePreviewSimulator productId={productId} rewards={rewards} />
       )}
 
       <Dialog open={!!editing} onOpenChange={o => !o && setEditing(null)}>

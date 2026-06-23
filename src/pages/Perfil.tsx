@@ -15,6 +15,7 @@ import NotificationPrefsTab from '@/components/perfil/NotificationPrefsTab';
 import FriendFavoritesTab from '@/components/perfil/FriendFavoritesTab';
 import HighlightsEditor from '@/components/perfil/HighlightsEditor';
 import CustomizacaoTab from '@/components/perfil/CustomizacaoTab';
+import { CosmeticUnlocksCenter } from '@/components/cosmetics/CosmeticUnlocksCenter';
 import LevelTitleBadge from '@/components/LevelTitleBadge';
 import ActiveTitleSelector from '@/components/ActiveTitleSelector';
 import SellerProfileSwitcher from '@/components/seller/SellerProfileSwitcher';
@@ -159,9 +160,12 @@ export default function Perfil() {
 
           <TabsContent value="customizacao" className="mt-4">
             <div className="bg-card border border-border rounded-xl p-6">
-              <h2 className="text-base font-semibold text-foreground mb-1 flex items-center gap-2">
-                <Palette className="h-4 w-4 text-primary" /> Personalização visual
-              </h2>
+              <div className="flex items-start justify-between gap-3 mb-1">
+                <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
+                  <Palette className="h-4 w-4 text-primary" /> Personalização visual
+                </h2>
+                <CosmeticUnlocksCenter variant="full" customizationHref="/perfil" />
+              </div>
               <p className="text-xs text-muted-foreground mb-4">Banner, cor de destaque e vitrine de troféus do seu perfil público.</p>
               <CustomizacaoTab />
             </div>
