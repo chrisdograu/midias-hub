@@ -126,11 +126,19 @@ export default function BibliotecaJogo() {
   const daysOwned = Math.floor((Date.now() - acquiredDate.getTime()) / 86400000);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-secondary/10 to-background">
+    <div className="min-h-screen bg-gradient-to-b from-background via-secondary/10 to-background" data-game-cosmetic={productId}>
+      <GamePageCosmeticOverlay ownerId={user?.id} productId={productId!} />
+      <GamePageCustomizer productId={productId!} open={customizerOpen} onOpenChange={setCustomizerOpen} />
       <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <Link to="/biblioteca" className="text-sm text-muted-foreground hover:text-primary inline-flex items-center gap-1 mb-4">
-          <ArrowLeft className="h-4 w-4" /> Voltar à biblioteca
-        </Link>
+        <div className="flex items-center justify-between mb-4">
+          <Link to="/biblioteca" className="text-sm text-muted-foreground hover:text-primary inline-flex items-center gap-1">
+            <ArrowLeft className="h-4 w-4" /> Voltar à biblioteca
+          </Link>
+          <button onClick={() => setCustomizerOpen(true)}
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-primary/40 bg-primary/5 hover:bg-primary/10 text-xs font-semibold text-primary">
+            <Sparkles className="h-4 w-4" /> Personalizar esta página
+          </button>
+        </div>
 
         {/* Hero cinematográfico - jornada do jogador */}
         <motion.div
