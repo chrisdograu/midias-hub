@@ -223,12 +223,20 @@ export default function MProfile() {
 
       {isOwn && (
         <div className="grid grid-cols-2 gap-2">
+          <button onClick={() => setCustomizeOpen(true)} className="glass rounded-xl p-3 flex flex-col items-center gap-1 hover:border-primary/40 text-left items-center"><Palette className="h-5 w-5 text-primary" /><span className="text-xs font-semibold">Customização</span></button>
           <Link to="/m/favoritos" className="glass rounded-xl p-3 flex flex-col items-center gap-1 hover:border-primary/40"><span className="text-base">❤️</span><span className="text-xs font-semibold">Favoritos</span></Link>
           <Link to="/m/amigos" className="glass rounded-xl p-3 flex flex-col items-center gap-1 hover:border-accent/40"><Users className="h-5 w-5 text-accent" /><span className="text-xs font-semibold">Amigos</span></Link>
           <Link to="/m/marketplace/novo" className="glass rounded-xl p-3 flex flex-col items-center gap-1 hover:border-primary/40"><ShoppingBag className="h-5 w-5 text-primary" /><span className="text-xs font-semibold">Novo anúncio</span></Link>
           <Link to="/m/config" className="glass rounded-xl p-3 flex flex-col items-center gap-1 hover:border-accent/40"><Settings className="h-5 w-5 text-accent" /><span className="text-xs font-semibold">Configurações</span></Link>
         </div>
       )}
+
+      <Sheet open={customizeOpen} onOpenChange={setCustomizeOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+          <SheetHeader><SheetTitle className="flex items-center gap-2"><Palette className="h-4 w-4 text-primary" /> Customização</SheetTitle></SheetHeader>
+          <div className="mt-4"><CustomizacaoTab /></div>
+        </SheetContent>
+      </Sheet>
 
       {profile.is_private && !isOwn ? (
         <div className="glass rounded-xl p-6 text-center text-muted-foreground">
