@@ -49,6 +49,7 @@ export default function MProfile() {
   useEffect(() => { try { localStorage.setItem('m:libFilter', libFilter); } catch {} setLibPage(1); }, [libFilter]);
   const [reportOpen, setReportOpen] = useState(false);
   const [reportText, setReportText] = useState('');
+  const [customizeOpen, setCustomizeOpen] = useState(false);
   const [followersOpen, setFollowersOpen] = useState<'followers' | 'following' | null>(null);
   const [followList, setFollowList] = useState<{ id: string; display_name: string | null; avatar_url: string | null }[]>([]);
 
