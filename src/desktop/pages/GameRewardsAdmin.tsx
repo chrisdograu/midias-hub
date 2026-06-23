@@ -191,6 +191,10 @@ export default function GameRewardsAdmin() {
         </CardContent></Card>
       )}
 
+      {productId && rewards.length > 0 && (
+        <GamePagePreviewSimulator productId={productId} rewards={rewards} />
+      )}
+
       <Dialog open={!!editing} onOpenChange={o => !o && setEditing(null)}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editing?.id ? 'Editar recompensa' : 'Nova recompensa'}</DialogTitle></DialogHeader>
