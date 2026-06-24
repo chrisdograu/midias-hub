@@ -10,7 +10,9 @@ export default function Oportunidades() {
           Sinais explicáveis — você sempre vê <em>por que</em> algo apareceu aqui.
         </p>
       </header>
-      <OrbitRadar limit={6} />
+      {/* Mesmo `limit` que o OpportunityCenter usa internamente, para compartilhar o cache React Query (`['radar-delta', 8]`) e evitar 2x fetches do radar na mesma rota. */}
+      <OrbitRadar limit={8} />
+
       <OpportunityCenter />
     </div>
   );
