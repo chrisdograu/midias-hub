@@ -62,11 +62,18 @@ export default function BundleStoreGrid({ limit = 8 }: { limit?: number }) {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center py-8" aria-label="Carregando bundles">
-        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+      <div
+        className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"
+        aria-busy="true"
+        aria-label="Carregando bundles"
+      >
+        {Array.from({ length: Math.min(limit, 4) }).map((_, i) => (
+          <GameCardSkeleton key={i} />
+        ))}
       </div>
     );
   }
+
   if (isError) return null;
   if (!bundles.length) return null;
 
