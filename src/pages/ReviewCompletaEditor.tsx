@@ -121,7 +121,10 @@ export default function ReviewCompletaEditor() {
         <p className="text-xs text-primary font-semibold uppercase tracking-wider flex items-center gap-1">
           <BookOpen className="h-3 w-3" /> Review Completa · Diário gamer privado
         </p>
-        <h1 className="text-2xl font-bold text-foreground mt-1">{game?.title || 'Carregando...'}</h1>
+        <h1 className="text-2xl font-bold text-foreground mt-1 min-h-[2rem]">
+          {game?.title ?? <span className="inline-block h-6 w-48 align-middle rounded-md bg-muted animate-pulse" aria-label="Carregando título do jogo" />}
+        </h1>
+
         <p className="text-xs text-muted-foreground mt-1">
           Só seus amigos (ou close friends) podem ler. Diferente da Review pública mobile.
         </p>
