@@ -62,34 +62,16 @@ export default function OpportunityCenter() {
     queryFn: () => fetchByIds(radar.map(r => r.product_id)),
   });
 
-  // Próximos da sua órbita: from friends' libraries / user favorites
+  // Próximos da sua órbita: jogos populares entre amigos mútuos (reusa cache de `useMutualFriends`)
   const orbitQ = useQuery({
-    queryKey: ['opp-orbit', user?.id],
-    enabled: !!user,
+    queryKey: ['opp-orbit', user?.id, friendIds.length],
+    enabled: !!user && friendIds.length > 0,
     staleTime: 5 * 60_000,
     queryFn: async () => {
-      // friends from accepted conversas
-      const { data: convs } = await supabase
-        .from('conversas')
-        .select('participant_1, participant_2')
-        .eq('status', 'accepted')
-        .or(`participant_1.eq.${user!.id},participant_2.eq.${user!.id}`);
-      const friendIds = new Set<string>();
-      (convs || []).forEach((c: any) => {
-        const other = c.participant_1 === user!.id ? c.participant_2 : c.participant_1;
-        if (other) friendIds.add(other);
-      });
-      if (friendIds.size === 0) return [];
-      const { data: libs } = await supabase
-        .from('biblioteca_usuario')
-        .select('product_id')
-        .in('user_id', [...friendIds])
-        .limit(40);
-      // exclude what user already owns
-      const { data: mine } = await supabase
-        .from('biblioteca_usuario')
-        .select('product_id')
-        .eq('user_id', user!.id);
+      const [{ data: libs }, { data: mine }] = await Promise.all([
+        supabase.from('biblioteca_usuario').select('product_id').in('user_id', friendIds).limit(40),
+        supabase.from('biblioteca_usuario').select('product_id').eq('user_id', user!.id),
+      ]);
       const owned = new Set((mine || []).map((r: any) => r.product_id));
       const counts = new Map<string, number>();
       (libs || []).forEach((r: any) => {
@@ -100,6 +82,7 @@ export default function OpportunityCenter() {
       return fetchByIds(ids);
     },
   });
+
 
   // Fora da sua bolha: rating >= 4.25, categorias fora do histórico
   const bubbleQ = useQuery({
