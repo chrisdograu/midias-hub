@@ -4,6 +4,8 @@ import { useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useRadarDelta } from '@/hooks/useRadarDelta';
+import { useMutualFriends } from '@/hooks/useFriendActivity';
+
 import GameCard from '@/components/GameCard';
 import { mapProdutoToGame, type Game } from '@/lib/gameData';
 import { Percent, Rocket, Target, Sparkles, ChevronRight } from 'lucide-react';
