@@ -200,7 +200,7 @@ export default function Produtos() {
                     </TableCell>
                     <TableCell className="text-center">
                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Mais ações"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => openEdit(p)}><Edit className="h-4 w-4 mr-2" />Editar</DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleToggle(p)}>

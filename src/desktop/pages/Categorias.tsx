@@ -162,9 +162,9 @@ export default function Categorias() {
               <div className="flex items-center justify-between mt-3">
                 <Badge variant="outline" className="gap-1 text-xs"><Package className="h-3 w-3" />{c.produtos_count} produtos</Badge>
                 <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" className="h-7 w-7" title="Visualizar produtos" onClick={() => openView(c)}><Eye className="h-3.5 w-3.5" /></Button>
-                  <Button variant="ghost" size="icon" className="h-7 w-7" title="Editar" onClick={() => openEdit(c)}><Edit className="h-3.5 w-3.5" /></Button>
-                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" title="Excluir" onClick={() => { setSelected(c); setDeleteOpen(true); }}><Trash2 className="h-3.5 w-3.5" /></Button>
+                  <Button variant="ghost" size="icon" className="h-7 w-7" title="Visualizar produtos" onClick={() = aria-label="Visualizar produtos"> openView(c)}><Eye className="h-3.5 w-3.5" /></Button>
+                  <Button variant="ghost" size="icon" className="h-7 w-7" title="Editar" onClick={() = aria-label="Editar"> openEdit(c)}><Edit className="h-3.5 w-3.5" /></Button>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" title="Excluir" onClick={() = aria-label="Excluir"> { setSelected(c); setDeleteOpen(true); }}><Trash2 className="h-3.5 w-3.5" /></Button>
                 </div>
               </div>
             </CardContent>
@@ -231,7 +231,7 @@ export default function Categorias() {
               {formImage ? (
                 <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-muted border border-border">
                   <img src={formImage} alt="preview" className="w-full h-full object-cover" />
-                  <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={() => setFormImage('')}>
+                  <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={() = aria-label="Fechar"> setFormImage('')}>
                     <X className="h-3.5 w-3.5" />
                   </Button>
                 </div>
