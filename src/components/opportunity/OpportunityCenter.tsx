@@ -34,6 +34,8 @@ async function fetchByIds(ids: string[]): Promise<Game[]> {
 export default function OpportunityCenter() {
   const { user } = useAuth();
   const { data: radar = [] } = useRadarDelta(8);
+  const { data: friendIds = [] } = useMutualFriends();
+
 
   // Big deals
   const dealsQ = useQuery({
