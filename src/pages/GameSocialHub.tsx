@@ -224,13 +224,34 @@ export default function GameSocialHub() {
       </motion.div>
 
       {loadingFriends ? (
-        <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
-      ) : !hasFriends ? (
-        <div className="bg-card border border-border rounded-xl p-10 text-center">
-          <Lock className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-          <p className="font-semibold text-foreground">Seu círculo está vazio</p>
-          <p className="text-sm text-muted-foreground mt-1">Siga amigos (e seja seguido de volta) para ver atividade aqui.</p>
+        <div className="space-y-3" aria-busy="true" aria-label="Carregando círculo">
+          <div className="h-10 w-full rounded-lg bg-muted/40 animate-pulse" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-14 rounded-lg bg-muted/30 animate-pulse" />
+            ))}
+          </div>
         </div>
+      ) : !hasFriends ? (
+        <div className="bg-card border border-border rounded-xl p-8 text-center space-y-3">
+          <Lock className="h-8 w-8 mx-auto text-muted-foreground" />
+          <div>
+            <p className="font-semibold text-foreground">Seu círculo está vazio</p>
+            <p className="text-sm text-muted-foreground mt-1">Siga amigos (e seja seguido de volta) para ver atividade aqui.</p>
+          </div>
+          <div className="flex flex-wrap gap-2 justify-center pt-1">
+            <Link to="/m/friends" className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-primary text-primary-foreground hover:opacity-90">
+              Encontrar amigos
+            </Link>
+            <Link to={`/jogo/${id}`} className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-border hover:bg-muted/40">
+              Ver página do jogo
+            </Link>
+            <Link to="/oportunidades" className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-border hover:bg-muted/40">
+              Explorar oportunidades
+            </Link>
+          </div>
+        </div>
+
       ) : (
         <>
           {/* Tabs */}
