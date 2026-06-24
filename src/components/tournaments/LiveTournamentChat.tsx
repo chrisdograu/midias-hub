@@ -121,10 +121,13 @@ export default function LiveTournamentChat({ tournamentId, matchId }: { tourname
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-2 space-y-1.5">
         {hasMore && !dq.trim() && (
-          <button onClick={loadMore} disabled={loadingMore}
-            className="w-full text-xs text-muted-foreground hover:text-primary flex items-center justify-center gap-1 py-1.5">
-            <ChevronUp className="h-3 w-3" />{loadingMore ? 'Carregando...' : 'Carregar mensagens antigas'}
+          <button onClick={loadMore} disabled={loadingMore} aria-busy={loadingMore}
+            className="w-full text-xs text-muted-foreground hover:text-primary flex items-center justify-center gap-1 py-1.5 disabled:opacity-60">
+            {loadingMore
+              ? <><Loader2 className="h-3 w-3 animate-spin" /> Carregando…</>
+              : <><ChevronUp className="h-3 w-3" /> Carregar mensagens antigas</>}
           </button>
+
         )}
         <AnimatePresence initial={false}>
           {visible.map(m => {
