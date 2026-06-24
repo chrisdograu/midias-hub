@@ -296,8 +296,21 @@ export default function GameSocialHub() {
           {tab === 'biblioteca' && (
             <section className="bg-card border border-border rounded-xl p-5">
               {library.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Nenhum amigo tem este jogo.</p>
+                <div className="text-center py-6 space-y-2">
+                  <Library className="h-7 w-7 mx-auto text-muted-foreground" />
+                  <p className="text-sm text-foreground font-medium">Nenhum amigo tem este jogo ainda.</p>
+                  <p className="text-xs text-muted-foreground">Que tal ser a referência do círculo nele?</p>
+                  <div className="flex gap-2 justify-center pt-1">
+                    <Link to={`/jogo/${id}`} className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-primary text-primary-foreground hover:opacity-90">
+                      Adicionar à biblioteca
+                    </Link>
+                    <Link to={`/jogo/${id}#bundles`} className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-border hover:bg-muted/40">
+                      Ver ofertas
+                    </Link>
+                  </div>
+                </div>
               ) : (
+
                 <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {sortItems(library as any).map((l: any) => {
                     const status = STATUS_LABEL[l.status] || { label: l.status, color: 'text-muted-foreground' };
