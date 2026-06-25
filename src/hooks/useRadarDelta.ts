@@ -18,6 +18,9 @@ async function fetchDelta(limit = 8): Promise<RadarItem[]> {
   const since72 = new Date(now - 72 * HOUR).toISOString();
   const since24 = new Date(now - 24 * HOUR).toISOString();
 
+  type ViewRow = { product_id: string | null; viewed_at: string | null };
+  type DatedRow = { product_id: string | null; created_at: string | null };
+
   const [views, posts, reviews] = await Promise.all([
     supabase.from('product_views').select('product_id, viewed_at').gte('viewed_at', since72),
     supabase.from('forum_posts').select('product_id, created_at').gte('created_at', since72).not('product_id', 'is', null),
@@ -35,9 +38,9 @@ async function fetchDelta(limit = 8): Promise<RadarItem[]> {
     if (kind === 'r') { b.r72++; if (is24) b.r24++; }
     agg.set(pid, b);
   };
-  (views.data || []).forEach((r: any) => bump(r.product_id, r.viewed_at, 'v'));
-  (posts.data || []).forEach((r: any) => bump(r.product_id, r.created_at, 'p'));
-  (reviews.data || []).forEach((r: any) => bump(r.product_id, r.created_at, 'r'));
+  ((views.data ?? []) as ViewRow[]).forEach((r) => bump(r.product_id, r.viewed_at, 'v'));
+  ((posts.data ?? []) as DatedRow[]).forEach((r) => bump(r.product_id, r.created_at, 'p'));
+  ((reviews.data ?? []) as DatedRow[]).forEach((r) => bump(r.product_id, r.created_at, 'r'));
 
   const ranked = [...agg.entries()]
     .map(([pid, b]) => {
