@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { mapProdutoToGame, Game } from '@/lib/gameData';
 import GameCard from '@/components/GameCard';
-import { Flame, Loader2 } from 'lucide-react';
+import { Flame } from 'lucide-react';
+import { GameCardGridSkeleton } from '@/components/skeletons';
 
 export default function EmAlta() {
   const [games, setGames] = useState<Game[]>([]);
@@ -40,7 +41,7 @@ export default function EmAlta() {
           <p className="text-muted-foreground text-sm">Jogos mais acessados nos últimos 7 dias</p>
         </div>
       </div>
-      {loading ? <div className="flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin" /></div> : (
+      {loading ? <GameCardGridSkeleton count={10} /> : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {games.map(g => <GameCard key={g.id} game={g} />)}
         </div>
