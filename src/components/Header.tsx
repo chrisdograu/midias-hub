@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import NotificationBell from './NotificationBell';
 import { supabase } from '@/integrations/supabase/client';
 import { usePrefetchRoute } from '@/hooks/usePrefetchRoute';
+import { CosmeticUnlocksCenter } from '@/components/cosmetics/CosmeticUnlocksCenter';
 
 export default function Header() {
   const { itemCount } = useCart();
@@ -140,6 +141,7 @@ export default function Header() {
             </button>
 
             <NotificationBell />
+            {user && <CosmeticUnlocksCenter customizationHref="/perfil?tab=customizacao" />}
 
             <Link to="/carrinho" className="relative p-2 rounded-lg hover:bg-secondary transition-colors">
               <ShoppingCart className="h-5 w-5 text-foreground" />

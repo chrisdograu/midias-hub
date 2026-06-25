@@ -1,6 +1,7 @@
 // Central de desbloqueios cosméticos. Botão com sino + sheet listando últimos
 // itens desbloqueados pelo usuário, com link direto para a tela de Customização.
-import { useEffect, useState } from 'react';
+// Emite toast com link "Ver" quando um novo cosmético é desbloqueado em realtime.
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Gift, Sparkles } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
@@ -8,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { CosmeticPreview } from './CosmeticPreview';
 import { GameReward, RARITY_COLOR, KIND_LABEL } from '@/hooks/useCosmetics';
+import { toast } from 'sonner';
 
 interface UnlockRow { unlocked_at: string; reward: GameReward; product_title?: string | null }
 
@@ -23,6 +25,7 @@ export function CosmeticUnlocksCenter({ customizationHref = '/perfil', variant =
   const [open, setOpen] = useState(false);
   const [rows, setRows] = useState<UnlockRow[]>([]);
   const [newCount, setNewCount] = useState(0);
+  const firstLoadRef = useRef(true);
   const seenKey = user ? `cosmetic-unlocks-seen:${user.id}` : '';
 
   const reload = async () => {
@@ -51,7 +54,22 @@ export function CosmeticUnlocksCenter({ customizationHref = '/perfil', variant =
     if (!user) return;
     const ch = supabase.channel(`ugr-${user.id}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'user_game_rewards', filter: `user_id=eq.${user.id}` },
-        () => reload())
+        async (payload: any) => {
+          await reload();
+          // Toast só para inserts realtime, não no carregamento inicial
+          const rewardId = payload?.new?.reward_id;
+          if (!rewardId) return;
+          const { data: r } = await supabase
+            .from('game_rewards' as any)
+            .select('name, kind, rarity')
+            .eq('id', rewardId)
+            .maybeSingle();
+          if (!r) return;
+          toast.success(`🎁 Novo cosmético desbloqueado: ${(r as any).name}`, {
+            description: `Tipo: ${KIND_LABEL[(r as any).kind] || (r as any).kind}`,
+            action: { label: 'Ver', onClick: () => setOpen(true) },
+          });
+        })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [user?.id]);
