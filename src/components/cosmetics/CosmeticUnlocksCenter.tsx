@@ -1,7 +1,7 @@
 // Central de desbloqueios cosméticos. Botão com sino + sheet listando últimos
 // itens desbloqueados pelo usuário, com link direto para a tela de Customização.
 // Emite toast com link "Ver" quando um novo cosmético é desbloqueado em realtime.
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Gift, Sparkles } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
@@ -25,7 +25,6 @@ export function CosmeticUnlocksCenter({ customizationHref = '/perfil', variant =
   const [open, setOpen] = useState(false);
   const [rows, setRows] = useState<UnlockRow[]>([]);
   const [newCount, setNewCount] = useState(0);
-  const firstLoadRef = useRef(true);
   const seenKey = user ? `cosmetic-unlocks-seen:${user.id}` : '';
 
   const reload = async () => {
