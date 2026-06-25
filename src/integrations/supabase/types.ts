@@ -2850,12 +2850,14 @@ export type Database = {
           dificuldade: string | null
           horas_jogadas: number | null
           id: string
+          is_spoiler: boolean
           momentos_favoritos: string | null
           personagens_favoritos: string | null
           plataforma: string | null
           product_id: string
           pros: string[] | null
           recomendacao: string | null
+          spoiler_achievement_name: string | null
           status: string | null
           tags_emocionais: string[] | null
           trilha_sonora_favorita: string | null
@@ -2870,12 +2872,14 @@ export type Database = {
           dificuldade?: string | null
           horas_jogadas?: number | null
           id?: string
+          is_spoiler?: boolean
           momentos_favoritos?: string | null
           personagens_favoritos?: string | null
           plataforma?: string | null
           product_id: string
           pros?: string[] | null
           recomendacao?: string | null
+          spoiler_achievement_name?: string | null
           status?: string | null
           tags_emocionais?: string[] | null
           trilha_sonora_favorita?: string | null
@@ -2890,12 +2894,14 @@ export type Database = {
           dificuldade?: string | null
           horas_jogadas?: number | null
           id?: string
+          is_spoiler?: boolean
           momentos_favoritos?: string | null
           personagens_favoritos?: string | null
           plataforma?: string | null
           product_id?: string
           pros?: string[] | null
           recomendacao?: string | null
+          spoiler_achievement_name?: string | null
           status?: string | null
           tags_emocionais?: string[] | null
           trilha_sonora_favorita?: string | null
