@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { AlertTriangle, Loader2, Search, Download, Ban, ShieldAlert, CheckCircle2, XCircle } from 'lucide-react';
+import { AlertTriangle, Loader2, Search, Download, Ban, ShieldAlert, CheckCircle2, XCircle, EyeOff } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 import { AdminPageHeader } from '../components/AdminPageHeader';
 import { adminLog, exportCsv } from '../lib/adminLog';
 
-type Action = 'resolve' | 'dismiss' | 'warn' | 'ban';
+type Action = 'resolve' | 'dismiss' | 'warn' | 'ban' | 'mark_spoiler';
 
 export default function Denuncias() {
   const [rows, setRows] = useState<any[]>([]);
@@ -52,6 +52,18 @@ export default function Denuncias() {
       } as any).eq('id', row.id);
       if (error) return toast.error(error.message);
       await adminLog({ action: `denuncia_${action}`, entity: 'denuncia', entity_id: row.id, reason, payload: { target_type: row.target_type, target_id: row.target_id } });
+    }
+
+    if (action === 'mark_spoiler') {
+      const map: Record<string, string> = { forum_post: 'forum_posts', review: 'avaliacoes' };
+      const table = map[row.target_type];
+      if (!table) return toast.error('Marcar spoiler só suportado em post de fórum ou review');
+      const { error } = await supabase.from(table as any).update({ is_spoiler: true } as any).eq('id', row.target_id);
+      if (error) return toast.error(error.message);
+      await supabase.from('denuncias').update({
+        status: 'resolved', resolved_by: user?.id, resolved_at: new Date().toISOString(),
+      } as any).eq('id', row.id);
+      await adminLog({ action: 'denuncia_mark_spoiler', entity: 'denuncia', entity_id: row.id, reason, payload: { target_type: row.target_type, target_id: row.target_id } });
     }
 
     if (action === 'warn' || action === 'ban') {
@@ -141,6 +153,9 @@ export default function Denuncias() {
                       {r.status === 'pending' && <>
                         <Button size="sm" variant="outline" onClick={() => { setDialog({ row: r, action: 'resolve' }); }}><CheckCircle2 className="h-3.5 w-3.5 mr-1" />Resolver</Button>
                         <Button size="sm" variant="outline" onClick={() => { setDialog({ row: r, action: 'dismiss' }); }}><XCircle className="h-3.5 w-3.5 mr-1" />Descartar</Button>
+                        {(r.target_type === 'forum_post' || r.target_type === 'review') && (
+                          <Button size="sm" variant="outline" onClick={() => { setDialog({ row: r, action: 'mark_spoiler' }); }}><EyeOff className="h-3.5 w-3.5 mr-1" />Marcar spoiler</Button>
+                        )}
                         <Button size="sm" variant="outline" onClick={() => { setDialog({ row: r, action: 'warn' }); }}><ShieldAlert className="h-3.5 w-3.5 mr-1" />Advertir</Button>
                         <Button size="sm" variant="destructive" onClick={() => { setDialog({ row: r, action: 'ban' }); }}><Ban className="h-3.5 w-3.5 mr-1" />Banir</Button>
                       </>}
