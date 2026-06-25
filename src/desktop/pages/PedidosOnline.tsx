@@ -144,7 +144,7 @@ export default function PedidosOnline() {
                     <TableCell className="text-center"><Badge className={statusColors[p.status]}>{statusLabels[p.status] || p.status}</Badge></TableCell>
                     <TableCell className="text-sm text-muted-foreground">{new Date(p.created_at).toLocaleDateString('pt-BR')}</TableCell>
                     <TableCell className="text-center">
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() = aria-label="Visualizar"> openDetail(p)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Visualizar" onClick={() => openDetail(p)}>
                         <Eye className="h-4 w-4" />
                       </Button>
                     </TableCell>
