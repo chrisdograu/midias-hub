@@ -7,6 +7,7 @@ import { useProduto } from '@/hooks/useProdutos';
 import { ArrowLeft, BookOpen, Lock, Users, Save, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
+import SpoilerComposerControls from '@/components/spoiler/SpoilerComposerControls';
 
 type Visibility = 'friends' | 'private';
 
@@ -35,6 +36,8 @@ export default function ReviewCompletaEditor() {
   const [contras, setContras] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [visibility, setVisibility] = useState<Visibility>('friends');
+  const [isSpoiler, setIsSpoiler] = useState(false);
+  const [spoilerAch, setSpoilerAch] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   const { data: existing, isLoading } = useQuery({
@@ -66,6 +69,8 @@ export default function ReviewCompletaEditor() {
       setContras((existing.contras || []).join('\n'));
       setTags(existing.tags_emocionais || []);
       setVisibility((existing.visibility as Visibility) || 'friends');
+      setIsSpoiler(!!existing.is_spoiler);
+      setSpoilerAch(existing.spoiler_achievement_name || null);
     }
   }, [existing]);
 
@@ -98,6 +103,8 @@ export default function ReviewCompletaEditor() {
       contras: contras.split('\n').map(s => s.trim()).filter(Boolean),
       tags_emocionais: tags,
       visibility,
+      is_spoiler: isSpoiler,
+      spoiler_achievement_name: spoilerAch,
     };
     const { error } = existing
       ? await supabase.from('reviews_completas' as any).update(payload).eq('id', existing.id)
@@ -195,6 +202,16 @@ export default function ReviewCompletaEditor() {
               </button>
             ))}
           </div>
+        </Field>
+
+        <Field label="Aviso de spoiler">
+          <SpoilerComposerControls
+            isSpoiler={isSpoiler}
+            onIsSpoilerChange={setIsSpoiler}
+            achievementName={spoilerAch}
+            onAchievementNameChange={setSpoilerAch}
+            productId={id}
+          />
         </Field>
 
         <div className="flex justify-end gap-2 pt-2">
