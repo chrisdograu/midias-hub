@@ -1,13 +1,14 @@
 import { useMemo } from 'react';
 import { useProdutos } from '@/hooks/useProdutos';
 import GameCard from '@/components/GameCard';
-import { Zap, Loader2 } from 'lucide-react';
+import { Zap } from 'lucide-react';
+import { GameCardGridSkeleton } from '@/components/skeletons';
 
 export default function Ofertas() {
   const { data: games = [], isLoading } = useProdutos();
   const deals = useMemo(() => [...games].sort((a, b) => b.discount - a.discount), [games]);
 
-  if (isLoading) return <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+  if (isLoading) return <div className="container mx-auto px-4 py-8"><GameCardGridSkeleton count={12} /></div>;
 
   return (
     <div className="container mx-auto px-4 py-8">

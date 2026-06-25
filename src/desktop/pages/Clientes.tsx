@@ -130,7 +130,7 @@ export default function Clientes() {
                     <TableCell className="text-right text-sm font-medium text-primary">R$ {c.total_gasto.toFixed(2)}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{new Date(c.created_at).toLocaleDateString('pt-BR')}</TableCell>
                     <TableCell className="text-center">
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() = aria-label="Visualizar"> { setSelectedCliente(c); setDetailOpen(true); }}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Visualizar" onClick={() => { setSelectedCliente(c); setDetailOpen(true); }}>
                         <Eye className="h-4 w-4" />
                       </Button>
                     </TableCell>

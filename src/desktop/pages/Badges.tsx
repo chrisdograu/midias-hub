@@ -169,7 +169,7 @@ export default function BadgesAdmin() {
                             </Button>
                           )}
                         </div>
-                        <Button variant="ghost" size="icon" onClick={() = aria-label="Excluir"> remove(b.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                        <Button variant="ghost" size="icon" aria-label="Excluir" onClick={() => remove(b.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                       </div>
                     ))}
                   </div>
@@ -192,7 +192,7 @@ export default function BadgesAdmin() {
                     <p className="font-semibold text-sm">{t.name}</p>
                     <p className="text-xs text-muted-foreground">{t.display_name || t.user_id.slice(0, 8)} · {new Date(t.awarded_at).toLocaleDateString('pt-BR')}</p>
                   </div>
-                  <Button variant="ghost" size="icon" onClick={() = aria-label="Excluir"> removeTitle(t.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                  <Button variant="ghost" size="icon" aria-label="Excluir" onClick={() => removeTitle(t.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                 </div>
               ))}
             </div>
