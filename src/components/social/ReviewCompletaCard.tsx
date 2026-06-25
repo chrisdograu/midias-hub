@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { BookOpen, Clock, Gamepad2, Heart, Lock, ThumbsDown, ThumbsUp, Users } from 'lucide-react';
+import SpoilerGuard from '@/components/spoiler/SpoilerGuard';
 
 export interface ReviewCompletaData {
   id: string;
@@ -19,6 +20,8 @@ export interface ReviewCompletaData {
   tags_emocionais: string[] | null;
   visibility: 'friends' | 'private';
   created_at: string;
+  is_spoiler?: boolean | null;
+  spoiler_achievement_name?: string | null;
   profile?: { display_name?: string | null; avatar_url?: string | null } | null;
 }
 
@@ -55,7 +58,13 @@ export default function ReviewCompletaCard({ review }: { review: ReviewCompletaD
         {tags.map(t => <Tag key={t} icon={Heart} className="bg-muted text-muted-foreground">{t}</Tag>)}
       </div>
 
-      <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">{review.analise}</p>
+      <SpoilerGuard
+        isSpoiler={!!review.is_spoiler}
+        achievementName={review.spoiler_achievement_name}
+        productId={review.product_id}
+      >
+        <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">{review.analise}</p>
+      </SpoilerGuard>
 
       {(pros.length > 0 || contras.length > 0) && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
