@@ -28,17 +28,19 @@ export default function PrivacyTab() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [alwaysHide, setAlwaysHide] = useState(false);
 
   useEffect(() => {
     if (!user) return;
     (async () => {
       const { data: prof } = await supabase
         .from('profiles')
-        .select('library_visibility, privacy_exceptions')
+        .select('library_visibility, privacy_exceptions, always_hide_spoilers')
         .eq('id', user.id)
         .maybeSingle();
       const v = (prof as any)?.library_visibility as Visibility | null;
       if (v) setVisibility(v);
+      setAlwaysHide(!!(prof as any)?.always_hide_spoilers);
       const ids: string[] = (prof as any)?.privacy_exceptions || [];
       if (ids.length) {
         const { data: profs } = await supabase
@@ -66,6 +68,13 @@ export default function PrivacyTab() {
     if (!user) return;
     const { error } = await supabase.from('profiles').update({ library_visibility: v } as any).eq('id', user.id);
     if (error) toast.error('Erro ao salvar'); else toast.success('Visibilidade atualizada');
+  };
+
+  const persistAlwaysHide = async (v: boolean) => {
+    setAlwaysHide(v);
+    if (!user) return;
+    const { error } = await supabase.from('profiles').update({ always_hide_spoilers: v } as any).eq('id', user.id);
+    if (error) toast.error('Erro ao salvar'); else toast.success(v ? 'Spoilers sempre ocultos' : 'Preferência atualizada');
   };
 
   const persistExceptions = async (next: Profile[]) => {
