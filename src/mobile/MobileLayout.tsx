@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import NotificationBell from '@/components/NotificationBell';
+import { CosmeticUnlocksCenter } from '@/components/cosmetics/CosmeticUnlocksCenter';
 import { usePrefetchRoute } from '@/hooks/usePrefetchRoute';
 
 const ROUTES_WITH_BELL = new Set(['/m', '/m/']);
@@ -58,6 +59,7 @@ export default function MobileLayout({ children }: MobileLayoutProps) {
           </NavLink>
           <div className="flex items-center gap-2">
             {ROUTES_WITH_BELL.has(location.pathname) && <NotificationBell />}
+            <CosmeticUnlocksCenter customizationHref="/m/perfil?tab=customizacao" />
             <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-display">mobile</span>
           </div>
         </div>

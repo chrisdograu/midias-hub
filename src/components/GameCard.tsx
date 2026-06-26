@@ -5,6 +5,10 @@ import { ShoppingCart } from 'lucide-react';
 import { HalfStarDisplay } from '@/components/HalfStarRating';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
+import { usePrefetchRoute } from '@/hooks/usePrefetchRoute';
+import { supabase } from '@/integrations/supabase/client';
+import { mapProdutoToGame } from '@/lib/gameData';
 
 interface GameCardProps {
   game: Game;
@@ -23,6 +27,8 @@ function platformClass(p: string) {
 export default function GameCard({ game, index = 0 }: GameCardProps) {
   const { addItem } = useCart();
   const outOfStock = game.stock <= 0;
+  const qc = useQueryClient();
+  const prefetchRoute = usePrefetchRoute();
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -32,13 +38,31 @@ export default function GameCard({ game, index = 0 }: GameCardProps) {
     toast.success(`${game.title} adicionado ao carrinho!`);
   };
 
+  // Pré-carrega chunk da GameDetail + dados do produto na cache do React Query
+  const handlePrefetch = () => {
+    prefetchRoute('/jogo');
+    qc.prefetchQuery({
+      queryKey: ['produto', game.id],
+      queryFn: async () => {
+        const { data } = await supabase.from('produtos').select('*').eq('id', game.id).maybeSingle();
+        return data ? mapProdutoToGame(data) : null;
+      },
+      staleTime: 60_000,
+    });
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, duration: 0.3 }}
     >
-      <Link to={`/jogo/${game.id}`} className="group block">
+      <Link
+        to={`/jogo/${game.id}`}
+        className="group block"
+        onMouseEnter={handlePrefetch}
+        onTouchStart={handlePrefetch}
+      >
         <div className={`neon-border-hover relative bg-card rounded-lg overflow-hidden border border-border transition-all duration-300 ${outOfStock ? 'opacity-60' : ''}`}>
           <div className="relative aspect-[3/4] overflow-hidden">
             <img src={game.image} alt={game.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" />

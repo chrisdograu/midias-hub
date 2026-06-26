@@ -14,6 +14,7 @@ const loaders: Record<string, () => Promise<unknown>> = {
   '/favoritos': () => import('@/pages/Favoritos'),
   '/pedidos': () => import('@/pages/Pedidos'),
   '/oportunidades': () => import('@/pages/Oportunidades'),
+  '/jogo': () => import('@/pages/GameDetail'),
   // Mobile
   '/m/forum': () => import('@/mobile/pages/MForum'),
   '/m/marketplace': () => import('@/mobile/pages/MMarketplace'),
