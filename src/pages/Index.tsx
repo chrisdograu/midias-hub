@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { useProdutos } from "@/hooks/useProdutos";
 import GameCard from "@/components/GameCard";
 import { motion } from "framer-motion";
-import { ChevronRight, Flame, TrendingUp, Zap, Loader2, Sparkles, Clock, Package } from "lucide-react";
+import { ChevronRight, Flame, TrendingUp, Zap, Sparkles, Clock, Package } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import OrbitRadar from "@/components/radar/OrbitRadar";
+import { GameCardGridSkeleton } from "@/components/skeletons";
 
 interface FlashPromo {
   id: string;
