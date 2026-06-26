@@ -2596,6 +2596,7 @@ export type Database = {
       profiles: {
         Row: {
           active_title_id: string | null
+          always_hide_spoilers: boolean
           avatar_url: string | null
           backlog_note: string | null
           banned_until: string | null
@@ -2626,6 +2627,7 @@ export type Database = {
         }
         Insert: {
           active_title_id?: string | null
+          always_hide_spoilers?: boolean
           avatar_url?: string | null
           backlog_note?: string | null
           banned_until?: string | null
@@ -2656,6 +2658,7 @@ export type Database = {
         }
         Update: {
           active_title_id?: string | null
+          always_hide_spoilers?: boolean
           avatar_url?: string | null
           backlog_note?: string | null
           banned_until?: string | null
