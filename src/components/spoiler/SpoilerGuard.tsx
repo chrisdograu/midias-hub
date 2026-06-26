@@ -70,11 +70,27 @@ export default function SpoilerGuard({
     staleTime: 60_000,
   });
 
+  // Preferência global "Sempre ocultar spoilers"
+  const alwaysHide = useQuery({
+    queryKey: ['always-hide-spoilers', user?.id],
+    queryFn: async () => {
+      if (!user) return false;
+      const { data } = await supabase
+        .from('profiles')
+        .select('always_hide_spoilers')
+        .eq('id', user.id)
+        .maybeSingle();
+      return !!(data as any)?.always_hide_spoilers;
+    },
+    enabled: !!user,
+    staleTime: 300_000,
+  });
+
   const isAchievementLocked = !!achievementName || !!achievementLockId;
   const hasAchievement = achievementName ? hasAchByName.data : hasAchById.data;
 
-  // Caso 3: tem a conquista → libera com badge
-  if (isAchievementLocked && hasAchievement) {
+  // Caso 3: tem a conquista → libera com badge (a menos que o usuário tenha optado por sempre ocultar)
+  if (isAchievementLocked && hasAchievement && !alwaysHide.data) {
     return (
       <div className={className}>
         <div className="mb-2 inline-flex items-center gap-1.5 px-2 py-1 rounded-full bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border border-yellow-500/40 text-yellow-300 text-[10px] font-bold uppercase tracking-wider">
@@ -86,7 +102,7 @@ export default function SpoilerGuard({
     );
   }
 
-  const gated = (isSpoiler || isAchievementLocked) && !revealed;
+  const gated = (isSpoiler || isAchievementLocked || (alwaysHide.data && (isSpoiler || isAchievementLocked))) && !revealed;
   if (!gated) return <div className={className}>{children}</div>;
 
   // Caso 2: spoiler de conquista (viewer não tem) — vermelho/intenso

@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { useProdutos } from "@/hooks/useProdutos";
 import GameCard from "@/components/GameCard";
 import { motion } from "framer-motion";
-import { ChevronRight, Flame, TrendingUp, Zap, Loader2, Sparkles, Clock, Package } from "lucide-react";
+import { ChevronRight, Flame, TrendingUp, Zap, Sparkles, Clock, Package } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import OrbitRadar from "@/components/radar/OrbitRadar";
+import { GameCardGridSkeleton } from "@/components/skeletons";
 
 interface FlashPromo {
   id: string;
@@ -46,19 +48,18 @@ export default function Index() {
   }, [pickOverride, inStock, fallbackPick]);
   const pickReason = pickOverride?.reason ?? null;
 
-  // Active flash promo
-  const [flashPromo, setFlashPromo] = useState<{ promo: FlashPromo; product: (typeof games)[0] } | null>(null);
+  // Tick para countdown da flash promo
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
     const tick = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(tick);
   }, []);
-  // Bundles
-  const [bundles, setBundles] = useState<{ bundle: BundleRow; products: typeof games }[]>([]);
 
-  useEffect(() => {
-    if (inStock.length === 0) return;
-    (async () => {
+  // Dados secundários (flash promo, daily pick override, bundles) via React Query
+  const sideData = useQuery({
+    queryKey: ["home-side-data"],
+    staleTime: 60_000,
+    queryFn: async () => {
       const today = new Date().toISOString().slice(0, 10);
       const [{ data: fp }, { data: po }, { data: bd }, { data: bi }] = await Promise.all([
         supabase
@@ -82,35 +83,45 @@ export default function Index() {
           .limit(6),
         supabase.from("bundle_items" as any).select("bundle_id, product_id"),
       ]);
-      if (fp) {
-        const product = inStock.find((g) => g.id === fp.product_id);
-        if (product) setFlashPromo({ promo: fp as FlashPromo, product });
-      }
-      if (po) setPickOverride(po as any);
-      if (bd && bi) {
-        const itemsByBundle = new Map<string, string[]>();
-        (bi as unknown as BundleItemRow[]).forEach((i) => {
-          const arr = itemsByBundle.get(i.bundle_id) || [];
-          arr.push(i.product_id);
-          itemsByBundle.set(i.bundle_id, arr);
-        });
-        const built = (bd as unknown as BundleRow[])
-          .map((b) => ({
-            bundle: b,
-            products: (itemsByBundle.get(b.id) || [])
-              .map((pid) => inStock.find((g) => g.id === pid))
-              .filter(Boolean) as typeof games,
-          }))
-          .filter((b) => b.products.length >= 2);
-        setBundles(built);
-      }
-    })();
-  }, [inStock.length]);
+      return { fp: fp as FlashPromo | null, po: po as any, bd: (bd as unknown as BundleRow[]) || [], bi: (bi as unknown as BundleItemRow[]) || [] };
+    },
+  });
+
+  useEffect(() => {
+    if (!sideData.data) return;
+    if (sideData.data.po) setPickOverride(sideData.data.po);
+  }, [sideData.data]);
+
+  const flashPromo = useMemo(() => {
+    const fp = sideData.data?.fp;
+    if (!fp) return null;
+    const product = inStock.find((g) => g.id === fp.product_id);
+    return product ? { promo: fp, product } : null;
+  }, [sideData.data?.fp, inStock]);
+
+  const bundles = useMemo(() => {
+    if (!sideData.data) return [];
+    const itemsByBundle = new Map<string, string[]>();
+    sideData.data.bi.forEach((i) => {
+      const arr = itemsByBundle.get(i.bundle_id) || [];
+      arr.push(i.product_id);
+      itemsByBundle.set(i.bundle_id, arr);
+    });
+    return sideData.data.bd
+      .map((b) => ({
+        bundle: b,
+        products: (itemsByBundle.get(b.id) || [])
+          .map((pid) => inStock.find((g) => g.id === pid))
+          .filter(Boolean) as typeof games,
+      }))
+      .filter((b) => b.products.length >= 2);
+  }, [sideData.data, inStock, games]);
+
 
   if (isLoading) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="container mx-auto px-4 py-12">
+        <GameCardGridSkeleton count={12} />
       </div>
     );
   }

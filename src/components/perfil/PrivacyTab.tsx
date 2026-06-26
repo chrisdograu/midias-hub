@@ -28,17 +28,19 @@ export default function PrivacyTab() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [alwaysHide, setAlwaysHide] = useState(false);
 
   useEffect(() => {
     if (!user) return;
     (async () => {
       const { data: prof } = await supabase
         .from('profiles')
-        .select('library_visibility, privacy_exceptions')
+        .select('library_visibility, privacy_exceptions, always_hide_spoilers')
         .eq('id', user.id)
         .maybeSingle();
       const v = (prof as any)?.library_visibility as Visibility | null;
       if (v) setVisibility(v);
+      setAlwaysHide(!!(prof as any)?.always_hide_spoilers);
       const ids: string[] = (prof as any)?.privacy_exceptions || [];
       if (ids.length) {
         const { data: profs } = await supabase
@@ -66,6 +68,13 @@ export default function PrivacyTab() {
     if (!user) return;
     const { error } = await supabase.from('profiles').update({ library_visibility: v } as any).eq('id', user.id);
     if (error) toast.error('Erro ao salvar'); else toast.success('Visibilidade atualizada');
+  };
+
+  const persistAlwaysHide = async (v: boolean) => {
+    setAlwaysHide(v);
+    if (!user) return;
+    const { error } = await supabase.from('profiles').update({ always_hide_spoilers: v } as any).eq('id', user.id);
+    if (error) toast.error('Erro ao salvar'); else toast.success(v ? 'Spoilers sempre ocultos' : 'Preferência atualizada');
   };
 
   const persistExceptions = async (next: Profile[]) => {
@@ -114,6 +123,18 @@ export default function PrivacyTab() {
 
   return (
     <div className="space-y-6">
+      <section className="border border-border rounded-lg p-3 bg-card">
+        <label className="flex items-start gap-3 cursor-pointer">
+          <Checkbox checked={alwaysHide} onCheckedChange={(v) => persistAlwaysHide(!!v)} className="mt-0.5" />
+          <span className="flex-1">
+            <span className="text-sm font-semibold text-foreground block">Sempre ocultar spoilers</span>
+            <span className="text-[11px] text-muted-foreground block mt-0.5">
+              Conteúdo marcado como spoiler (manual ou de conquista) sempre exigirá um clique para revelar — mesmo se você já tiver a conquista vinculada.
+            </span>
+          </span>
+        </label>
+      </section>
+
       <section>
         <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3">
           <Shield className="h-4 w-4 text-primary" /> Visibilidade da biblioteca
