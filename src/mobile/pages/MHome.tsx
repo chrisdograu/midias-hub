@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Flame, ShoppingBag, Star, Loader2, ArrowRight, ThumbsUp, MessageSquare } from 'lucide-react';
+import { Flame, ShoppingBag, ThumbsUp, MessageSquare } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { MobileBadge, MobileChip, MForumTag } from '@/mobile/lib/badge';
@@ -9,6 +10,7 @@ import { timeAgo } from '@/mobile/lib/time';
 import { HalfStarDisplay } from '@/components/HalfStarRating';
 import { getFollowingIds } from '@/mobile/lib/useFollow';
 import OrbitRadar from '@/components/radar/OrbitRadar';
+import { FeedItemSkeleton } from '@/components/skeletons';
 
 type FeedItem =
   | { kind: 'forum'; id: string; created_at: string; content: string; author: string; authorId: string; product: string; likes: number; replies: number }
@@ -27,21 +29,17 @@ type Filter = typeof FILTERS[number]['id'];
 export default function MHome() {
   const { user } = useAuth();
   const [filter, setFilter] = useState<Filter>('all');
-  const [topGames, setTopGames] = useState<{ id: string; title: string; image_url: string | null; rating: number | null }[]>([]);
-  const [feed, setFeed] = useState<FeedItem[]>([]);
   const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) { setFollowingIds(new Set()); return; }
     getFollowingIds(user.id).then(ids => setFollowingIds(new Set(ids)));
   }, [user?.id]);
 
-  useEffect(() => {
-    let cancel = false;
-    (async () => {
-      setLoading(true);
-
+  const { data, isLoading } = useQuery({
+    queryKey: ['mhome-feed'],
+    staleTime: 30_000,
+    queryFn: async () => {
       const [{ data: top }, { data: posts }, { data: reviews }, { data: ads }] = await Promise.all([
         supabase.from('produtos').select('id, title, image_url, rating').eq('is_active', true).order('rating', { ascending: false }).limit(5),
         supabase.from('forum_posts').select('id, content, created_at, likes_count, user_id, product_id').order('created_at', { ascending: false }).limit(15),
@@ -57,18 +55,18 @@ export default function MHome() {
       ads?.forEach(a => { userIds.add(a.seller_id); adIds.push(a.id); });
 
       const [{ data: profiles }, { data: products }, { data: photos }, { data: replies }] = await Promise.all([
-        userIds.size ? supabase.from('profiles').select('id, display_name').in('id', [...userIds]) : Promise.resolve({ data: [] }),
-        productIds.size ? supabase.from('produtos').select('id, title').in('id', [...productIds]) : Promise.resolve({ data: [] }),
-        adIds.length ? supabase.from('fotos_anuncio').select('anuncio_id, image_url, position').in('anuncio_id', adIds).order('position') : Promise.resolve({ data: [] }),
-        posts?.length ? supabase.from('forum_replies').select('post_id').in('post_id', posts.map(p => p.id)) : Promise.resolve({ data: [] }),
+        userIds.size ? supabase.from('profiles').select('id, display_name').in('id', [...userIds]) : Promise.resolve({ data: [] as any }),
+        productIds.size ? supabase.from('produtos').select('id, title').in('id', [...productIds]) : Promise.resolve({ data: [] as any }),
+        adIds.length ? supabase.from('fotos_anuncio').select('anuncio_id, image_url, position').in('anuncio_id', adIds).order('position') : Promise.resolve({ data: [] as any }),
+        posts?.length ? supabase.from('forum_replies').select('post_id').in('post_id', posts.map(p => p.id)) : Promise.resolve({ data: [] as any }),
       ]);
 
-      const profileMap = new Map((profiles || []).map(p => [p.id, p.display_name || 'Usuário']));
-      const productMap = new Map((products || []).map(p => [p.id, p.title]));
+      const profileMap = new Map((profiles || []).map((p: any) => [p.id, p.display_name || 'Usuário']));
+      const productMap = new Map((products || []).map((p: any) => [p.id, p.title]));
       const photoMap = new Map<string, string>();
-      (photos || []).forEach(p => { if (!photoMap.has(p.anuncio_id)) photoMap.set(p.anuncio_id, p.image_url); });
+      (photos || []).forEach((p: any) => { if (!photoMap.has(p.anuncio_id)) photoMap.set(p.anuncio_id, p.image_url); });
       const replyCount = new Map<string, number>();
-      (replies || []).forEach(r => replyCount.set(r.post_id, (replyCount.get(r.post_id) || 0) + 1));
+      (replies || []).forEach((r: any) => replyCount.set(r.post_id, (replyCount.get(r.post_id) || 0) + 1));
 
       const items: FeedItem[] = [];
       posts?.forEach(p => items.push({
@@ -86,20 +84,17 @@ export default function MHome() {
         kind: 'ad', id: a.id, created_at: a.created_at, title: a.title, price: Number(a.price),
         image: photoMap.get(a.id) || null, seller: profileMap.get(a.seller_id) || 'Vendedor', authorId: a.seller_id,
       }));
-
       items.sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
 
-      if (!cancel) {
-        setTopGames(top || []);
-        setFeed(items);
-        setLoading(false);
-      }
-    })();
-    return () => { cancel = true; };
-  }, []);
+      return { topGames: top || [], feed: items };
+    },
+  });
+
+  const topGames = data?.topGames || [];
+  const feed = data?.feed || [];
 
   // Mix 40/30/30 (fórum/reviews/anúncios) intercalando por buckets quando filtro 'all'.
-  const visible = (() => {
+  const visible = useMemo(() => {
     const base = feed.filter(i => {
       if (filter === 'all') return true;
       if (filter === 'following') return followingIds.has(i.authorId);
@@ -110,14 +105,14 @@ export default function MHome() {
     const reviews = base.filter(i => i.kind === 'review');
     const ads = base.filter(i => i.kind === 'ad');
     const out: FeedItem[] = [];
-    // padrão por bloco de 10: 4 fórum, 3 review, 3 anúncio
     while (forum.length || reviews.length || ads.length) {
       for (let i = 0; i < 4 && forum.length; i++) out.push(forum.shift()!);
       for (let i = 0; i < 3 && reviews.length; i++) out.push(reviews.shift()!);
       for (let i = 0; i < 3 && ads.length; i++) out.push(ads.shift()!);
     }
     return out;
-  })();
+  }, [feed, filter, followingIds]);
+
 
   return (
     <div className="px-4 py-5 space-y-6">
