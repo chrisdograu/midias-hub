@@ -61,8 +61,8 @@ export default function MHome() {
         posts?.length ? supabase.from('forum_replies').select('post_id').in('post_id', posts.map(p => p.id)) : Promise.resolve({ data: [] as any }),
       ]);
 
-      const profileMap = new Map((profiles || []).map((p: any) => [p.id, p.display_name || 'Usuário']));
-      const productMap = new Map((products || []).map((p: any) => [p.id, p.title]));
+      const profileMap = new Map<string, string>((profiles || []).map((p: any) => [p.id as string, (p.display_name || 'Usuário') as string]));
+      const productMap = new Map<string, string>((products || []).map((p: any) => [p.id as string, p.title as string]));
       const photoMap = new Map<string, string>();
       (photos || []).forEach((p: any) => { if (!photoMap.has(p.anuncio_id)) photoMap.set(p.anuncio_id, p.image_url); });
       const replyCount = new Map<string, number>();
