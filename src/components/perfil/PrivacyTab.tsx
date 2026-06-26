@@ -123,6 +123,18 @@ export default function PrivacyTab() {
 
   return (
     <div className="space-y-6">
+      <section className="border border-border rounded-lg p-3 bg-card">
+        <label className="flex items-start gap-3 cursor-pointer">
+          <Checkbox checked={alwaysHide} onCheckedChange={(v) => persistAlwaysHide(!!v)} className="mt-0.5" />
+          <span className="flex-1">
+            <span className="text-sm font-semibold text-foreground block">Sempre ocultar spoilers</span>
+            <span className="text-[11px] text-muted-foreground block mt-0.5">
+              Conteúdo marcado como spoiler (manual ou de conquista) sempre exigirá um clique para revelar — mesmo se você já tiver a conquista vinculada.
+            </span>
+          </span>
+        </label>
+      </section>
+
       <section>
         <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3">
           <Shield className="h-4 w-4 text-primary" /> Visibilidade da biblioteca
