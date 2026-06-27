@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { useBiblioteca } from '@/hooks/useBiblioteca';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -15,16 +16,17 @@ export default function Biblioteca() {
   const { user } = useAuth();
   const [filter, setFilter] = useState<StatusFilter>('todos');
   const [editingCover, setEditingCover] = useState<{ id: string; title: string; image: string | null } | null>(null);
-  const [customCovers, setCustomCovers] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    if (!user) return;
-    supabase.from('library_custom_covers' as any).select('product_id, cover_url').eq('user_id', user.id).then(({ data }) => {
+  const { data: customCovers = {}, refetch: refetchCovers } = useQuery({
+    queryKey: ['library-custom-covers', user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from('library_custom_covers' as any).select('product_id, cover_url').eq('user_id', user!.id);
       const map: Record<string, string> = {};
       ((data as any[]) || []).forEach(r => { map[r.product_id] = r.cover_url; });
-      setCustomCovers(map);
-    });
-  }, [user?.id]);
+      return map;
+    },
+    enabled: !!user,
+    staleTime: 60_000,
+  });
 
   const JA_JOGUEI_STATUSES = ['ja_joguei', 'zerado', 'jogando', 'pausado', 'abandonado'];
   const filtered = filter === 'todos'
