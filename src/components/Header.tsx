@@ -155,7 +155,7 @@ export default function Header() {
 
             {user ? (
               <div className="relative">
-                <button onClick={() => setUserMenuOpen(!userMenuOpen)}
+                <button onClick={() => setUserMenuOpen(!userMenuOpen)} aria-label="Menu do usuário" aria-expanded={userMenuOpen}
                   className="flex items-center gap-2 p-2 rounded-lg hover:bg-secondary transition-colors">
                   <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center">
                     <span className="text-xs font-bold text-primary">{(profile?.display_name || user.email || '?')[0].toUpperCase()}</span>
