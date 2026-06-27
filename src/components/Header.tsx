@@ -143,7 +143,7 @@ export default function Header() {
             <NotificationBell />
             {user && <CosmeticUnlocksCenter customizationHref="/perfil?tab=customizacao" />}
 
-            <Link to="/carrinho" className="relative p-2 rounded-lg hover:bg-secondary transition-colors">
+            <Link to="/carrinho" aria-label={`Carrinho${itemCount > 0 ? ` (${itemCount} ite${itemCount === 1 ? 'm' : 'ns'})` : ''}`} className="relative p-2 rounded-lg hover:bg-secondary transition-colors">
               <ShoppingCart className="h-5 w-5 text-foreground" />
               {itemCount > 0 && (
                 <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }}
