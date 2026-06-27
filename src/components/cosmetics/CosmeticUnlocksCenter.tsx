@@ -22,6 +22,7 @@ interface Props {
 
 export function CosmeticUnlocksCenter({ customizationHref = '/perfil', variant = 'compact' }: Props) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [rows, setRows] = useState<UnlockRow[]>([]);
   const [newCount, setNewCount] = useState(0);
