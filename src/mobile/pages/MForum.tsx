@@ -303,13 +303,21 @@ export default function MForum() {
         <div className="flex justify-center py-10"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
       ) : tab === 'posts' ? (
         <div className="space-y-2.5">
-          {sortedPosts.length === 0 ? <p className="text-center py-10 text-sm text-muted-foreground">Nenhum post no período.</p> :
-            sortedPosts.map(p => <PostCard key={p.id} p={p} onDeleted={() => setPosts(prev => prev.filter(x => x.id !== p.id))} />)}
+          {sortedPosts.length === 0 ? (
+            <div className="text-center py-10">
+              <p className="text-sm text-muted-foreground mb-3">Nenhum post no período.</p>
+              <Link to="/m/forum/comunidade/novidades" className="inline-block px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-semibold">+ Criar post</Link>
+            </div>
+          ) : sortedPosts.map(p => <PostCard key={p.id} p={p} onDeleted={() => setPosts(prev => prev.filter(x => x.id !== p.id))} />)}
         </div>
       ) : tab === 'reviews' ? (
         <div className="space-y-2.5">
-          {sortedReviews.length === 0 ? <p className="text-center py-10 text-sm text-muted-foreground">Nenhuma review no período.</p> :
-            sortedReviews.map(r => <ReviewCard key={r.id} r={r} />)}
+          {sortedReviews.length === 0 ? (
+            <div className="text-center py-10">
+              <p className="text-sm text-muted-foreground mb-3">Nenhuma review no período.</p>
+              <Link to="/m/profile" className="inline-block px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-semibold">Escrever review</Link>
+            </div>
+          ) : sortedReviews.map(r => <ReviewCard key={r.id} r={r} />)}
         </div>
       ) : (
         <div className="space-y-2.5">
