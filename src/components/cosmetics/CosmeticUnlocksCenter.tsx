@@ -2,7 +2,7 @@
 // itens desbloqueados pelo usuário, com link direto para a tela de Customização.
 // Emite toast com link "Ver" quando um novo cosmético é desbloqueado em realtime.
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Gift, Sparkles } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { supabase } from '@/integrations/supabase/client';
