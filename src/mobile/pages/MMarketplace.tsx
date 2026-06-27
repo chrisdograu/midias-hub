@@ -165,6 +165,7 @@ export default function MMarketplace() {
         <div className="text-center py-12 text-muted-foreground">
           <ShoppingBag className="h-10 w-10 mx-auto mb-2 opacity-40" />
           <p className="text-sm">Nenhum anúncio encontrado.</p>
+          <Link to="/m/marketplace/novo" className="inline-block mt-3 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-semibold">+ Criar anúncio</Link>
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3">
