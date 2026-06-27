@@ -66,8 +66,8 @@ export function CosmeticUnlocksCenter({ customizationHref = '/perfil', variant =
             .maybeSingle();
           if (!r) return;
           toast.success(`🎁 Novo cosmético desbloqueado: ${(r as any).name}`, {
-            description: `Tipo: ${KIND_LABEL[(r as any).kind] || (r as any).kind}`,
-            action: { label: 'Ver', onClick: () => setOpen(true) },
+            description: `Tipo: ${KIND_LABEL[(r as any).kind] || (r as any).kind} — toque em Ver para equipar.`,
+            action: { label: 'Ver', onClick: () => navigate(customizationHref) },
           });
         })
       .subscribe();
