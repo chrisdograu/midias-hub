@@ -203,7 +203,7 @@ export default function Header() {
                 </AnimatePresence>
               </div>
             ) : (
-              <Link to="/auth" className="p-2 rounded-lg hover:bg-secondary transition-colors">
+              <Link to="/auth" aria-label="Entrar" className="p-2 rounded-lg hover:bg-secondary transition-colors">
                 <User className="h-5 w-5 text-foreground" />
               </Link>
             )}
