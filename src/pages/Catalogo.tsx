@@ -106,9 +106,7 @@ export default function Catalogo() {
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center py-16">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
+        <GameCardGridSkeleton count={12} />
       ) : (
         <>
           {!debouncedQuery && category === "Todos" && platform === "Todos" && (
