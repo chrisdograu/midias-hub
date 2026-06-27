@@ -208,7 +208,7 @@ export default function Header() {
               </Link>
             )}
 
-            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'} aria-expanded={mobileMenuOpen}
               className="lg:hidden p-2 rounded-lg hover:bg-secondary transition-colors">
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
