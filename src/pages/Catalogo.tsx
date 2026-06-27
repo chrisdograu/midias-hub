@@ -1,12 +1,14 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { platforms } from "@/lib/gameData";
 import { useProdutos } from "@/hooks/useProdutos";
 import { supabase } from "@/integrations/supabase/client";
 import { useDebounce } from "@/hooks/useDebounce";
 import GameCard from "@/components/GameCard";
 import BundleStoreGrid from "@/components/BundleStoreGrid";
-import { Search, Loader2, Package } from "lucide-react";
+import { GameCardGridSkeleton } from "@/components/skeletons";
+import { Search, Package } from "lucide-react";
 
 export default function Catalogo() {
   const [searchParams] = useSearchParams();
@@ -16,17 +18,14 @@ export default function Catalogo() {
   const [platform, setPlatform] = useState("Todos");
   const [sortBy, setSortBy] = useState("relevance");
   const { data: games = [], isLoading } = useProdutos();
-  const [dbCategories, setDbCategories] = useState<string[]>([]);
-
-  useEffect(() => {
-    supabase
-      .from("categorias")
-      .select("name")
-      .order("name")
-      .then(({ data }) => {
-        if (data) setDbCategories(["Todos", ...data.map((c) => c.name)]);
-      });
-  }, []);
+  const { data: dbCategories = [] } = useQuery({
+    queryKey: ['categorias'],
+    queryFn: async () => {
+      const { data } = await supabase.from('categorias').select('name').order('name');
+      return data ? ['Todos', ...data.map(c => c.name)] : ['Todos'];
+    },
+    staleTime: 10 * 60_000,
+  });
 
   const categoryOptions = dbCategories.length > 1 ? dbCategories : ["Todos"];
 
@@ -107,9 +106,7 @@ export default function Catalogo() {
       </div>
 
       {isLoading ? (
-        <div className="flex justify-center py-16">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
+        <GameCardGridSkeleton count={12} />
       ) : (
         <>
           {!debouncedQuery && category === "Todos" && platform === "Todos" && (

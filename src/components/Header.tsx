@@ -136,14 +136,14 @@ export default function Header() {
           </form>
 
           <div className="flex items-center gap-2">
-            <button onClick={toggleTheme} className="p-2 rounded-lg hover:bg-secondary transition-colors" title={theme === 'dark' ? 'Modo claro' : 'Modo escuro'}>
+            <button onClick={toggleTheme} aria-label={theme === 'dark' ? 'Mudar para modo claro' : 'Mudar para modo escuro'} className="p-2 rounded-lg hover:bg-secondary transition-colors" title={theme === 'dark' ? 'Modo claro' : 'Modo escuro'}>
               {theme === 'dark' ? <Sun className="h-5 w-5 text-foreground" /> : <Moon className="h-5 w-5 text-foreground" />}
             </button>
 
             <NotificationBell />
             {user && <CosmeticUnlocksCenter customizationHref="/perfil?tab=customizacao" />}
 
-            <Link to="/carrinho" className="relative p-2 rounded-lg hover:bg-secondary transition-colors">
+            <Link to="/carrinho" aria-label={`Carrinho${itemCount > 0 ? ` (${itemCount} ite${itemCount === 1 ? 'm' : 'ns'})` : ''}`} className="relative p-2 rounded-lg hover:bg-secondary transition-colors">
               <ShoppingCart className="h-5 w-5 text-foreground" />
               {itemCount > 0 && (
                 <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }}
@@ -155,7 +155,7 @@ export default function Header() {
 
             {user ? (
               <div className="relative">
-                <button onClick={() => setUserMenuOpen(!userMenuOpen)}
+                <button onClick={() => setUserMenuOpen(!userMenuOpen)} aria-label="Menu do usuário" aria-expanded={userMenuOpen}
                   className="flex items-center gap-2 p-2 rounded-lg hover:bg-secondary transition-colors">
                   <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center">
                     <span className="text-xs font-bold text-primary">{(profile?.display_name || user.email || '?')[0].toUpperCase()}</span>
@@ -203,12 +203,12 @@ export default function Header() {
                 </AnimatePresence>
               </div>
             ) : (
-              <Link to="/auth" className="p-2 rounded-lg hover:bg-secondary transition-colors">
+              <Link to="/auth" aria-label="Entrar" className="p-2 rounded-lg hover:bg-secondary transition-colors">
                 <User className="h-5 w-5 text-foreground" />
               </Link>
             )}
 
-            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu'} aria-expanded={mobileMenuOpen}
               className="lg:hidden p-2 rounded-lg hover:bg-secondary transition-colors">
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>

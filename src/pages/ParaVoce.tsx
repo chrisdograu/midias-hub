@@ -1,40 +1,41 @@
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { mapProdutoToGame, Game } from '@/lib/gameData';
 import GameCard from '@/components/GameCard';
-import { Sparkles, Loader2 } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { GameCardGridSkeleton } from '@/components/skeletons';
+
+async function fetchRecommendations(userId: string): Promise<Record<string, Game[]>> {
+  const { data: lib } = await supabase
+    .from('biblioteca_usuario')
+    .select('product_id, produtos(category)')
+    .eq('user_id', userId);
+  const counts = new Map<string, number>();
+  const ownedIds = new Set<string>();
+  ((lib as any) || []).forEach((r: any) => {
+    ownedIds.add(r.product_id);
+    const c = r.produtos?.category;
+    if (c) counts.set(c, (counts.get(c) || 0) + 1);
+  });
+  const topGenres = [...counts.entries()].filter(([, c]) => c >= 3).sort((a, b) => b[1] - a[1]).slice(0, 4).map(x => x[0]);
+  const result: Record<string, Game[]> = {};
+  for (const g of topGenres) {
+    const { data } = await supabase.from('produtos').select('*').eq('category', g).eq('is_active', true).eq('awaiting_first_stock', false).order('rating', { ascending: false }).limit(10);
+    result[g] = (data || []).filter(p => !ownedIds.has(p.id)).map(mapProdutoToGame);
+  }
+  return result;
+}
 
 export default function ParaVoce() {
   const { user } = useAuth();
-  const [byGenre, setByGenre] = useState<Record<string, Game[]>>({});
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!user) { setLoading(false); return; }
-    (async () => {
-      const { data: lib } = await supabase
-        .from('biblioteca_usuario')
-        .select('product_id, produtos(category)')
-        .eq('user_id', user.id);
-      const counts = new Map<string, number>();
-      const ownedIds = new Set<string>();
-      ((lib as any) || []).forEach((r: any) => {
-        ownedIds.add(r.product_id);
-        const c = r.produtos?.category;
-        if (c) counts.set(c, (counts.get(c) || 0) + 1);
-      });
-      const topGenres = [...counts.entries()].filter(([, c]) => c >= 3).sort((a, b) => b[1] - a[1]).slice(0, 4).map(x => x[0]);
-      const result: Record<string, Game[]> = {};
-      for (const g of topGenres) {
-        const { data } = await supabase.from('produtos').select('*').eq('category', g).eq('is_active', true).eq('awaiting_first_stock', false).order('rating', { ascending: false }).limit(10);
-        result[g] = (data || []).filter(p => !ownedIds.has(p.id)).map(mapProdutoToGame);
-      }
-      setByGenre(result);
-      setLoading(false);
-    })();
-  }, [user]);
+  const { data: byGenre = {}, isLoading } = useQuery({
+    queryKey: ['pra-voce', user?.id],
+    queryFn: () => fetchRecommendations(user!.id),
+    enabled: !!user,
+    staleTime: 5 * 60_000,
+  });
 
   if (!user) return (
     <div className="container mx-auto px-4 py-20 text-center">
@@ -54,10 +55,12 @@ export default function ParaVoce() {
           <p className="text-muted-foreground text-sm">Recomendações baseadas nos seus gêneros favoritos</p>
         </div>
       </div>
-      {loading ? <div className="flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin" /></div> :
+      {isLoading ? <GameCardGridSkeleton count={10} /> :
         Object.keys(byGenre).length === 0 ? (
           <div className="text-center py-16 text-muted-foreground">
-            <p>Tenha pelo menos 3 jogos do mesmo gênero na biblioteca para ver recomendações personalizadas.</p>
+            <Sparkles className="h-10 w-10 mx-auto mb-3 opacity-40" />
+            <p className="text-sm mb-3">Tenha pelo menos 3 jogos do mesmo gênero na biblioteca para ver recomendações personalizadas.</p>
+            <Link to="/catalogo" className="inline-block px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold">Adicionar jogos</Link>
           </div>
         ) : (
           <div className="space-y-10">

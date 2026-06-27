@@ -2,7 +2,7 @@
 // itens desbloqueados pelo usuário, com link direto para a tela de Customização.
 // Emite toast com link "Ver" quando um novo cosmético é desbloqueado em realtime.
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Gift, Sparkles } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,6 +22,7 @@ interface Props {
 
 export function CosmeticUnlocksCenter({ customizationHref = '/perfil', variant = 'compact' }: Props) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [rows, setRows] = useState<UnlockRow[]>([]);
   const [newCount, setNewCount] = useState(0);
@@ -65,8 +66,8 @@ export function CosmeticUnlocksCenter({ customizationHref = '/perfil', variant =
             .maybeSingle();
           if (!r) return;
           toast.success(`🎁 Novo cosmético desbloqueado: ${(r as any).name}`, {
-            description: `Tipo: ${KIND_LABEL[(r as any).kind] || (r as any).kind}`,
-            action: { label: 'Ver', onClick: () => setOpen(true) },
+            description: `Tipo: ${KIND_LABEL[(r as any).kind] || (r as any).kind} — toque em Ver para equipar.`,
+            action: { label: 'Ver', onClick: () => navigate(customizationHref) },
           });
         })
       .subscribe();

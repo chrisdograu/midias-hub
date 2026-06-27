@@ -296,6 +296,9 @@ export default function MChat() {
               {tab === 'vendedores' ? <Store className="h-10 w-10 mx-auto mb-2 opacity-40" /> : <MessagesSquare className="h-10 w-10 mx-auto mb-2 opacity-40" />}
               <p className="text-sm">{tab === 'vendedores' ? 'Nenhum chat de vendedor.' : 'Nenhuma conversa ainda.'}</p>
               <p className="text-xs mt-1">{tab === 'vendedores' ? 'Conversas iniciadas a partir de anúncios aparecem aqui.' : 'Inicie uma conversa pelo Fórum ou pelo perfil de um amigo.'}</p>
+              <Link to={tab === 'vendedores' ? '/m/marketplace' : '/m/forum'} className="inline-block mt-3 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-semibold">
+                {tab === 'vendedores' ? 'Ver marketplace' : 'Ir ao fórum'}
+              </Link>
             </div>
           ) : (
             <div className="space-y-1.5">
