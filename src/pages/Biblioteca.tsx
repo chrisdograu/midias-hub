@@ -137,11 +137,7 @@ export default function Biblioteca() {
           defaultImage={editingCover.image}
           open
           onClose={() => setEditingCover(null)}
-          onSaved={(url) => setCustomCovers(prev => {
-            const next = { ...prev };
-            if (url) next[editingCover.id] = url; else delete next[editingCover.id];
-            return next;
-          })}
+          onSaved={() => refetchCovers()}
         />
       )}
     </div>
