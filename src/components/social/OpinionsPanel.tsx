@@ -13,10 +13,14 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import SpoilerGuard from "@/components/spoiler/SpoilerGuard";
+import SpoilerComposerControls from "@/components/spoiler/SpoilerComposerControls";
 
 interface Opinion {
   id: string; user_id: string; product_id: string; text: string; images: string[];
   likes_count: number; replies_count: number; created_at: string;
+  is_spoiler?: boolean | null;
+  spoiler_achievement_name?: string | null;
   author?: { display_name: string | null; avatar_url: string | null };
   liked_by_me?: boolean;
 }
@@ -29,6 +33,8 @@ export function OpinionsPanel({ productId }: { productId: string }) {
   const [newText, setNewText] = useState("");
   const [posting, setPosting] = useState(false);
   const [openingId, setOpeningId] = useState<string | null>(null);
+  const [isSpoiler, setIsSpoiler] = useState(false);
+  const [spoilerAch, setSpoilerAch] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -57,10 +63,11 @@ export function OpinionsPanel({ productId }: { productId: string }) {
     setPosting(true);
     const { error } = await supabase.from("game_opinions").insert({
       user_id: user.id, product_id: productId, text: newText.trim(),
-    });
+      is_spoiler: isSpoiler, spoiler_achievement_name: spoilerAch,
+    } as any);
     setPosting(false);
     if (error) { toast.error("Erro ao publicar"); return; }
-    setNewText(""); void load();
+    setNewText(""); setIsSpoiler(false); setSpoilerAch(null); void load();
   };
 
   const toggleLike = async (op: Opinion) => {
