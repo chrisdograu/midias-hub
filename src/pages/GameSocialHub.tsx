@@ -386,13 +386,20 @@ export default function GameSocialHub() {
                   </h3>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     {clips.map((c: any) => (
-                      <a key={c.id} href={c.video_url} target="_blank" rel="noreferrer"
-                        className="block bg-card border border-border rounded-lg overflow-hidden">
-                        <div className="aspect-video bg-muted">
-                          {c.thumbnail_url && <img src={c.thumbnail_url} className="w-full h-full object-cover" alt="" />}
-                        </div>
-                        <p className="text-[10px] text-foreground p-2 line-clamp-1">{c.profile?.display_name} {c.title && `· ${c.title}`}</p>
-                      </a>
+                      <SpoilerGuard
+                        key={c.id}
+                        isSpoiler={!!c.is_spoiler}
+                        achievementName={c.spoiler_achievement_name}
+                        productId={id}
+                      >
+                        <a href={c.video_url} target="_blank" rel="noreferrer"
+                          className="block bg-card border border-border rounded-lg overflow-hidden">
+                          <div className="aspect-video bg-muted">
+                            {c.thumbnail_url && <img src={c.thumbnail_url} className="w-full h-full object-cover" alt="" />}
+                          </div>
+                          <p className="text-[10px] text-foreground p-2 line-clamp-1">{c.profile?.display_name} {c.title && `· ${c.title}`}</p>
+                        </a>
+                      </SpoilerGuard>
                     ))}
                   </div>
                 </>
@@ -415,8 +422,14 @@ export default function GameSocialHub() {
                       <Heart className="h-3 w-3" /> {p.likes_count}
                     </span>
                   </div>
-                  {p.title && <p className="text-sm font-semibold text-foreground">{p.title}</p>}
-                  <p className="text-xs text-muted-foreground line-clamp-3">{p.content}</p>
+                  <SpoilerGuard
+                    isSpoiler={!!p.is_spoiler}
+                    achievementName={p.spoiler_achievement_name}
+                    productId={id}
+                  >
+                    {p.title && <p className="text-sm font-semibold text-foreground">{p.title}</p>}
+                    <p className="text-xs text-muted-foreground line-clamp-3">{p.content}</p>
+                  </SpoilerGuard>
                 </div>
               ))}
             </section>
