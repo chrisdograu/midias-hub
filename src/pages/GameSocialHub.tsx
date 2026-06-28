@@ -13,6 +13,7 @@ import {
 import { motion } from 'framer-motion';
 import MediaLightbox, { LightboxItem } from '@/components/social/MediaLightbox';
 import ReviewCompletaCard, { ReviewCompletaData } from '@/components/social/ReviewCompletaCard';
+import SpoilerGuard from '@/components/spoiler/SpoilerGuard';
 import { Pencil } from 'lucide-react';
 
 type Tab = 'biblioteca' | 'reviews' | 'reviewsCompletas' | 'screenshots' | 'discussoes' | 'historico';
@@ -100,7 +101,7 @@ export default function GameSocialHub() {
     enabled: !!id && hasFriends,
     queryFn: async () => {
       const { data } = await supabase.from('forum_posts')
-        .select('id,user_id,title,content,created_at,likes_count,profile:user_id(display_name,avatar_url)')
+        .select('id,user_id,title,content,created_at,likes_count,is_spoiler,spoiler_achievement_name,profile:user_id(display_name,avatar_url)')
         .eq('product_id', id).in('user_id', friendIds)
         .order('created_at', { ascending: false }).limit(50);
       return (data as any[]) || [];
@@ -112,7 +113,7 @@ export default function GameSocialHub() {
     enabled: !!id && hasFriends,
     queryFn: async () => {
       const { data } = await supabase.from('game_clips')
-        .select('id,user_id,title,thumbnail_url,video_url,created_at,profile:user_id(display_name)')
+        .select('id,user_id,title,thumbnail_url,video_url,created_at,is_spoiler,spoiler_achievement_name,profile:user_id(display_name)')
         .eq('product_id', id).in('user_id', friendIds)
         .order('created_at', { ascending: false }).limit(24);
       return (data as any[]) || [];
