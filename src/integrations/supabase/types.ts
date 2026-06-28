@@ -1257,7 +1257,9 @@ export type Database = {
           created_at: string
           duration_seconds: number | null
           id: string
+          is_spoiler: boolean
           product_id: string
+          spoiler_achievement_name: string | null
           thumbnail_url: string | null
           title: string | null
           user_id: string
@@ -1268,7 +1270,9 @@ export type Database = {
           created_at?: string
           duration_seconds?: number | null
           id?: string
+          is_spoiler?: boolean
           product_id: string
+          spoiler_achievement_name?: string | null
           thumbnail_url?: string | null
           title?: string | null
           user_id: string
@@ -1279,7 +1283,9 @@ export type Database = {
           created_at?: string
           duration_seconds?: number | null
           id?: string
+          is_spoiler?: boolean
           product_id?: string
+          spoiler_achievement_name?: string | null
           thumbnail_url?: string | null
           title?: string | null
           user_id?: string
@@ -1367,9 +1373,11 @@ export type Database = {
           created_at: string
           id: string
           images: string[] | null
+          is_spoiler: boolean
           likes_count: number
           product_id: string
           replies_count: number
+          spoiler_achievement_name: string | null
           text: string
           updated_at: string
           user_id: string
@@ -1378,9 +1386,11 @@ export type Database = {
           created_at?: string
           id?: string
           images?: string[] | null
+          is_spoiler?: boolean
           likes_count?: number
           product_id: string
           replies_count?: number
+          spoiler_achievement_name?: string | null
           text: string
           updated_at?: string
           user_id: string
@@ -1389,9 +1399,11 @@ export type Database = {
           created_at?: string
           id?: string
           images?: string[] | null
+          is_spoiler?: boolean
           likes_count?: number
           product_id?: string
           replies_count?: number
+          spoiler_achievement_name?: string | null
           text?: string
           updated_at?: string
           user_id?: string
@@ -1491,8 +1503,10 @@ export type Database = {
           created_at: string
           id: string
           images: string[]
+          is_spoiler: boolean
           likes_count: number
           product_id: string
+          spoiler_achievement_name: string | null
           user_id: string
         }
         Insert: {
@@ -1500,8 +1514,10 @@ export type Database = {
           created_at?: string
           id?: string
           images: string[]
+          is_spoiler?: boolean
           likes_count?: number
           product_id: string
+          spoiler_achievement_name?: string | null
           user_id: string
         }
         Update: {
@@ -1509,8 +1525,10 @@ export type Database = {
           created_at?: string
           id?: string
           images?: string[]
+          is_spoiler?: boolean
           likes_count?: number
           product_id?: string
+          spoiler_achievement_name?: string | null
           user_id?: string
         }
         Relationships: [
