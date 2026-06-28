@@ -2,14 +2,17 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { Button } from "@/components/ui/button";
 import { Heart, MoreHorizontal, Loader2, Upload } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import SpoilerGuard from "@/components/spoiler/SpoilerGuard";
+import SpoilerComposerControls from "@/components/spoiler/SpoilerComposerControls";
 
 interface Shot {
   id: string; user_id: string; product_id: string; caption: string | null;
   images: string[]; likes_count: number; created_at: string;
+  is_spoiler?: boolean | null;
+  spoiler_achievement_name?: string | null;
   author?: { display_name: string | null; avatar_url: string | null };
   liked_by_me?: boolean;
 }
@@ -20,6 +23,8 @@ export function ScreenshotsPanel({ productId }: { productId: string }) {
   const [loading, setLoading] = useState(true);
   const [caption, setCaption] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [isSpoiler, setIsSpoiler] = useState(false);
+  const [spoilerAch, setSpoilerAch] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -57,9 +62,10 @@ export function ScreenshotsPanel({ productId }: { productId: string }) {
     if (urls.length) {
       const { error } = await supabase.from("game_screenshots").insert({
         user_id: user.id, product_id: productId, caption: caption.trim() || null, images: urls,
-      });
+        is_spoiler: isSpoiler, spoiler_achievement_name: spoilerAch,
+      } as any);
       if (error) toast.error("Erro ao publicar");
-      else { setCaption(""); void load(); }
+      else { setCaption(""); setIsSpoiler(false); setSpoilerAch(null); void load(); }
     }
     setUploading(false);
   };
@@ -81,6 +87,11 @@ export function ScreenshotsPanel({ productId }: { productId: string }) {
           maxLength={500} placeholder="Legenda (opcional)…"
           className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm"
         />
+        <SpoilerComposerControls
+          isSpoiler={isSpoiler} onIsSpoilerChange={setIsSpoiler}
+          achievementName={spoilerAch} onAchievementNameChange={setSpoilerAch}
+          productId={productId}
+        />
         <label className="inline-flex items-center gap-2 cursor-pointer text-sm bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:opacity-90">
           {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
           Enviar screenshot(s)
@@ -93,9 +104,15 @@ export function ScreenshotsPanel({ productId }: { productId: string }) {
         : <ul className="grid sm:grid-cols-2 gap-4">
             {shots.map(s => (
               <li key={s.id} className="bg-card border border-border rounded-xl overflow-hidden">
-                <div className="grid grid-cols-2 gap-0.5">
-                  {s.images.slice(0, 4).map((src, i) => <img key={i} src={src} alt="" className="w-full h-32 object-cover" />)}
-                </div>
+                <SpoilerGuard
+                  isSpoiler={!!s.is_spoiler}
+                  achievementName={s.spoiler_achievement_name}
+                  productId={productId}
+                >
+                  <div className="grid grid-cols-2 gap-0.5">
+                    {s.images.slice(0, 4).map((src, i) => <img key={i} src={src} alt="" className="w-full h-32 object-cover" />)}
+                  </div>
+                </SpoilerGuard>
                 <div className="p-3 space-y-2">
                   <div className="flex items-center gap-2 text-sm">
                     <span className="font-medium">{s.author?.display_name || "Amigo"}</span>

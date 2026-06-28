@@ -17,6 +17,8 @@ import ProductBundles from '@/components/ProductBundles';
 import { GamePageCustomizer } from '@/components/cosmetics/GamePageCustomizer';
 import { GamePageCosmeticOverlay } from '@/components/cosmetics/GamePageCosmeticOverlay';
 import { userOwnsGame } from '@/hooks/useCosmetics';
+import { OpinionsPanel } from '@/components/social/OpinionsPanel';
+import { ScreenshotsPanel } from '@/components/social/ScreenshotsPanel';
 
 export default function GameDetail() {
   const { id } = useParams();
@@ -200,6 +202,22 @@ export default function GameDetail() {
 
       {/* Bundles */}
       <ProductBundles productId={game.id} />
+
+      {/* Opiniões da comunidade (com filtro anti-spoiler) */}
+      {user && (
+        <div className="mt-12">
+          <h2 className="text-lg font-bold text-foreground mb-4">Opiniões da comunidade</h2>
+          <OpinionsPanel productId={game.id} />
+        </div>
+      )}
+
+      {/* Screenshots da comunidade (com filtro anti-spoiler) */}
+      {user && (
+        <div className="mt-12">
+          <h2 className="text-lg font-bold text-foreground mb-4">Screenshots da comunidade</h2>
+          <ScreenshotsPanel productId={game.id} />
+        </div>
+      )}
 
       {/* Related */}
       {related.length > 0 && (
