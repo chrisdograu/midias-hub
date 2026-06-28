@@ -134,6 +134,11 @@ export function OpinionsPanel({ productId }: { productId: string }) {
           placeholder="Compartilhe uma opinião curta sobre este jogo… (respostas viram conversas privadas)"
           rows={3} maxLength={2000}
         />
+        <SpoilerComposerControls
+          isSpoiler={isSpoiler} onIsSpoilerChange={setIsSpoiler}
+          achievementName={spoilerAch} onAchievementNameChange={setSpoilerAch}
+          productId={productId}
+        />
         <div className="flex justify-end">
           <Button onClick={publish} disabled={posting || !newText.trim()}>
             {posting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Publicar"}
@@ -179,12 +184,18 @@ export function OpinionsPanel({ productId }: { productId: string }) {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
-                  <p className="text-sm whitespace-pre-wrap">{op.text}</p>
-                  {op.images?.length > 0 && (
-                    <div className="flex gap-2 mt-2">
-                      {op.images.map((src, i) => <img key={i} src={src} alt="" className="h-24 rounded-lg object-cover" />)}
-                    </div>
-                  )}
+                  <SpoilerGuard
+                    isSpoiler={!!op.is_spoiler}
+                    achievementName={op.spoiler_achievement_name}
+                    productId={op.product_id}
+                  >
+                    <p className="text-sm whitespace-pre-wrap">{op.text}</p>
+                    {op.images?.length > 0 && (
+                      <div className="flex gap-2 mt-2">
+                        {op.images.map((src, i) => <img key={i} src={src} alt="" className="h-24 rounded-lg object-cover" />)}
+                      </div>
+                    )}
+                  </SpoilerGuard>
 
                   <div className="flex items-center gap-4 mt-3 text-sm">
                     <button onClick={() => toggleLike(op)} className="inline-flex items-center gap-1 text-muted-foreground hover:text-primary">
