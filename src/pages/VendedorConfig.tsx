@@ -23,6 +23,9 @@ export default function VendedorConfig() {
   const [profilePhone, setProfilePhone] = useState('');
   const [certifying, setCertifying] = useState(false);
   const [sellerBio, setSellerBio] = useState('');
+  const [vacationMode, setVacationMode] = useState(false);
+  const [vacationMessage, setVacationMessage] = useState('');
+
 
   useEffect(() => {
     if (!user) return;
