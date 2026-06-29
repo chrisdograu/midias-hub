@@ -1,98 +1,113 @@
-# Plano — Spoilers + Recompensas Cosméticas
+# Plano geral — pós-auditoria
 
-## Parte 1 — Spoilers no fórum (corrigir bug)
+## 0. Bug crítico (já corrigido nesta resposta)
 
-Hoje existe `SpoilerGuard` e colunas `is_spoiler` / `achievement_lock` em `forum_posts`, mas **nenhuma UI** marca o post como spoiler nem exibe o guard ao ler. Por isso "não consigo colocar spoiler".
+**Erro**: `cannot add postgres_changes callbacks ... after subscribe()` no canal `ugr-<user-id>` — quebrava `/m/perfil` (tela em branco).
 
-### Onde adicionar
+**Causa**: `CosmeticUnlocksCenter` está montado no `MobileLayout` (global). React StrictMode remonta o efeito; o `removeChannel` é assíncrono, então o segundo mount reutiliza o mesmo canal já-subscrito e tenta adicionar `.on()` de novo.
 
-- **Criação de post (mobile)**: `MForumGame.tsx`, `MForumComunidade.tsx`, `MForum.tsx` — composer ganha:
-  - Toggle "⚠️ Marcar como spoiler" (manual — todos precisam clicar pra ver).
-  - Select opcional "Trancar por conquista" → lista as conquistas do jogo atual (`user_achievements` que existem no catálogo do produto). Só aparece em fóruns vinculados a um jogo.
-- **Leitura**: envolver o conteúdo de cada post em `<SpoilerGuard isSpoiler={p.is_spoiler} achievementLockId={p.achievement_lock}>` nas listagens (`MForum`, `MForumGame`, `MForumComunidade`, `MForumPost`, `ForumGeral`).
-- **Reviews**: mesma dupla de controles no editor de review (`MReview.tsx`) — já existe coluna em `avaliacoes`.
-
-### Resultado
-
-- Manual: qualquer leitor vê blur + "Toque para revelar".
-- Por conquista: leitores sem a conquista vêem blur; quem tem, vê direto.
+**Fix aplicado**: sufixo aleatório no nome do canal (`ugr-<id>-<rand>`) — garante canal novo em cada mount sem colidir com o anterior em remoção. Aplicar o mesmo padrão se outros canais globais derem o mesmo sintoma.
 
 ---
 
-## Parte 2 — Recompensas cosméticas por jogo (admin)
+## Princípio transversal
 
-Sistema novo: admin cadastra **rewards** (cosméticos) por jogo, com critério de desbloqueio. Usuário desbloqueia ao cumprir o critério (zerar, platinar, X reviews do jogo, X posts no fórum do jogo, etc.). Recompensas são **cumulativas** e aplicáveis ao perfil global E à página do jogo (do jogo origem **ou** de qualquer outro jogo onde ele aparece — ex: card raro de Zelda pode decorar a página do Elden Ring que ele também joga).
-
-### Tipos de cosmético (`reward_kind`)
-
-1. `avatar_frame` — moldura/borda animada do avatar
-2. `profile_banner` — banner do perfil
-3. `profile_accent` — cor de destaque
-4. `game_card_skin` — skin do card do jogo na biblioteca/perfil
-5. `game_page_theme` — tema da página de jogo (bg, partículas, accent)
-6. `character_icon` — ícone de personagem (pode virar avatar ou decorar cards)
-7. `sticker` — adesivo colável em posts/reviews/perfil
-
-### Critérios de desbloqueio (`unlock_criteria` jsonb)
-
-- `{ type: 'completed', product_id }` — zerou o jogo
-- `{ type: 'platinum', product_id }` — platinou
-- `{ type: 'playtime', product_id, min_hours }`
-- `{ type: 'reviews_for_game', product_id, count }`
-- `{ type: 'forum_posts_for_game', product_id, count }`
-- `{ type: 'achievement', achievement_name | product_id }`
-
-### Schema novo
-
-```text
-game_rewards            (id, product_id, kind, name, description,
-                         asset_url, payload jsonb, unlock_criteria jsonb,
-                         rarity, created_at)
-user_game_rewards       (user_id, reward_id, unlocked_at)  -- inventário
-user_cosmetic_loadout   (user_id, slot, reward_id)
-                         -- slots: 'avatar_frame','profile_banner',
-                         -- 'profile_accent','sticker_1..3'
-user_game_page_loadout  (user_id, product_id, slot, reward_id)
-                         -- por página de jogo, escolhe quais cosméticos exibir
-                         -- (qualquer reward desbloqueado, vindo de qualquer jogo)
-```
-
-Função `check_game_reward_unlocks(_user, _product)` rodada via trigger nos eventos: `biblioteca_usuario.status`, `avaliacoes`, `forum_posts`, `user_playtime`, `user_achievements`. Insere em `user_game_rewards` quando bate o critério; cria notificação "🎁 Você desbloqueou X em &nbsp;".
-
-### Admin (Desktop)
-
-- **Nova aba na `JogosAdmin` → "Recompensas do jogo"** (drawer no item ou tab no editor):
-  - Lista `game_rewards` daquele produto, CRUD completo.
-  - Form: tipo, nome, descrição, upload de asset (bucket `game-rewards`), payload visual (cor/css/animação preset), seletor de critério.
-  - Preview ao vivo do cosmético (mini avatar + mini game card).
-
-### UI usuário
-
-- **Perfil → nova aba "Cosméticos"** (estende `CustomizacaoTab`): grid do inventário (`user_game_rewards`) agrupado por jogo de origem, com filtro por tipo. Equipar = grava em `user_cosmetic_loadout`.
-- **Página do jogo (`GameDetail` + `BibliotecaJogo` + `GameSocialHub`)**: novo botão "🎨 Personalizar esta página" (só dono da biblioteca) — modal escolhe banner/theme/stickers desse jogo a partir de **qualquer** reward desbloqueado.
-- **Renderização pública**: ao visitar `PublicProfile`/`FriendProfile`/`SellerProfile`, aplicar loadout global. Ao visitar `GameDetail` de outro usuário (ex: vendor page), aplicar loadout daquele jogo se houver.
-- `GameCard` ganha overlay opcional de skin/frame.
-- `Header`/`MobileLayout` avatar respeita `avatar_frame`.
-
-### Cumulatividade
-
-- Nada é consumido. `user_game_rewards` é append-only.
-- Loadout (`user_*_loadout`) escolhe o que está visível em cada superfície; resto fica no inventário.
+> **Tudo que for adicionado tem CRUD/configuração na página de admin correspondente do Desktop.** Sem exceções. Cada feature abaixo lista a página admin que recebe os controles.
 
 ---
 
-## Parte 3 — Ordem de execução
+## Fase 1 — Chat (alto impacto, baixo custo)
 
-1. **Fix spoilers** (Parte 1) — pequeno, resolve a queixa imediata.
-2. **Migration**: cria `game_rewards`, `user_game_rewards`, `user_cosmetic_loadout`, `user_game_page_loadout`, bucket `game-rewards`, triggers de desbloqueio.
-3. **Admin CRUD** em `JogosAdmin` (Desktop).
-4. **Inventário + loadout** em `CustomizacaoTab` (perfil) e modal de personalização na página de jogo.
-5. **Renderização**: aplicar cosméticos em `GameCard`, avatar, banner, página de jogo.
+
+| Item                                                                                                                                     | Onde                                            |
+| ---------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| Foto/anexo único por mensagem (upload inline, preview, lightbox)                                                                         | `MChatThread`, `MGroupChat`                     |
+| Reply/citação de mensagem                                                                                                                | mesmas telas + coluna `reply_to` em `mensagens` |
+| Indicador "digitando…" (presence)                                                                                                        | `MChatThread`                                   |
+| Reações emoji (1 por user por msg)                                                                                                       | nova tabela `message_reactions`                 |
+| Limpar conversa / arquivar                                                                                                               | `MChatInfo`                                     |
+| **Admin**: `MensagensAdmin` ganha aba "Configurações de chat" — tamanho máx anexo, lista de emojis permitidos, toggle de presence global | &nbsp;                                          |
+
+
+## Fase 2 — Marketplace (fechar gaps do documento aprovado)
+
+
+| Item                                                                                                                                      | Onde                                                   |
+| ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| Selo de **Condição** obrigatório + filtro                                                                                                 | `MNewAd`, `MMarketplace`                               |
+| Filtro de preço máx + ordenação preço asc/desc                                                                                            | `MMarketplace`                                         |
+| **Modo Férias** (oculta anúncios do vendedor)                                                                                             | `VendedorConfig` + flag em `seller_profiles`           |
+| Barra de **Completude** 0/6 do anúncio (foto, condição, descrição ≥40 chars, preço, plataformas, formas de troca)                         | `MNewAd`                                               |
+| Expiração 30/60/90 dias + renovação 1-clique                                                                                              | coluna `expires_at` em `anuncios` + cron edge function |
+| Limite de anúncios ativos por vendedor não-certificado (default 5)                                                                        | regra em `AnunciosAdmin`                               |
+| Histórico de preço do próprio anúncio (já existe `price_history`) — gráfico no detalhe                                                    | `MMarketplaceItem`                                     |
+| **Admin**: `AnunciosAdmin` recebe: limite global de anúncios, dias padrão de expiração, lista de condições, toggle do modo férias forçado | &nbsp;                                                 |
+
+
+## Fase 3 — Torneios
+
+
+| Item                                                                                                                           | Onde                           |
+| ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------ |
+| Stream/link ao vivo no card                                                                                                    | `Torneios`, `CinematicBracket` |
+| Histórico do confronto entre 2 participantes                                                                                   | `TournamentMatch`              |
+| Notificação push antes do match (já há `tournament-reminders`) — ampliar para 1h, 15min                                        | edge function existente        |
+| Banimento de participante por moderador                                                                                        | `tournament_moderators`        |
+| **Admin**: `Torneios.tsx` (desktop) ganha "Regras padrão" (formato, BO, walkover timer, prêmios cosméticos via `game_rewards`) | &nbsp;                         |
+
+
+## Fase 4 — Lojão oficial (E-commerce Web)
+
+
+| Item                                                                                                | Onde                                                     |
+| --------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| Wishlist com alerta de queda de preço                                                               | `Favoritos` + edge function diária                       |
+| Bundle dinâmico "compre 2, leve 3"                                                                  | `BundlesAdmin` (já existe) — adicionar regra de gratuito |
+| Recomendação "quem comprou X levou Y"                                                               | `GameDetail` + view materializada                        |
+| Comparador lado-a-lado de até 3 jogos                                                               | nova rota `/comparar`                                    |
+| **Admin**: `Produtos` ganha aba "Cross-sell" + `Promocoes` ganha tipo "queda de preço dispara push" | &nbsp;                                                   |
+
+
+## Fase 5 — Fórum / Comunidade
+
+
+| Item                                                                        | Onde                                             |
+| --------------------------------------------------------------------------- | ------------------------------------------------ |
+| Hashtags + busca por hashtag                                                | composer + `MForum` + página `/m/forum/tag/:tag` |
+| Salvar post (bookmark)                                                      | nova tabela `forum_bookmarks`                    |
+| Threads fixadas pelo moderador                                              | flag `is_pinned`                                 |
+| **Admin**: `ForumAdmin` ganha gerência de hashtags em destaque e pin global | &nbsp;                                           |
+
+
+## Fase 6 — Perfil / Biblioteca
+
+
+| Item                                                                                | Onde                                                            |
+| ----------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| Diário de jogos: status público (jogando/zerado/dropei) com data                    | `biblioteca_usuario` já tem `status` — expor no `PublicProfile` |
+| Listas personalizadas ("Top 10 de 2025")                                            | nova tabela `user_lists` + `MProfile`/`Perfil`                  |
+| Pin de até 3 reviews na home do perfil                                              | flag em `reviews_completas`                                     |
+| **Admin**: `BibliotecaSocialAdmin` ganha controle de visibilidade global das listas | &nbsp;                                                          |
+
+
+## Fase 7 — Vendedor
+
+
+| Item                                                         | Onde              |
+| ------------------------------------------------------------ | ----------------- |
+| Métricas: visualizações, propostas, conversão                | `VendedorConfig`  |
+| Resposta automática "fora do horário"                        | `seller_profiles` |
+| Selo "responde rápido" (calculado em `mensagens`)            | trigger + badge   |
+| **Admin**: `Certificados` ganha aba "Métricas de vendedores" | &nbsp;            |
+
 
 ---
 
-## Perguntas antes de começar
+## Ordem sugerida de execução
 
-1. Faço **tudo** (Parte 1 + 2 + 3) numa tacada? Ou só Parte 1 (spoiler) agora e Parte 2/3 num próximo passo? Parte 2 é grande — ~6-8 arquivos novos + migration densa.
-2. Os assets dos cosméticos (frames, banners, stickers) — eu **gero placeholders SVG/CSS** programáticos pra começar, ou você quer fazer upload de PNG/GIF reais via admin desde o início?
-3. Para o "loadout por página de jogo" (personalizar a página de cada jogo da minha biblioteca individualmente) — o usuário precisa ter o jogo na biblioteca pra customizar, certo? E só ele vê essa customização, ou amigos que visitam o perfil dele também veem?          resposta:quero poder colocar pngs, mas sim, coloque coisas genericas no começo. comesticos na pagina de perfil tambem, tanto no mobile quanto no web.  sim, ele precisa do jogo na bibliteoca pra personalizar. uam recompensa,pode ser,se ele tiver o jogo na bibliteoca, ter um post no forum com mais de 10 likes, uma review com mais de 100, ter mais de 100 horas naquele jogo, ou seja, inumeros jeitos de ganhar custmizaçao. quero um jeito de poder adicionar. adicione no minimo 10 jeitos de ganhar uma costumizaçao de um jogo, outro é ganhar todas as conquistas desse jogo em especifico. a customizacao todos vem, se nao nao tem sentido. mas tambem os amigos podem ter a opcao de ver a pagina de jogo sem nenhuma customizaçao no parte lateral esquerda no começo apenas. botao de ver costumizaçao ou pagina de jogo normal. faça parte 1 e 3 e depois a 2 em outra tacada. o spoiler que esat vinculado a uma conquista, a pessoa pode ver ,mesmo se nao tiver tal conquista. apenas tem uma tela de enfatizaçao maior que apenas a de spoiler sem nenhuma conquista, mas se a pessoa ja tiver tal conquista,nem aparece esse de spoiler de conquista,so aparece o nome da conquista likado a tal post. 
+1. **Fase 1 (Chat)** — você sinalizou que é prioridade implícita.
+2. **Fase 2 (Marketplace)** — fecha o documento aprovado anteriormente.
+3. **Fase 3 (Torneios)** + **Fase 4 (Lojão)** em paralelo (áreas independentes).
+4. **Fase 5–7** — refinamento contínuo.
+
+Cada fase é entregável sozinha. Posso começar pela Fase 1 já? faça fase 1 e 2
