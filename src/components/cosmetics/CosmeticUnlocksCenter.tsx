@@ -52,7 +52,7 @@ export function CosmeticUnlocksCenter({ customizationHref = '/perfil', variant =
   // realtime para inserts em user_game_rewards
   useEffect(() => {
     if (!user) return;
-    const ch = supabase.channel(`ugr-${user.id}`)
+    const ch = supabase.channel(`ugr-${user.id}-${Math.random().toString(36).slice(2, 8)}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'user_game_rewards', filter: `user_id=eq.${user.id}` },
         async (payload: any) => {
           await reload();
