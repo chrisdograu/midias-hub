@@ -65,8 +65,10 @@ export default function MMarketplace() {
     let cancel = false;
     (async () => {
       setLoading(true);
+      const nowIso = new Date().toISOString();
       const { data: list, error } = await supabase
         .from('anuncios').select('*').eq('status', 'active')
+        .or(`expires_at.is.null,expires_at.gt.${nowIso}`)
         .order('created_at', { ascending: false }).limit(80);
       if (error) {
         if (!cancel) {
@@ -79,16 +81,18 @@ export default function MMarketplace() {
 
       const ids = list.map(a => a.id);
       const sellers = [...new Set(list.map(a => a.seller_id))];
-      const [{ data: photos }, { data: profiles }] = await Promise.all([
+      const [{ data: photos }, { data: profiles }, { data: vacationing }] = await Promise.all([
         supabase.from('fotos_anuncio').select('anuncio_id, image_url, position').in('anuncio_id', ids).order('position'),
         supabase.from('profiles').select('id, display_name').in('id', sellers),
+        supabase.from('seller_profiles').select('user_id').in('user_id', sellers).eq('vacation_mode', true),
       ]);
+      const vacationSet = new Set((vacationing || []).map((s: any) => s.user_id));
       const photo = new Map<string, string>();
       photos?.forEach(p => { if (!photo.has(p.anuncio_id)) photo.set(p.anuncio_id, p.image_url); });
       const seller = new Map((profiles || []).map(p => [p.id, p.display_name || 'Vendedor']));
 
       if (!cancel) {
-        setAds(list.map(a => ({
+        setAds(list.filter(a => !vacationSet.has(a.seller_id)).map(a => ({
           id: a.id, title: a.title, price: Number(a.price), ad_type: a.ad_type,
           condition: a.condition, certificate_type: a.certificate_type, created_at: a.created_at,
           seller_id: a.seller_id, category: a.category, plataformas: a.plataformas,
@@ -100,6 +104,7 @@ export default function MMarketplace() {
     })();
     return () => { cancel = true; };
   }, []);
+
 
   const debouncedQuery = useDebounce(query, 200);
   const filtered = useMemo(() => {
