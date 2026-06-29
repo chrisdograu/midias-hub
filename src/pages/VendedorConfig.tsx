@@ -72,7 +72,9 @@ export default function VendedorConfig() {
       supabase.from('seller_profiles').update({
         display_name: displayName.trim(), bio: bio.trim() || null,
         avatar_url: avatarUrl || null, is_private: isPrivate,
-      }).eq('user_id', user.id),
+        vacation_mode: vacationMode,
+        vacation_message: vacationMessage.trim() || null,
+      } as any).eq('user_id', user.id),
       supabase.from('profiles').update({
         seller_bio: sellerBio.trim() || null,
         cpf: profileCpf || null, phone: profilePhone || null,
