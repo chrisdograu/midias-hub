@@ -28,6 +28,7 @@ export default function MNewAd() {
   });
   const [plataformas, setPlataformas] = useState<string[]>([]);
   const [files, setFiles] = useState<File[]>([]);
+  const [expiresInDays, setExpiresInDays] = useState<30 | 60 | 90>(60);
   const [submitting, setSubmitting] = useState(false);
   const [suggestions, setSuggestions] = useState<{ id: string; title: string; cover_url: string | null }[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
