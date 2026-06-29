@@ -40,6 +40,8 @@ export default function VendedorConfig() {
       if (sp) {
         setBio(sp.bio || ''); setDisplayName(sp.display_name); setAvatarUrl(sp.avatar_url || '');
         setIsPrivate(sp.is_private);
+        setVacationMode(!!(sp as any).vacation_mode);
+        setVacationMessage((sp as any).vacation_message || '');
       }
       if (prof) {
         setProfileCpf((prof as any).cpf || '');
