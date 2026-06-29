@@ -63,6 +63,7 @@ export type Database = {
           created_at: string
           description: string | null
           desired_item: string | null
+          expires_at: string | null
           game_title: string | null
           id: string
           plataformas: string[] | null
@@ -83,6 +84,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           desired_item?: string | null
+          expires_at?: string | null
           game_title?: string | null
           id?: string
           plataformas?: string[] | null
@@ -103,6 +105,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           desired_item?: string | null
+          expires_at?: string | null
           game_title?: string | null
           id?: string
           plataformas?: string[] | null
@@ -1982,6 +1985,7 @@ export type Database = {
           message_type: string
           payload: Json | null
           receiver_id: string
+          reply_to_id: string | null
           sender_id: string
           tournament_id: string | null
         }
@@ -1999,6 +2003,7 @@ export type Database = {
           message_type?: string
           payload?: Json | null
           receiver_id: string
+          reply_to_id?: string | null
           sender_id: string
           tournament_id?: string | null
         }
@@ -2016,6 +2021,7 @@ export type Database = {
           message_type?: string
           payload?: Json | null
           receiver_id?: string
+          reply_to_id?: string | null
           sender_id?: string
           tournament_id?: string | null
         }
@@ -2032,6 +2038,13 @@ export type Database = {
             columns: ["group_id"]
             isOneToOne: false
             referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mensagens_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "mensagens"
             referencedColumns: ["id"]
           },
         ]
@@ -2068,6 +2081,38 @@ export type Database = {
           source_type?: string
         }
         Relationships: []
+      }
+      message_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          message_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          message_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          message_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "mensagens"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       moderation_history: {
         Row: {
@@ -2947,6 +2992,8 @@ export type Database = {
           total_trades: number
           updated_at: string
           user_id: string
+          vacation_message: string | null
+          vacation_mode: boolean
         }
         Insert: {
           avatar_url?: string | null
@@ -2962,6 +3009,8 @@ export type Database = {
           total_trades?: number
           updated_at?: string
           user_id: string
+          vacation_message?: string | null
+          vacation_mode?: boolean
         }
         Update: {
           avatar_url?: string | null
@@ -2977,6 +3026,8 @@ export type Database = {
           total_trades?: number
           updated_at?: string
           user_id?: string
+          vacation_message?: string | null
+          vacation_mode?: boolean
         }
         Relationships: []
       }
@@ -4307,6 +4358,8 @@ export type Database = {
           total_trades: number
           updated_at: string
           user_id: string
+          vacation_message: string | null
+          vacation_mode: boolean
         }
         SetofOptions: {
           from: "*"
