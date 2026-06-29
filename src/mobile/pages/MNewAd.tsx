@@ -90,6 +90,7 @@ export default function MNewAd() {
       toast.error('Você já tem um anúncio ativo com esse título. Edite o existente em vez de duplicar.');
       return;
     }
+    const expiresAt = new Date(Date.now() + expiresInDays * 24 * 3600 * 1000).toISOString();
     const { data: ad, error } = await supabase.from('anuncios').insert({
       seller_id: user.id, user_id: user.id, title: form.title.trim(),
       description: form.description.trim() || null, price: Number(form.price || 0),
@@ -98,8 +99,9 @@ export default function MNewAd() {
       desired_item: adType === 'troca' ? form.desired_item.trim() || null : null,
       plataformas: plataformas.length ? plataformas : null,
       accepts_counteroffer: form.accepts_counteroffer,
+      expires_at: expiresAt,
       status: 'active',
-    }).select('id').single();
+    } as any).select('id').single();
 
     if (error || !ad) { toast.error('Erro ao publicar'); setSubmitting(false); return; }
 
