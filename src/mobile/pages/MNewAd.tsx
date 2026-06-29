@@ -231,9 +231,58 @@ export default function MNewAd() {
         </div>
       </div>
 
+      {/* Expiração */}
+      <div>
+        <label className="text-[10px] uppercase tracking-wide text-muted-foreground">Expirar em</label>
+        <div className="flex gap-1.5 mt-1">
+          {([30, 60, 90] as const).map(d => (
+            <button key={d} onClick={() => setExpiresInDays(d)}
+              className={`flex-1 py-2 rounded-lg text-xs font-semibold border ${expiresInDays === d ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-muted-foreground border-border'}`}>
+              {d} dias
+            </button>
+          ))}
+        </div>
+        <p className="text-[10px] text-muted-foreground mt-1">Após expirar, o anúncio é ocultado. Você pode renovar a qualquer momento.</p>
+      </div>
+
+      {/* Completude */}
+      {(() => {
+        const checks = [
+          { ok: files.length > 0, label: 'Pelo menos 1 foto' },
+          { ok: !!form.condition, label: 'Condição' },
+          { ok: (form.description || '').trim().length >= 40, label: 'Descrição com 40+ caracteres' },
+          { ok: Number(form.price) > 0 || adType === 'troca', label: adType === 'troca' ? 'Item desejado' : 'Preço' },
+          { ok: adType === 'troca' ? !!form.desired_item.trim() : true, label: 'Item desejado (troca)' },
+          { ok: plataformas.length > 0, label: 'Plataforma' },
+          { ok: form.title.trim().length >= 3, label: 'Título' },
+        ].filter((c, i) => !(adType !== 'troca' && i === 4));
+        const done = checks.filter(c => c.ok).length;
+        const pct = Math.round((done / checks.length) * 100);
+        return (
+          <div className="glass rounded-xl p-3">
+            <div className="flex items-center justify-between text-xs font-semibold mb-2">
+              <span>Completude do anúncio</span>
+              <span className={pct === 100 ? 'text-success' : pct >= 70 ? 'text-warning' : 'text-muted-foreground'}>{done}/{checks.length} · {pct}%</span>
+            </div>
+            <div className="h-2 rounded-full bg-secondary overflow-hidden">
+              <div className={`h-full transition-all ${pct === 100 ? 'bg-success' : 'bg-gradient-to-r from-primary to-accent'}`} style={{ width: `${pct}%` }} />
+            </div>
+            <ul className="mt-2 grid grid-cols-2 gap-x-2 gap-y-1 text-[10px]">
+              {checks.map(c => (
+                <li key={c.label} className={c.ok ? 'text-success' : 'text-muted-foreground'}>
+                  {c.ok ? '✓' : '○'} {c.label}
+                </li>
+              ))}
+            </ul>
+            {pct < 100 && <p className="text-[10px] text-muted-foreground mt-1.5">Anúncios completos vendem até 3× mais rápido.</p>}
+          </div>
+        );
+      })()}
+
       <button onClick={submit} disabled={submitting} className="w-full py-3 rounded-xl bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold glow-primary disabled:opacity-50">
         {submitting ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : 'Publicar anúncio'}
       </button>
+
     </div>
   );
 }
