@@ -129,13 +129,30 @@ export default function MChatThread() {
     const { data: inserted, error } = await supabase.from('mensagens').insert({
       sender_id: user.id, receiver_id: other.id, content,
       anuncio_id: conv?.anuncio_id || null, message_type: 'text',
-    }).select('id, sender_id, receiver_id, content, created_at, is_read, message_type, payload, image_url').single();
+      reply_to_id: replyTo?.id || null,
+    } as any).select('id, sender_id, receiver_id, content, created_at, is_read, message_type, payload, image_url, reply_to_id').single();
     if (error) toast.error('Erro ao enviar');
     else if (inserted) {
       upsertMessage(inserted as Msg);
       if (conv) await supabase.from('conversas').update({ last_message: content, last_message_at: new Date().toISOString() }).eq('id', conv.id);
     }
+    setReplyTo(null);
     setSending(false);
+  };
+
+  const toggleReaction = async (messageId: string, emoji: string) => {
+    if (!user) return;
+    const mine = reactions.find(r => r.message_id === messageId && r.user_id === user.id);
+    if (mine) {
+      await supabase.from('message_reactions').delete().eq('id', mine.id);
+      setReactions(prev => prev.filter(r => r.id !== mine.id));
+      if (mine.emoji === emoji) { setReactionTarget(null); return; }
+    }
+    const { data } = await supabase.from('message_reactions').insert({
+      message_id: messageId, user_id: user.id, emoji,
+    }).select('id, message_id, user_id, emoji').single();
+    if (data) setReactions(prev => [...prev.filter(r => !(r.message_id === messageId && r.user_id === user.id)), data as Reaction]);
+    setReactionTarget(null);
   };
 
   const sendImage = async (file: File) => {
