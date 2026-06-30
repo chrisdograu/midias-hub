@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Megaphone, Eye, Ban, Search, Filter, Loader2 } from 'lucide-react';
+import { Megaphone, Eye, Ban, Search, Filter, Loader2, Settings } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
