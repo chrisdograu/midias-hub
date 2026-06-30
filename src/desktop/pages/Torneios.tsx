@@ -105,6 +105,38 @@ export default function TorneiosAdmin() {
     setBracketFor(t);
     const { data } = await supabase.from('tournament_participants' as any).select('user_id, final_rank, profiles!inner(display_name)').eq('tournament_id', t.id);
     setParticipants(((data as any) || []).map((p: any) => ({ user_id: p.user_id, display_name: p.profiles?.display_name, final_rank: p.final_rank })));
+    await loadBans(t.id);
+  };
+
+  const loadBans = async (tournamentId: string) => {
+    const { data } = await supabase.from('tournament_bans' as any).select('id, user_id, reason, created_at').eq('tournament_id', tournamentId);
+    const list = (data as any) || [];
+    const userIds = list.map((b: any) => b.user_id);
+    let nameMap = new Map<string, string>();
+    if (userIds.length) {
+      const { data: profs } = await supabase.from('profiles').select('id, display_name').in('id', userIds);
+      nameMap = new Map((profs || []).map(p => [p.id, p.display_name || '']));
+    }
+    setBans(list.map((b: any) => ({ ...b, display_name: nameMap.get(b.user_id) || null })));
+  };
+
+  const banUser = async (userId: string) => {
+    if (!bracketFor) return;
+    const { error } = await supabase.from('tournament_bans' as any).insert({
+      tournament_id: bracketFor.id, user_id: userId, reason: banReason || null,
+    });
+    if (error) return toast.error(error.message);
+    toast.success('Usuário banido do torneio');
+    setBanReason('');
+    await loadBans(bracketFor.id);
+    openBracket(bracketFor);
+  };
+
+  const unbanUser = async (banId: string) => {
+    if (!bracketFor) return;
+    await supabase.from('tournament_bans' as any).delete().eq('id', banId);
+    toast.success('Banimento removido');
+    await loadBans(bracketFor.id);
   };
 
   const doGenerateBracket = async () => {
