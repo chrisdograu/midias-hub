@@ -22,10 +22,15 @@ export default function AnunciosAdmin() {
   const [search, setSearch] = useState('');
   const [anuncios, setAnuncios] = useState<Anuncio[]>([]);
   const [loading, setLoading] = useState(true);
+  const [adLimit, setAdLimit] = useState<number>(5);
+  const [savingLimit, setSavingLimit] = useState(false);
   const { toast } = useToast();
 
   const fetchAnuncios = async () => {
     setLoading(true);
+    const { data: setting } = await supabase.from('site_settings').select('value').eq('key', 'max_active_ads_uncertified').maybeSingle();
+    if (setting?.value !== undefined && setting?.value !== null) setAdLimit(Number(setting.value) || 5);
+    const { data } = await supabase.from('anuncios').select('*').order('created_at', { ascending: false });
     const { data } = await supabase.from('anuncios').select('*').order('created_at', { ascending: false });
     if (!data) { setLoading(false); return; }
 
