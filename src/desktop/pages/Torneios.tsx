@@ -52,6 +52,8 @@ export default function TorneiosAdmin() {
   const [editing, setEditing] = useState<string | null>(null);
   const [bracketFor, setBracketFor] = useState<T | null>(null);
   const [participants, setParticipants] = useState<{ user_id: string; display_name: string | null; final_rank: number | null }[]>([]);
+  const [bans, setBans] = useState<{ id: string; user_id: string; display_name: string | null; reason: string | null; created_at: string }[]>([]);
+  const [banReason, setBanReason] = useState('');
   const [alerts, setAlerts] = useState<any[]>([]);
   const [confirmDelete, setConfirmDelete] = useState<T | null>(null);
   const [confirmDistribute, setConfirmDistribute] = useState<T | null>(null);
