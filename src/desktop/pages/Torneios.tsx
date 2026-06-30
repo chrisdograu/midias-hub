@@ -18,6 +18,7 @@ interface T {
   xp_signup?: number | null; xp_match_win?: number | null; xp_champion?: number | null;
   verified?: boolean | null; prize_types?: string[] | null; prize_xp_bonus?: number | null;
   rewards_distributed?: boolean | null;
+  stream_url?: string | null; default_format?: string | null; default_bo?: number | null; walkover_minutes?: number | null;
 }
 
 const PRIZE_OPTIONS = [
@@ -32,6 +33,7 @@ const empty = {
   id: '', title: '', description: '', type: 'semanal', status: 'open',
   max_participants: 16, starts_at: '', ends_at: '',
   verified: false, prize_types: [] as string[], prize_xp_bonus: 0, prize_title: '',
+  stream_url: '', default_format: 'single_elimination', default_bo: 1, walkover_minutes: 15,
 };
 
 function calcXp(n: number) {
