@@ -200,7 +200,10 @@ export default function MMarketplace() {
                 <div className="p-2.5">
                   <p className="text-xs font-semibold text-foreground line-clamp-2 leading-tight min-h-[2rem]">{a.title}</p>
                   <p className="text-base font-bold text-price mt-1">{a.ad_type === 'troca' ? 'Troca' : `R$ ${a.price.toFixed(2)}`}</p>
-                  <p className="text-[10px] text-muted-foreground truncate mt-0.5">{a.seller_name} · {timeAgo(a.created_at)}</p>
+                  <div className="flex items-center justify-between mt-0.5 gap-1">
+                    <p className="text-[10px] text-muted-foreground truncate flex-1">{a.seller_name} · {timeAgo(a.created_at)}</p>
+                    <span className="text-[9px] font-semibold text-muted-foreground bg-secondary/60 rounded px-1 py-0.5 shrink-0">{CONDITION_LABEL[a.condition] || a.condition}</span>
+                  </div>
                 </div>
               </Link>
             </motion.div>
