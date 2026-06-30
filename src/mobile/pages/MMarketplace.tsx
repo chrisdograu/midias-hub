@@ -32,8 +32,13 @@ const PLATFORMS = ['PS5','PS4','Xbox Series X','Xbox One','Switch','PC','Mobile'
 const CONDITIONS = [
   { id: 'all', label: 'Qualquer' },
   { id: 'novo', label: 'Novo' },
+  { id: 'seminovo', label: 'Seminovo' },
   { id: 'usado', label: 'Usado' },
+  { id: 'recondicionado', label: 'Recondicionado' },
 ];
+const CONDITION_LABEL: Record<string, string> = {
+  novo: '✨ Novo', seminovo: '🌟 Seminovo', usado: '📦 Usado', recondicionado: '🔧 Recond.',
+};
 const SORTS = [
   { id: 'recent', label: 'Recentes' },
   { id: 'price_asc', label: 'Mais barato' },
