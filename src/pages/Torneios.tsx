@@ -127,9 +127,17 @@ export default function Torneios() {
             </h3>
             <p className="text-xs text-muted-foreground uppercase tracking-wide">{t.type}</p>
           </div>
-          <span className={`text-xs px-2 py-1 rounded ${t.status === 'open' ? 'bg-green-500/20 text-green-400' : t.status === 'running' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-muted text-muted-foreground'}`}>
-            {t.status === 'open' ? 'Aberto' : t.status === 'running' ? 'Em andamento' : 'Encerrado'}
-          </span>
+          <div className="flex flex-col items-end gap-1">
+            <span className={`text-xs px-2 py-1 rounded ${t.status === 'open' ? 'bg-green-500/20 text-green-400' : t.status === 'running' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-muted text-muted-foreground'}`}>
+              {t.status === 'open' ? 'Aberto' : t.status === 'running' ? 'Em andamento' : 'Encerrado'}
+            </span>
+            {t.stream_url && t.status === 'running' && (
+              <a href={t.stream_url} target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/90 text-white animate-pulse">
+                🔴 AO VIVO
+              </a>
+            )}
+          </div>
         </div>
         {t.description && <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{t.description}</p>}
 
