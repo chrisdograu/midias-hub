@@ -81,6 +81,10 @@ export default function TorneiosAdmin() {
       prize_types: form.prize_types?.length ? form.prize_types : null,
       prize_xp_bonus: Number(form.prize_xp_bonus) || 0,
       prize_title: form.prize_title || null,
+      stream_url: form.stream_url?.trim() || null,
+      default_format: form.default_format || 'single_elimination',
+      default_bo: Number(form.default_bo) || 1,
+      walkover_minutes: Number(form.walkover_minutes) || 15,
     };
     const op = editing
       ? supabase.from('tournaments' as any).update(payload).eq('id', editing)
