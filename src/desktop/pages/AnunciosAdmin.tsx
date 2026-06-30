@@ -95,6 +95,25 @@ export default function AnunciosAdmin() {
         <p className="text-muted-foreground text-sm">Gestão dos anúncios criados por usuários</p>
       </div>
 
+      <Card className="border-border/50">
+        <CardContent className="py-4 px-4 flex items-center gap-4 flex-wrap">
+          <div className="flex items-center gap-2">
+            <Settings className="h-5 w-5 text-primary" />
+            <div>
+              <p className="font-semibold text-sm">Limite de anúncios ativos (vendedor sem certificação)</p>
+              <p className="text-xs text-muted-foreground">Vendedores com certificação aprovada não têm limite.</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 ml-auto">
+            <Label className="text-xs">Máx</Label>
+            <Input type="number" min={1} max={100} value={adLimit} onChange={e => setAdLimit(Number(e.target.value) || 1)} className="w-20" />
+            <Button size="sm" onClick={saveAdLimit} disabled={savingLimit}>
+              {savingLimit ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Salvar'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="grid grid-cols-4 gap-4">
         {[
           { label: 'Ativos', value: counts.active, color: 'text-green-400' },
