@@ -58,6 +58,16 @@ export default function AnunciosAdmin() {
     toast({ title: 'Anúncio removido' }); fetchAnuncios();
   };
 
+  const saveAdLimit = async () => {
+    setSavingLimit(true);
+    const { error } = await supabase.from('site_settings').upsert({
+      key: 'max_active_ads_uncertified', value: adLimit as any,
+    }, { onConflict: 'key' });
+    setSavingLimit(false);
+    if (error) toast({ title: 'Erro ao salvar', description: error.message, variant: 'destructive' });
+    else toast({ title: `Limite atualizado para ${adLimit} anúncios` });
+  };
+
   const filtered = anuncios.filter(a => {
     const query = search.trim().toLowerCase();
     if (statusFilter !== 'all' && a.status !== statusFilter) return false;
