@@ -360,6 +360,15 @@ export default function MChatThread() {
       </div>
 
       <div className="shrink-0 backdrop-blur-xl bg-background/90 border-t border-border/50 px-2 py-2">
+        {replyTo && (
+          <div className="mb-2 flex items-center gap-2 px-2 py-1.5 rounded-lg bg-primary/10 border-l-2 border-primary text-xs">
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-primary">Respondendo a {replyTo.sender_id === user?.id ? 'você' : (other?.display_name || 'Usuário')}</p>
+              <p className="text-muted-foreground truncate">{replyTo.image_url ? '📷 imagem' : replyTo.content.slice(0, 80)}</p>
+            </div>
+            <button onClick={() => setReplyTo(null)} className="text-muted-foreground"><X className="h-3.5 w-3.5" /></button>
+          </div>
+        )}
         {canCounteroffer && (
           <button onClick={() => setOfferOpen(true)} className="w-full mb-2 py-1.5 rounded-lg bg-accent/20 text-accent text-xs font-semibold flex items-center justify-center gap-1.5">
             <ArrowLeftRight className="h-3.5 w-3.5" /> Fazer contraoferta
