@@ -23,6 +23,7 @@ export default function TournamentMatch() {
   const [mvpB, setMvpB] = useState(0);
   const [myMvp, setMyMvp] = useState<string | null>(null);
   const [events, setEvents] = useState<any[]>([]);
+  const [h2h, setH2h] = useState<{ a: number; b: number; total: number; last?: any } | null>(null);
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
