@@ -56,12 +56,17 @@ export default function MChatThread() {
     const [{ data: p }, { data: a }, { data: m }] = await Promise.all([
       supabase.from('profiles').select('id, display_name, avatar_url').eq('id', otherId).maybeSingle(),
       c.anuncio_id ? supabase.from('anuncios').select('id, title, price, ad_type, accepts_counteroffer, desired_item').eq('id', c.anuncio_id).maybeSingle() : Promise.resolve({ data: null }),
-      supabase.from('mensagens').select('id, sender_id, receiver_id, content, created_at, is_read, message_type, payload, image_url').or(`and(sender_id.eq.${user.id},receiver_id.eq.${otherId}),and(sender_id.eq.${otherId},receiver_id.eq.${user.id})`).order('created_at'),
+      supabase.from('mensagens').select('id, sender_id, receiver_id, content, created_at, is_read, message_type, payload, image_url, reply_to_id').or(`and(sender_id.eq.${user.id},receiver_id.eq.${otherId}),and(sender_id.eq.${otherId},receiver_id.eq.${user.id})`).order('created_at'),
     ]);
     setConv(c as Conv);
     setOther(p as Other);
     setAd(a as AdInfo | null);
     setMsgs((m || []) as Msg[]);
+    const ids = (m || []).map((x: any) => x.id);
+    if (ids.length) {
+      const { data: rx } = await supabase.from('message_reactions').select('id, message_id, user_id, emoji').in('message_id', ids);
+      setReactions((rx || []) as Reaction[]);
+    }
     setLoading(false);
     await supabase.from('mensagens').update({ is_read: true }).eq('receiver_id', user.id).eq('sender_id', otherId).eq('is_read', false);
   };
