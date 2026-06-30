@@ -100,6 +100,14 @@ export default function MChatThread() {
         if (participantIds[0] !== messageParticipants[0] || participantIds[1] !== messageParticipants[1]) return;
         upsertMessage(message);
       })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'message_reactions' }, (payload: any) => {
+        const row = (payload.new || payload.old) as Reaction;
+        if (!row?.message_id) return;
+        setReactions(prev => {
+          const filtered = prev.filter(r => r.id !== row.id);
+          return payload.eventType === 'DELETE' ? filtered : [...filtered, payload.new as Reaction];
+        });
+      })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [conversationId, user, conv?.participant_1, conv?.participant_2]);
