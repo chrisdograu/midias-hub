@@ -15,8 +15,10 @@ import { recordMentions } from '@/mobile/lib/mentions';
 interface Msg {
   id: string; sender_id: string; receiver_id: string; content: string;
   created_at: string; is_read: boolean; message_type: string;
-  payload: any | null; image_url: string | null;
+  payload: any | null; image_url: string | null; reply_to_id: string | null;
 }
+interface Reaction { id: string; message_id: string; user_id: string; emoji: string }
+const REACTION_EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🎮'];
 interface Conv { id: string; participant_1: string; participant_2: string; anuncio_id: string | null }
 interface Other { id: string; display_name: string | null; avatar_url: string | null }
 interface AdInfo { id: string; title: string; price: number; ad_type: string; accepts_counteroffer: boolean; desired_item: string | null }
