@@ -14,7 +14,7 @@ interface Tournament {
   prize: string | null; max_participants: number; starts_at: string | null; ends_at: string | null;
   xp_signup?: number | null; xp_match_win?: number | null; xp_champion?: number | null;
   verified?: boolean | null; prize_types?: string[] | null;
-  product_id?: string | null;
+  product_id?: string | null; stream_url?: string | null;
 }
 interface GameOpt { id: string; title: string; image_url: string | null }
 
