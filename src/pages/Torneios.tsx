@@ -78,7 +78,10 @@ export default function Torneios() {
       tournament_id: t.id, user_id: user.id,
       device_fingerprint: fingerprint(),
     });
-    if (error) return toast.error(error.message);
+    if (error) {
+      if (error.message?.includes('banido')) return toast.error('Você foi banido deste torneio pelo moderador');
+      return toast.error(error.message);
+    }
     toast.success('Inscrito!');
     load();
   };
