@@ -282,6 +282,15 @@ export default function MChatThread() {
               </div>
             );
           }
+          const replied = m.reply_to_id ? msgs.find(x => x.id === m.reply_to_id) : null;
+          const msgReactions = reactions.filter(r => r.message_id === m.id);
+          const agg = msgReactions.reduce<Record<string, { count: number; mine: boolean }>>((acc, r) => {
+            const e = acc[r.emoji] || { count: 0, mine: false };
+            e.count += 1;
+            if (r.user_id === user?.id) e.mine = true;
+            acc[r.emoji] = e;
+            return acc;
+          }, {});
           return (
             <div key={m.id} className={`group flex items-end gap-1 ${own ? 'justify-end' : 'justify-start'}`}>
               {own && (
@@ -295,11 +304,45 @@ export default function MChatThread() {
                   iconClassName="h-3.5 w-3.5"
                 />
               )}
-              <div className={`max-w-[78%] rounded-2xl px-3 py-2 ${own ? 'bg-primary text-primary-foreground rounded-br-sm' : 'bg-card text-foreground rounded-bl-sm border border-border/50'}`}>
-                {m.image_url
-                  ? <img src={m.image_url} alt="" className="rounded-lg max-h-60 object-cover" />
-                  : <p className="text-sm whitespace-pre-wrap break-words">{m.content}</p>}
-                <p className={`text-[9px] mt-0.5 ${own ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>{new Date(m.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
+              <div className="flex flex-col items-stretch max-w-[78%] gap-1">
+                <div className={`rounded-2xl px-3 py-2 ${own ? 'bg-primary text-primary-foreground rounded-br-sm' : 'bg-card text-foreground rounded-bl-sm border border-border/50'}`}>
+                  {replied && (
+                    <a href={`#msg-${replied.id}`} onClick={(e) => { e.preventDefault(); document.getElementById(`msg-${replied.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }}
+                      className={`block mb-1 px-2 py-1 rounded text-[11px] border-l-2 ${own ? 'border-primary-foreground/60 bg-primary-foreground/10' : 'border-primary bg-primary/10'} line-clamp-2 opacity-90`}>
+                      <span className="font-semibold">{replied.sender_id === user?.id ? 'Você' : (other?.display_name || 'Usuário')}</span>: {replied.image_url ? '📷 imagem' : replied.content.slice(0, 80)}
+                    </a>
+                  )}
+                  <span id={`msg-${m.id}`} />
+                  {m.image_url
+                    ? <img src={m.image_url} alt="" className="rounded-lg max-h-60 object-cover" />
+                    : <p className="text-sm whitespace-pre-wrap break-words">{m.content}</p>}
+                  <div className="flex items-center justify-between gap-2 mt-0.5">
+                    <p className={`text-[9px] ${own ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>{new Date(m.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
+                    <div className="flex items-center gap-1">
+                      <button onClick={() => setReplyTo(m)} title="Responder"
+                        className={`text-[10px] opacity-60 hover:opacity-100 ${own ? 'text-primary-foreground' : 'text-muted-foreground'}`}>↩</button>
+                      <button onClick={() => setReactionTarget(reactionTarget === m.id ? null : m.id)} title="Reagir"
+                        className={`text-[11px] opacity-60 hover:opacity-100 ${own ? 'text-primary-foreground' : 'text-muted-foreground'}`}>☺</button>
+                    </div>
+                  </div>
+                </div>
+                {Object.keys(agg).length > 0 && (
+                  <div className={`flex flex-wrap gap-1 ${own ? 'justify-end' : 'justify-start'}`}>
+                    {Object.entries(agg).map(([emoji, info]) => (
+                      <button key={emoji} onClick={() => toggleReaction(m.id, emoji)}
+                        className={`text-[11px] rounded-full px-1.5 py-0.5 border ${info.mine ? 'bg-primary/15 border-primary/40 text-primary' : 'bg-card border-border text-muted-foreground'}`}>
+                        {emoji} {info.count}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {reactionTarget === m.id && (
+                  <div className={`flex gap-1 bg-card border border-border rounded-full px-2 py-1 shadow ${own ? 'self-end' : 'self-start'}`}>
+                    {REACTION_EMOJIS.map(e => (
+                      <button key={e} onClick={() => toggleReaction(m.id, e)} className="text-base hover:scale-125 transition-transform">{e}</button>
+                    ))}
+                  </div>
+                )}
               </div>
               {!own && (
                 <ItemActionsMenu
