@@ -3174,6 +3174,41 @@ export type Database = {
         }
         Relationships: []
       }
+      tournament_bans: {
+        Row: {
+          banned_by: string | null
+          created_at: string
+          id: string
+          reason: string | null
+          tournament_id: string
+          user_id: string
+        }
+        Insert: {
+          banned_by?: string | null
+          created_at?: string
+          id?: string
+          reason?: string | null
+          tournament_id: string
+          user_id: string
+        }
+        Update: {
+          banned_by?: string | null
+          created_at?: string
+          id?: string
+          reason?: string | null
+          tournament_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_bans_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_chat_messages: {
         Row: {
           content: string
@@ -3717,6 +3752,8 @@ export type Database = {
           bracket_type: string
           created_at: string
           created_by: string | null
+          default_bo: number
+          default_format: string
           description: string | null
           ends_at: string | null
           entry_price: number
@@ -3747,6 +3784,7 @@ export type Database = {
           type: string
           updated_at: string
           verified: boolean
+          walkover_minutes: number
           winner_id: string | null
           xp_champion: number
           xp_match_win: number
@@ -3758,6 +3796,8 @@ export type Database = {
           bracket_type?: string
           created_at?: string
           created_by?: string | null
+          default_bo?: number
+          default_format?: string
           description?: string | null
           ends_at?: string | null
           entry_price?: number
@@ -3788,6 +3828,7 @@ export type Database = {
           type?: string
           updated_at?: string
           verified?: boolean
+          walkover_minutes?: number
           winner_id?: string | null
           xp_champion?: number
           xp_match_win?: number
@@ -3799,6 +3840,8 @@ export type Database = {
           bracket_type?: string
           created_at?: string
           created_by?: string | null
+          default_bo?: number
+          default_format?: string
           description?: string | null
           ends_at?: string | null
           entry_price?: number
@@ -3829,6 +3872,7 @@ export type Database = {
           type?: string
           updated_at?: string
           verified?: boolean
+          walkover_minutes?: number
           winner_id?: string | null
           xp_champion?: number
           xp_match_win?: number
