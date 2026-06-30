@@ -31,6 +31,9 @@ export default function MChatThread() {
   const [other, setOther] = useState<Other | null>(null);
   const [ad, setAd] = useState<AdInfo | null>(null);
   const [msgs, setMsgs] = useState<Msg[]>([]);
+  const [reactions, setReactions] = useState<Reaction[]>([]);
+  const [replyTo, setReplyTo] = useState<Msg | null>(null);
+  const [reactionTarget, setReactionTarget] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
