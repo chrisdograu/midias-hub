@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Trophy, Plus, Loader2, Users, Shuffle, Trash2, Edit, Gift, AlertTriangle, MessageCircle } from 'lucide-react';
+import { Trophy, Plus, Loader2, Users, Shuffle, Trash2, Edit, Gift, AlertTriangle, MessageCircle, Ban } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface T {
