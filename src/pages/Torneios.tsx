@@ -14,7 +14,7 @@ interface Tournament {
   prize: string | null; max_participants: number; starts_at: string | null; ends_at: string | null;
   xp_signup?: number | null; xp_match_win?: number | null; xp_champion?: number | null;
   verified?: boolean | null; prize_types?: string[] | null;
-  product_id?: string | null;
+  product_id?: string | null; stream_url?: string | null;
 }
 interface GameOpt { id: string; title: string; image_url: string | null }
 
@@ -78,7 +78,10 @@ export default function Torneios() {
       tournament_id: t.id, user_id: user.id,
       device_fingerprint: fingerprint(),
     });
-    if (error) return toast.error(error.message);
+    if (error) {
+      if (error.message?.includes('banido')) return toast.error('Você foi banido deste torneio pelo moderador');
+      return toast.error(error.message);
+    }
     toast.success('Inscrito!');
     load();
   };
@@ -127,9 +130,17 @@ export default function Torneios() {
             </h3>
             <p className="text-xs text-muted-foreground uppercase tracking-wide">{t.type}</p>
           </div>
-          <span className={`text-xs px-2 py-1 rounded ${t.status === 'open' ? 'bg-green-500/20 text-green-400' : t.status === 'running' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-muted text-muted-foreground'}`}>
-            {t.status === 'open' ? 'Aberto' : t.status === 'running' ? 'Em andamento' : 'Encerrado'}
-          </span>
+          <div className="flex flex-col items-end gap-1">
+            <span className={`text-xs px-2 py-1 rounded ${t.status === 'open' ? 'bg-green-500/20 text-green-400' : t.status === 'running' ? 'bg-yellow-500/20 text-yellow-400' : 'bg-muted text-muted-foreground'}`}>
+              {t.status === 'open' ? 'Aberto' : t.status === 'running' ? 'Em andamento' : 'Encerrado'}
+            </span>
+            {t.stream_url && t.status === 'running' && (
+              <a href={t.stream_url} target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/90 text-white animate-pulse">
+                🔴 AO VIVO
+              </a>
+            )}
+          </div>
         </div>
         {t.description && <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{t.description}</p>}
 

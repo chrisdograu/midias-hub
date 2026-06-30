@@ -23,6 +23,7 @@ export default function TournamentMatch() {
   const [mvpB, setMvpB] = useState(0);
   const [myMvp, setMyMvp] = useState<string | null>(null);
   const [events, setEvents] = useState<any[]>([]);
+  const [h2h, setH2h] = useState<{ a: number; b: number; total: number; last?: any } | null>(null);
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
@@ -59,6 +60,21 @@ export default function TournamentMatch() {
         setMyMvp(mineV?.voted_for_id || null);
       }
       setEvents((eRes.data as any) || []);
+
+      // H2H: histórico entre os dois jogadores em qualquer torneio
+      if (mm.player_a && mm.player_b) {
+        const { data: history } = await supabase.from('tournament_matches' as any)
+          .select('id, winner_id, score_a, score_b, ended_at, player_a, player_b, tournament_id')
+          .or(`and(player_a.eq.${mm.player_a},player_b.eq.${mm.player_b}),and(player_a.eq.${mm.player_b},player_b.eq.${mm.player_a})`)
+          .neq('id', matchId).not('ended_at', 'is', null).order('ended_at', { ascending: false });
+        const list = (history as any) || [];
+        setH2h({
+          a: list.filter((x: any) => x.winner_id === mm.player_a).length,
+          b: list.filter((x: any) => x.winner_id === mm.player_b).length,
+          total: list.length,
+          last: list[0],
+        });
+      }
     }
     setLoading(false);
   };
@@ -159,6 +175,31 @@ export default function TournamentMatch() {
                 <PredBar name={pb?.display_name || 'B'} count={predB} pct={(predB / totalPred) * 100} mine={myPred === m.player_b} onClick={() => predict(m.player_b)} disabled={!!m.winner_id} side="right" />
               </div>
             </Section>
+
+            {/* Head-to-Head */}
+            {h2h && h2h.total > 0 && (
+              <Section title="Histórico entre os jogadores" icon={<Trophy className="h-4 w-4" />}>
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="bg-secondary/40 rounded-lg p-3">
+                    <div className="text-2xl font-bold text-primary">{h2h.a}</div>
+                    <div className="text-[10px] text-muted-foreground uppercase truncate">{pa?.display_name || 'A'}</div>
+                  </div>
+                  <div className="bg-secondary/40 rounded-lg p-3">
+                    <div className="text-2xl font-bold text-muted-foreground">{h2h.total}</div>
+                    <div className="text-[10px] text-muted-foreground uppercase">Confrontos</div>
+                  </div>
+                  <div className="bg-secondary/40 rounded-lg p-3">
+                    <div className="text-2xl font-bold text-purple-400">{h2h.b}</div>
+                    <div className="text-[10px] text-muted-foreground uppercase truncate">{pb?.display_name || 'B'}</div>
+                  </div>
+                </div>
+                {h2h.last && (
+                  <p className="text-[11px] text-muted-foreground mt-2 text-center">
+                    Última partida: {h2h.last.score_a} × {h2h.last.score_b} · {new Date(h2h.last.ended_at).toLocaleDateString('pt-BR')}
+                  </p>
+                )}
+              </Section>
+            )}
 
             {/* MVP voting */}
             {m.winner_id && (

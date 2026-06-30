@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Megaphone, Eye, Ban, Search, Filter, Loader2 } from 'lucide-react';
+import { Megaphone, Eye, Ban, Search, Filter, Loader2, Settings } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,10 +22,14 @@ export default function AnunciosAdmin() {
   const [search, setSearch] = useState('');
   const [anuncios, setAnuncios] = useState<Anuncio[]>([]);
   const [loading, setLoading] = useState(true);
+  const [adLimit, setAdLimit] = useState<number>(5);
+  const [savingLimit, setSavingLimit] = useState(false);
   const { toast } = useToast();
 
   const fetchAnuncios = async () => {
     setLoading(true);
+    const { data: setting } = await supabase.from('site_settings').select('value').eq('key', 'max_active_ads_uncertified').maybeSingle();
+    if (setting?.value !== undefined && setting?.value !== null) setAdLimit(Number(setting.value) || 5);
     const { data } = await supabase.from('anuncios').select('*').order('created_at', { ascending: false });
     if (!data) { setLoading(false); return; }
 
@@ -53,6 +58,16 @@ export default function AnunciosAdmin() {
     toast({ title: 'Anúncio removido' }); fetchAnuncios();
   };
 
+  const saveAdLimit = async () => {
+    setSavingLimit(true);
+    const { error } = await supabase.from('site_settings').upsert({
+      key: 'max_active_ads_uncertified', value: adLimit as any,
+    }, { onConflict: 'key' });
+    setSavingLimit(false);
+    if (error) toast({ title: 'Erro ao salvar', description: error.message, variant: 'destructive' });
+    else toast({ title: `Limite atualizado para ${adLimit} anúncios` });
+  };
+
   const filtered = anuncios.filter(a => {
     const query = search.trim().toLowerCase();
     if (statusFilter !== 'all' && a.status !== statusFilter) return false;
@@ -79,6 +94,25 @@ export default function AnunciosAdmin() {
         <h1 className="text-2xl font-bold flex items-center gap-2"><Megaphone className="h-6 w-6 text-primary" /> Anúncios do Marketplace</h1>
         <p className="text-muted-foreground text-sm">Gestão dos anúncios criados por usuários</p>
       </div>
+
+      <Card className="border-border/50">
+        <CardContent className="py-4 px-4 flex items-center gap-4 flex-wrap">
+          <div className="flex items-center gap-2">
+            <Settings className="h-5 w-5 text-primary" />
+            <div>
+              <p className="font-semibold text-sm">Limite de anúncios ativos (vendedor sem certificação)</p>
+              <p className="text-xs text-muted-foreground">Vendedores com certificação aprovada não têm limite.</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 ml-auto">
+            <Label className="text-xs">Máx</Label>
+            <Input type="number" min={1} max={100} value={adLimit} onChange={e => setAdLimit(Number(e.target.value) || 1)} className="w-20" />
+            <Button size="sm" onClick={saveAdLimit} disabled={savingLimit}>
+              {savingLimit ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Salvar'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-4 gap-4">
         {[

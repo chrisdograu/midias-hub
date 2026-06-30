@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Trophy, Plus, Loader2, Users, Shuffle, Trash2, Edit, Gift, AlertTriangle, MessageCircle } from 'lucide-react';
+import { Trophy, Plus, Loader2, Users, Shuffle, Trash2, Edit, Gift, AlertTriangle, MessageCircle, Ban } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface T {
@@ -18,6 +18,7 @@ interface T {
   xp_signup?: number | null; xp_match_win?: number | null; xp_champion?: number | null;
   verified?: boolean | null; prize_types?: string[] | null; prize_xp_bonus?: number | null;
   rewards_distributed?: boolean | null;
+  stream_url?: string | null; default_format?: string | null; default_bo?: number | null; walkover_minutes?: number | null;
 }
 
 const PRIZE_OPTIONS = [
@@ -32,6 +33,7 @@ const empty = {
   id: '', title: '', description: '', type: 'semanal', status: 'open',
   max_participants: 16, starts_at: '', ends_at: '',
   verified: false, prize_types: [] as string[], prize_xp_bonus: 0, prize_title: '',
+  stream_url: '', default_format: 'single_elimination', default_bo: 1, walkover_minutes: 15,
 };
 
 function calcXp(n: number) {
@@ -50,6 +52,8 @@ export default function TorneiosAdmin() {
   const [editing, setEditing] = useState<string | null>(null);
   const [bracketFor, setBracketFor] = useState<T | null>(null);
   const [participants, setParticipants] = useState<{ user_id: string; display_name: string | null; final_rank: number | null }[]>([]);
+  const [bans, setBans] = useState<{ id: string; user_id: string; display_name: string | null; reason: string | null; created_at: string }[]>([]);
+  const [banReason, setBanReason] = useState('');
   const [alerts, setAlerts] = useState<any[]>([]);
   const [confirmDelete, setConfirmDelete] = useState<T | null>(null);
   const [confirmDistribute, setConfirmDistribute] = useState<T | null>(null);
@@ -77,6 +81,10 @@ export default function TorneiosAdmin() {
       prize_types: form.prize_types?.length ? form.prize_types : null,
       prize_xp_bonus: Number(form.prize_xp_bonus) || 0,
       prize_title: form.prize_title || null,
+      stream_url: form.stream_url?.trim() || null,
+      default_format: form.default_format || 'single_elimination',
+      default_bo: Number(form.default_bo) || 1,
+      walkover_minutes: Number(form.walkover_minutes) || 15,
     };
     const op = editing
       ? supabase.from('tournaments' as any).update(payload).eq('id', editing)
@@ -97,6 +105,38 @@ export default function TorneiosAdmin() {
     setBracketFor(t);
     const { data } = await supabase.from('tournament_participants' as any).select('user_id, final_rank, profiles!inner(display_name)').eq('tournament_id', t.id);
     setParticipants(((data as any) || []).map((p: any) => ({ user_id: p.user_id, display_name: p.profiles?.display_name, final_rank: p.final_rank })));
+    await loadBans(t.id);
+  };
+
+  const loadBans = async (tournamentId: string) => {
+    const { data } = await supabase.from('tournament_bans' as any).select('id, user_id, reason, created_at').eq('tournament_id', tournamentId);
+    const list = (data as any) || [];
+    const userIds = list.map((b: any) => b.user_id);
+    let nameMap = new Map<string, string>();
+    if (userIds.length) {
+      const { data: profs } = await supabase.from('profiles').select('id, display_name').in('id', userIds);
+      nameMap = new Map((profs || []).map(p => [p.id, p.display_name || '']));
+    }
+    setBans(list.map((b: any) => ({ ...b, display_name: nameMap.get(b.user_id) || null })));
+  };
+
+  const banUser = async (userId: string) => {
+    if (!bracketFor) return;
+    const { error } = await supabase.from('tournament_bans' as any).insert({
+      tournament_id: bracketFor.id, user_id: userId, reason: banReason || null,
+    });
+    if (error) return toast.error(error.message);
+    toast.success('Usuário banido do torneio');
+    setBanReason('');
+    await loadBans(bracketFor.id);
+    openBracket(bracketFor);
+  };
+
+  const unbanUser = async (banId: string) => {
+    if (!bracketFor) return;
+    await supabase.from('tournament_bans' as any).delete().eq('id', banId);
+    toast.success('Banimento removido');
+    await loadBans(bracketFor.id);
   };
 
   const doGenerateBracket = async () => {
@@ -257,6 +297,33 @@ export default function TorneiosAdmin() {
               <div><Label>Fim</Label><Input type="datetime-local" value={form.ends_at?.slice(0, 16) || ''} onChange={e => setForm({ ...form, ends_at: e.target.value })} /></div>
             </div>
 
+            <div className="border-t border-border pt-3 space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Regras padrão & Transmissão</p>
+              <div><Label>URL da transmissão ao vivo (Twitch / YouTube)</Label>
+                <Input type="url" placeholder="https://twitch.tv/..." value={form.stream_url || ''} onChange={e => setForm({ ...form, stream_url: e.target.value })} />
+                <p className="text-[10px] text-muted-foreground mt-1">Quando preenchido e o torneio estiver "em andamento", aparece o badge 🔴 AO VIVO no card.</p>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div><Label>Formato padrão</Label>
+                  <Select value={form.default_format || 'single_elimination'} onValueChange={v => setForm({ ...form, default_format: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="single_elimination">Eliminação simples</SelectItem>
+                      <SelectItem value="double_elimination">Eliminação dupla</SelectItem>
+                      <SelectItem value="round_robin">Todos contra todos</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div><Label>Best of (BO)</Label>
+                  <Input type="number" min={1} max={9} value={form.default_bo || 1} onChange={e => setForm({ ...form, default_bo: e.target.value })} />
+                </div>
+                <div><Label>Walkover (min)</Label>
+                  <Input type="number" min={5} max={60} value={form.walkover_minutes || 15} onChange={e => setForm({ ...form, walkover_minutes: e.target.value })} />
+                </div>
+              </div>
+            </div>
+
+
             {/* Preview de XP calculado */}
             <div className="bg-secondary/40 rounded-lg p-3 grid grid-cols-3 gap-3 text-center">
               <div><div className="text-[10px] text-muted-foreground uppercase">Inscrição</div><div className="font-bold text-primary">+{xpPreview.s} XP</div></div>
@@ -319,10 +386,38 @@ export default function TorneiosAdmin() {
                   <Button size="icon" variant="ghost" onClick={() => talkToParticipant(p.user_id)} title="Falar com participante">
                     <MessageCircle className="h-4 w-4" />
                   </Button>
+                  <Button size="icon" variant="ghost" className="text-red-500 hover:text-red-600" onClick={() => banUser(p.user_id)} title="Banir do torneio">
+                    <Ban className="h-4 w-4" />
+                  </Button>
                 </li>
               ))}
             </ul>
           )}
+
+          <div className="border-t border-border pt-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground flex items-center gap-2">
+                <Ban className="h-3.5 w-3.5 text-red-500" /> Banidos ({bans.length})
+              </p>
+              <Input placeholder="Motivo do banimento (opcional)" value={banReason} onChange={e => setBanReason(e.target.value)} className="w-64 h-7 text-xs" />
+            </div>
+            {bans.length === 0 ? (
+              <p className="text-[11px] text-muted-foreground italic">Nenhum banimento ativo neste torneio.</p>
+            ) : (
+              <ul className="max-h-40 overflow-y-auto space-y-1 text-xs">
+                {bans.map(b => (
+                  <li key={b.id} className="px-2 py-1.5 rounded bg-red-500/10 border border-red-500/20 flex items-center gap-2">
+                    <span className="flex-1 truncate">
+                      <strong>{b.display_name || b.user_id.slice(0, 8)}</strong>
+                      {b.reason && <span className="text-muted-foreground ml-2">— {b.reason}</span>}
+                    </span>
+                    <Button size="sm" variant="ghost" className="h-6 text-[10px]" onClick={() => unbanUser(b.id)}>Desbanir</Button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
           <DialogFooter>
             <Button onClick={generateBracket} disabled={participants.length < 2}><Shuffle className="h-4 w-4 mr-1" /> Gerar/Sortear chaves</Button>
           </DialogFooter>

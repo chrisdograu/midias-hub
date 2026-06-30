@@ -1,113 +1,53 @@
-# Plano geral — pós-auditoria
+## Encerramento Fase 1 — Chat
 
-## 0. Bug crítico (já corrigido nesta resposta)
+**MChatThread + MGroupChat**
+- Reply: toque longo / botão "responder" → mostra preview da msg citada acima do input; envia `reply_to_id`. Render: bloco quotado no topo do balão clicável (scrolla até a msg original).
+- Reações emoji: tap-hold abre popover com `👍 ❤️ 😂 😮 😢 🎮`; grava em `message_reactions` (1 por user por msg). Render: chips agregados abaixo do balão; tocar remove a sua.
+- Realtime: canal já existe — adicionar listener em `message_reactions` (escopo por `message_id IN msgs`).
 
-**Erro**: `cannot add postgres_changes callbacks ... after subscribe()` no canal `ugr-<user-id>` — quebrava `/m/perfil` (tela em branco).
+*Sem novo SQL — colunas/tabelas já existem.*
 
-**Causa**: `CosmeticUnlocksCenter` está montado no `MobileLayout` (global). React StrictMode remonta o efeito; o `removeChannel` é assíncrono, então o segundo mount reutiliza o mesmo canal já-subscrito e tenta adicionar `.on()` de novo.
+## Encerramento Fase 2 — Marketplace
 
-**Fix aplicado**: sufixo aleatório no nome do canal (`ugr-<id>-<rand>`) — garante canal novo em cada mount sem colidir com o anterior em remoção. Aplicar o mesmo padrão se outros canais globais derem o mesmo sintoma.
+**Migration** (1 só): adicionar `anuncios.condition` (text, default 'usado', NOT NULL com backfill) — valores: `novo|seminovo|usado|recondicionado`. Index em `(status, expires_at, condition, price)`.
 
----
+**MNewAd**: seletor obrigatório de **Condição** (4 chips) + incluir no `completude` (passa a ser 0/7). Bloqueia publicação se ausente.
 
-## Princípio transversal
+**MMarketplace**: 
+- Filtro por condição (chips).
+- Range slider de preço máx + ordenação (recentes / preço asc / preço desc).
+- Mostrar selo de condição no card.
 
-> **Tudo que for adicionado tem CRUD/configuração na página de admin correspondente do Desktop.** Sem exceções. Cada feature abaixo lista a página admin que recebe os controles.
+**MMarketplaceItem**: importar `PriceHistoryChart` existente (já está em `src/components/`) com `price_history` filtrado por `anuncio_id` (se houver) ou por jogo equivalente.
 
----
+**AnunciosAdmin**: card "Configurações globais" — input `max_active_ads_uncertified` (default 5) salvo em `site_settings`. Trigger SQL `enforce_uncertified_ad_limit` que valida no `BEFORE INSERT` em `anuncios` quando `has_active_certificate(seller_id) = false`.
 
-## Fase 1 — Chat (alto impacto, baixo custo)
+## Fase 3 — Torneios (completa)
 
+**Migration**:
+- `tournaments.stream_url text`
+- `tournaments.default_format`, `default_bo`, `walkover_minutes` (preencher defaults p/ todos)
+- `tournament_bans (tournament_id, user_id, banned_by, reason, created_at)` + GRANTs + RLS (apenas mods inserem; participante vê o próprio ban) + trigger que impede re-inscrição do user banido.
 
-| Item                                                                                                                                     | Onde                                            |
-| ---------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
-| Foto/anexo único por mensagem (upload inline, preview, lightbox)                                                                         | `MChatThread`, `MGroupChat`                     |
-| Reply/citação de mensagem                                                                                                                | mesmas telas + coluna `reply_to` em `mensagens` |
-| Indicador "digitando…" (presence)                                                                                                        | `MChatThread`                                   |
-| Reações emoji (1 por user por msg)                                                                                                       | nova tabela `message_reactions`                 |
-| Limpar conversa / arquivar                                                                                                               | `MChatInfo`                                     |
-| **Admin**: `MensagensAdmin` ganha aba "Configurações de chat" — tamanho máx anexo, lista de emojis permitidos, toggle de presence global | &nbsp;                                          |
+**Pages**:
+- `Torneios.tsx` (web): card mostra "🔴 AO VIVO" + link quando `stream_url` ativo.
+- `TournamentMatch.tsx`: nova seção "Histórico entre os jogadores" — query `tournament_matches` onde os dois jogadores se enfrentaram (W/L/última partida).
+- `CinematicBracket.tsx`: badge de stream no header.
+- Desktop `Torneios.tsx`: aba "Regras padrão" (formato BO, walkover timer, prêmios cosméticos via `game_rewards`) + lista de banidos por torneio com botão "remover ban".
+- `TournamentRegistration.tsx`: erro amigável quando banido.
 
+**Push reminders**: edge function `tournament-reminders` já existe — estender para também disparar em T-1h e T-15min (3 janelas), gravar em `tournament_reminder_log` para deduplicar.
 
-## Fase 2 — Marketplace (fechar gaps do documento aprovado)
+## Princípio mantido
 
+Tudo configurável: limite de anúncios, regras padrão de torneio e lista de banidos têm UI no Desktop.
 
-| Item                                                                                                                                      | Onde                                                   |
-| ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
-| Selo de **Condição** obrigatório + filtro                                                                                                 | `MNewAd`, `MMarketplace`                               |
-| Filtro de preço máx + ordenação preço asc/desc                                                                                            | `MMarketplace`                                         |
-| **Modo Férias** (oculta anúncios do vendedor)                                                                                             | `VendedorConfig` + flag em `seller_profiles`           |
-| Barra de **Completude** 0/6 do anúncio (foto, condição, descrição ≥40 chars, preço, plataformas, formas de troca)                         | `MNewAd`                                               |
-| Expiração 30/60/90 dias + renovação 1-clique                                                                                              | coluna `expires_at` em `anuncios` + cron edge function |
-| Limite de anúncios ativos por vendedor não-certificado (default 5)                                                                        | regra em `AnunciosAdmin`                               |
-| Histórico de preço do próprio anúncio (já existe `price_history`) — gráfico no detalhe                                                    | `MMarketplaceItem`                                     |
-| **Admin**: `AnunciosAdmin` recebe: limite global de anúncios, dias padrão de expiração, lista de condições, toggle do modo férias forçado | &nbsp;                                                 |
+## Ordem de execução
 
+1. Migrations (3 chamadas separadas: marketplace, torneios, função de limite). 
+2. UI Chat (reply + reactions).
+3. UI Marketplace (filtros + condição + gráfico).
+4. UI Torneios (stream + H2H + bans + admin defaults).
+5. Estender edge function de reminders.
 
-## Fase 3 — Torneios
-
-
-| Item                                                                                                                           | Onde                           |
-| ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------ |
-| Stream/link ao vivo no card                                                                                                    | `Torneios`, `CinematicBracket` |
-| Histórico do confronto entre 2 participantes                                                                                   | `TournamentMatch`              |
-| Notificação push antes do match (já há `tournament-reminders`) — ampliar para 1h, 15min                                        | edge function existente        |
-| Banimento de participante por moderador                                                                                        | `tournament_moderators`        |
-| **Admin**: `Torneios.tsx` (desktop) ganha "Regras padrão" (formato, BO, walkover timer, prêmios cosméticos via `game_rewards`) | &nbsp;                         |
-
-
-## Fase 4 — Lojão oficial (E-commerce Web)
-
-
-| Item                                                                                                | Onde                                                     |
-| --------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| Wishlist com alerta de queda de preço                                                               | `Favoritos` + edge function diária                       |
-| Bundle dinâmico "compre 2, leve 3"                                                                  | `BundlesAdmin` (já existe) — adicionar regra de gratuito |
-| Recomendação "quem comprou X levou Y"                                                               | `GameDetail` + view materializada                        |
-| Comparador lado-a-lado de até 3 jogos                                                               | nova rota `/comparar`                                    |
-| **Admin**: `Produtos` ganha aba "Cross-sell" + `Promocoes` ganha tipo "queda de preço dispara push" | &nbsp;                                                   |
-
-
-## Fase 5 — Fórum / Comunidade
-
-
-| Item                                                                        | Onde                                             |
-| --------------------------------------------------------------------------- | ------------------------------------------------ |
-| Hashtags + busca por hashtag                                                | composer + `MForum` + página `/m/forum/tag/:tag` |
-| Salvar post (bookmark)                                                      | nova tabela `forum_bookmarks`                    |
-| Threads fixadas pelo moderador                                              | flag `is_pinned`                                 |
-| **Admin**: `ForumAdmin` ganha gerência de hashtags em destaque e pin global | &nbsp;                                           |
-
-
-## Fase 6 — Perfil / Biblioteca
-
-
-| Item                                                                                | Onde                                                            |
-| ----------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| Diário de jogos: status público (jogando/zerado/dropei) com data                    | `biblioteca_usuario` já tem `status` — expor no `PublicProfile` |
-| Listas personalizadas ("Top 10 de 2025")                                            | nova tabela `user_lists` + `MProfile`/`Perfil`                  |
-| Pin de até 3 reviews na home do perfil                                              | flag em `reviews_completas`                                     |
-| **Admin**: `BibliotecaSocialAdmin` ganha controle de visibilidade global das listas | &nbsp;                                                          |
-
-
-## Fase 7 — Vendedor
-
-
-| Item                                                         | Onde              |
-| ------------------------------------------------------------ | ----------------- |
-| Métricas: visualizações, propostas, conversão                | `VendedorConfig`  |
-| Resposta automática "fora do horário"                        | `seller_profiles` |
-| Selo "responde rápido" (calculado em `mensagens`)            | trigger + badge   |
-| **Admin**: `Certificados` ganha aba "Métricas de vendedores" | &nbsp;            |
-
-
----
-
-## Ordem sugerida de execução
-
-1. **Fase 1 (Chat)** — você sinalizou que é prioridade implícita.
-2. **Fase 2 (Marketplace)** — fecha o documento aprovado anteriormente.
-3. **Fase 3 (Torneios)** + **Fase 4 (Lojão)** em paralelo (áreas independentes).
-4. **Fase 5–7** — refinamento contínuo.
-
-Cada fase é entregável sozinha. Posso começar pela Fase 1 já? faça fase 1 e 2
+Aprova prosseguir?

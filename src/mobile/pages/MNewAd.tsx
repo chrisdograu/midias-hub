@@ -192,8 +192,10 @@ export default function MNewAd() {
           {CATEGORIAS.map(c => <option key={c} value={c}>{c.replace('_', ' ')}</option>)}
         </select>
         <select value={form.condition} onChange={e => setForm({ ...form, condition: e.target.value })} className="p-3 bg-card border border-border rounded-lg text-sm">
-          <option value="novo">Novo</option>
+          <option value="novo">Novo (lacrado)</option>
+          <option value="seminovo">Seminovo</option>
           <option value="usado">Usado</option>
+          <option value="recondicionado">Recondicionado</option>
         </select>
       </div>
 

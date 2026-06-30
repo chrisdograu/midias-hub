@@ -15,8 +15,10 @@ import { recordMentions } from '@/mobile/lib/mentions';
 interface Msg {
   id: string; sender_id: string; receiver_id: string; content: string;
   created_at: string; is_read: boolean; message_type: string;
-  payload: any | null; image_url: string | null;
+  payload: any | null; image_url: string | null; reply_to_id: string | null;
 }
+interface Reaction { id: string; message_id: string; user_id: string; emoji: string }
+const REACTION_EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🎮'];
 interface Conv { id: string; participant_1: string; participant_2: string; anuncio_id: string | null }
 interface Other { id: string; display_name: string | null; avatar_url: string | null }
 interface AdInfo { id: string; title: string; price: number; ad_type: string; accepts_counteroffer: boolean; desired_item: string | null }
@@ -29,6 +31,9 @@ export default function MChatThread() {
   const [other, setOther] = useState<Other | null>(null);
   const [ad, setAd] = useState<AdInfo | null>(null);
   const [msgs, setMsgs] = useState<Msg[]>([]);
+  const [reactions, setReactions] = useState<Reaction[]>([]);
+  const [replyTo, setReplyTo] = useState<Msg | null>(null);
+  const [reactionTarget, setReactionTarget] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
@@ -51,12 +56,17 @@ export default function MChatThread() {
     const [{ data: p }, { data: a }, { data: m }] = await Promise.all([
       supabase.from('profiles').select('id, display_name, avatar_url').eq('id', otherId).maybeSingle(),
       c.anuncio_id ? supabase.from('anuncios').select('id, title, price, ad_type, accepts_counteroffer, desired_item').eq('id', c.anuncio_id).maybeSingle() : Promise.resolve({ data: null }),
-      supabase.from('mensagens').select('id, sender_id, receiver_id, content, created_at, is_read, message_type, payload, image_url').or(`and(sender_id.eq.${user.id},receiver_id.eq.${otherId}),and(sender_id.eq.${otherId},receiver_id.eq.${user.id})`).order('created_at'),
+      supabase.from('mensagens').select('id, sender_id, receiver_id, content, created_at, is_read, message_type, payload, image_url, reply_to_id').or(`and(sender_id.eq.${user.id},receiver_id.eq.${otherId}),and(sender_id.eq.${otherId},receiver_id.eq.${user.id})`).order('created_at'),
     ]);
     setConv(c as Conv);
     setOther(p as Other);
     setAd(a as AdInfo | null);
     setMsgs((m || []) as Msg[]);
+    const ids = (m || []).map((x: any) => x.id);
+    if (ids.length) {
+      const { data: rx } = await supabase.from('message_reactions').select('id, message_id, user_id, emoji').in('message_id', ids);
+      setReactions((rx || []) as Reaction[]);
+    }
     setLoading(false);
     await supabase.from('mensagens').update({ is_read: true }).eq('receiver_id', user.id).eq('sender_id', otherId).eq('is_read', false);
   };
@@ -90,6 +100,14 @@ export default function MChatThread() {
         if (participantIds[0] !== messageParticipants[0] || participantIds[1] !== messageParticipants[1]) return;
         upsertMessage(message);
       })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'message_reactions' }, (payload: any) => {
+        const row = (payload.new || payload.old) as Reaction;
+        if (!row?.message_id) return;
+        setReactions(prev => {
+          const filtered = prev.filter(r => r.id !== row.id);
+          return payload.eventType === 'DELETE' ? filtered : [...filtered, payload.new as Reaction];
+        });
+      })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [conversationId, user, conv?.participant_1, conv?.participant_2]);
@@ -111,13 +129,30 @@ export default function MChatThread() {
     const { data: inserted, error } = await supabase.from('mensagens').insert({
       sender_id: user.id, receiver_id: other.id, content,
       anuncio_id: conv?.anuncio_id || null, message_type: 'text',
-    }).select('id, sender_id, receiver_id, content, created_at, is_read, message_type, payload, image_url').single();
+      reply_to_id: replyTo?.id || null,
+    } as any).select('id, sender_id, receiver_id, content, created_at, is_read, message_type, payload, image_url, reply_to_id').single();
     if (error) toast.error('Erro ao enviar');
     else if (inserted) {
       upsertMessage(inserted as Msg);
       if (conv) await supabase.from('conversas').update({ last_message: content, last_message_at: new Date().toISOString() }).eq('id', conv.id);
     }
+    setReplyTo(null);
     setSending(false);
+  };
+
+  const toggleReaction = async (messageId: string, emoji: string) => {
+    if (!user) return;
+    const mine = reactions.find(r => r.message_id === messageId && r.user_id === user.id);
+    if (mine) {
+      await supabase.from('message_reactions').delete().eq('id', mine.id);
+      setReactions(prev => prev.filter(r => r.id !== mine.id));
+      if (mine.emoji === emoji) { setReactionTarget(null); return; }
+    }
+    const { data } = await supabase.from('message_reactions').insert({
+      message_id: messageId, user_id: user.id, emoji,
+    }).select('id, message_id, user_id, emoji').single();
+    if (data) setReactions(prev => [...prev.filter(r => !(r.message_id === messageId && r.user_id === user.id)), data as Reaction]);
+    setReactionTarget(null);
   };
 
   const sendImage = async (file: File) => {
@@ -247,6 +282,15 @@ export default function MChatThread() {
               </div>
             );
           }
+          const replied = m.reply_to_id ? msgs.find(x => x.id === m.reply_to_id) : null;
+          const msgReactions = reactions.filter(r => r.message_id === m.id);
+          const agg = msgReactions.reduce<Record<string, { count: number; mine: boolean }>>((acc, r) => {
+            const e = acc[r.emoji] || { count: 0, mine: false };
+            e.count += 1;
+            if (r.user_id === user?.id) e.mine = true;
+            acc[r.emoji] = e;
+            return acc;
+          }, {});
           return (
             <div key={m.id} className={`group flex items-end gap-1 ${own ? 'justify-end' : 'justify-start'}`}>
               {own && (
@@ -260,11 +304,45 @@ export default function MChatThread() {
                   iconClassName="h-3.5 w-3.5"
                 />
               )}
-              <div className={`max-w-[78%] rounded-2xl px-3 py-2 ${own ? 'bg-primary text-primary-foreground rounded-br-sm' : 'bg-card text-foreground rounded-bl-sm border border-border/50'}`}>
-                {m.image_url
-                  ? <img src={m.image_url} alt="" className="rounded-lg max-h-60 object-cover" />
-                  : <p className="text-sm whitespace-pre-wrap break-words">{m.content}</p>}
-                <p className={`text-[9px] mt-0.5 ${own ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>{new Date(m.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
+              <div className="flex flex-col items-stretch max-w-[78%] gap-1">
+                <div className={`rounded-2xl px-3 py-2 ${own ? 'bg-primary text-primary-foreground rounded-br-sm' : 'bg-card text-foreground rounded-bl-sm border border-border/50'}`}>
+                  {replied && (
+                    <a href={`#msg-${replied.id}`} onClick={(e) => { e.preventDefault(); document.getElementById(`msg-${replied.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }}
+                      className={`block mb-1 px-2 py-1 rounded text-[11px] border-l-2 ${own ? 'border-primary-foreground/60 bg-primary-foreground/10' : 'border-primary bg-primary/10'} line-clamp-2 opacity-90`}>
+                      <span className="font-semibold">{replied.sender_id === user?.id ? 'Você' : (other?.display_name || 'Usuário')}</span>: {replied.image_url ? '📷 imagem' : replied.content.slice(0, 80)}
+                    </a>
+                  )}
+                  <span id={`msg-${m.id}`} />
+                  {m.image_url
+                    ? <img src={m.image_url} alt="" className="rounded-lg max-h-60 object-cover" />
+                    : <p className="text-sm whitespace-pre-wrap break-words">{m.content}</p>}
+                  <div className="flex items-center justify-between gap-2 mt-0.5">
+                    <p className={`text-[9px] ${own ? 'text-primary-foreground/70' : 'text-muted-foreground'}`}>{new Date(m.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
+                    <div className="flex items-center gap-1">
+                      <button onClick={() => setReplyTo(m)} title="Responder"
+                        className={`text-[10px] opacity-60 hover:opacity-100 ${own ? 'text-primary-foreground' : 'text-muted-foreground'}`}>↩</button>
+                      <button onClick={() => setReactionTarget(reactionTarget === m.id ? null : m.id)} title="Reagir"
+                        className={`text-[11px] opacity-60 hover:opacity-100 ${own ? 'text-primary-foreground' : 'text-muted-foreground'}`}>☺</button>
+                    </div>
+                  </div>
+                </div>
+                {Object.keys(agg).length > 0 && (
+                  <div className={`flex flex-wrap gap-1 ${own ? 'justify-end' : 'justify-start'}`}>
+                    {Object.entries(agg).map(([emoji, info]) => (
+                      <button key={emoji} onClick={() => toggleReaction(m.id, emoji)}
+                        className={`text-[11px] rounded-full px-1.5 py-0.5 border ${info.mine ? 'bg-primary/15 border-primary/40 text-primary' : 'bg-card border-border text-muted-foreground'}`}>
+                        {emoji} {info.count}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {reactionTarget === m.id && (
+                  <div className={`flex gap-1 bg-card border border-border rounded-full px-2 py-1 shadow ${own ? 'self-end' : 'self-start'}`}>
+                    {REACTION_EMOJIS.map(e => (
+                      <button key={e} onClick={() => toggleReaction(m.id, e)} className="text-base hover:scale-125 transition-transform">{e}</button>
+                    ))}
+                  </div>
+                )}
               </div>
               {!own && (
                 <ItemActionsMenu
@@ -282,6 +360,15 @@ export default function MChatThread() {
       </div>
 
       <div className="shrink-0 backdrop-blur-xl bg-background/90 border-t border-border/50 px-2 py-2">
+        {replyTo && (
+          <div className="mb-2 flex items-center gap-2 px-2 py-1.5 rounded-lg bg-primary/10 border-l-2 border-primary text-xs">
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-primary">Respondendo a {replyTo.sender_id === user?.id ? 'você' : (other?.display_name || 'Usuário')}</p>
+              <p className="text-muted-foreground truncate">{replyTo.image_url ? '📷 imagem' : replyTo.content.slice(0, 80)}</p>
+            </div>
+            <button onClick={() => setReplyTo(null)} className="text-muted-foreground"><X className="h-3.5 w-3.5" /></button>
+          </div>
+        )}
         {canCounteroffer && (
           <button onClick={() => setOfferOpen(true)} className="w-full mb-2 py-1.5 rounded-lg bg-accent/20 text-accent text-xs font-semibold flex items-center justify-center gap-1.5">
             <ArrowLeftRight className="h-3.5 w-3.5" /> Fazer contraoferta
