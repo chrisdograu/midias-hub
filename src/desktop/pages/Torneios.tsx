@@ -297,6 +297,33 @@ export default function TorneiosAdmin() {
               <div><Label>Fim</Label><Input type="datetime-local" value={form.ends_at?.slice(0, 16) || ''} onChange={e => setForm({ ...form, ends_at: e.target.value })} /></div>
             </div>
 
+            <div className="border-t border-border pt-3 space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Regras padrão & Transmissão</p>
+              <div><Label>URL da transmissão ao vivo (Twitch / YouTube)</Label>
+                <Input type="url" placeholder="https://twitch.tv/..." value={form.stream_url || ''} onChange={e => setForm({ ...form, stream_url: e.target.value })} />
+                <p className="text-[10px] text-muted-foreground mt-1">Quando preenchido e o torneio estiver "em andamento", aparece o badge 🔴 AO VIVO no card.</p>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div><Label>Formato padrão</Label>
+                  <Select value={form.default_format || 'single_elimination'} onValueChange={v => setForm({ ...form, default_format: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="single_elimination">Eliminação simples</SelectItem>
+                      <SelectItem value="double_elimination">Eliminação dupla</SelectItem>
+                      <SelectItem value="round_robin">Todos contra todos</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div><Label>Best of (BO)</Label>
+                  <Input type="number" min={1} max={9} value={form.default_bo || 1} onChange={e => setForm({ ...form, default_bo: e.target.value })} />
+                </div>
+                <div><Label>Walkover (min)</Label>
+                  <Input type="number" min={5} max={60} value={form.walkover_minutes || 15} onChange={e => setForm({ ...form, walkover_minutes: e.target.value })} />
+                </div>
+              </div>
+            </div>
+
+
             {/* Preview de XP calculado */}
             <div className="bg-secondary/40 rounded-lg p-3 grid grid-cols-3 gap-3 text-center">
               <div><div className="text-[10px] text-muted-foreground uppercase">Inscrição</div><div className="font-bold text-primary">+{xpPreview.s} XP</div></div>
