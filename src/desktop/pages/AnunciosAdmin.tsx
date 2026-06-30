@@ -31,7 +31,6 @@ export default function AnunciosAdmin() {
     const { data: setting } = await supabase.from('site_settings').select('value').eq('key', 'max_active_ads_uncertified').maybeSingle();
     if (setting?.value !== undefined && setting?.value !== null) setAdLimit(Number(setting.value) || 5);
     const { data } = await supabase.from('anuncios').select('*').order('created_at', { ascending: false });
-    const { data } = await supabase.from('anuncios').select('*').order('created_at', { ascending: false });
     if (!data) { setLoading(false); return; }
 
     const sellerIds = [...new Set(data.map(a => a.seller_id))];
