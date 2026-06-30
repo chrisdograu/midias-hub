@@ -386,10 +386,38 @@ export default function TorneiosAdmin() {
                   <Button size="icon" variant="ghost" onClick={() => talkToParticipant(p.user_id)} title="Falar com participante">
                     <MessageCircle className="h-4 w-4" />
                   </Button>
+                  <Button size="icon" variant="ghost" className="text-red-500 hover:text-red-600" onClick={() => banUser(p.user_id)} title="Banir do torneio">
+                    <Ban className="h-4 w-4" />
+                  </Button>
                 </li>
               ))}
             </ul>
           )}
+
+          <div className="border-t border-border pt-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground flex items-center gap-2">
+                <Ban className="h-3.5 w-3.5 text-red-500" /> Banidos ({bans.length})
+              </p>
+              <Input placeholder="Motivo do banimento (opcional)" value={banReason} onChange={e => setBanReason(e.target.value)} className="w-64 h-7 text-xs" />
+            </div>
+            {bans.length === 0 ? (
+              <p className="text-[11px] text-muted-foreground italic">Nenhum banimento ativo neste torneio.</p>
+            ) : (
+              <ul className="max-h-40 overflow-y-auto space-y-1 text-xs">
+                {bans.map(b => (
+                  <li key={b.id} className="px-2 py-1.5 rounded bg-red-500/10 border border-red-500/20 flex items-center gap-2">
+                    <span className="flex-1 truncate">
+                      <strong>{b.display_name || b.user_id.slice(0, 8)}</strong>
+                      {b.reason && <span className="text-muted-foreground ml-2">— {b.reason}</span>}
+                    </span>
+                    <Button size="sm" variant="ghost" className="h-6 text-[10px]" onClick={() => unbanUser(b.id)}>Desbanir</Button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
           <DialogFooter>
             <Button onClick={generateBracket} disabled={participants.length < 2}><Shuffle className="h-4 w-4 mr-1" /> Gerar/Sortear chaves</Button>
           </DialogFooter>
