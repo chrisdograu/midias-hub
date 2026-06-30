@@ -176,6 +176,31 @@ export default function TournamentMatch() {
               </div>
             </Section>
 
+            {/* Head-to-Head */}
+            {h2h && h2h.total > 0 && (
+              <Section title="Histórico entre os jogadores" icon={<Trophy className="h-4 w-4" />}>
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="bg-secondary/40 rounded-lg p-3">
+                    <div className="text-2xl font-bold text-primary">{h2h.a}</div>
+                    <div className="text-[10px] text-muted-foreground uppercase truncate">{pa?.display_name || 'A'}</div>
+                  </div>
+                  <div className="bg-secondary/40 rounded-lg p-3">
+                    <div className="text-2xl font-bold text-muted-foreground">{h2h.total}</div>
+                    <div className="text-[10px] text-muted-foreground uppercase">Confrontos</div>
+                  </div>
+                  <div className="bg-secondary/40 rounded-lg p-3">
+                    <div className="text-2xl font-bold text-purple-400">{h2h.b}</div>
+                    <div className="text-[10px] text-muted-foreground uppercase truncate">{pb?.display_name || 'B'}</div>
+                  </div>
+                </div>
+                {h2h.last && (
+                  <p className="text-[11px] text-muted-foreground mt-2 text-center">
+                    Última partida: {h2h.last.score_a} × {h2h.last.score_b} · {new Date(h2h.last.ended_at).toLocaleDateString('pt-BR')}
+                  </p>
+                )}
+              </Section>
+            )}
+
             {/* MVP voting */}
             {m.winner_id && (
               <Section title="Vote no MVP" icon={<Crown className="h-4 w-4" />}>
