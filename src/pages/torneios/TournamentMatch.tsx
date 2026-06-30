@@ -60,6 +60,21 @@ export default function TournamentMatch() {
         setMyMvp(mineV?.voted_for_id || null);
       }
       setEvents((eRes.data as any) || []);
+
+      // H2H: histórico entre os dois jogadores em qualquer torneio
+      if (mm.player_a && mm.player_b) {
+        const { data: history } = await supabase.from('tournament_matches' as any)
+          .select('id, winner_id, score_a, score_b, ended_at, player_a, player_b, tournament_id')
+          .or(`and(player_a.eq.${mm.player_a},player_b.eq.${mm.player_b}),and(player_a.eq.${mm.player_b},player_b.eq.${mm.player_a})`)
+          .neq('id', matchId).not('ended_at', 'is', null).order('ended_at', { ascending: false });
+        const list = (history as any) || [];
+        setH2h({
+          a: list.filter((x: any) => x.winner_id === mm.player_a).length,
+          b: list.filter((x: any) => x.winner_id === mm.player_b).length,
+          total: list.length,
+          last: list[0],
+        });
+      }
     }
     setLoading(false);
   };
