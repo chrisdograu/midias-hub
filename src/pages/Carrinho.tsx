@@ -72,8 +72,8 @@ export default function Carrinho() {
         <div className="bg-card border border-border rounded-xl p-6 h-fit sticky top-20 space-y-4">
           <h2 className="text-lg font-bold text-foreground">Resumo do Pedido</h2>
           <div className="space-y-2 text-sm">
-            <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>R$ {total.toFixed(2)}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Desconto</span><span className="text-success">- R$ 0,00</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>R$ {(total + savings).toFixed(2)}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Descontos</span><span className="text-success">− R$ {savings.toFixed(2)}</span></div>
           </div>
           <div className="border-t border-border pt-3 flex justify-between text-lg font-bold">
             <span>Total</span>
