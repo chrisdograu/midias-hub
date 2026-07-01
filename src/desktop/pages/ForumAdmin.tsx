@@ -54,6 +54,7 @@ export default function ForumAdmin() {
       likes_count: p.likes_count,
       replies_count: replyCount.get(p.id) || 0,
       created_at: p.created_at || '',
+      is_locked: !!(p as any).is_locked,
     })));
     setLoading(false);
   };
