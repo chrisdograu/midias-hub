@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Carrinho() {
   const { items, removeItem, updateQuantity, total, itemCount } = useCart();
+  const savings = items.reduce((s, i) => s + Math.max(0, (i.game.originalPrice - i.game.price)) * i.quantity, 0);
 
   if (items.length === 0) {
     return (
