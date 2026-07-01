@@ -271,7 +271,9 @@ export default function MForumPost() {
       </div>
 
       <div className="fixed bottom-[68px] inset-x-0 backdrop-blur-xl bg-background/90 border-t border-border/50 px-3 py-2">
-        {!user ? (
+        {post.is_locked ? (
+          <div className="text-center py-2 text-xs text-muted-foreground">🔒 Tópico trancado — apenas moderadores podem responder.</div>
+        ) : !user ? (
           <div className="text-center py-1">
             <Link to="/m/auth" className="text-xs font-semibold text-primary">Entre para comentar</Link>
           </div>
