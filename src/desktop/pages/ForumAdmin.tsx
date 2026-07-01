@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { MessageCircle, ThumbsUp, Trash2, Loader2, ArrowLeft, Search, Gamepad2, User } from 'lucide-react';
+import { MessageCircle, ThumbsUp, Trash2, Loader2, ArrowLeft, Search, Gamepad2, User, Lock, Unlock } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +18,7 @@ interface ForumPost {
   likes_count: number;
   replies_count: number;
   created_at: string;
+  is_locked: boolean;
 }
 
 export default function ForumAdmin() {
@@ -53,6 +54,7 @@ export default function ForumAdmin() {
       likes_count: p.likes_count,
       replies_count: replyCount.get(p.id) || 0,
       created_at: p.created_at || '',
+      is_locked: !!(p as any).is_locked,
     })));
     setLoading(false);
   };
@@ -63,6 +65,13 @@ export default function ForumAdmin() {
     await supabase.from('forum_replies').delete().eq('post_id', id);
     await supabase.from('forum_posts').delete().eq('id', id);
     toast({ title: 'Post removido' });
+    fetchPosts();
+  };
+
+  const toggleLock = async (p: ForumPost) => {
+    const { error } = await supabase.from('forum_posts').update({ is_locked: !p.is_locked } as any).eq('id', p.id);
+    if (error) { toast({ title: 'Erro ao alterar', variant: 'destructive' }); return; }
+    toast({ title: p.is_locked ? '🔓 Tópico destrancado' : '🔒 Tópico trancado' });
     fetchPosts();
   };
 
@@ -158,17 +167,20 @@ export default function ForumAdmin() {
                 <TableHeader><TableRow className="border-border">
                   <TableHead>Usuário</TableHead><TableHead>Conteúdo</TableHead>
                   <TableHead className="text-center">Curtidas</TableHead><TableHead className="text-center">Respostas</TableHead>
-                  <TableHead>Data</TableHead><TableHead className="text-center w-20">Ações</TableHead>
+                  <TableHead>Data</TableHead><TableHead className="text-center w-32">Ações</TableHead>
                 </TableRow></TableHeader>
                 <TableBody>
                   {gamePosts.map(p => (
                     <TableRow key={p.id} className="border-border hover:bg-muted/30 align-top">
-                      <TableCell className="text-sm font-medium align-top">{p.user_name}</TableCell>
+                      <TableCell className="text-sm font-medium align-top">{p.user_name} {p.is_locked && <span className="ml-1 text-[10px] text-muted-foreground">🔒</span>}</TableCell>
                       <TableCell className="text-sm align-top"><div className="whitespace-pre-wrap break-words max-w-[480px]">{p.content}</div></TableCell>
                       <TableCell className="text-center text-sm align-top">{p.likes_count}</TableCell>
                       <TableCell className="text-center text-sm">{p.replies_count}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">{p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR') : '—'}</TableCell>
-                      <TableCell className="text-center">
+                      <TableCell className="text-center space-x-1">
+                        <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => toggleLock(p)} title={p.is_locked ? 'Destrancar' : 'Trancar'}>
+                          {p.is_locked ? <Unlock className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
+                        </Button>
                         <Button variant="ghost" size="sm" className="text-xs h-7 text-destructive" onClick={() => handleDelete(p.id)}><Trash2 className="h-3 w-3" /></Button>
                       </TableCell>
                     </TableRow>

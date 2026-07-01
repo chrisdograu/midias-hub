@@ -1047,6 +1047,7 @@ export type Database = {
           content: string
           created_at: string | null
           id: string
+          is_locked: boolean
           is_pinned: boolean
           is_spoiler: boolean
           likes_count: number
@@ -1064,6 +1065,7 @@ export type Database = {
           content: string
           created_at?: string | null
           id?: string
+          is_locked?: boolean
           is_pinned?: boolean
           is_spoiler?: boolean
           likes_count?: number
@@ -1081,6 +1083,7 @@ export type Database = {
           content?: string
           created_at?: string | null
           id?: string
+          is_locked?: boolean
           is_pinned?: boolean
           is_spoiler?: boolean
           likes_count?: number
@@ -1121,6 +1124,7 @@ export type Database = {
           content: string
           created_at: string | null
           id: string
+          is_solution: boolean
           likes_count: number
           post_id: string
           user_id: string
@@ -1129,6 +1133,7 @@ export type Database = {
           content: string
           created_at?: string | null
           id?: string
+          is_solution?: boolean
           likes_count?: number
           post_id: string
           user_id: string
@@ -1137,6 +1142,7 @@ export type Database = {
           content?: string
           created_at?: string | null
           id?: string
+          is_solution?: boolean
           likes_count?: number
           post_id?: string
           user_id?: string

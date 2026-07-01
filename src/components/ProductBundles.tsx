@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Package } from 'lucide-react';
 
@@ -9,26 +9,25 @@ interface Item { bundle_id: string; product_id: string; }
 interface Props { productId: string; }
 
 export default function ProductBundles({ productId }: Props) {
-  const [bundles, setBundles] = useState<{ b: Bundle; products: { id: string; title: string; price: number; image_url: string | null }[] }[]>([]);
-
-  useEffect(() => {
-    (async () => {
+  const { data: bundles = [] } = useQuery({
+    queryKey: ['product-bundles', productId],
+    staleTime: 60_000,
+    queryFn: async () => {
       const { data: items } = await supabase.from('bundle_items' as any).select('bundle_id, product_id');
-      if (!items) return;
+      if (!items) return [];
       const myBundleIds = (items as unknown as Item[]).filter(i => i.product_id === productId).map(i => i.bundle_id);
-      if (myBundleIds.length === 0) { setBundles([]); return; }
+      if (myBundleIds.length === 0) return [];
       const { data: bds } = await supabase.from('bundles' as any).select('id, title, description, price, image_url').in('id', myBundleIds).eq('is_active', true);
-      if (!bds || bds.length === 0) { setBundles([]); return; }
+      if (!bds || bds.length === 0) return [];
       const allProductIds = (items as unknown as Item[]).filter(i => myBundleIds.includes(i.bundle_id)).map(i => i.product_id);
       const { data: prods } = await supabase.from('produtos').select('id, title, price, image_url').in('id', allProductIds);
       const prodMap = new Map((prods || []).map(p => [p.id, p]));
-      const built = (bds as unknown as Bundle[]).map(b => ({
+      return (bds as unknown as Bundle[]).map(b => ({
         b,
         products: (items as unknown as Item[]).filter(i => i.bundle_id === b.id).map(i => prodMap.get(i.product_id)).filter(Boolean) as any[],
       }));
-      setBundles(built);
-    })();
-  }, [productId]);
+    },
+  });
 
   if (bundles.length === 0) return null;
 

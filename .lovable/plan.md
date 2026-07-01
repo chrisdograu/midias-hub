@@ -1,53 +1,67 @@
-## Encerramento Fase 1 — Chat
+## Fase 4 — E-commerce Web (refinamento)
 
-**MChatThread + MGroupChat**
-- Reply: toque longo / botão "responder" → mostra preview da msg citada acima do input; envia `reply_to_id`. Render: bloco quotado no topo do balão clicável (scrolla até a msg original).
-- Reações emoji: tap-hold abre popover com `👍 ❤️ 😂 😮 😢 🎮`; grava em `message_reactions` (1 por user por msg). Render: chips agregados abaixo do balão; tocar remove a sua.
-- Realtime: canal já existe — adicionar listener em `message_reactions` (escopo por `message_id IN msgs`).
+Foco: paridade de qualidade com o mobile e polir a experiência de compra que já existe.
 
-*Sem novo SQL — colunas/tabelas já existem.*
+**Catálogo & Ofertas**
+- `Catalogo.tsx` / `Ofertas.tsx`: migrar fetch direto para `useProdutos()` (React Query já existe) + `Skeleton` no loading + estado vazio com CTA.
+- Adicionar chips de filtro por plataforma (usando as cores semânticas de plataforma já criadas na Fase 1 de UI) + ordenação (mais recentes / preço asc / preço desc / mais avaliados).
+- Persistir filtros na URL (`?platform=&sort=`) para deep-link e voltar do detalhe manter estado.
 
-## Encerramento Fase 2 — Marketplace
+**GameDetail (web)**
+- Skeleton dedicado enquanto `useProduto` carrega (hoje pisca vazio).
+- Prefetch do produto no hover do `GameCard` (já temos `usePrefetchRoute`, estender com prefetch de dados).
+- Selo de estoque unificado ("Últimas unidades" quando `stock <= 3`, "Esgotado" quando 0) — hoje inconsistente.
+- Botão "Adicionar aos favoritos" com feedback ótico imediato (optimistic update no React Query).
 
-**Migration** (1 só): adicionar `anuncios.condition` (text, default 'usado', NOT NULL com backfill) — valores: `novo|seminovo|usado|recondicionado`. Index em `(status, expires_at, condition, price)`.
+**Carrinho & Checkout**
+- `Carrinho.tsx`: mostrar economia total quando houver bundle ou desconto ativo; empty state com CTA para catálogo.
+- `Checkout.tsx`: validação inline dos campos de endereço/cartão (regex CEP/CPF), resumo fixo (sticky) do pedido no desktop.
+- `CheckoutSucesso.tsx`: adicionar links diretos para "Ver biblioteca" e "Ver pedido".
 
-**MNewAd**: seletor obrigatório de **Condição** (4 chips) + incluir no `completude` (passa a ser 0/7). Bloqueia publicação se ausente.
+**Bundles**
+- `BundleDetail.tsx`: mostrar % de economia com destaque + gráfico simples "preço avulso vs bundle".
+- `ProductBundles.tsx`: migrar para React Query (hoje usa `useEffect`+`useState` sem cache).
 
-**MMarketplace**: 
-- Filtro por condição (chips).
-- Range slider de preço máx + ordenação (recentes / preço asc / preço desc).
-- Mostrar selo de condição no card.
+## Fase 5 — Fórum (Web + Mobile)
 
-**MMarketplaceItem**: importar `PriceHistoryChart` existente (já está em `src/components/`) com `price_history` filtrado por `anuncio_id` (se houver) ou por jogo equivalente.
+Foco: o fórum já existe, precisa de moderação, engajamento e paridade cross-platform.
 
-**AnunciosAdmin**: card "Configurações globais" — input `max_active_ads_uncertified` (default 5) salvo em `site_settings`. Trigger SQL `enforce_uncertified_ad_limit` que valida no `BEFORE INSERT` em `anuncios` quando `has_active_certificate(seller_id) = false`.
+**Migration**
+- `forum_posts.is_spoiler` (bool, default false) — permite marcar post inteiro como spoiler, integra com `SpoilerGuard`.
+- `forum_posts.is_locked` (bool, default false) — trancar tópico (só mods respondem).
+- `forum_post_reports` já resolvido via `denuncias` existente (target_type='forum_post') — não precisa nova tabela.
+- Index em `(category_id, is_pinned desc, created_at desc)` para lista.
 
-## Fase 3 — Torneios (completa)
+**Web — `ForumGeral.tsx`**
+- Filtro por categoria (chips no topo) + busca por título.
+- Ordenação: recentes / mais curtidos / mais respondidos.
+- Skeleton + empty state + botão "Nova discussão" com dialog inline.
 
-**Migration**:
-- `tournaments.stream_url text`
-- `tournaments.default_format`, `default_bo`, `walkover_minutes` (preencher defaults p/ todos)
-- `tournament_bans (tournament_id, user_id, banned_by, reason, created_at)` + GRANTs + RLS (apenas mods inserem; participante vê o próprio ban) + trigger que impede re-inscrição do user banido.
+**Mobile — `MForum.tsx` / `MForumComunidade.tsx` / `MForumGame.tsx`**
+- Unificar visual: mesmo card de post (avatar, título, prévia, contadores) entre "por jogo" e "comunidade".
+- Adicionar toggle "🚨 Marcar como spoiler" no compositor de post e reply.
+- Aplicar `SpoilerGuard` no render quando `is_spoiler=true`.
+- Botão "Denunciar" no menu do post (reusa `ReportDialog`).
 
-**Pages**:
-- `Torneios.tsx` (web): card mostra "🔴 AO VIVO" + link quando `stream_url` ativo.
-- `TournamentMatch.tsx`: nova seção "Histórico entre os jogadores" — query `tournament_matches` onde os dois jogadores se enfrentaram (W/L/última partida).
-- `CinematicBracket.tsx`: badge de stream no header.
-- Desktop `Torneios.tsx`: aba "Regras padrão" (formato BO, walkover timer, prêmios cosméticos via `game_rewards`) + lista de banidos por torneio com botão "remover ban".
-- `TournamentRegistration.tsx`: erro amigável quando banido.
+**Post detalhado (`MForumPost.tsx`)**
+- Mostrar cadeado quando `is_locked=true` + esconder input de resposta.
+- Reply com quote (citar mensagem original — reusa mesmo padrão do chat).
+- Marcar melhor resposta (autor pode fixar 1 reply — nova coluna `forum_replies.is_solution` opcional; se ficar apertado, deixar para fase seguinte).
 
-**Push reminders**: edge function `tournament-reminders` já existe — estender para também disparar em T-1h e T-15min (3 janelas), gravar em `tournament_reminder_log` para deduplicar.
-
-## Princípio mantido
-
-Tudo configurável: limite de anúncios, regras padrão de torneio e lista de banidos têm UI no Desktop.
+**Admin — `ForumAdmin.tsx`**
+- Ações em lote: fixar, trancar, excluir, marcar spoiler.
+- Contador de denúncias pendentes por post (join com `denuncias`).
+- Filtro por categoria e por "com denúncia ativa".
 
 ## Ordem de execução
 
-1. Migrations (3 chamadas separadas: marketplace, torneios, função de limite). 
-2. UI Chat (reply + reactions).
-3. UI Marketplace (filtros + condição + gráfico).
-4. UI Torneios (stream + H2H + bans + admin defaults).
-5. Estender edge function de reminders.
+1. Migration única (forum: `is_spoiler`, `is_locked`, index).
+2. Fase 4 — Catalogo/Ofertas com React Query + filtros URL.
+3. Fase 4 — GameDetail skeleton + Carrinho/Checkout polish + ProductBundles em React Query.
+4. Fase 5 — ForumGeral (web) filtros + ordenação + skeleton.
+5. Fase 5 — Mobile forum (spoiler toggle + SpoilerGuard + report + lock).
+6. Fase 5 — ForumAdmin ações em lote + denúncias.
+
+**Sem quebras**: nenhuma alteração de contrato de API; só adição de colunas com default e refactors de fetch para React Query.
 
 Aprova prosseguir?

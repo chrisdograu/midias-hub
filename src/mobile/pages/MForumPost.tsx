@@ -22,7 +22,7 @@ interface Reply {
   id: string; content: string; created_at: string; user_id: string; likes_count: number;
   author: string; reply_to_user?: string | null; iLiked: boolean;
 }
-interface Post { id: string; content: string; created_at: string; likes_count: number; user_id: string; product_id: string; author: string; product: string; iLiked: boolean; is_spoiler: boolean; spoiler_achievement_name: string | null }
+interface Post { id: string; content: string; created_at: string; likes_count: number; user_id: string; product_id: string; author: string; product: string; iLiked: boolean; is_spoiler: boolean; spoiler_achievement_name: string | null; is_locked: boolean }
 
 export default function MForumPost() {
   const { postId } = useParams();
@@ -63,7 +63,7 @@ export default function MForumPost() {
       return;
     }
     setLoading(true);
-    const { data: p } = await supabase.from('forum_posts').select('id, content, created_at, likes_count, user_id, product_id, is_spoiler, spoiler_achievement_name').eq('id', postId).maybeSingle();
+    const { data: p } = await supabase.from('forum_posts').select('id, content, created_at, likes_count, user_id, product_id, is_spoiler, spoiler_achievement_name, is_locked').eq('id', postId).maybeSingle();
     if (!p) { setLoading(false); return; }
     const { data: rs } = await supabase.from('forum_replies').select('id, content, created_at, user_id, likes_count').eq('post_id', postId).order('created_at');
     const userIds = new Set<string>([p.user_id]); rs?.forEach((r: any) => userIds.add(r.user_id));
@@ -82,6 +82,7 @@ export default function MForumPost() {
       product: prod?.title || 'Jogo', iLiked: (postLikes || []).length > 0,
       is_spoiler: !!(p as any).is_spoiler,
       spoiler_achievement_name: (p as any).spoiler_achievement_name || null,
+      is_locked: !!(p as any).is_locked,
     });
     setReplies((rs || []).map((r: any) => {
       const m = r.content.match(/^@(\S+)\s/);
@@ -172,7 +173,10 @@ export default function MForumPost() {
       <div className="px-4 space-y-3">
         <div className="glass rounded-2xl p-4">
           <div className="flex items-center justify-between mb-2">
-            <Link to={`/m/forum/${post.product_id}`}><MForumTag name={post.product.toLowerCase().replace(/\s+/g, '').slice(0, 14)} /></Link>
+            <div className="flex items-center gap-1.5">
+              <Link to={`/m/forum/${post.product_id}`}><MForumTag name={post.product.toLowerCase().replace(/\s+/g, '').slice(0, 14)} /></Link>
+              {post.is_locked && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-muted text-muted-foreground">🔒 TRANCADO</span>}
+            </div>
             <span className="text-[10px] text-muted-foreground">{timeAgo(post.created_at)}</span>
           </div>
           <Link to={`/profile/${post.user_id}`} className="inline-flex items-center gap-2 text-sm font-semibold hover:text-primary">
@@ -270,7 +274,9 @@ export default function MForumPost() {
       </div>
 
       <div className="fixed bottom-[68px] inset-x-0 backdrop-blur-xl bg-background/90 border-t border-border/50 px-3 py-2">
-        {!user ? (
+        {post.is_locked ? (
+          <div className="text-center py-2 text-xs text-muted-foreground">🔒 Tópico trancado — apenas moderadores podem responder.</div>
+        ) : !user ? (
           <div className="text-center py-1">
             <Link to="/m/auth" className="text-xs font-semibold text-primary">Entre para comentar</Link>
           </div>
