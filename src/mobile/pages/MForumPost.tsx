@@ -63,7 +63,7 @@ export default function MForumPost() {
       return;
     }
     setLoading(true);
-    const { data: p } = await supabase.from('forum_posts').select('id, content, created_at, likes_count, user_id, product_id, is_spoiler, spoiler_achievement_name').eq('id', postId).maybeSingle();
+    const { data: p } = await supabase.from('forum_posts').select('id, content, created_at, likes_count, user_id, product_id, is_spoiler, spoiler_achievement_name, is_locked').eq('id', postId).maybeSingle();
     if (!p) { setLoading(false); return; }
     const { data: rs } = await supabase.from('forum_replies').select('id, content, created_at, user_id, likes_count').eq('post_id', postId).order('created_at');
     const userIds = new Set<string>([p.user_id]); rs?.forEach((r: any) => userIds.add(r.user_id));
@@ -82,6 +82,7 @@ export default function MForumPost() {
       product: prod?.title || 'Jogo', iLiked: (postLikes || []).length > 0,
       is_spoiler: !!(p as any).is_spoiler,
       spoiler_achievement_name: (p as any).spoiler_achievement_name || null,
+      is_locked: !!(p as any).is_locked,
     });
     setReplies((rs || []).map((r: any) => {
       const m = r.content.match(/^@(\S+)\s/);
