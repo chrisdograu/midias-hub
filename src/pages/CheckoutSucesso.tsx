@@ -31,14 +31,18 @@ export default function CheckoutSucesso() {
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Link to="/pedidos"
+        <div className="flex flex-col sm:flex-row gap-3 justify-center flex-wrap">
+          <Link to="/biblioteca"
             className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-lg hover:opacity-90 transition-all">
-            <Package className="h-4 w-4" /> Ver Meus Pedidos
+            <BookOpen className="h-4 w-4" /> Ver Biblioteca
+          </Link>
+          <Link to="/pedidos"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-secondary text-foreground font-semibold rounded-lg hover:bg-secondary/80 transition-all">
+            <Package className="h-4 w-4" /> Meus Pedidos
           </Link>
           <Link to="/"
             className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-secondary text-foreground font-semibold rounded-lg hover:bg-secondary/80 transition-all">
-            <Home className="h-4 w-4" /> Voltar ao Início
+            <Home className="h-4 w-4" /> Início
           </Link>
         </div>
       </motion.div>
