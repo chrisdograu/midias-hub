@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { CheckCircle, Package, Home, Sparkles } from 'lucide-react';
+import { CheckCircle, Package, Home, Sparkles, BookOpen } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function CheckoutSucesso() {
