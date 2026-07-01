@@ -68,6 +68,13 @@ export default function ForumAdmin() {
     fetchPosts();
   };
 
+  const toggleLock = async (p: ForumPost) => {
+    const { error } = await supabase.from('forum_posts').update({ is_locked: !p.is_locked } as any).eq('id', p.id);
+    if (error) { toast({ title: 'Erro ao alterar', variant: 'destructive' }); return; }
+    toast({ title: p.is_locked ? '🔓 Tópico destrancado' : '🔒 Tópico trancado' });
+    fetchPosts();
+  };
+
   // Group posts by game
   const games = useMemo(() => {
     const map = new Map<string, { id: string; name: string; count: number; lastAt: string }>();
