@@ -173,7 +173,10 @@ export default function MForumPost() {
       <div className="px-4 space-y-3">
         <div className="glass rounded-2xl p-4">
           <div className="flex items-center justify-between mb-2">
-            <Link to={`/m/forum/${post.product_id}`}><MForumTag name={post.product.toLowerCase().replace(/\s+/g, '').slice(0, 14)} /></Link>
+            <div className="flex items-center gap-1.5">
+              <Link to={`/m/forum/${post.product_id}`}><MForumTag name={post.product.toLowerCase().replace(/\s+/g, '').slice(0, 14)} /></Link>
+              {post.is_locked && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-muted text-muted-foreground">🔒 TRANCADO</span>}
+            </div>
             <span className="text-[10px] text-muted-foreground">{timeAgo(post.created_at)}</span>
           </div>
           <Link to={`/profile/${post.user_id}`} className="inline-flex items-center gap-2 text-sm font-semibold hover:text-primary">
