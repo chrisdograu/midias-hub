@@ -167,17 +167,20 @@ export default function ForumAdmin() {
                 <TableHeader><TableRow className="border-border">
                   <TableHead>Usuário</TableHead><TableHead>Conteúdo</TableHead>
                   <TableHead className="text-center">Curtidas</TableHead><TableHead className="text-center">Respostas</TableHead>
-                  <TableHead>Data</TableHead><TableHead className="text-center w-20">Ações</TableHead>
+                  <TableHead>Data</TableHead><TableHead className="text-center w-32">Ações</TableHead>
                 </TableRow></TableHeader>
                 <TableBody>
                   {gamePosts.map(p => (
                     <TableRow key={p.id} className="border-border hover:bg-muted/30 align-top">
-                      <TableCell className="text-sm font-medium align-top">{p.user_name}</TableCell>
+                      <TableCell className="text-sm font-medium align-top">{p.user_name} {p.is_locked && <span className="ml-1 text-[10px] text-muted-foreground">🔒</span>}</TableCell>
                       <TableCell className="text-sm align-top"><div className="whitespace-pre-wrap break-words max-w-[480px]">{p.content}</div></TableCell>
                       <TableCell className="text-center text-sm align-top">{p.likes_count}</TableCell>
                       <TableCell className="text-center text-sm">{p.replies_count}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">{p.created_at ? new Date(p.created_at).toLocaleDateString('pt-BR') : '—'}</TableCell>
-                      <TableCell className="text-center">
+                      <TableCell className="text-center space-x-1">
+                        <Button variant="ghost" size="sm" className="text-xs h-7" onClick={() => toggleLock(p)} title={p.is_locked ? 'Destrancar' : 'Trancar'}>
+                          {p.is_locked ? <Unlock className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
+                        </Button>
                         <Button variant="ghost" size="sm" className="text-xs h-7 text-destructive" onClick={() => handleDelete(p.id)}><Trash2 className="h-3 w-3" /></Button>
                       </TableCell>
                     </TableRow>
