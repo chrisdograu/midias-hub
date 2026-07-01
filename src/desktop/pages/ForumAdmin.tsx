@@ -18,6 +18,7 @@ interface ForumPost {
   likes_count: number;
   replies_count: number;
   created_at: string;
+  is_locked: boolean;
 }
 
 export default function ForumAdmin() {
