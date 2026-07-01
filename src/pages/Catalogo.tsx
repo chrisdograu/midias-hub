@@ -11,12 +11,12 @@ import { GameCardGridSkeleton } from "@/components/skeletons";
 import { Search, Package } from "lucide-react";
 
 export default function Catalogo() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const initialQuery = searchParams.get("q") || "";
   const [query, setQuery] = useState(initialQuery);
-  const [category, setCategory] = useState("Todos");
-  const [platform, setPlatform] = useState("Todos");
-  const [sortBy, setSortBy] = useState("relevance");
+  const [category, setCategory] = useState(searchParams.get("cat") || "Todos");
+  const [platform, setPlatform] = useState(searchParams.get("platform") || "Todos");
+  const [sortBy, setSortBy] = useState(searchParams.get("sort") || "relevance");
   const { data: games = [], isLoading } = useProdutos();
   const { data: dbCategories = [] } = useQuery({
     queryKey: ['categorias'],
@@ -26,6 +26,16 @@ export default function Catalogo() {
     },
     staleTime: 10 * 60_000,
   });
+
+  // Persist filters in URL for deep-link / back-nav
+  useEffect(() => {
+    const p = new URLSearchParams();
+    if (query.trim()) p.set('q', query.trim());
+    if (category !== 'Todos') p.set('cat', category);
+    if (platform !== 'Todos') p.set('platform', platform);
+    if (sortBy !== 'relevance') p.set('sort', sortBy);
+    setSearchParams(p, { replace: true });
+  }, [query, category, platform, sortBy, setSearchParams]);
 
   const categoryOptions = dbCategories.length > 1 ? dbCategories : ["Todos"];
 
