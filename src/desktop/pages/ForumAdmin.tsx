@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { MessageCircle, ThumbsUp, Trash2, Loader2, ArrowLeft, Search, Gamepad2, User } from 'lucide-react';
+import { MessageCircle, ThumbsUp, Trash2, Loader2, ArrowLeft, Search, Gamepad2, User, Lock, Unlock } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
