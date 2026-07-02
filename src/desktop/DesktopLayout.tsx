@@ -5,7 +5,7 @@ import {
   Award, LogOut, Gamepad2, ChevronLeft, ChevronRight,
   Megaphone, ArrowLeftRight, MessageSquare, Star, Bell, MessageCircle,
   Sun, Moon, Settings, Loader2, Ticket, Lightbulb, Trophy, Zap,
-  Library, FileText, AlertTriangle, LifeBuoy, Plug, Sparkles, Boxes,
+  Library, FileText, AlertTriangle, LifeBuoy, Plug, Sparkles, Boxes, Store,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useTheme } from '@/hooks/useTheme';
