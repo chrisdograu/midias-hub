@@ -17,6 +17,7 @@ export default function Biblioteca() {
   const { user } = useAuth();
   const [filter, setFilter] = useState<StatusFilter>('todos');
   const [sort, setSort] = useState<SortKey>('recent');
+  const [platform, setPlatform] = useState<string>('todas');
 
   const stats = {
     total: biblioteca.length,
@@ -38,16 +39,19 @@ export default function Biblioteca() {
   });
 
   const JA_JOGUEI_STATUSES = ['ja_joguei', 'zerado', 'jogando', 'pausado', 'abandonado'];
+  const allPlatforms = Array.from(new Set(biblioteca.flatMap(b => b.produto?.platform || []))).sort();
   const base = filter === 'todos'
     ? biblioteca
     : filter === 'ja_joguei'
       ? biblioteca.filter(b => JA_JOGUEI_STATUSES.includes(b.status))
       : biblioteca.filter(b => b.status === filter);
-  const filtered = [...base].sort((a, b) => {
+  const platformFiltered = platform === 'todas' ? base : base.filter(b => (b.produto?.platform || []).includes(platform));
+  const filtered = [...platformFiltered].sort((a, b) => {
     if (sort === 'title') return (a.produto?.title || '').localeCompare(b.produto?.title || '');
     if (sort === 'status') return (a.status || '').localeCompare(b.status || '');
     return new Date(b.acquired_at).getTime() - new Date(a.acquired_at).getTime();
   });
+  const completionPct = stats.total ? Math.round((stats.completed / stats.total) * 100) : 0;
 
   const handleStatusChange = async (id: string, newStatus: string) => {
     try {
@@ -71,7 +75,7 @@ export default function Biblioteca() {
 
       {/* Stats */}
       {stats.total > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
           {[
             { l: 'Total', v: stats.total, c: 'text-primary' },
             { l: 'Jogando', v: stats.playing, c: 'text-accent' },
@@ -86,8 +90,21 @@ export default function Biblioteca() {
         </div>
       )}
 
+      {/* Progress summary */}
+      {stats.total > 0 && (
+        <div className="bg-card border border-border rounded-lg p-3 mb-5">
+          <div className="flex items-center justify-between text-xs mb-1.5">
+            <span className="text-muted-foreground">Progresso da coleção</span>
+            <span className="font-semibold text-foreground">{stats.completed}/{stats.total} concluídos ({completionPct}%)</span>
+          </div>
+          <div className="h-2 rounded-full bg-secondary overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-primary via-accent to-purple-400 transition-all" style={{ width: `${completionPct}%` }} />
+          </div>
+        </div>
+      )}
+
       {/* Filters + sort */}
-      <div className="flex flex-wrap gap-2 mb-6 items-center">
+      <div className="flex flex-wrap gap-2 mb-3 items-center">
         {([
           { key: 'todos' as const, label: 'Todos' },
           { key: 'quero_jogar' as const, label: 'Quero Jogar' },
@@ -105,6 +122,23 @@ export default function Biblioteca() {
           <option value="status">Status</option>
         </select>
       </div>
+
+      {allPlatforms.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mb-6">
+          <button onClick={() => setPlatform('todas')}
+            className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${platform === 'todas' ? 'bg-accent text-accent-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'}`}>
+            Todas as plataformas
+          </button>
+          {allPlatforms.map(p => (
+            <button key={p} onClick={() => setPlatform(p)}
+              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${platform === p ? 'bg-accent text-accent-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'}`}>
+              {p}
+            </button>
+          ))}
+        </div>
+      )}
+
+
 
 
       {filtered.length === 0 ? (

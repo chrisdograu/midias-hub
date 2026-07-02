@@ -5,7 +5,7 @@ import {
   Award, LogOut, Gamepad2, ChevronLeft, ChevronRight,
   Megaphone, ArrowLeftRight, MessageSquare, Star, Bell, MessageCircle,
   Sun, Moon, Settings, Loader2, Ticket, Lightbulb, Trophy, Zap,
-  Library, FileText, AlertTriangle, LifeBuoy, Plug, Sparkles, Boxes,
+  Library, FileText, AlertTriangle, LifeBuoy, Plug, Sparkles, Boxes, Store,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useTheme } from '@/hooks/useTheme';
@@ -62,6 +62,7 @@ const navSections: {
     label: 'Marketplace',
     items: [
       { title: 'Anúncios', url: '/desktop/anuncios', icon: Megaphone, route: 'anuncios' },
+      { title: 'Vendedores', url: '/desktop/vendedores', icon: Store, route: 'anuncios' },
       { title: 'Trocas', url: '/desktop/propostas', icon: ArrowLeftRight, route: 'propostas', pendingKey: 'propostas' },
       { title: 'Trocas Arquivadas', url: '/desktop/trocas-arquivadas', icon: Library, route: 'propostas' },
       { title: 'Avaliações Comerciais', url: '/desktop/avaliacoes-usuario', icon: Star, route: 'avaliacoes-usuario' },

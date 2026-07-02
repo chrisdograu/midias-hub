@@ -28,6 +28,7 @@ export default function MProfile() {
   const targetId = userId || user?.id;
   const isOwn = !userId || userId === user?.id;
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [sellerProfile, setSellerProfile] = useState<any | null>(null);
   const [rating, setRating] = useState(0);
   const [ads, setAds] = useState<Ad[]>([]);
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
@@ -60,13 +61,14 @@ export default function MProfile() {
     let cancel = false;
     (async () => {
       setLoading(true);
-      const [{ data: p }, { data: revs }, { data: adsRaw }, { data: myReviews }, { data: myPosts }, { data: myLib }] = await Promise.all([
+      const [{ data: p }, { data: revs }, { data: adsRaw }, { data: myReviews }, { data: myPosts }, { data: myLib }, { data: sp }] = await Promise.all([
         supabase.from('profiles').select('id, display_name, avatar_url, bio, seller_bio, username, is_private, created_at').eq('id', targetId).maybeSingle(),
         supabase.from('avaliacoes_usuario').select('rating').eq('reviewed_id', targetId),
         supabase.from('anuncios').select('id, title, price').eq('seller_id', targetId).eq('status', 'active').limit(20),
         supabase.from('avaliacoes').select('id, product_id, rating, comment, created_at').eq('user_id', targetId).eq('is_approved', true).order('created_at', { ascending: false }).limit(30),
         supabase.from('forum_posts').select('id, product_id, content, created_at, likes_count').eq('user_id', targetId).order('created_at', { ascending: false }).limit(30),
         supabase.from('biblioteca_usuario').select('product_id, status').eq('user_id', targetId).order('acquired_at', { ascending: false }).limit(500),
+        supabase.from('seller_profiles').select('id, handle, display_name, rating, total_sales, total_trades, vacation_mode, vacation_message, first_listing_at').eq('user_id', targetId).maybeSingle(),
       ]);
       const adIds = adsRaw?.map(a => a.id) || [];
       const productIds = new Set<string>([
@@ -84,6 +86,7 @@ export default function MProfile() {
       const avg = revs?.length ? revs.reduce((s, r) => s + r.rating, 0) / revs.length : 0;
       if (cancel) return;
       setProfile(p as Profile);
+      setSellerProfile(sp || null);
       setRating(avg);
       setAds((adsRaw || []).map(a => ({ id: a.id, title: a.title, price: Number(a.price), image: photoMap.get(a.id) || null })));
       setReviews((myReviews || []).map(r => ({ id: r.id, product_id: r.product_id, product: (prodMap.get(r.product_id) as any)?.title || 'Jogo', rating: Number(r.rating), comment: r.comment, created_at: r.created_at })));
@@ -163,15 +166,17 @@ export default function MProfile() {
           {profile.avatar_url ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" /> : profile.display_name?.[0]?.toUpperCase() || '?'}
         </div>
         <h1 className="font-display text-lg font-bold flex items-center justify-center gap-1.5">
-          {profile.display_name || 'Usuário'}
+          {isSeller && sellerProfile ? sellerProfile.display_name : (profile.display_name || 'Usuário')}
           {isSeller && <span className="px-1.5 py-0.5 text-[9px] rounded bg-amber-500/20 text-amber-600 dark:text-amber-400 uppercase tracking-wider">Vendedor</span>}
         </h1>
-        {profile.username && <p className="text-xs text-muted-foreground">@{profile.username}</p>}
+        {isSeller
+          ? (sellerProfile?.handle && <p className="text-xs text-amber-600 dark:text-amber-400 font-semibold">${sellerProfile.handle}</p>)
+          : (profile.username && <p className="text-xs text-muted-foreground">@{profile.username}</p>)}
         {profile.created_at && (
           <p className="text-[10px] text-muted-foreground mt-0.5">📅 Membro desde {new Date(profile.created_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</p>
         )}
         {isSeller ? (
-          <div className="flex items-center justify-center gap-1.5 mt-2"><HalfStarDisplay rating={rating} size={14} /><span className="text-xs text-muted-foreground">{rating > 0 ? `${rating.toFixed(1)} como vendedor` : 'sem avaliações ainda'}</span></div>
+          <div className="flex items-center justify-center gap-1.5 mt-2"><HalfStarDisplay rating={Number(sellerProfile?.rating ?? rating) || 0} size={14} /><span className="text-xs text-muted-foreground">{(sellerProfile?.rating ?? rating) > 0 ? `${Number(sellerProfile?.rating ?? rating).toFixed(1)} como vendedor` : 'sem avaliações ainda'}</span></div>
         ) : (
           <>
             <div className="mt-2 flex justify-center"><LevelTitleBadge userId={targetId} variant="card" /></div>
@@ -203,12 +208,23 @@ export default function MProfile() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-amber-500/20">
-            <div className="text-center"><div className="text-base font-bold text-amber-600 dark:text-amber-400">{ads.length}</div><div className="text-[10px] text-muted-foreground uppercase">Anúncios ativos</div></div>
-            <div className="text-center"><div className="text-base font-bold text-amber-600 dark:text-amber-400">{rating > 0 ? rating.toFixed(1) : '—'}</div><div className="text-[10px] text-muted-foreground uppercase">Reputação</div></div>
+          <div className="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-amber-500/20">
+            <div className="text-center"><div className="text-base font-bold text-amber-600 dark:text-amber-400">{ads.length}</div><div className="text-[10px] text-muted-foreground uppercase">Anúncios</div></div>
+            <div className="text-center"><div className="text-base font-bold text-amber-600 dark:text-amber-400">{sellerProfile?.total_sales ?? 0}</div><div className="text-[10px] text-muted-foreground uppercase">Vendas</div></div>
+            <div className="text-center"><div className="text-base font-bold text-amber-600 dark:text-amber-400">{sellerProfile?.total_trades ?? 0}</div><div className="text-[10px] text-muted-foreground uppercase">Trocas</div></div>
           </div>
         )}
       </div>
+
+      {isSeller && sellerProfile?.vacation_mode && (
+        <div className="rounded-xl border border-warning/40 bg-warning/10 p-3 flex items-start gap-2">
+          <span className="text-xl">🏖️</span>
+          <div className="text-xs flex-1">
+            <p className="font-semibold text-warning">Modo férias ativo</p>
+            <p className="text-muted-foreground mt-0.5">{sellerProfile.vacation_message || 'Anúncios ocultos temporariamente.'}</p>
+          </div>
+        </div>
+      )}
 
       {!isOwn && user && (
         <div className="flex gap-2">
