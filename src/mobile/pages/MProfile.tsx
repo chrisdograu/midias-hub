@@ -166,15 +166,17 @@ export default function MProfile() {
           {profile.avatar_url ? <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" /> : profile.display_name?.[0]?.toUpperCase() || '?'}
         </div>
         <h1 className="font-display text-lg font-bold flex items-center justify-center gap-1.5">
-          {profile.display_name || 'Usuário'}
+          {isSeller && sellerProfile ? sellerProfile.display_name : (profile.display_name || 'Usuário')}
           {isSeller && <span className="px-1.5 py-0.5 text-[9px] rounded bg-amber-500/20 text-amber-600 dark:text-amber-400 uppercase tracking-wider">Vendedor</span>}
         </h1>
-        {profile.username && <p className="text-xs text-muted-foreground">@{profile.username}</p>}
+        {isSeller
+          ? (sellerProfile?.handle && <p className="text-xs text-amber-600 dark:text-amber-400 font-semibold">${sellerProfile.handle}</p>)
+          : (profile.username && <p className="text-xs text-muted-foreground">@{profile.username}</p>)}
         {profile.created_at && (
           <p className="text-[10px] text-muted-foreground mt-0.5">📅 Membro desde {new Date(profile.created_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</p>
         )}
         {isSeller ? (
-          <div className="flex items-center justify-center gap-1.5 mt-2"><HalfStarDisplay rating={rating} size={14} /><span className="text-xs text-muted-foreground">{rating > 0 ? `${rating.toFixed(1)} como vendedor` : 'sem avaliações ainda'}</span></div>
+          <div className="flex items-center justify-center gap-1.5 mt-2"><HalfStarDisplay rating={Number(sellerProfile?.rating ?? rating) || 0} size={14} /><span className="text-xs text-muted-foreground">{(sellerProfile?.rating ?? rating) > 0 ? `${Number(sellerProfile?.rating ?? rating).toFixed(1)} como vendedor` : 'sem avaliações ainda'}</span></div>
         ) : (
           <>
             <div className="mt-2 flex justify-center"><LevelTitleBadge userId={targetId} variant="card" /></div>
