@@ -39,16 +39,19 @@ export default function Biblioteca() {
   });
 
   const JA_JOGUEI_STATUSES = ['ja_joguei', 'zerado', 'jogando', 'pausado', 'abandonado'];
+  const allPlatforms = Array.from(new Set(biblioteca.flatMap(b => b.produto?.platform || []))).sort();
   const base = filter === 'todos'
     ? biblioteca
     : filter === 'ja_joguei'
       ? biblioteca.filter(b => JA_JOGUEI_STATUSES.includes(b.status))
       : biblioteca.filter(b => b.status === filter);
-  const filtered = [...base].sort((a, b) => {
+  const platformFiltered = platform === 'todas' ? base : base.filter(b => (b.produto?.platform || []).includes(platform));
+  const filtered = [...platformFiltered].sort((a, b) => {
     if (sort === 'title') return (a.produto?.title || '').localeCompare(b.produto?.title || '');
     if (sort === 'status') return (a.status || '').localeCompare(b.status || '');
     return new Date(b.acquired_at).getTime() - new Date(a.acquired_at).getTime();
   });
+  const completionPct = stats.total ? Math.round((stats.completed / stats.total) * 100) : 0;
 
   const handleStatusChange = async (id: string, newStatus: string) => {
     try {
