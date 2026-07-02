@@ -19,6 +19,8 @@ type Seller = {
   total_trades: number;
   first_listing_at: string | null;
   created_at: string;
+  vacation_mode?: boolean | null;
+  vacation_message?: string | null;
 };
 
 export default function SellerProfile() {
