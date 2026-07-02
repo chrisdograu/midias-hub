@@ -17,6 +17,7 @@ export default function Biblioteca() {
   const { user } = useAuth();
   const [filter, setFilter] = useState<StatusFilter>('todos');
   const [sort, setSort] = useState<SortKey>('recent');
+  const [platform, setPlatform] = useState<string>('todas');
 
   const stats = {
     total: biblioteca.length,
