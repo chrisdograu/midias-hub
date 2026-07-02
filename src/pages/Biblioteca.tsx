@@ -10,11 +10,20 @@ import { toast } from 'sonner';
 import CustomCoverEditor from '@/components/biblioteca/CustomCoverEditor';
 
 type StatusFilter = 'todos' | 'ja_joguei' | 'quero_jogar';
+type SortKey = 'recent' | 'title' | 'status';
 
 export default function Biblioteca() {
   const { biblioteca, updateStatus, isLoading } = useBiblioteca();
   const { user } = useAuth();
   const [filter, setFilter] = useState<StatusFilter>('todos');
+  const [sort, setSort] = useState<SortKey>('recent');
+
+  const stats = {
+    total: biblioteca.length,
+    completed: biblioteca.filter(b => (b as any).badge_completed).length,
+    platinum: biblioteca.filter(b => (b as any).badge_platinum).length,
+    playing: biblioteca.filter(b => b.status === 'jogando').length,
+  };
   const [editingCover, setEditingCover] = useState<{ id: string; title: string; image: string | null } | null>(null);
   const { data: customCovers = {}, refetch: refetchCovers } = useQuery({
     queryKey: ['library-custom-covers', user?.id],
@@ -29,11 +38,16 @@ export default function Biblioteca() {
   });
 
   const JA_JOGUEI_STATUSES = ['ja_joguei', 'zerado', 'jogando', 'pausado', 'abandonado'];
-  const filtered = filter === 'todos'
+  const base = filter === 'todos'
     ? biblioteca
     : filter === 'ja_joguei'
       ? biblioteca.filter(b => JA_JOGUEI_STATUSES.includes(b.status))
       : biblioteca.filter(b => b.status === filter);
+  const filtered = [...base].sort((a, b) => {
+    if (sort === 'title') return (a.produto?.title || '').localeCompare(b.produto?.title || '');
+    if (sort === 'status') return (a.status || '').localeCompare(b.status || '');
+    return new Date(b.acquired_at).getTime() - new Date(a.acquired_at).getTime();
+  });
 
   const handleStatusChange = async (id: string, newStatus: string) => {
     try {
@@ -55,8 +69,25 @@ export default function Biblioteca() {
         <h1 className="text-2xl font-bold text-foreground">Minha Biblioteca</h1>
       </div>
 
-      {/* Filters */}
-      <div className="flex gap-2 mb-6">
+      {/* Stats */}
+      {stats.total > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+          {[
+            { l: 'Total', v: stats.total, c: 'text-primary' },
+            { l: 'Jogando', v: stats.playing, c: 'text-accent' },
+            { l: 'Completados', v: stats.completed, c: 'text-purple-400' },
+            { l: 'Platinados', v: stats.platinum, c: 'text-cyan-400' },
+          ].map(s => (
+            <div key={s.l} className="bg-card border border-border rounded-lg p-3">
+              <p className="text-[10px] uppercase text-muted-foreground tracking-wide">{s.l}</p>
+              <p className={`text-2xl font-bold mt-0.5 ${s.c}`}>{s.v}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Filters + sort */}
+      <div className="flex flex-wrap gap-2 mb-6 items-center">
         {([
           { key: 'todos' as const, label: 'Todos' },
           { key: 'quero_jogar' as const, label: 'Quero Jogar' },
@@ -67,7 +98,14 @@ export default function Biblioteca() {
             {f.label}
           </button>
         ))}
+        <select value={sort} onChange={e => setSort(e.target.value as SortKey)}
+          className="ml-auto px-3 py-2 rounded-lg bg-secondary border border-border text-xs text-foreground">
+          <option value="recent">Mais recentes</option>
+          <option value="title">Título A-Z</option>
+          <option value="status">Status</option>
+        </select>
       </div>
+
 
       {filtered.length === 0 ? (
         <div className="text-center py-16">

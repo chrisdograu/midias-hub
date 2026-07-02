@@ -19,6 +19,8 @@ type Seller = {
   total_trades: number;
   first_listing_at: string | null;
   created_at: string;
+  vacation_mode?: boolean | null;
+  vacation_message?: string | null;
 };
 
 export default function SellerProfile() {
@@ -183,11 +185,27 @@ export default function SellerProfile() {
         </div>
       </motion.section>
 
+      {seller.vacation_mode && (
+        <div className="mb-5 rounded-xl border border-warning/40 bg-warning/10 p-4 flex items-start gap-3">
+          <span className="text-2xl">🏖️</span>
+          <div className="flex-1 text-sm">
+            <p className="font-semibold text-warning">Este vendedor está em modo férias</p>
+            <p className="text-muted-foreground mt-0.5">
+              {seller.vacation_message || 'Os anúncios estão temporariamente ocultos. Ele volta em breve.'}
+            </p>
+          </div>
+        </div>
+      )}
+
       {showPrivateView ? (
         <div className="bg-card border border-border rounded-xl p-12 text-center">
           <Lock className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
           <p className="text-foreground font-semibold">Este perfil de vendedor é privado</p>
           <p className="text-sm text-muted-foreground mt-1">Você só consegue ver o $vendedor ao acessá-lo por um anúncio publicado.</p>
+        </div>
+      ) : seller.vacation_mode && !isOwn ? (
+        <div className="bg-card border border-border rounded-xl p-12 text-center text-sm text-muted-foreground">
+          Anúncios ocultos durante o modo férias.
         </div>
       ) : (
         <section>
