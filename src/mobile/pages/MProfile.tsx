@@ -61,13 +61,14 @@ export default function MProfile() {
     let cancel = false;
     (async () => {
       setLoading(true);
-      const [{ data: p }, { data: revs }, { data: adsRaw }, { data: myReviews }, { data: myPosts }, { data: myLib }] = await Promise.all([
+      const [{ data: p }, { data: revs }, { data: adsRaw }, { data: myReviews }, { data: myPosts }, { data: myLib }, { data: sp }] = await Promise.all([
         supabase.from('profiles').select('id, display_name, avatar_url, bio, seller_bio, username, is_private, created_at').eq('id', targetId).maybeSingle(),
         supabase.from('avaliacoes_usuario').select('rating').eq('reviewed_id', targetId),
         supabase.from('anuncios').select('id, title, price').eq('seller_id', targetId).eq('status', 'active').limit(20),
         supabase.from('avaliacoes').select('id, product_id, rating, comment, created_at').eq('user_id', targetId).eq('is_approved', true).order('created_at', { ascending: false }).limit(30),
         supabase.from('forum_posts').select('id, product_id, content, created_at, likes_count').eq('user_id', targetId).order('created_at', { ascending: false }).limit(30),
         supabase.from('biblioteca_usuario').select('product_id, status').eq('user_id', targetId).order('acquired_at', { ascending: false }).limit(500),
+        supabase.from('seller_profiles').select('id, handle, display_name, rating, total_sales, total_trades, vacation_mode, vacation_message, first_listing_at').eq('user_id', targetId).maybeSingle(),
       ]);
       const adIds = adsRaw?.map(a => a.id) || [];
       const productIds = new Set<string>([
