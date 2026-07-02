@@ -38,11 +38,16 @@ export default function Biblioteca() {
   });
 
   const JA_JOGUEI_STATUSES = ['ja_joguei', 'zerado', 'jogando', 'pausado', 'abandonado'];
-  const filtered = filter === 'todos'
+  const base = filter === 'todos'
     ? biblioteca
     : filter === 'ja_joguei'
       ? biblioteca.filter(b => JA_JOGUEI_STATUSES.includes(b.status))
       : biblioteca.filter(b => b.status === filter);
+  const filtered = [...base].sort((a, b) => {
+    if (sort === 'title') return (a.produto?.title || '').localeCompare(b.produto?.title || '');
+    if (sort === 'status') return (a.status || '').localeCompare(b.status || '');
+    return new Date(b.acquired_at).getTime() - new Date(a.acquired_at).getTime();
+  });
 
   const handleStatusChange = async (id: string, newStatus: string) => {
     try {
