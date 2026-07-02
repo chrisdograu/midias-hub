@@ -69,8 +69,25 @@ export default function Biblioteca() {
         <h1 className="text-2xl font-bold text-foreground">Minha Biblioteca</h1>
       </div>
 
-      {/* Filters */}
-      <div className="flex gap-2 mb-6">
+      {/* Stats */}
+      {stats.total > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+          {[
+            { l: 'Total', v: stats.total, c: 'text-primary' },
+            { l: 'Jogando', v: stats.playing, c: 'text-accent' },
+            { l: 'Completados', v: stats.completed, c: 'text-purple-400' },
+            { l: 'Platinados', v: stats.platinum, c: 'text-cyan-400' },
+          ].map(s => (
+            <div key={s.l} className="bg-card border border-border rounded-lg p-3">
+              <p className="text-[10px] uppercase text-muted-foreground tracking-wide">{s.l}</p>
+              <p className={`text-2xl font-bold mt-0.5 ${s.c}`}>{s.v}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Filters + sort */}
+      <div className="flex flex-wrap gap-2 mb-6 items-center">
         {([
           { key: 'todos' as const, label: 'Todos' },
           { key: 'quero_jogar' as const, label: 'Quero Jogar' },
@@ -81,7 +98,14 @@ export default function Biblioteca() {
             {f.label}
           </button>
         ))}
+        <select value={sort} onChange={e => setSort(e.target.value as SortKey)}
+          className="ml-auto px-3 py-2 rounded-lg bg-secondary border border-border text-xs text-foreground">
+          <option value="recent">Mais recentes</option>
+          <option value="title">Título A-Z</option>
+          <option value="status">Status</option>
+        </select>
       </div>
+
 
       {filtered.length === 0 ? (
         <div className="text-center py-16">
