@@ -208,12 +208,23 @@ export default function MProfile() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-amber-500/20">
-            <div className="text-center"><div className="text-base font-bold text-amber-600 dark:text-amber-400">{ads.length}</div><div className="text-[10px] text-muted-foreground uppercase">Anúncios ativos</div></div>
-            <div className="text-center"><div className="text-base font-bold text-amber-600 dark:text-amber-400">{rating > 0 ? rating.toFixed(1) : '—'}</div><div className="text-[10px] text-muted-foreground uppercase">Reputação</div></div>
+          <div className="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-amber-500/20">
+            <div className="text-center"><div className="text-base font-bold text-amber-600 dark:text-amber-400">{ads.length}</div><div className="text-[10px] text-muted-foreground uppercase">Anúncios</div></div>
+            <div className="text-center"><div className="text-base font-bold text-amber-600 dark:text-amber-400">{sellerProfile?.total_sales ?? 0}</div><div className="text-[10px] text-muted-foreground uppercase">Vendas</div></div>
+            <div className="text-center"><div className="text-base font-bold text-amber-600 dark:text-amber-400">{sellerProfile?.total_trades ?? 0}</div><div className="text-[10px] text-muted-foreground uppercase">Trocas</div></div>
           </div>
         )}
       </div>
+
+      {isSeller && sellerProfile?.vacation_mode && (
+        <div className="rounded-xl border border-warning/40 bg-warning/10 p-3 flex items-start gap-2">
+          <span className="text-xl">🏖️</span>
+          <div className="text-xs flex-1">
+            <p className="font-semibold text-warning">Modo férias ativo</p>
+            <p className="text-muted-foreground mt-0.5">{sellerProfile.vacation_message || 'Anúncios ocultos temporariamente.'}</p>
+          </div>
+        </div>
+      )}
 
       {!isOwn && user && (
         <div className="flex gap-2">
