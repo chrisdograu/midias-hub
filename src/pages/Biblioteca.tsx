@@ -123,6 +123,23 @@ export default function Biblioteca() {
         </select>
       </div>
 
+      {allPlatforms.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mb-6">
+          <button onClick={() => setPlatform('todas')}
+            className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${platform === 'todas' ? 'bg-accent text-accent-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'}`}>
+            Todas as plataformas
+          </button>
+          {allPlatforms.map(p => (
+            <button key={p} onClick={() => setPlatform(p)}
+              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${platform === p ? 'bg-accent text-accent-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'}`}>
+              {p}
+            </button>
+          ))}
+        </div>
+      )}
+
+
+
 
       {filtered.length === 0 ? (
         <div className="text-center py-16">
