@@ -96,6 +96,7 @@ export const desktopRoutes = (
       <Route path="recompensas" element={<RecompensasAdmin />} />
       <Route path="recompensas/jogos" element={<GameRewardsAdmin />} />
       <Route path="integracoes" element={<IntegracoesAdmin />} />
+      <Route path="vendedores" element={<VendedoresAdmin />} />
     </Route>
   </>
 );
