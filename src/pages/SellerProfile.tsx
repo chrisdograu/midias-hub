@@ -203,6 +203,10 @@ export default function SellerProfile() {
           <p className="text-foreground font-semibold">Este perfil de vendedor é privado</p>
           <p className="text-sm text-muted-foreground mt-1">Você só consegue ver o $vendedor ao acessá-lo por um anúncio publicado.</p>
         </div>
+      ) : seller.vacation_mode && !isOwn ? (
+        <div className="bg-card border border-border rounded-xl p-12 text-center text-sm text-muted-foreground">
+          Anúncios ocultos durante o modo férias.
+        </div>
       ) : (
         <section>
           <h2 className="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
