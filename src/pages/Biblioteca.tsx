@@ -75,7 +75,7 @@ export default function Biblioteca() {
 
       {/* Stats */}
       {stats.total > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
           {[
             { l: 'Total', v: stats.total, c: 'text-primary' },
             { l: 'Jogando', v: stats.playing, c: 'text-accent' },
@@ -90,8 +90,21 @@ export default function Biblioteca() {
         </div>
       )}
 
+      {/* Progress summary */}
+      {stats.total > 0 && (
+        <div className="bg-card border border-border rounded-lg p-3 mb-5">
+          <div className="flex items-center justify-between text-xs mb-1.5">
+            <span className="text-muted-foreground">Progresso da coleção</span>
+            <span className="font-semibold text-foreground">{stats.completed}/{stats.total} concluídos ({completionPct}%)</span>
+          </div>
+          <div className="h-2 rounded-full bg-secondary overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-primary via-accent to-purple-400 transition-all" style={{ width: `${completionPct}%` }} />
+          </div>
+        </div>
+      )}
+
       {/* Filters + sort */}
-      <div className="flex flex-wrap gap-2 mb-6 items-center">
+      <div className="flex flex-wrap gap-2 mb-3 items-center">
         {([
           { key: 'todos' as const, label: 'Todos' },
           { key: 'quero_jogar' as const, label: 'Quero Jogar' },
