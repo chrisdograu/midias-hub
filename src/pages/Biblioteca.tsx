@@ -10,11 +10,20 @@ import { toast } from 'sonner';
 import CustomCoverEditor from '@/components/biblioteca/CustomCoverEditor';
 
 type StatusFilter = 'todos' | 'ja_joguei' | 'quero_jogar';
+type SortKey = 'recent' | 'title' | 'status';
 
 export default function Biblioteca() {
   const { biblioteca, updateStatus, isLoading } = useBiblioteca();
   const { user } = useAuth();
   const [filter, setFilter] = useState<StatusFilter>('todos');
+  const [sort, setSort] = useState<SortKey>('recent');
+
+  const stats = {
+    total: biblioteca.length,
+    completed: biblioteca.filter(b => (b as any).badge_completed).length,
+    platinum: biblioteca.filter(b => (b as any).badge_platinum).length,
+    playing: biblioteca.filter(b => b.status === 'jogando').length,
+  };
   const [editingCover, setEditingCover] = useState<{ id: string; title: string; image: string | null } | null>(null);
   const { data: customCovers = {}, refetch: refetchCovers } = useQuery({
     queryKey: ['library-custom-covers', user?.id],
