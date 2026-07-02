@@ -86,6 +86,7 @@ export default function MProfile() {
       const avg = revs?.length ? revs.reduce((s, r) => s + r.rating, 0) / revs.length : 0;
       if (cancel) return;
       setProfile(p as Profile);
+      setSellerProfile(sp || null);
       setRating(avg);
       setAds((adsRaw || []).map(a => ({ id: a.id, title: a.title, price: Number(a.price), image: photoMap.get(a.id) || null })));
       setReviews((myReviews || []).map(r => ({ id: r.id, product_id: r.product_id, product: (prodMap.get(r.product_id) as any)?.title || 'Jogo', rating: Number(r.rating), comment: r.comment, created_at: r.created_at })));
