@@ -28,6 +28,7 @@ export default function MProfile() {
   const targetId = userId || user?.id;
   const isOwn = !userId || userId === user?.id;
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [sellerProfile, setSellerProfile] = useState<any | null>(null);
   const [rating, setRating] = useState(0);
   const [ads, setAds] = useState<Ad[]>([]);
   const [reviews, setReviews] = useState<ReviewItem[]>([]);
