@@ -30,7 +30,10 @@ interface BundleItemRow {
 export default function Index() {
   const { data: games = [], isLoading } = useProdutos();
   const inStock = useMemo(() => games.filter((g) => g.stock > 0), [games]);
-  const featured = inStock.slice(0, 3);
+  const featured = useMemo(() => {
+    const curated = inStock.filter((g) => g.featured);
+    return (curated.length > 0 ? curated : inStock).slice(0, 3);
+  }, [inStock]);
   const bestDeals = useMemo(() => [...inStock].sort((a, b) => b.discount - a.discount).slice(0, 6), [inStock]);
   const topRated = useMemo(() => [...inStock].sort((a, b) => b.rating - a.rating).slice(0, 6), [inStock]);
 
