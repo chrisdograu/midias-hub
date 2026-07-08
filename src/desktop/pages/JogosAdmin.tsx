@@ -89,15 +89,21 @@ export default function JogosAdmin() {
       <Card className="border-border/50"><CardContent className="p-0">
         {loading ? <div className="py-20 flex justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div> : (
           <Table>
-            <TableHeader><TableRow><TableHead>Título</TableHead><TableHead>Preço</TableHead><TableHead>Estoque</TableHead><TableHead>Estado</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
+            <TableHeader><TableRow><TableHead>Título</TableHead><TableHead>Preço</TableHead><TableHead>Estoque</TableHead><TableHead>Estado</TableHead><TableHead className="text-center">Destaque</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
             <TableBody>
-              {filtered.length === 0 ? <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Nenhum jogo</TableCell></TableRow> :
+              {filtered.length === 0 ? <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Nenhum jogo</TableCell></TableRow> :
                 filtered.map(j => (
                   <TableRow key={j.id}>
                     <TableCell className="font-medium">{j.title}</TableCell>
                     <TableCell>R$ {Number(j.price).toFixed(2)}</TableCell>
                     <TableCell>{j.stock}</TableCell>
                     <TableCell><Badge variant={j.estado_publicacao === 'ativo' ? 'default' : 'secondary'}>{LABELS[j.estado_publicacao]}</Badge></TableCell>
+                    <TableCell className="text-center">
+                      <div className="inline-flex items-center gap-2">
+                        <Switch checked={j.featured} onCheckedChange={(v) => toggleFeatured(j, v)} aria-label="Destacar na Home" />
+                        {j.featured && <Star className="h-3.5 w-3.5 text-primary fill-primary" />}
+                      </div>
+                    </TableCell>
                     <TableCell className="text-right space-x-1">
                       <Select value={j.estado_publicacao} onValueChange={(v) => updateEstado(j, v as Estado)}>
                         <SelectTrigger className="w-[160px] inline-flex"><SelectValue /></SelectTrigger>
