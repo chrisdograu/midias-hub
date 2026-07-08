@@ -74,7 +74,7 @@ export const desktopRoutes = (
       <Route path="badges" element={<BadgesAdmin />} />
       <Route path="promocoes" element={<Promocoes />} />
       <Route path="torneios" element={<TorneiosAdmin />} />
-      <Route path="torneios/atuais" element={<TorneiosAtuais />} />
+      <Route path="torneios/atuais" element={<TorneiosAdmin />} />
       <Route path="torneios/eventos" element={<TorneiosEventos />} />
       <Route path="torneios/novo" element={<CriarTorneio />} />
       <Route path="jogos" element={<JogosAdmin />} />
@@ -82,8 +82,8 @@ export const desktopRoutes = (
       <Route path="bundles" element={<BundlesAdmin />} />
       <Route path="trocas-arquivadas" element={<TrocasArquivadas />} />
       <Route path="biblioteca-social" element={<BibliotecaSocialAdmin />} />
-      <Route path="tickets/mobile" element={<TicketsMobile />} />
-      <Route path="tickets/web" element={<TicketsWeb />} />
+      <Route path="tickets/mobile" element={<TicketsList channel="mobile" />} />
+      <Route path="tickets/web" element={<TicketsList channel="web" />} />
       <Route path="denuncias" element={<Denuncias />} />
       <Route path="notificacoes/especiais" element={<NotificacoesEspeciais />} />
       <Route path="logs" element={<LogsAdministrativos />} />
