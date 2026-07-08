@@ -34,7 +34,8 @@ export default function VendedorConfig() {
         supabase.from('seller_profiles').select('*').eq('user_id', user.id).maybeSingle(),
         supabase.from('certificados').select('status').eq('user_id', user.id).order('created_at', { ascending: false }).limit(1),
         supabase.from('anuncios').select('id', { count: 'exact', head: true }).eq('seller_id', user.id).eq('status', 'active'),
-        supabase.from('profiles').select('cpf,phone,seller_bio').eq('id', user.id).maybeSingle(),
+        // CPF/telefone só disponíveis via RPC (não são mais legíveis via tabela)
+        (supabase as any).rpc('get_my_profile').then((r: any) => ({ data: Array.isArray(r.data) ? r.data[0] : r.data })),
       ]);
       setSeller(sp);
       if (sp) {

@@ -32,7 +32,9 @@ export default function Clientes() {
 
       if (userIds.length === 0) { setClientes([]); setLoading(false); return; }
 
-      const { data: profiles } = await supabase.from('profiles').select('*').in('id', userIds);
+      // Admin: usa RPC SECURITY DEFINER para acessar campos sensíveis (CPF/telefone/e-mail).
+      // A tabela `profiles` não expõe essas colunas via SELECT direto.
+      const { data: profiles } = await (supabase as any).rpc('list_profiles_admin', { _ids: userIds });
       
       // Get order counts and totals
       const { data: pedidos } = await supabase.from('pedidos').select('user_id, total, status').in('status', ['confirmed', 'processing', 'shipped', 'delivered']);
