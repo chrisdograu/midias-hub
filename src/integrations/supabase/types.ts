@@ -4628,6 +4628,46 @@ export type Database = {
       is_staff: { Args: never; Returns: boolean }
       is_tournament_mod: { Args: { _t: string; _u: string }; Returns: boolean }
       is_user_banned: { Args: { _user_id: string }; Returns: boolean }
+      list_profiles_admin: {
+        Args: { _ids: string[] }
+        Returns: {
+          active_title_id: string | null
+          always_hide_spoilers: boolean
+          avatar_url: string | null
+          backlog_note: string | null
+          banned_until: string | null
+          banner_url: string | null
+          bio: string | null
+          contact_email: string | null
+          cpf: string | null
+          created_at: string
+          current_game_id: string | null
+          display_name: string | null
+          email_notifications: boolean
+          favorite_genres: string[] | null
+          gamer_personality: string | null
+          id: string
+          is_private: boolean
+          library_visibility: string
+          monthly_favorites: string[] | null
+          phone: string | null
+          privacy_exceptions: string[]
+          profile_cover_url: string | null
+          push_notifications: boolean
+          require_follow_approval: boolean
+          seller_bio: string | null
+          theme_color: string | null
+          trophy_showcase: string[] | null
+          updated_at: string
+          username: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
       validate_and_use_coupon: {
