@@ -1,141 +1,113 @@
+# Plano de correção — Camada 2
 
-# Auditoria MIDIAS — Fase A (Web pública)
+Priorizado por **severidade real** (dado sensível > integridade > UX). Cada bloco pode virar 1 PR.
 
-## Objetivo
+## Sprint 0 — Segurança crítica (fazer HOJE)
 
-Produzir uma **especificação funcional + arquitetural + UX + fluxos + regras de negócio** de cada página pública da versão Web do MIDIAS, no nível de profundidade que você descreveu (os 20 tópicos). Não é doc de tela — é o "porquê" do ecossistema.
+### 0.1 Fechar vazamento de `profiles` (achado 2.1)
 
-O material serve simultaneamente para:
-- Defesa de TCC (banca entende arquitetura sem ler código)
-- Onboarding de qualquer dev/designer futuro
-- Base para as Fases B (Mobile Flutter) e C (Desktop Admin) da auditoria
+- Migration: `DROP POLICY "Anyone can view profiles publicly" ON public.profiles;`
+- Criar view `public.public_profiles` só com `id, display_name, avatar_url, banner_url, bio, created_at` (nunca `cpf/phone/contact_email/birth_date`).
+- `GRANT SELECT ON public.public_profiles TO anon, authenticated;`
+- Recriar policy de SELECT em `profiles`: dono OR admin OR (amigo mútuo E `is_private=false`) — nunca `public`.
+- Refatorar `PublicProfile.tsx`, `SellerProfile.tsx`, `FriendProfile.tsx`, `MProfile.tsx` para consultar `public_profiles` no lugar de `profiles` quando não for o próprio usuário.
+- Auditar `grep -rn "from('profiles')" src/` — cada ponto precisa decidir: dono? admin? público? escolher a fonte correta.
 
-## Entregáveis
+### 0.2 Fechar acesso admin a mensagens privadas
 
-Estrutura de pastas nova:
+- `MensagensAdmin`: exigir `denuncia_id` presente + banner de justificativa antes do fetch.
+- Trigger `admin_logs` imutável ao acessar `mensagens` via admin (append-only, sem UPDATE/DELETE em policies).
 
-```text
-docs/
-└── auditoria/
-    ├── README.md                  ← índice + legenda + convenções + roadmap
-    ├── _template.md               ← template dos 20 tópicos (referência)
-    ├── _glossario.md              ← Radar, Órbita, Escolha do Dia, Bundle, etc.
-    ├── _fluxos-globais.md         ← diagramas mermaid dos 6-8 fluxos-mãe cross-página
-    └── web/
-        ├── 01-home.md
-        ├── 02-catalogo.md
-        ├── 03-ofertas.md
-        ├── 04-em-alta.md
-        ├── 05-pra-voce.md
-        ├── 06-game-detail.md
-        ├── 07-bundle-detail.md
-        └── 08-torneios.md
+## Sprint 1 — Integridade de dados e ranking
+
+### 1.1 Dedupe de `product_views` (achados 2.3/2.4)
+
+- Índice único parcial: `(product_id, user_id, date_trunc('hour', viewed_at))` — 1 view por usuário/hora.
+- Para deslogados: usar `session_id` (uuid em `sessionStorage`), coluna `session_id text`.
+- No `GameDetail.tsx`: envolver o insert em `onConflict: ignore`.
+
+### 1.2 Unificar "Em Alta" com `useRadarDelta`
+
+- Refatorar `EmAlta.tsx` para consumir `useRadarDelta` (mesma fórmula da Órbita).
+- Criar RPC `radar_delta(window_hours int)` no banco para não puxar 3 tabelas separadas do client.
+
+### 1.3 Cupom com lock server-side
+
+- Migration: mover validação de `max_uses` para trigger `BEFORE INSERT` em `cupon_usos` com `SELECT ... FOR UPDATE` na linha do cupom.
+- Rejeitar com `RAISE EXCEPTION` — client trata erro específico.
+
+### 1.4 Review-bombing (Web GameDetail + MReview + MobileReview)
+
+- Constraint `CHECK` + trigger em `avaliacoes`: exigir `EXISTS (biblioteca_usuario WHERE user_id = NEW.user_id AND produto_id = NEW.produto_id AND status IN ('owned','playing','finished'))`.
+
+### 1.5 Ownership órfão em grupos
+
+- Trigger `BEFORE DELETE` em `group_members`: se saindo for owner E há outros membros, promover `admin` mais antigo. Se for único, deletar o grupo.
+
+## Sprint 2 — Higiene estrutural (multi-página)
+
+### 2.1 Error boundary global do React Query (achado 2.5)
+
+- Criar `<QueryErrorBoundary>` em `src/components/QueryErrorBoundary.tsx` com fallback + botão "tentar novamente".
+- Envolver rotas em `App.tsx`.
+- Criar hook `useQueryWithFeedback` que expõe `errorNode` pronto.
+- Substituir nas 22 telas em uma pass.
+
+### 2.2 Regenerar `types.ts` (achado 2.6)
+
+- Rodar geração via CLI Supabase (`supabase gen types typescript`).
+- Remover `as any` órfãos com codemod (`ts-morph` ou script `sed` guiado).
+- Meta: <50 ocorrências (só onde tipo dinâmico é legítimo).
+
+### 2.3 Destaques reais (achado 2.2)
+
+- Decisão: **implementar** curadoria (não remover promessa).
+- UI: toggle `featured` em `JogosAdmin.tsx` + coluna na lista.
+- `Index.tsx`: `.filter(p => p.featured).slice(0,3)` com fallback para os 3 mais recentes se vazio.
+
+## Sprint 3 — Consolidação e dead code
+
+### 3.1 Remover dead code
+
+- `rm src/pages/ForumGeral.tsx src/pages/Social.tsx` (achado 2.8).
+- Buscar imports órfãos.
+
+### 3.2 Consolidar telas admin duplicadas (achado 2.12)
+
+- Decidir merge: `JogosAdmin` ⊃ `Produtos` (produtos são a fonte); redirect da rota antiga.
+- `Torneios` vira hub com abas para "Atuais" e "Eventos"; deletar as duas páginas separadas.
+- `TicketsList` já é o compartilhado — remover `TicketsMobile`/`TicketsWeb` (são wrappers de 1 linha) ou manter só como rotas com `channel` param.
+
+### 3.3 Paginação server-side compartilhada
+
+- Criar RPC `catalog_page(filters jsonb, page int, per_page int)` retornando `{items, total, facets}`.
+- Refatorar `useProdutos` para aceitar `{page, filters}` e mudar consumidores (`Home` continua pegando "featured/recent" curtos; `Catalogo`/`Ofertas`/`EmAlta` paginam).
+
+## Sprint 4 — Endurecimento
+
+- 2FA obrigatório para roles admin (`Funcionarios.tsx` + edge function bloqueia login sem OTP configurado).
+- Invalidar sessão JWT ao trocar `position` (edge function `manage-employee` chama `auth.admin.signOut(user_id)`).
+- Trigger de notificação respeita `notification_preferences` (mover check para dentro dos triggers de `notify_*`).
+- Sanitizar `dangerouslySetInnerHTML` dos cosméticos: validar `ownerId` com regex UUID, `color` com regex hex antes de interpolar.
+- Fingerprint de torneio + validação server-side de ordem de eventos de partida.
+
+## Fora deste plano (registrar como próxima Camada 3)
+
+- Auditoria de Edge Functions (auth, service-role usage, rate limit).
+- Auditoria de Storage policies (uploads, tamanho, tipo).
+- Auditoria de realtime channels (leaks, cost).
+- Bundle size / code-splitting.
+
+## Ordem sugerida de execução
+
+```
+Sprint 0 (hoje)  → Sprint 1 (semana 1) → Sprint 2 (semana 2)
+                                       ↘ Sprint 3 (paralelo, low-risk)
+Sprint 4 → depois que 0-2 estabilizarem
 ```
 
-Total: **8 páginas auditadas + 4 documentos-base = 12 arquivos**.
+## Como quer prosseguir?
 
-## Template dos 20 tópicos (aplicado a cada página)
-
-Cada arquivo `web/NN-pagina.md` segue esta ordem exata:
-
-1. **Objetivo da página** — o que ela precisa entregar
-2. **Filosofia** — por que ela existe dentro do MIDIAS (a pergunta que só ela responde)
-3. **Usuários-alvo** — visitante / logado novo / logado recorrente / vendedor / admin; o que cada um enxerga
-4. **Estrutura visual** — diagrama vertical (ASCII/mermaid) da ordem dos blocos + justificativa da ordem
-5. **Componentes** — cada bloco explicado: o que é, o que mostra, quando aparece, quando some
-6. **Fluxos de entrada** — de onde o usuário chega (links, deep-links, notificações, redirects)
-7. **Fluxos de saída** — para onde ele vai naturalmente e por quê
-8. **Navegação entre páginas** — como conversa com Perfil / Fórum / Marketplace / Torneios / Chat
-9. **Regras de negócio** — o que pode/não pode; limites; validações
-10. **Estados da interface** — loading, vazio, erro, offline, sem permissão, com muitos dados
-11. **Permissões** — visitante / usuário / vendedor / mod / admin (matriz)
-12. **Origem dos dados** — de onde vem cada bloco (tabela, view, cálculo, cache)
-13. **Banco relacionado** — tabelas Supabase envolvidas + relação entre elas
-14. **APIs / hooks** — `useProdutos`, `useRadarDelta`, `useBiblioteca`, edge functions
-15. **Painel admin relacionado** — o que o admin gerencia dessa página, tela por tela, ação por ação, com o nível de detalhe do seu exemplo da Escolha do Dia (agendar? duplicar? cancelar? alerta de data vazia? histórico? calendário? preview?)
-16. **Casos extremos** — jogo removido, estoque zerado, promoção expirada, usuário banido, sem internet, dados corrompidos
-17. **Justificativa de UX/UI** — por que Radar antes de Bundles, por que Ofertas depois de Destaques, por que dark default, por que teal+roxo
-18. **Escalabilidade** — comportamento com 100 / 10k / 1M produtos ou usuários
-19. **Melhorias futuras** — Steam/Epic/Xbox, IA de recomendação, cross-sell, PWA offline, i18n
-20. **Crítica da implementação atual** — dividida em:
-    - **O que está bom e por quê** (manter, e como potencializar até virar excelente)
-    - **O que está ruim e por quê** (remover/substituir, com a alternativa concreta)
-    - **Dívida técnica visível** (pontos que vão travar a Fase B/C se não resolver agora)
-
-## Documentos-base (feitos antes das páginas)
-
-**`README.md`** — índice clicável, legenda de ícones, convenção de níveis (P0/P1/P2 para melhorias), status de cada página (rascunho / revisão / final), como ler.
-
-**`_template.md`** — o template acima em branco, para reuso nas fases B e C.
-
-**`_glossario.md`** — definição canônica de:
-- Órbita (o "hoje" do ecossistema — o que se moveu)
-- Radar / Radar Delta (motor de sinais 24h/72h que alimenta Órbita e Oportunidades)
-- Escolha do Dia (destaque diário — auto vs manual)
-- Bundle, Destaque, Oferta, Em Alta, Pra Você (diferenças reais entre eles — hoje há sobreposição)
-- Cosmético, Título, Badge, XP, Nível
-- Vendedor, Modo Férias, Certificado
-- Spoiler Guard, Tópico Trancado, Solução
-
-**`_fluxos-globais.md`** — diagramas mermaid dos fluxos que atravessam várias páginas:
-- Descoberta → Compra (Home → GameDetail → Carrinho → Checkout → Biblioteca)
-- Descoberta social (Home → GameDetail → Review → Perfil autor → Amigos)
-- Comunidade (Fórum → Post → Perfil → Chat)
-- Competitivo (Torneios → Evento → Grupo → Match → Chat ao vivo)
-- C2C (Marketplace mobile → Anúncio → Chat → Proposta troca → Certificado)
-- Notificação → Ação (Bell → item específico → contexto)
-- Cosmético desbloqueado → Customização (Unlock Center → Perfil/Customização)
-
-## Foco extra nas seções mais fracas hoje
-
-Você mencionou preocupações específicas que vão receber tratamento aprofundado:
-
-**Header poluído (Home)** — na seção 17 (UX) e 20 (Crítica) da Home:
-- Contagem real de elementos no header hoje (logo + 6 links + busca + tema + bell + cosmetic bell + carrinho + perfil-dropdown com 8 itens) = 20+ affordances
-- Comparação com padrões de referência (Steam, Epic, GOG, Itch)
-- Proposta A: Header + Navbar secundária (categoria/descoberta desce, conta sobe)
-- Proposta B: Header enxuto + command palette (⌘K)
-- Proposta C: Manter, mas agrupar em clusters visuais
-- Recomendação com justificativa
-
-**Poluição vs enxutez em cada bloco** — para cada seção da Home (Órbita, Escolha do Dia, Bundles, Destaques, Ofertas, Mais Bem Avaliados) a seção 20 responde: *isso é redundante com outro bloco? o usuário faz scroll até aqui? qual métrica justifica manter?*
-
-**Admin da Escolha do Dia** — modelo detalhado (item 15) que serve de referência para as outras auditorias:
-- Calendário mensal com dots nos dias preenchidos
-- Agendamento múltiplo, duplicação, cancelamento até 00:00 do dia
-- Fallback quando data vazia (algoritmo assume, com badge "auto")
-- Histórico de 90 dias com quem publicou / quantos cliques
-- Alerta em dashboard quando <7 dias sem programação
-- Regra anti-repetição (aviso se jogo apareceu nos últimos 30d)
-
-**"Está faltando algo na análise?"** — na seção 20 de cada página adiciono um sub-bloco "**Ângulos que a análise inicial não cobriu**" onde levanto o que você não pediu mas deveria estar: acessibilidade (WCAG), performance (LCP/CLS por bloco), SEO por página, i18n futuro, comportamento com JS desativado, dark/light parity, mobile-web (não Flutter) fallback.
-
-## Estilo de escrita
-
-- **PT-BR**, tom técnico mas legível para banca não-técnica
-- Diagramas em **mermaid** (renderizam no GitHub e no Lovable) e ASCII quando mais simples
-- Referências a arquivos reais no formato `src/pages/Home.tsx:42` para rastreabilidade
-- Cada afirmação forte na Crítica vem com evidência (linha do código, comportamento observado, dado)
-- Zero emoji em diagramas mermaid (quebra lexer); emojis livres no texto
-- Crítica no tom que você pediu: quando é bom, explico *por que é bom, por que manter, como levar de bom pra excelente*; quando é ruim, explico *por que é ruim, por que remover, e a substituição concreta com trade-offs*
-
-## Ordem de execução
-
-1. `README.md` + `_template.md` + `_glossario.md` + `_fluxos-globais.md` (a base — 1 rodada)
-2. `01-home.md` completo (a mais complexa — serve de referência de qualidade — 1 rodada dedicada)
-3. `02-catalogo.md` + `03-ofertas.md` (páginas de listagem — 1 rodada)
-4. `04-em-alta.md` + `05-pra-voce.md` (descoberta algorítmica — 1 rodada)
-5. `06-game-detail.md` (a segunda mais complexa — 1 rodada dedicada)
-6. `07-bundle-detail.md` + `08-torneios.md` (fechamento — 1 rodada)
-
-Total estimado: **6 rodadas de build**. Nenhuma alteração de código de app — só criação de arquivos `.md` em `docs/auditoria/`.
-
-## Fora do escopo desta fase (fica para depois)
-
-- Fase B: Mobile Flutter (MHome, MMarketplace, MForum, MChat, MProfile, MTournamentGroup…)
-- Fase C: Desktop Admin (todas as ~30 telas de `src/desktop/pages/`)
-- Fase D: Páginas Web autenticadas de conta (Perfil, Biblioteca, Pedidos, Favoritos, Conversas, Tutoriais, Vendedor)
-- Fase E: Páginas transversais (Auth, ResetPassword, FAQ, Contato, Termos, Busca Global, Oportunidades)
-- Diagramas C4, ADRs formais, ERD completo (podem virar apêndices se você quiser depois)
-
-Aprova prosseguir com a Fase A nesse formato?
+- **A)** Começo pelo Sprint 0 agora (migration de `profiles` + view pública).
+- **B)** Faço Sprint 0 + 1 juntos.
+- **C)** Prefere revisar o plano antes; ajusto prioridades.              faça B
