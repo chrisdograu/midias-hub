@@ -34,8 +34,8 @@ export default function GameDetail() {
 
   useEffect(() => {
     if (!id) return;
-    // Dedupe: no máximo 1 view/hora por (produto, user) ou (produto, session).
-    // O índice único parcial no banco bloqueia duplicatas; usamos ignoreDuplicates.
+    // Dedupe: índice único parcial no banco bloqueia >1 view por hora
+    // por (produto, user) ou (produto, session). Silencia o erro 23505.
     let sessionId = sessionStorage.getItem('mv_sid');
     if (!sessionId) {
       sessionId = crypto.randomUUID();
@@ -43,10 +43,13 @@ export default function GameDetail() {
     }
     supabase
       .from('product_views' as any)
-      .upsert(
-        { product_id: id, user_id: user?.id || null, session_id: user?.id ? null : sessionId },
-        { onConflict: 'product_id,user_id,session_id', ignoreDuplicates: true } as any,
-      );
+      .insert({ product_id: id, user_id: user?.id || null, session_id: user?.id ? null : sessionId })
+      .then(({ error }) => {
+        // 23505 = unique_violation (view já registrada nesta hora) — esperado
+        if (error && (error as any).code !== '23505') {
+          console.warn('product_views insert failed:', error.message);
+        }
+      });
   }, [id, user?.id]);
 
   useEffect(() => {
