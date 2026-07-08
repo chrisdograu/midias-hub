@@ -125,7 +125,7 @@ export default function Funcionarios() {
 
   const handleSave = async () => {
     if (selectedEmployee) {
-      // Edit mode: update profile + role
+      // Edit mode: update profile via table; role/position via edge function (forces signOut on change)
       setSaving(true);
       await supabase
         .from('profiles')
@@ -133,15 +133,23 @@ export default function Funcionarios() {
         .eq('id', selectedEmployee.user_id);
 
       const roleValue = formPosition === 'admin' ? 'admin' : 'atendente';
-      await supabase
-        .from('user_roles')
-        .update({ role: roleValue as any, position: formPosition as any })
-        .eq('id', selectedEmployee.id);
+      const { data, error } = await supabase.functions.invoke('manage-employee', {
+        body: {
+          action: 'update',
+          user_id: selectedEmployee.user_id,
+          role: roleValue,
+          position: formPosition,
+        },
+      });
 
-      toast({ title: 'Funcionário atualizado com sucesso!' });
+      if (error || data?.error) {
+        toast({ title: data?.error || error?.message || 'Erro ao atualizar', variant: 'destructive' });
+      } else {
+        toast({ title: 'Funcionário atualizado. Sessão do usuário revogada por segurança.' });
+        setDialogOpen(false);
+        fetchEmployees();
+      }
       setSaving(false);
-      setDialogOpen(false);
-      fetchEmployees();
     } else {
       // Create mode: use edge function to create user
       if (!formEmail || !formPassword || formPassword.length < 6) {
