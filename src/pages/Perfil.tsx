@@ -46,17 +46,20 @@ export default function Perfil() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (user && !loaded) {
-    supabase.from('profiles').select('*').eq('id', user.id).maybeSingle().then(({ data }) => {
-      if (data) {
-        setDisplayName(data.display_name || '');
-        setUsername(data.username || '');
-        setPhone(data.phone || '');
-        setCpf(data.cpf || '');
-        setAvatarUrl(data.avatar_url || '');
-        setIsPrivate(data.is_private || false);
-        setPushNotifications(data.push_notifications ?? true);
-        setEmailNotifications(data.email_notifications ?? false);
-        setBannedUntil(data.banned_until || null);
+    // Lê perfil completo (incluindo CPF/telefone/preferências) via RPC segura.
+    // A tabela `profiles` não expõe mais esses campos para leitura direta.
+    (supabase as any).rpc('get_my_profile').then(({ data }: any) => {
+      const row = Array.isArray(data) ? data[0] : data;
+      if (row) {
+        setDisplayName(row.display_name || '');
+        setUsername(row.username || '');
+        setPhone(row.phone || '');
+        setCpf(row.cpf || '');
+        setAvatarUrl(row.avatar_url || '');
+        setIsPrivate(row.is_private || false);
+        setPushNotifications(row.push_notifications ?? true);
+        setEmailNotifications(row.email_notifications ?? false);
+        setBannedUntil(row.banned_until || null);
       }
       setLoaded(true);
     });
