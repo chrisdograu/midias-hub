@@ -125,6 +125,8 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ success: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
 
     if (action === "delete") {
       const { user_id } = body;
