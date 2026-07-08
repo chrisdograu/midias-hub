@@ -14,6 +14,7 @@ export interface Game {
   publisher: string;
   tags: string[];
   stock: number;
+  featured?: boolean;
 }
 
 // Map database row to Game interface
