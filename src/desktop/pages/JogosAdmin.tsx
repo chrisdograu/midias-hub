@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Gamepad2, Loader2, Plus, Search, Edit, Download } from 'lucide-react';
+import { Gamepad2, Loader2, Plus, Search, Edit, Download, Star } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,7 +19,7 @@ const ESTADOS = ['ativo', 'oculto', 'somente_forum', 'somente_loja', 'descontinu
 type Estado = typeof ESTADOS[number];
 const LABELS: Record<Estado, string> = { ativo: 'Ativo', oculto: 'Oculto', somente_forum: 'Somente Fórum', somente_loja: 'Somente Loja', descontinuado: 'Descontinuado' };
 
-interface Jogo { id: string; title: string; estado_publicacao: Estado; stock: number; price: number; }
+interface Jogo { id: string; title: string; estado_publicacao: Estado; stock: number; price: number; featured: boolean; }
 
 export default function JogosAdmin() {
   const [jogos, setJogos] = useState<Jogo[]>([]);
