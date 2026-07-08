@@ -33,6 +33,7 @@ export function mapProdutoToGame(row: {
   publisher: string | null;
   tags: string[] | null;
   stock?: number;
+  featured?: boolean | null;
 }): Game {
   return {
     id: row.id,
@@ -49,6 +50,7 @@ export function mapProdutoToGame(row: {
     publisher: row.publisher || '',
     tags: row.tags || [],
     stock: row.stock ?? 100,
+    featured: !!row.featured,
   };
 }
 
