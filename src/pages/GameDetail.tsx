@@ -33,7 +33,20 @@ export default function GameDetail() {
   const [customizerOpen, setCustomizerOpen] = useState(false);
 
   useEffect(() => {
-    if (id) supabase.from('product_views' as any).insert({ product_id: id, user_id: user?.id || null });
+    if (!id) return;
+    // Dedupe: no máximo 1 view/hora por (produto, user) ou (produto, session).
+    // O índice único parcial no banco bloqueia duplicatas; usamos ignoreDuplicates.
+    let sessionId = sessionStorage.getItem('mv_sid');
+    if (!sessionId) {
+      sessionId = crypto.randomUUID();
+      sessionStorage.setItem('mv_sid', sessionId);
+    }
+    supabase
+      .from('product_views' as any)
+      .upsert(
+        { product_id: id, user_id: user?.id || null, session_id: user?.id ? null : sessionId },
+        { onConflict: 'product_id,user_id,session_id', ignoreDuplicates: true } as any,
+      );
   }, [id, user?.id]);
 
   useEffect(() => {
