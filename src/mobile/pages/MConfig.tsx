@@ -25,7 +25,9 @@ export default function MConfig() {
     if (!user) return;
     let cancel = false;
     (async () => {
-      const { data: p } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle();
+      // RPC segura: retorna perfil completo do próprio usuário (inclui CPF/telefone/preferências).
+      const { data: rpcData } = await (supabase as any).rpc('get_my_profile');
+      const p = Array.isArray(rpcData) ? rpcData[0] : rpcData;
       if (cancel) return;
       if (p) {
         setForm({
