@@ -33,11 +33,13 @@ const App = () => (
               <Sonner />
               <BrowserRouter>
                 <Suspense fallback={<PageFallback />}>
-                  <Routes>
-                    {mobileRoutes}
-                    {desktopRoutes}
-                    {webRoutes}
-                  </Routes>
+                  <QueryErrorBoundary>
+                    <Routes>
+                      {mobileRoutes}
+                      {desktopRoutes}
+                      {webRoutes}
+                    </Routes>
+                  </QueryErrorBoundary>
                 </Suspense>
               </BrowserRouter>
             </CartProvider>
