@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Gamepad2, Loader2, Plus, Search, Edit, Download } from 'lucide-react';
+import { Gamepad2, Loader2, Plus, Search, Edit, Download, Star } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,7 +19,7 @@ const ESTADOS = ['ativo', 'oculto', 'somente_forum', 'somente_loja', 'descontinu
 type Estado = typeof ESTADOS[number];
 const LABELS: Record<Estado, string> = { ativo: 'Ativo', oculto: 'Oculto', somente_forum: 'Somente Fórum', somente_loja: 'Somente Loja', descontinuado: 'Descontinuado' };
 
-interface Jogo { id: string; title: string; estado_publicacao: Estado; stock: number; price: number; }
+interface Jogo { id: string; title: string; estado_publicacao: Estado; stock: number; price: number; featured: boolean; }
 
 export default function JogosAdmin() {
   const [jogos, setJogos] = useState<Jogo[]>([]);
@@ -31,7 +32,7 @@ export default function JogosAdmin() {
 
   const load = async () => {
     setLoading(true);
-    const { data } = await supabase.from('produtos').select('id,title,estado_publicacao,stock,price').order('updated_at', { ascending: false });
+    const { data } = await supabase.from('produtos').select('id,title,estado_publicacao,stock,price,featured').order('updated_at', { ascending: false });
     setJogos((data || []) as any); setLoading(false);
   };
   useEffect(() => { load(); }, []);
@@ -46,6 +47,14 @@ export default function JogosAdmin() {
     if (error) return toast.error(error.message);
     await adminLog({ action: 'jogo_estado_update', entity: 'produto', entity_id: j.id, payload: { from: j.estado_publicacao, to: estado, title: j.title } });
     toast.success('Estado atualizado'); load();
+  };
+
+  const toggleFeatured = async (j: Jogo, val: boolean) => {
+    const { error } = await supabase.from('produtos').update({ featured: val } as any).eq('id', j.id);
+    if (error) return toast.error(error.message);
+    await adminLog({ action: 'jogo_featured_update', entity: 'produto', entity_id: j.id, payload: { from: j.featured, to: val, title: j.title } });
+    setJogos(prev => prev.map(p => p.id === j.id ? { ...p, featured: val } : p));
+    toast.success(val ? 'Destacado na Home' : 'Removido dos destaques');
   };
 
   const openEdit = (j: Jogo) => { setEditing(j); setForm({ price: String(j.price), stock: String(j.stock) }); };
@@ -80,15 +89,21 @@ export default function JogosAdmin() {
       <Card className="border-border/50"><CardContent className="p-0">
         {loading ? <div className="py-20 flex justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div> : (
           <Table>
-            <TableHeader><TableRow><TableHead>Título</TableHead><TableHead>Preço</TableHead><TableHead>Estoque</TableHead><TableHead>Estado</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
+            <TableHeader><TableRow><TableHead>Título</TableHead><TableHead>Preço</TableHead><TableHead>Estoque</TableHead><TableHead>Estado</TableHead><TableHead className="text-center">Destaque</TableHead><TableHead className="text-right">Ações</TableHead></TableRow></TableHeader>
             <TableBody>
-              {filtered.length === 0 ? <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Nenhum jogo</TableCell></TableRow> :
+              {filtered.length === 0 ? <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Nenhum jogo</TableCell></TableRow> :
                 filtered.map(j => (
                   <TableRow key={j.id}>
                     <TableCell className="font-medium">{j.title}</TableCell>
                     <TableCell>R$ {Number(j.price).toFixed(2)}</TableCell>
                     <TableCell>{j.stock}</TableCell>
                     <TableCell><Badge variant={j.estado_publicacao === 'ativo' ? 'default' : 'secondary'}>{LABELS[j.estado_publicacao]}</Badge></TableCell>
+                    <TableCell className="text-center">
+                      <div className="inline-flex items-center gap-2">
+                        <Switch checked={j.featured} onCheckedChange={(v) => toggleFeatured(j, v)} aria-label="Destacar na Home" />
+                        {j.featured && <Star className="h-3.5 w-3.5 text-primary fill-primary" />}
+                      </div>
+                    </TableCell>
                     <TableCell className="text-right space-x-1">
                       <Select value={j.estado_publicacao} onValueChange={(v) => updateEstado(j, v as Estado)}>
                         <SelectTrigger className="w-[160px] inline-flex"><SelectValue /></SelectTrigger>

@@ -12,6 +12,7 @@ import { Loader2 } from "lucide-react";
 import { mobileRoutes } from "@/routes/MobileRoutes";
 import { desktopRoutes } from "@/routes/DesktopRoutes";
 import { webRoutes } from "@/routes/WebRoutes";
+import { QueryErrorBoundary } from "@/components/QueryErrorBoundary";
 
 const PageFallback = () => (
   <div className="min-h-[40vh] flex items-center justify-center">
@@ -32,11 +33,13 @@ const App = () => (
               <Sonner />
               <BrowserRouter>
                 <Suspense fallback={<PageFallback />}>
-                  <Routes>
-                    {mobileRoutes}
-                    {desktopRoutes}
-                    {webRoutes}
-                  </Routes>
+                  <QueryErrorBoundary>
+                    <Routes>
+                      {mobileRoutes}
+                      {desktopRoutes}
+                      {webRoutes}
+                    </Routes>
+                  </QueryErrorBoundary>
                 </Suspense>
               </BrowserRouter>
             </CartProvider>

@@ -14,6 +14,7 @@ export interface Game {
   publisher: string;
   tags: string[];
   stock: number;
+  featured?: boolean;
 }
 
 // Map database row to Game interface
@@ -32,6 +33,7 @@ export function mapProdutoToGame(row: {
   publisher: string | null;
   tags: string[] | null;
   stock?: number;
+  featured?: boolean | null;
 }): Game {
   return {
     id: row.id,
@@ -48,6 +50,7 @@ export function mapProdutoToGame(row: {
     publisher: row.publisher || '',
     tags: row.tags || [],
     stock: row.stock ?? 100,
+    featured: !!row.featured,
   };
 }
 
