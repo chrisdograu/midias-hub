@@ -87,6 +87,47 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (action === "update") {
+      const { user_id, role, position } = body;
+      // Fetch current position to detect change
+      const { data: cur } = await supabaseAdmin
+        .from("user_roles")
+        .select("position, role")
+        .eq("user_id", user_id)
+        .maybeSingle();
+
+      const { error: updErr } = await supabaseAdmin
+        .from("user_roles")
+        .update({ role, position })
+        .eq("user_id", user_id);
+
+      if (updErr) {
+        return new Response(JSON.stringify({ error: updErr.message }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // If position or role changed, invalidate active sessions to force re-login with fresh claims
+      if (cur && (cur.position !== position || cur.role !== role)) {
+        try {
+          await supabaseAdmin.auth.admin.signOut(user_id, "global" as any);
+        } catch (_e) { /* best-effort */ }
+        await supabaseAdmin.from("admin_logs").insert({
+          admin_id: caller.id,
+          action: "employee.position_change",
+          entity: "user_roles",
+          entity_id: user_id,
+          payload: { from: cur, to: { role, position } },
+        } as any);
+      }
+
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+
     if (action === "delete") {
       const { user_id } = body;
       // Don't allow self-delete

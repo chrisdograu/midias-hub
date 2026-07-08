@@ -33,10 +33,8 @@ const BundlesAdmin = lazy(() => import("@/desktop/pages/BundlesAdmin"));
 const TrocasArquivadas = lazy(() => import("@/desktop/pages/TrocasArquivadas"));
 const BibliotecaSocialAdmin = lazy(() => import("@/desktop/pages/BibliotecaSocialAdmin"));
 const TorneiosEventos = lazy(() => import("@/desktop/pages/TorneiosEventos"));
-const TorneiosAtuais = lazy(() => import("@/desktop/pages/TorneiosAtuais"));
 const CriarTorneio = lazy(() => import("@/desktop/pages/CriarTorneio"));
-const TicketsMobile = lazy(() => import("@/desktop/pages/TicketsMobile"));
-const TicketsWeb = lazy(() => import("@/desktop/pages/TicketsWeb"));
+const TicketsList = lazy(() => import("@/desktop/pages/TicketsList"));
 const Denuncias = lazy(() => import("@/desktop/pages/Denuncias"));
 const NotificacoesEspeciais = lazy(() => import("@/desktop/pages/NotificacoesEspeciais"));
 const LogsAdministrativos = lazy(() => import("@/desktop/pages/LogsAdministrativos"));
@@ -76,7 +74,7 @@ export const desktopRoutes = (
       <Route path="badges" element={<BadgesAdmin />} />
       <Route path="promocoes" element={<Promocoes />} />
       <Route path="torneios" element={<TorneiosAdmin />} />
-      <Route path="torneios/atuais" element={<TorneiosAtuais />} />
+      <Route path="torneios/atuais" element={<TorneiosAdmin />} />
       <Route path="torneios/eventos" element={<TorneiosEventos />} />
       <Route path="torneios/novo" element={<CriarTorneio />} />
       <Route path="jogos" element={<JogosAdmin />} />
@@ -84,8 +82,8 @@ export const desktopRoutes = (
       <Route path="bundles" element={<BundlesAdmin />} />
       <Route path="trocas-arquivadas" element={<TrocasArquivadas />} />
       <Route path="biblioteca-social" element={<BibliotecaSocialAdmin />} />
-      <Route path="tickets/mobile" element={<TicketsMobile />} />
-      <Route path="tickets/web" element={<TicketsWeb />} />
+      <Route path="tickets/mobile" element={<TicketsList channel="mobile" />} />
+      <Route path="tickets/web" element={<TicketsList channel="web" />} />
       <Route path="denuncias" element={<Denuncias />} />
       <Route path="notificacoes/especiais" element={<NotificacoesEspeciais />} />
       <Route path="logs" element={<LogsAdministrativos />} />
