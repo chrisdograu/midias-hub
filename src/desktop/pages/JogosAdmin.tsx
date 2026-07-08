@@ -32,7 +32,7 @@ export default function JogosAdmin() {
 
   const load = async () => {
     setLoading(true);
-    const { data } = await supabase.from('produtos').select('id,title,estado_publicacao,stock,price').order('updated_at', { ascending: false });
+    const { data } = await supabase.from('produtos').select('id,title,estado_publicacao,stock,price,featured').order('updated_at', { ascending: false });
     setJogos((data || []) as any); setLoading(false);
   };
   useEffect(() => { load(); }, []);
