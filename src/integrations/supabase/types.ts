@@ -474,6 +474,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "certificados_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       close_friends: {
@@ -681,6 +688,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "cupon_usos_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       cupons: {
@@ -786,6 +800,13 @@ export type Database = {
             columns: ["resolved_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "denuncias_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_view"
             referencedColumns: ["id"]
           },
         ]
@@ -936,10 +957,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "follow_requests_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "follow_requests_target_id_fkey"
             columns: ["target_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "follow_requests_target_id_fkey"
+            columns: ["target_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_view"
             referencedColumns: ["id"]
           },
         ]
@@ -2205,6 +2240,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "movimentacoes_estoque_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "movimentacoes_estoque_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
@@ -2495,18 +2537,21 @@ export type Database = {
         Row: {
           id: string
           product_id: string
+          session_id: string | null
           user_id: string | null
           viewed_at: string
         }
         Insert: {
           id?: string
           product_id: string
+          session_id?: string | null
           user_id?: string | null
           viewed_at?: string
         }
         Update: {
           id?: string
           product_id?: string
+          session_id?: string | null
           user_id?: string | null
           viewed_at?: string
         }
@@ -4309,6 +4354,66 @@ export type Database = {
       }
     }
     Views: {
+      public_profiles_view: {
+        Row: {
+          active_title_id: string | null
+          avatar_url: string | null
+          backlog_note: string | null
+          banner_url: string | null
+          bio: string | null
+          created_at: string | null
+          current_game_id: string | null
+          display_name: string | null
+          favorite_genres: string[] | null
+          gamer_personality: string | null
+          id: string | null
+          monthly_favorites: string[] | null
+          profile_cover_url: string | null
+          seller_bio: string | null
+          theme_color: string | null
+          trophy_showcase: string[] | null
+          username: string | null
+        }
+        Insert: {
+          active_title_id?: string | null
+          avatar_url?: string | null
+          backlog_note?: string | null
+          banner_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          current_game_id?: string | null
+          display_name?: string | null
+          favorite_genres?: string[] | null
+          gamer_personality?: string | null
+          id?: string | null
+          monthly_favorites?: string[] | null
+          profile_cover_url?: string | null
+          seller_bio?: string | null
+          theme_color?: string | null
+          trophy_showcase?: string[] | null
+          username?: string | null
+        }
+        Update: {
+          active_title_id?: string | null
+          avatar_url?: string | null
+          backlog_note?: string | null
+          banner_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          current_game_id?: string | null
+          display_name?: string | null
+          favorite_genres?: string[] | null
+          gamer_personality?: string | null
+          id?: string | null
+          monthly_favorites?: string[] | null
+          profile_cover_url?: string | null
+          seller_bio?: string | null
+          theme_color?: string | null
+          trophy_showcase?: string[] | null
+          username?: string | null
+        }
+        Relationships: []
+      }
       user_xp_totals: {
         Row: {
           actions_count: number | null
@@ -4385,12 +4490,92 @@ export type Database = {
           friend_id: string
         }[]
       }
+      get_my_profile: {
+        Args: never
+        Returns: {
+          active_title_id: string | null
+          always_hide_spoilers: boolean
+          avatar_url: string | null
+          backlog_note: string | null
+          banned_until: string | null
+          banner_url: string | null
+          bio: string | null
+          contact_email: string | null
+          cpf: string | null
+          created_at: string
+          current_game_id: string | null
+          display_name: string | null
+          email_notifications: boolean
+          favorite_genres: string[] | null
+          gamer_personality: string | null
+          id: string
+          is_private: boolean
+          library_visibility: string
+          monthly_favorites: string[] | null
+          phone: string | null
+          privacy_exceptions: string[]
+          profile_cover_url: string | null
+          push_notifications: boolean
+          require_follow_approval: boolean
+          seller_bio: string | null
+          theme_color: string | null
+          trophy_showcase: string[] | null
+          updated_at: string
+          username: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       get_product_avg_rating: {
         Args: { p_product_id: string }
         Returns: {
           avg_rating: number
           total_reviews: number
         }[]
+      }
+      get_profile_admin: {
+        Args: { _id: string }
+        Returns: {
+          active_title_id: string | null
+          always_hide_spoilers: boolean
+          avatar_url: string | null
+          backlog_note: string | null
+          banned_until: string | null
+          banner_url: string | null
+          bio: string | null
+          contact_email: string | null
+          cpf: string | null
+          created_at: string
+          current_game_id: string | null
+          display_name: string | null
+          email_notifications: boolean
+          favorite_genres: string[] | null
+          gamer_personality: string | null
+          id: string
+          is_private: boolean
+          library_visibility: string
+          monthly_favorites: string[] | null
+          phone: string | null
+          privacy_exceptions: string[]
+          profile_cover_url: string | null
+          push_notifications: boolean
+          require_follow_approval: boolean
+          seller_bio: string | null
+          theme_color: string | null
+          trophy_showcase: string[] | null
+          updated_at: string
+          username: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       get_seller_profile: {
         Args: { _user_id: string }
@@ -4445,6 +4630,10 @@ export type Database = {
       is_user_banned: { Args: { _user_id: string }; Returns: boolean }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
+      validate_and_use_coupon: {
+        Args: { _code: string; _order_id: string }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "admin" | "user" | "atendente"
