@@ -1,4 +1,4 @@
-# Plano de correção — Camada 2
+# Plano de correção — Camada 2 (Sprints 0-4 CONCLUÍDOS)
 
 Priorizado por **severidade real** (dado sensível > integridade > UX). Cada bloco pode virar 1 PR.
 
