@@ -52,7 +52,10 @@ export default function FriendProfile() {
     queryKey: ['friend-profile', userId],
     enabled: !!userId,
     queryFn: async () => {
-      const { data } = await supabase.from('profiles').select('*').eq('id', userId!).maybeSingle();
+      // Só campos públicos (CPF/telefone/e-mail nunca são expostos a terceiros).
+      const { data } = await supabase.from('profiles').select(
+        'id, display_name, avatar_url, bio, banner_url, username, is_private, active_title_id, seller_bio, gamer_personality, favorite_genres, current_game_id, monthly_favorites, backlog_note, library_visibility, theme_color, profile_cover_url, trophy_showcase, always_hide_spoilers, created_at, updated_at'
+      ).eq('id', userId!).maybeSingle();
       return data;
     },
   });
