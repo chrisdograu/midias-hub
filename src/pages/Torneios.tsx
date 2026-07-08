@@ -71,7 +71,8 @@ export default function Torneios() {
     if (!user.email_confirmed_at) { toast.error('Confirme seu e-mail antes de se inscrever em torneios'); return; }
     // Camada 3: torneio verificado exige telefone
     if (t.verified) {
-      const { data: prof } = await supabase.from('profiles').select('phone').eq('id', user.id).maybeSingle();
+      const { data: rpcProf } = await (supabase as any).rpc('get_my_profile');
+      const prof = Array.isArray(rpcProf) ? rpcProf[0] : rpcProf;
       if (!prof?.phone) { toast.error('Este torneio exige telefone cadastrado no perfil'); return; }
     }
     const { error } = await supabase.from('tournament_participants' as any).insert({
