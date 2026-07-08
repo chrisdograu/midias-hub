@@ -49,6 +49,14 @@ export default function JogosAdmin() {
     toast.success('Estado atualizado'); load();
   };
 
+  const toggleFeatured = async (j: Jogo, val: boolean) => {
+    const { error } = await supabase.from('produtos').update({ featured: val } as any).eq('id', j.id);
+    if (error) return toast.error(error.message);
+    await adminLog({ action: 'jogo_featured_update', entity: 'produto', entity_id: j.id, payload: { from: j.featured, to: val, title: j.title } });
+    setJogos(prev => prev.map(p => p.id === j.id ? { ...p, featured: val } : p));
+    toast.success(val ? 'Destacado na Home' : 'Removido dos destaques');
+  };
+
   const openEdit = (j: Jogo) => { setEditing(j); setForm({ price: String(j.price), stock: String(j.stock) }); };
 
   const saveEdit = async () => {
