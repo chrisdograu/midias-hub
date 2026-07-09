@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useProdutos } from '@/hooks/useProdutos';
 import { useAuth } from '@/hooks/useAuth';
+import { useDocumentMeta } from '@/hooks/useDocumentMeta';
 import { HalfStarDisplay } from '@/components/HalfStarRating';
 import { ArrowLeft, Loader2, User, Star, Library, ShoppingBag, Lock, Calendar } from 'lucide-react';
 import LevelTitleBadge from '@/components/LevelTitleBadge';
@@ -119,6 +120,13 @@ export default function PublicProfile() {
   const themeColor = (profile as any).theme_color || null;
   const coverUrl = (profile as any).profile_cover_url || null;
   const accentStyle = themeColor ? ({ ['--profile-accent' as any]: themeColor } as React.CSSProperties) : undefined;
+
+  useDocumentMeta({
+    title: profile.display_name ? `${profile.display_name} · MIDIAS` : 'Perfil · MIDIAS',
+    description: (profile.bio || `Perfil de ${profile.display_name || 'gamer'} no MIDIAS.`).slice(0, 160),
+    image: profile.avatar_url || coverUrl || undefined,
+    type: 'profile',
+  });
 
   return (
     <div className="container mx-auto px-4 py-6 max-w-2xl" style={accentStyle}>

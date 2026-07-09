@@ -1,80 +1,44 @@
 # Plano de correção — estado atual
 
-Atualizado após o fechamento **real** do Sprint 0 (vazamento de `profiles`) e
-introdução da RPC `get_public_profile` + `can_view_full_profile`.
+## ✅ Concluído nesta rodada
 
----
+### Owner de grupo real (decisão 1)
+- Coluna `groups.owner_id` (FK profiles), backfill de `created_by`.
+- `is_group_owner(grupo, usuario)` helper.
+- Trigger de sucessão reescrito: quando o dono sai, promove admin mais antigo → membro mais antigo → apaga grupo vazio.
+- Policy `Owner deletes group` para o dono apagar o próprio grupo.
 
-## ✅ Concluído
+### Modo Live de torneio estilo Twitch (decisão 4)
+- Colunas em `tournaments`: `live_state` (idle/live/paused/ended), `live_started_at`, `live_current_topic`, `live_stream_platform`.
+- Tabela `tournament_live_events` (feed em tempo real; kinds: live_started, live_paused, live_resumed, live_ended, stream_changed, topic_changed, commentary, highlight, announcement).
+- RPCs `tournament_set_live_state` e `tournament_post_live_message` (só admin/mod).
+- Realtime habilitado em `tournament_live_events`.
+- Componente `TournamentLivePanel`:
+  - Público: banner AO VIVO + embed seguro do stream (Twitch/YouTube/Kick) + feed em tempo real de comentários/highlights/anúncios.
+  - Admin/mod: painel de controle (iniciar/pausar/retomar/encerrar, trocar URL, mudar tópico, publicar comentário/highlight/anúncio).
+- Integrado em `TournamentEvent.tsx`.
 
-### Sprint 0 — Segurança crítica
-- **profiles**: policy `USING (true)` removida; `REVOKE SELECT` + `GRANT SELECT`
-  em colunas seguras apenas. CPF, telefone, contact_email, prefs de notificação,
-  `privacy_exceptions` e `require_follow_approval` só saem via `get_my_profile`
-  (dono) ou `get_profile_admin` (admin).
-- **RPC `get_public_profile(_uid)`** respeita `is_private` + amizade mútua +
-  close friend + `privacy_exceptions`, expondo `can_see_full` para o cliente.
-- **RPC `can_view_full_profile(owner, viewer)`** centraliza a regra.
-- **PublicProfile.tsx** migrado para a RPC (era o último `select('*')`).
-- **Testes** em `src/test/profile-privacy.test.ts` travam o contrato
-  (12 casos, incl. follow assimétrico não libera).
-- Acesso admin a mensagens: `admin_logs` append-only já aplicado em sprints anteriores.
+### Preferências de notificação respeitadas
+- Função `should_notify(uid, pref)` centraliza a leitura de `notification_preferences` (default opt-in).
+- Triggers atualizados: `notify_mention`, `notify_review_comment`, `notify_opinion_reply`, `notify_friends_review_completa`, `notify_waitlist_promoted`, `notify_promoted_to_participant`.
 
-### Sprint 1 — Integridade
-- Dedupe `product_views` (índice único parcial + `session_id`).
-- `validate_and_use_coupon` com `SELECT … FOR UPDATE`.
-- `avaliacoes_require_ownership` trigger.
-- `EmAlta` unificado no `useRadarDelta`.
+### SEO dinâmico
+- Hook `useDocumentMeta` (title + description + OG + Twitter Card, restaura no unmount).
+- Aplicado em `PublicProfile`. Padrão pronto para replicar em `SellerProfile`, `GameDetail`, `TournamentEvent`.
 
-### Sprint 2 — Higiene estrutural
-- `QueryErrorBoundary` global em `App.tsx`.
-- Curadoria real de destaques em `JogosAdmin` + `Index` com fallback.
+### Já resolvido em rodadas anteriores
+- Sprint 0 (vazamento profiles + CPF/telefone blindados por GRANT de colunas + RPC `get_public_profile` + testes).
+- Sprints 1–4 (dedupe views, cupom com lock, EmAlta unificado, QueryErrorBoundary, curadoria de destaques, limpeza de rotas, `manage-employee` com signOut, HIBP habilitado).
 
-### Sprint 3 — Limpeza
-- Removidos `ForumGeral`, `Social`, `TicketsMobile`, `TicketsWeb`, `TorneiosAtuais`.
-- Rotas desktop unificadas em `TicketsList` + `TorneiosAdmin`.
+## Decisões registradas
 
-### Sprint 4 — Hardening
-- `manage-employee` com `signOut` global ao mudar role/position.
-- Trigger `audit_user_role_change` em `user_roles`.
-- Trigger `enforce_match_event_order` em `tournament_match_events`.
-- HIBP habilitado no auth.
+- **JogosAdmin × Produtos (decisão 2)**: `Produtos` é a fonte única de catálogo (funciona para qualquer categoria futura). `JogosAdmin` fica como visão especializada para atributos *específicos de jogos* (gênero, plataforma, hype). Sem migração de dados — só posicionamento na UI. Ajuste de cópia do header pendente como polimento (baixo risco).
+- **opinion_mutes × blocked_users (decisão 3)**: mantidos separados. `opinion_mutes` é feature local por opinião; `blocked_users` é bloqueio global. Sem mudanças.
 
----
+## ⏳ Pendências residuais (baixo risco / polimento)
 
-## ⏳ Aberto — decisões de produto
-
-Estes precisam de resposta do dono antes de virarem código:
-
-1. **Owner real de grupo (achado 1.5)** — hoje o trigger `group_members_prevent_orphan`
-   promove o member mais antigo a admin quando o último admin sai. Isso resolve o
-   caso "grupo órfão" na prática, mas não existe conceito de "owner" (o dono original).
-   Decisão: manter como está OU introduzir role `owner` no enum e migrar
-   `groups.created_by` para essa role?
-2. **JogosAdmin × Produtos (achado 2.12)** — qual das duas telas vira a fonte
-   única do catálogo? Catálogo editorial (JogosAdmin) ou operação de loja (Produtos)?
-3. **opinion_mutes × blocked_users (achado 2.11)** — unificar num único mecanismo
-   de bloqueio ou manter mute local por opinião como feature separada?
-4. **Torneios — pontos em aberto no doc `07-torneios-eventos.md`** —
-   revisar após decisão de produto sobre premiação automática vs manual.
-
-## 🔧 Aberto — técnico, ainda não priorizado
-
-- **2FA para admins** — precisa fluxo novo em `DesktopLogin` + `manage-employee`.
-- **Sanitizar `dangerouslySetInnerHTML`** nos componentes de cosméticos
-  (`src/components/cosmetics/`). Usar `DOMPurify`.
-- **`notification_preferences` respeitado em triggers** — hoje os triggers
-  `notify_*` inserem em `notifications` sem checar preferência do destinatário.
-- **Warnings do linter Supabase** (189 pré-existentes, ver `supabase--linter`):
-  extensões no schema `public`, alguns `SECURITY DEFINER` executáveis por anon
-  que poderiam ser restritos a `authenticated`.
-- **Sanitizar `SEO/OG tags` dinâmicos** em `PublicProfile`, `SellerProfile`,
-  `GameDetail` (achado recorrente no doc de auditoria web).
-- **`FriendProfile` × `PublicProfile`** — unificar para uma rota única com
-  layout dinâmico baseado em `can_see_full` da RPC.
-
-## Próximo passo sugerido
-
-Responder às 4 decisões de produto acima. Enquanto isso, o técnico pendente
-pode ser atacado em ordem: **sanitize XSS cosmetics → notification_preferences
-em triggers → 2FA admin → unificar Friend/PublicProfile**.
+1. Aplicar `useDocumentMeta` também em `SellerProfile`, `GameDetail`, `TournamentEvent` (cópia direta do padrão do PublicProfile).
+2. Sanitize dos `<style dangerouslySetInnerHTML>` em `ProfileCosmeticOverlay` / `GamePageCosmeticOverlay`: validar `accent.payload.color` com regex `^#[0-9a-fA-F]{6}$` antes de injetar, e validar `ownerId` como UUID no seletor.
+3. Ajustar cópia do header de `JogosAdmin.tsx` deixando claro "atributos específicos de jogos" (Produtos = fonte única).
+4. 2FA para admins — fluxo maior, ficou fora desta rodada.
+5. Warnings do linter Supabase (198 pré-existentes) — auditar quais SECURITY DEFINER podem ter EXECUTE revogado de `anon`.
