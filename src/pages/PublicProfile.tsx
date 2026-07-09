@@ -27,13 +27,12 @@ export default function PublicProfile() {
     queryKey: ['public-profile', userId],
     queryFn: async () => {
       if (!userId) return null;
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
+      // RPC segura: respeita is_private + amizade mútua/close friend/exceção.
+      // NUNCA retorna CPF, telefone, contact_email ou preferências de notificação.
+      const { data, error } = await (supabase as any).rpc('get_public_profile', { _uid: userId });
       if (error) throw error;
-      return data;
+      const row = Array.isArray(data) ? data[0] : data;
+      return row ?? null;
     },
     enabled: !!userId,
   });
