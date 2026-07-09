@@ -160,6 +160,15 @@ export default function TournamentEvent() {
 
       {/* Storylines */}
       <div className="container mx-auto px-4 py-8 space-y-10">
+        <TournamentLivePanel
+          tournamentId={t.id}
+          liveState={t.live_state || 'idle'}
+          streamUrl={t.stream_url}
+          streamPlatform={t.live_stream_platform}
+          currentTopic={t.live_current_topic}
+          liveStartedAt={t.live_started_at}
+          onChange={load}
+        />
         <StorylinesPanel items={storylines} />
 
         {/* Bracket + chat */}
