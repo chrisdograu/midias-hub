@@ -13,6 +13,8 @@ import CinematicBracket from '@/components/tournaments/CinematicBracket';
 import LiveTournamentChat from '@/components/tournaments/LiveTournamentChat';
 import TournamentRegistration from '@/components/tournaments/TournamentRegistration';
 import TournamentStatsPanel from '@/components/tournaments/TournamentStatsPanel';
+import TournamentLivePanel from '@/components/tournaments/TournamentLivePanel';
+import { useDocumentMeta } from '@/hooks/useDocumentMeta';
 
 export default function TournamentEvent() {
   const { id } = useParams();
