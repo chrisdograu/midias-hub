@@ -1881,6 +1881,7 @@ export type Database = {
           id: string
           image_url: string | null
           name: string
+          owner_id: string | null
           updated_at: string
         }
         Insert: {
@@ -1890,6 +1891,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           name: string
+          owner_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -1899,9 +1901,25 @@ export type Database = {
           id?: string
           image_url?: string | null
           name?: string
+          owner_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "groups_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "groups_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_view"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       integration_webhooks: {
         Row: {
@@ -3435,6 +3453,55 @@ export type Database = {
         }
         Relationships: []
       }
+      tournament_live_events: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          id: string
+          kind: string
+          payload: Json
+          tournament_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          payload?: Json
+          tournament_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          payload?: Json
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_live_events_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournament_live_events_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournament_live_events_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_match_events: {
         Row: {
           created_at: string
@@ -3813,6 +3880,10 @@ export type Database = {
           hype_score: number
           id: string
           kind: string
+          live_current_topic: string | null
+          live_started_at: string | null
+          live_state: string
+          live_stream_platform: string | null
           max_participants: number
           narrative: string | null
           prize: string | null
@@ -3857,6 +3928,10 @@ export type Database = {
           hype_score?: number
           id?: string
           kind?: string
+          live_current_topic?: string | null
+          live_started_at?: string | null
+          live_state?: string
+          live_stream_platform?: string | null
           max_participants?: number
           narrative?: string | null
           prize?: string | null
@@ -3901,6 +3976,10 @@ export type Database = {
           hype_score?: number
           id?: string
           kind?: string
+          live_current_topic?: string | null
+          live_started_at?: string | null
+          live_state?: string
+          live_stream_platform?: string | null
           max_participants?: number
           narrative?: string | null
           prize?: string | null
@@ -4432,6 +4511,7 @@ export type Database = {
       }
     }
     Functions: {
+      _detect_stream_platform: { Args: { _url: string }; Returns: string }
       accept_follow_request: {
         Args: { _request_id: string }
         Returns: undefined
@@ -4656,6 +4736,10 @@ export type Database = {
         Args: { _group: string; _user: string }
         Returns: boolean
       }
+      is_group_owner: {
+        Args: { _group: string; _user: string }
+        Returns: boolean
+      }
       is_staff: { Args: never; Returns: boolean }
       is_tournament_mod: { Args: { _t: string; _u: string }; Returns: boolean }
       is_user_banned: { Args: { _user_id: string }; Returns: boolean }
@@ -4699,8 +4783,22 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      should_notify: { Args: { _pref: string; _uid: string }; Returns: boolean }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
+      tournament_post_live_message: {
+        Args: { _kind: string; _text: string; _tournament_id: string }
+        Returns: string
+      }
+      tournament_set_live_state: {
+        Args: {
+          _state: string
+          _stream_url?: string
+          _topic?: string
+          _tournament_id: string
+        }
+        Returns: undefined
+      }
       validate_and_use_coupon: {
         Args: { _code: string; _order_id: string }
         Returns: string
