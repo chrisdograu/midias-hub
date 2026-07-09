@@ -4471,6 +4471,10 @@ export type Database = {
         Args: { _owner: string; _viewer: string; _visibility: string }
         Returns: boolean
       }
+      can_view_full_profile: {
+        Args: { _owner: string; _viewer: string }
+        Returns: boolean
+      }
       can_view_scope: {
         Args: { _owner: string; _scope: string; _viewer: string }
         Returns: boolean
@@ -4576,6 +4580,33 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      get_public_profile: {
+        Args: { _uid: string }
+        Returns: {
+          active_title_id: string
+          always_hide_spoilers: boolean
+          avatar_url: string
+          backlog_note: string
+          banned_until: string
+          banner_url: string
+          bio: string
+          can_see_full: boolean
+          created_at: string
+          current_game_id: string
+          display_name: string
+          favorite_genres: string[]
+          gamer_personality: string
+          id: string
+          is_private: boolean
+          library_visibility: string
+          monthly_favorites: string[]
+          profile_cover_url: string
+          seller_bio: string
+          theme_color: string
+          trophy_showcase: string[]
+          username: string
+        }[]
       }
       get_seller_profile: {
         Args: { _user_id: string }
