@@ -121,6 +121,13 @@ export default function PublicProfile() {
   const coverUrl = (profile as any).profile_cover_url || null;
   const accentStyle = themeColor ? ({ ['--profile-accent' as any]: themeColor } as React.CSSProperties) : undefined;
 
+  useDocumentMeta({
+    title: profile.display_name ? `${profile.display_name} · MIDIAS` : 'Perfil · MIDIAS',
+    description: (profile.bio || `Perfil de ${profile.display_name || 'gamer'} no MIDIAS.`).slice(0, 160),
+    image: profile.avatar_url || coverUrl || undefined,
+    type: 'profile',
+  });
+
   return (
     <div className="container mx-auto px-4 py-6 max-w-2xl" style={accentStyle}>
       <Link to="/" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors mb-6">
