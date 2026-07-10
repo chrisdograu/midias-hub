@@ -163,4 +163,4 @@ Coisas que não são bug agora mas vão travar as Fases B/C se ficarem.
 
 ### 20.4 Ângulos que a análise inicial não cobriu
 
-Acessibilidade (WCAG), performance (LCP/CLS por bloco), SEO, i18n futuro, comportamento com JS desativado, dark/light parity, mobile-web (não Flutter) fallback, telemetria.
+Acessibilidade (WCAG), performance (LCP/CLS por bloco), SEO, i18n futuro, comportamento com JS desativado, dark/light parity, mobile-web (não app nativo) fallback, telemetria.

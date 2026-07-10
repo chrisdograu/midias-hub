@@ -527,7 +527,7 @@ Configurável parcialmente via `site_settings.store_info` (name, email, phone, d
   - **Alt A — Header + Navbar secundária.** Header fino (48px): logo | busca dominante (max-w-2xl) | sinos | carrinho | user. Navbar abaixo (40px): Catálogo · Ofertas · Em Alta · Pra Você · Torneios · Social. Vantagem: hierarquia clara (identidade+conta em cima, descoberta embaixo). Custo: +40px de altura fixa.
   - **Alt B — Header enxuto + Command Palette (⌘K).** Header 56px: logo | busca | sinos | carrinho | user. Nav vira uma tecla de atalho e um botão discreto "Explorar ▾". Vantagem: minimalismo real, tipo Linear/Vercel. Custo: descoberta menos óbvia para novos usuários. Precisa onboarding.
   - **Alt C — Cluster visual (mudança mínima).** Manter tudo mas separar em 3 grupos visualmente com dividers verticais sutis: [Marca+Nav] · [Busca] · [Ações]. Vantagem: barato. Custo: continua com 13 alvos.
-- **Recomendação:** **Alt A** para MIDIAS, porque o público não é técnico o suficiente para ⌘K (Alt B) e Alt C não resolve. Este padrão de navbar dupla se aplica **só à Web pública** — Mobile (Flutter) já tem bottom nav, Desktop (backoffice) tem sidebar.
+- **Recomendação:** **Alt A** para MIDIAS, porque o público não é técnico o suficiente para ⌘K (Alt B) e Alt C não resolve. Este padrão de navbar dupla se aplica **só à Web pública** — Mobile (Capacitor) já tem bottom nav, Desktop (backoffice) tem sidebar.
 - **Prioridade:** P1.
 
 **D. Mais Bem Avaliados sem peso mínimo — P1**
@@ -575,5 +575,5 @@ Configurável parcialmente via `site_settings.store_info` (name, email, phone, d
 - **i18n:** todo texto é literal PT-BR hardcoded. Impossível trocar sem refactor. Fora de escopo hoje mas travará expansão. **P3.**
 - **JS desativado:** SPA React → página em branco. Aceitável para o público-alvo. Fora de escopo.
 - **Dark/light parity:** todos os `text-white` do Hero e cards funcionam em light mode? Auditar (ver `mem://style/temas`). **P2.**
-- **Mobile-web (browser em celular, não app Flutter):** o Header colapsa em `< lg` mas a busca some em `< md` (768px) — celulares grandes ficam sem busca até abrir hambúrguer. **P1 — abrir a busca em `< md` também.**
+- **Mobile-web (browser em celular, não app Capacitor):** o Header colapsa em `< lg` mas a busca some em `< md` (768px) — celulares grandes ficam sem busca até abrir hambúrguer. **P1 — abrir a busca em `< md` também.**
 - **Telemetria de admin:** admin não tem visibilidade de saúde da Home (LCP real, itens que apareceram vazios, promo criada mas nunca clicada). Dashboard admin dedicado à Home seria **P2**.
