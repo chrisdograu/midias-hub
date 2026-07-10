@@ -258,27 +258,35 @@ function labelForState(state: string) {
   }
 }
 
-// Constrói uma URL de embed segura para o provedor detectado. Nunca injeta HTML.
+// Constrói uma URL de embed segura para o provedor detectado. Nunca injeta HTML,
+// nunca aceita URLs fora do whitelist e valida o identificador do canal/vídeo por regex
+// específico de cada plataforma. Isso protege contra iframe injection mesmo se um admin
+// digitar/publicar uma URL maliciosa por engano.
+const TWITCH_CHANNEL_RE = /^[a-zA-Z0-9_]{3,25}$/;
+const YOUTUBE_ID_RE = /^[a-zA-Z0-9_-]{8,15}$/;
+const KICK_CHANNEL_RE = /^[a-zA-Z0-9_-]{2,30}$/;
+
 function buildEmbed(url: string | null | undefined, platform: string | null | undefined): string | null {
   if (!url) return null;
   const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
   try {
     const u = new URL(url);
-    if (platform === 'twitch' || u.hostname.includes('twitch.tv')) {
+    if (u.protocol !== 'https:' && u.protocol !== 'http:') return null;
+    if (platform === 'twitch' || u.hostname.endsWith('twitch.tv')) {
       const channel = u.pathname.replace(/^\//, '').split('/')[0];
-      if (!channel) return null;
+      if (!TWITCH_CHANNEL_RE.test(channel)) return null;
       return `https://player.twitch.tv/?channel=${encodeURIComponent(channel)}&parent=${encodeURIComponent(host)}&muted=false`;
     }
-    if (platform === 'youtube' || u.hostname.includes('youtube.com') || u.hostname.includes('youtu.be')) {
+    if (platform === 'youtube' || u.hostname.endsWith('youtube.com') || u.hostname.endsWith('youtu.be')) {
       let id = u.searchParams.get('v');
-      if (!id && u.hostname.includes('youtu.be')) id = u.pathname.replace(/^\//, '');
+      if (!id && u.hostname.endsWith('youtu.be')) id = u.pathname.replace(/^\//, '');
       if (u.pathname.startsWith('/live/')) id = u.pathname.split('/')[2];
-      if (!id) return null;
+      if (!id || !YOUTUBE_ID_RE.test(id)) return null;
       return `https://www.youtube.com/embed/${encodeURIComponent(id)}?autoplay=1`;
     }
-    if (platform === 'kick' || u.hostname.includes('kick.com')) {
+    if (platform === 'kick' || u.hostname.endsWith('kick.com')) {
       const channel = u.pathname.replace(/^\//, '').split('/')[0];
-      if (!channel) return null;
+      if (!KICK_CHANNEL_RE.test(channel)) return null;
       return `https://player.kick.com/${encodeURIComponent(channel)}`;
     }
   } catch { /* URL inválida — ignora */ }
