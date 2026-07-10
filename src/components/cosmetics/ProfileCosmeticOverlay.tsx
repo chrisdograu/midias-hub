@@ -49,7 +49,7 @@ export function ProfileCosmeticOverlay({ ownerId, hideToggle, forceDefault }: Pr
         />
       )}
 
-      {visible && accent?.payload?.color && (
+      {visible && accent?.payload?.color && isValidHex(accent.payload.color) && isValidUuid(ownerId) && (
         <style dangerouslySetInnerHTML={{ __html: `
           [data-profile-cosmetic="${ownerId}"] { --primary: ${hexToHsl(accent.payload.color)}; }
         `}} />
