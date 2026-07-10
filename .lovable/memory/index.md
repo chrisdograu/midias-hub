@@ -2,7 +2,7 @@
 
 ## Core
 - **Language & Styling**: Strictly PT-BR (UI, emails). Dark mode default. Brand "MIDIAS": Teal (#14B8A6) & Purple (#A855F7), Orbitron/Inter fonts.
-- **Platform Scope**: Web = E-commerce/Library; Mobile Flutter = Community/C2C Marketplace; Desktop Electron = Backoffice/Admin. Single Supabase DB for all 3.
+- **Platform Scope**: Web = E-commerce/Library; Mobile (Capacitor) = Community/C2C Marketplace; Desktop Electron = Backoffice/Admin. Single Supabase DB for all 3.
 - **Academic Context (TCC)**: Simulated checkout (Pix 5% off, CC installments), no real payments. 100% online, no POS.
 - **Tech Stack**: React (Vite+TS), Tailwind, Supabase (Postgres, RLS, Edge Functions, Auth, Storage).
 - **Design Parity**: Web Auth design MUST strictly match Mobile PWA (icons in fields, emojis, Teal/Purple).
@@ -24,7 +24,7 @@
 - [Language Restrictions](mem://projeto/idioma) — PT-BR exclusively across all systems
 - [Platform Scope](mem://projeto/escopo) — Division of modules between Web, Mobile App, and Desktop
 - [Strictly Online Scope](mem://projeto/escopo-online-estrito) — 100% digital e-commerce, no physical POS
-- [Mobile is Flutter](mem://projeto/mobile-flutter) — Mobile app built in Flutter/Dart, shares same Supabase DB
+- [Mobile is Capacitor](mem://projeto/mobile-flutter) — Mobile app built in React empacotado com Capacitor, shares same Supabase DB
 
 - [Auth & Roles](mem://auth/fluxo-e-rbac) — Supabase RBAC, sensitive data validation, profile auto-creation
 - [Desktop RBAC](mem://auth/desktop-rbac) — 6 admin roles with dynamic sidebar/route permissions

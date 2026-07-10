@@ -49,7 +49,7 @@ export function ProfileCosmeticOverlay({ ownerId, hideToggle, forceDefault }: Pr
         />
       )}
 
-      {visible && accent?.payload?.color && (
+      {visible && accent?.payload?.color && isValidHex(accent.payload.color) && isValidUuid(ownerId) && (
         <style dangerouslySetInnerHTML={{ __html: `
           [data-profile-cosmetic="${ownerId}"] { --primary: ${hexToHsl(accent.payload.color)}; }
         `}} />
@@ -68,6 +68,11 @@ export function ProfileCosmeticOverlay({ ownerId, hideToggle, forceDefault }: Pr
     </>
   );
 }
+
+const HEX_RE = /^#[0-9a-fA-F]{6}$/;
+const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+function isValidHex(v: unknown): v is string { return typeof v === 'string' && HEX_RE.test(v); }
+function isValidUuid(v: unknown): v is string { return typeof v === 'string' && UUID_RE.test(v); }
 
 function hexToHsl(hex: string): string {
   const m = hex.replace('#', '').match(/.{2}/g);

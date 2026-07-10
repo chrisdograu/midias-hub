@@ -53,7 +53,7 @@ export function GamePageCosmeticOverlay({ ownerId, productId, forceDefault }: Pr
         />
       )}
 
-      {visible && theme?.payload?.color && (
+      {visible && theme?.payload?.color && isValidHex(theme.payload.color) && isValidUuid(productId) && (
         <style dangerouslySetInnerHTML={{ __html: `
           [data-game-cosmetic="${productId}"] { --primary: ${hexToHsl(theme.payload.color)}; }
         `}} />
@@ -72,6 +72,11 @@ export function GamePageCosmeticOverlay({ ownerId, productId, forceDefault }: Pr
     </>
   );
 }
+
+const HEX_RE = /^#[0-9a-fA-F]{6}$/;
+const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+function isValidHex(v: unknown): v is string { return typeof v === 'string' && HEX_RE.test(v); }
+function isValidUuid(v: unknown): v is string { return typeof v === 'string' && UUID_RE.test(v); }
 
 function hexToHsl(hex: string): string {
   const m = hex.replace('#', '').match(/.{2}/g);

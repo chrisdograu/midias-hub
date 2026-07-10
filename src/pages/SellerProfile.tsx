@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Store, Star, ShoppingBag, Repeat, Calendar, MessageCircle, UserPlus, Ban, Flag, Edit, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import SellerProfileSwitcher from '@/components/seller/SellerProfileSwitcher';
+import { useDocumentMeta } from '@/hooks/useDocumentMeta';
 
 type Seller = {
   id: string;
@@ -76,6 +77,13 @@ export default function SellerProfile() {
       setLoading(false);
     })();
   }, [handle, user?.id]);
+
+  useDocumentMeta({
+    title: seller?.display_name ? `${seller.display_name} · Vendedor · MIDIAS` : 'Vendedor · MIDIAS',
+    description: (seller?.bio || `Perfil de vendedor de ${seller?.display_name || 'usuário'} na MIDIAS.`).slice(0, 160),
+    image: seller?.avatar_url || undefined,
+    type: 'profile',
+  });
 
   if (loading) {
     return <div className="container mx-auto px-4 py-20 text-center"><Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" /></div>;

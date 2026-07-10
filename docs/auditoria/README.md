@@ -12,7 +12,7 @@
 35. Checkout Sucesso · 36. Tutoriais · 37. Tutorial · 38. Fórum Geral (legado)
 39. Social (legado) · 40. NotFound · 41. Tournament Event · 42. Tournament Match · 43. Tournament Group
 
-## Mobile Flutter (documentado via schema compartilhado + páginas React /m espelho)
+## Mobile (Capacitor) (documentado via schema compartilhado + páginas React /m espelho)
 01. Auth · 02. Home · 03. Marketplace · 04. Fórum · 05. Chat
 06. Perfil/Config · 07. Favoritos/Amigos · 08. Torneios/Tutoriais
 09. Novo Anúncio · 10. Item Marketplace · 11. Fórum Jogo · 12. Post

@@ -92,7 +92,7 @@ flowchart TD
 
 ## Fluxo 5 — C2C (marketplace mobile)
 
-**Só existe no mobile Flutter.** Web tem apenas leitura de perfil de vendedor via `/vendedor/:handle`.
+**Só existe no mobile (Capacitor).** Web tem apenas leitura de perfil de vendedor via `/vendedor/:handle`.
 
 ```mermaid
 flowchart TD

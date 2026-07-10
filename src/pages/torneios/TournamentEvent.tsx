@@ -72,6 +72,13 @@ export default function TournamentEvent() {
     return () => { supabase.removeChannel(ch); };
   }, [id]);
 
+  useDocumentMeta({
+    title: t?.title ? `${t.title} · Torneio · MIDIAS` : 'Torneio · MIDIAS',
+    description: t ? (t.description || `Torneio ${t.title} na MIDIAS — inscrições, chaveamento e cobertura ao vivo.`).slice(0, 160) : undefined,
+    image: t?.banner_url || undefined,
+    type: 'article',
+  });
+
   if (loading) return <div className="flex justify-center py-32"><Loader2 className="h-7 w-7 animate-spin text-primary" /></div>;
   if (!t) return <div className="text-center py-32 text-muted-foreground">Torneio não encontrado.</div>;
 

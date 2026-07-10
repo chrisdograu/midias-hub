@@ -65,7 +65,7 @@ Ranking por `rating_media` com peso mínimo de reviews (evita 1 review 5 estrela
 Item vendido pela loja MIDIAS (B2C). Tem estoque, preço, plataformas, imagens, avaliações.
 
 ### Anúncio (`anuncios`)
-Item vendido/trocado **entre usuários** (C2C) — só existe no mobile Flutter. Não confundir com produto.
+Item vendido/trocado **entre usuários** (C2C) — só existe no mobile (Capacitor). Não confundir com produto.
 
 ### Bundle
 Combinação de produtos com preço agregado menor que a soma. Tem página própria (`/bundle/:id`) mostrando % de economia.

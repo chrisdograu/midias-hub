@@ -19,6 +19,8 @@ import { GamePageCosmeticOverlay } from '@/components/cosmetics/GamePageCosmetic
 import { userOwnsGame } from '@/hooks/useCosmetics';
 import { OpinionsPanel } from '@/components/social/OpinionsPanel';
 import { ScreenshotsPanel } from '@/components/social/ScreenshotsPanel';
+import FriendsWithGame from '@/components/social/FriendsWithGame';
+import { useDocumentMeta } from '@/hooks/useDocumentMeta';
 
 export default function GameDetail() {
   const { id } = useParams();
@@ -55,6 +57,13 @@ export default function GameDetail() {
   useEffect(() => {
     if (user && id) userOwnsGame(user.id, id).then(setOwns);
   }, [user?.id, id]);
+
+  useDocumentMeta({
+    title: game ? `${game.title} · MIDIAS` : 'Jogo · MIDIAS',
+    description: game ? (game.description || `Compre ${game.title} na MIDIAS — entrega instantânea por e-mail.`).slice(0, 160) : undefined,
+    image: game?.image,
+    type: 'product',
+  });
 
   if (isLoading) return <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
 
@@ -234,6 +243,10 @@ export default function GameDetail() {
           <ScreenshotsPanel productId={game.id} />
         </div>
       )}
+
+      {/* Amigos que têm esse jogo (item 20 da auditoria) */}
+      <FriendsWithGame productId={game.id} />
+
 
       {/* Related */}
       {related.length > 0 && (

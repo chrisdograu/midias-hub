@@ -2,7 +2,7 @@
 
 ## Índice
 - ADR-001: Roles em tabela separada (user_roles)
-- ADR-002: Flutter para mobile ao invés de PWA React
+- ADR-002: Mobile React empacotado com Capacitor (não Flutter)
 - ADR-003: Lovable Cloud (Supabase managed) como backend único
 - ADR-004: Checkout simulado (TCC) — sem gateway real
 - ADR-005: Reviews numéricas (0.5-5.0) sem texto no web
@@ -13,7 +13,7 @@
 ## ADR-001 · Roles separadas
 **Status:** aceito. **Contexto:** armazenar role em `profiles` abre privilege escalation. **Decisão:** `user_roles(user_id, role)` + `has_role()` SECURITY DEFINER. **Consequência:** todas policies via função.
 
-## ADR-002 · Flutter mobile
+## ADR-002 · Capacitor mobile
 **Status:** aceito. **Contexto:** UX nativa, câmera, push, offline. **Consequência:** dois codebases para features cross-platform; alinhamento via schema Supabase compartilhado (ver `mem://database/schema-unificado`).
 
 ## ADR-003 · Lovable Cloud

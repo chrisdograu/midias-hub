@@ -71,7 +71,7 @@ export default function JogosAdmin() {
 
   return (
     <div className="p-6 space-y-6">
-      <AdminPageHeader icon={Gamepad2} title="Jogos" subtitle="Catálogo, estado de publicação e preço/estoque inline"
+      <AdminPageHeader icon={Gamepad2} title="Jogos — atributos específicos de jogos" subtitle="Gênero, plataforma, hype e destaque editorial · Produtos permanece a fonte única de catálogo/estoque"
         actions={<>
           <Button variant="outline" size="sm" onClick={() => exportCsv('jogos.csv', filtered)}><Download className="h-4 w-4 mr-1" />Exportar</Button>
           <Button onClick={() => navigate('/desktop/jogos/novo')}><Plus className="h-4 w-4 mr-1" /> Novo jogo</Button>
