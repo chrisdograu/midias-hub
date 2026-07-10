@@ -58,6 +58,13 @@ export default function GameDetail() {
     if (user && id) userOwnsGame(user.id, id).then(setOwns);
   }, [user?.id, id]);
 
+  useDocumentMeta({
+    title: game ? `${game.title} · MIDIAS` : 'Jogo · MIDIAS',
+    description: game ? (game.description || `Compre ${game.title} na MIDIAS — entrega instantânea por e-mail.`).slice(0, 160) : undefined,
+    image: game?.image,
+    type: 'product',
+  });
+
   if (isLoading) return <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
 
   if (!game) {
