@@ -47,12 +47,12 @@ export default function MensagensAdmin() {
 
       // Denúncias ativas por conversa (o "portão" do acesso do admin)
       const { data: reports } = await supabase.from('denuncias')
-        .select('id, motivo, status, entidade_tipo, entidade_id')
-        .eq('entidade_tipo', 'conversa')
+        .select('id, reason, description, status, target_type, target_id')
+        .eq('target_type', 'conversa')
         .in('status', ['aberta', 'pendente', 'em_analise', 'em_investigacao', 'analisando', 'nova']);
       const reportMap = new Map<string, { id: string; motivo: string | null; status: string }>();
-      (reports || []).forEach(r => {
-        if (r.entidade_id) reportMap.set(r.entidade_id, { id: r.id, motivo: r.motivo, status: r.status });
+      (reports || []).forEach((r: any) => {
+        if (r.target_id) reportMap.set(r.target_id, { id: r.id, motivo: r.description || r.reason || null, status: r.status });
       });
 
       // Contar mensagens por conversa
