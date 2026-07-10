@@ -19,6 +19,8 @@ import { GamePageCosmeticOverlay } from '@/components/cosmetics/GamePageCosmetic
 import { userOwnsGame } from '@/hooks/useCosmetics';
 import { OpinionsPanel } from '@/components/social/OpinionsPanel';
 import { ScreenshotsPanel } from '@/components/social/ScreenshotsPanel';
+import FriendsWithGame from '@/components/social/FriendsWithGame';
+import { useDocumentMeta } from '@/hooks/useDocumentMeta';
 
 export default function GameDetail() {
   const { id } = useParams();
