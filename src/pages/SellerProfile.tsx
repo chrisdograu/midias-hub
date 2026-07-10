@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Store, Star, ShoppingBag, Repeat, Calendar, MessageCircle, UserPlus, Ban, Flag, Edit, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import SellerProfileSwitcher from '@/components/seller/SellerProfileSwitcher';
+import { useDocumentMeta } from '@/hooks/useDocumentMeta';
 
 type Seller = {
   id: string;
