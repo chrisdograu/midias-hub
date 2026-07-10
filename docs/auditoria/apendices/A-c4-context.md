@@ -2,7 +2,7 @@
 
 ## Contexto (Nível 1)
 ```text
-[Gamer Web] ─┐        ┌─ [Gamer Mobile Flutter]
+[Gamer Web] ─┐        ┌─ [Gamer Mobile (Capacitor)]
              ▼        ▼
         ┌────────────────────┐         ┌────────────┐
         │ MIDIAS Platform     │◀──────▶│ Staff Desk │
@@ -17,7 +17,7 @@
 
 ## Container (Nível 2)
 ```text
-Web SPA (React+Vite)        Mobile Flutter          Desktop Admin (Electron+React)
+Web SPA (React+Vite)        Mobile (Capacitor)          Desktop Admin (Electron+React)
       │                          │                          │
       └────────── HTTPS/JWT ─────┼──────────────────────────┘
                                  ▼

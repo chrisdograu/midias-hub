@@ -2,7 +2,7 @@
 
 ## Índice
 - ADR-001: Roles em tabela separada (user_roles)
-- ADR-002: Flutter para mobile ao invés de PWA React
+- ADR-002: Flutter para mobile ao invés de PWA React (empacotável com Capacitor)
 - ADR-003: Lovable Cloud (Supabase managed) como backend único
 - ADR-004: Checkout simulado (TCC) — sem gateway real
 - ADR-005: Reviews numéricas (0.5-5.0) sem texto no web
