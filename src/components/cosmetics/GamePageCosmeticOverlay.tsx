@@ -53,7 +53,7 @@ export function GamePageCosmeticOverlay({ ownerId, productId, forceDefault }: Pr
         />
       )}
 
-      {visible && theme?.payload?.color && (
+      {visible && theme?.payload?.color && isValidHex(theme.payload.color) && isValidUuid(productId) && (
         <style dangerouslySetInnerHTML={{ __html: `
           [data-game-cosmetic="${productId}"] { --primary: ${hexToHsl(theme.payload.color)}; }
         `}} />
