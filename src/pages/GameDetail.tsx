@@ -244,6 +244,10 @@ export default function GameDetail() {
         </div>
       )}
 
+      {/* Amigos que têm esse jogo (item 20 da auditoria) */}
+      <FriendsWithGame productId={game.id} />
+
+
       {/* Related */}
       {related.length > 0 && (
         <div className="mt-12">
