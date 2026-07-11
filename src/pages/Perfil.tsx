@@ -19,6 +19,7 @@ import { CosmeticUnlocksCenter } from '@/components/cosmetics/CosmeticUnlocksCen
 import LevelTitleBadge from '@/components/LevelTitleBadge';
 import ActiveTitleSelector from '@/components/ActiveTitleSelector';
 import SellerProfileSwitcher from '@/components/seller/SellerProfileSwitcher';
+import PreferencesPanel from '@/components/perfil/PreferencesPanel';
 
 export default function Perfil() {
   const { user, profile, updatePassword } = useAuth();
@@ -291,6 +292,9 @@ export default function Perfil() {
             <ActiveTitleSelector userId={user.id} />
           </div>
         )}
+
+        {/* Preferências (gêneros favoritos, integrações, indicação) */}
+        <PreferencesPanel />
 
         {/* Notificações */}
         <div className="bg-card border border-border rounded-xl p-6 mb-4">

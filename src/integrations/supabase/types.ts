@@ -2746,10 +2746,13 @@ export type Database = {
           is_private: boolean
           library_visibility: string
           monthly_favorites: string[] | null
+          onboarded_at: string | null
           phone: string | null
           privacy_exceptions: string[]
           profile_cover_url: string | null
           push_notifications: boolean
+          referral_code: string | null
+          referred_by: string | null
           require_follow_approval: boolean
           seller_bio: string | null
           theme_color: string | null
@@ -2777,10 +2780,13 @@ export type Database = {
           is_private?: boolean
           library_visibility?: string
           monthly_favorites?: string[] | null
+          onboarded_at?: string | null
           phone?: string | null
           privacy_exceptions?: string[]
           profile_cover_url?: string | null
           push_notifications?: boolean
+          referral_code?: string | null
+          referred_by?: string | null
           require_follow_approval?: boolean
           seller_bio?: string | null
           theme_color?: string | null
@@ -2808,10 +2814,13 @@ export type Database = {
           is_private?: boolean
           library_visibility?: string
           monthly_favorites?: string[] | null
+          onboarded_at?: string | null
           phone?: string | null
           privacy_exceptions?: string[]
           profile_cover_url?: string | null
           push_notifications?: boolean
+          referral_code?: string | null
+          referred_by?: string | null
           require_follow_approval?: boolean
           seller_bio?: string | null
           theme_color?: string | null
@@ -2819,7 +2828,22 @@ export type Database = {
           updated_at?: string
           username?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_referred_by_fkey"
+            columns: ["referred_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_referred_by_fkey"
+            columns: ["referred_by"]
+            isOneToOne: false
+            referencedRelation: "public_profiles_view"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       review_comments: {
         Row: {
@@ -4564,6 +4588,7 @@ export type Database = {
         Args: { _product_id: string; _user_id: string }
         Returns: undefined
       }
+      gen_referral_code: { Args: never; Returns: string }
       get_employee_position: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["employee_position"]
@@ -4596,10 +4621,13 @@ export type Database = {
           is_private: boolean
           library_visibility: string
           monthly_favorites: string[] | null
+          onboarded_at: string | null
           phone: string | null
           privacy_exceptions: string[]
           profile_cover_url: string | null
           push_notifications: boolean
+          referral_code: string | null
+          referred_by: string | null
           require_follow_approval: boolean
           seller_bio: string | null
           theme_color: string | null
@@ -4643,10 +4671,13 @@ export type Database = {
           is_private: boolean
           library_visibility: string
           monthly_favorites: string[] | null
+          onboarded_at: string | null
           phone: string | null
           privacy_exceptions: string[]
           profile_cover_url: string | null
           push_notifications: boolean
+          referral_code: string | null
+          referred_by: string | null
           require_follow_approval: boolean
           seller_bio: string | null
           theme_color: string | null
@@ -4765,10 +4796,13 @@ export type Database = {
           is_private: boolean
           library_visibility: string
           monthly_favorites: string[] | null
+          onboarded_at: string | null
           phone: string | null
           privacy_exceptions: string[]
           profile_cover_url: string | null
           push_notifications: boolean
+          referral_code: string | null
+          referred_by: string | null
           require_follow_approval: boolean
           seller_bio: string | null
           theme_color: string | null
@@ -4783,6 +4817,7 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      redeem_referral: { Args: { _code: string }; Returns: Json }
       should_notify: { Args: { _pref: string; _uid: string }; Returns: boolean }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }

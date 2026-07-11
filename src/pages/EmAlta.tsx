@@ -18,7 +18,7 @@ export default function EmAlta() {
         <div>
           <h1 className="text-3xl font-display font-bold">Em Alta</h1>
           <p className="text-muted-foreground text-sm">
-            Jogos com mais visualizações, posts e reviews nas últimas 24-72h
+            Ranking geral da comunidade — mesma fórmula ponderada do Radar da Home (views_24h + posts_72h + reviews recentes).
           </p>
         </div>
       </div>
