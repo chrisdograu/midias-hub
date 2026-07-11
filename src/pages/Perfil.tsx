@@ -293,6 +293,9 @@ export default function Perfil() {
           </div>
         )}
 
+        {/* Preferências (gêneros favoritos, integrações, indicação) */}
+        <PreferencesPanel />
+
         {/* Notificações */}
         <div className="bg-card border border-border rounded-xl p-6 mb-4">
           <h2 className="text-base font-semibold text-foreground flex items-center gap-2 mb-4">
