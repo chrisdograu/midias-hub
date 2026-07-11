@@ -132,6 +132,7 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-background">
+      <OnboardingDialog />
       {" "}
       {/* Garante o fundo padrão na página toda */}
       {/* Hero */}
