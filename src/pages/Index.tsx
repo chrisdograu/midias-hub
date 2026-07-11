@@ -8,6 +8,7 @@ import { ChevronRight, Flame, TrendingUp, Zap, Sparkles, Clock, Package } from "
 import { supabase } from "@/integrations/supabase/client";
 import OrbitRadar from "@/components/radar/OrbitRadar";
 import { GameCardGridSkeleton } from "@/components/skeletons";
+import OnboardingDialog from "@/components/onboarding/OnboardingDialog";
 
 interface FlashPromo {
   id: string;
