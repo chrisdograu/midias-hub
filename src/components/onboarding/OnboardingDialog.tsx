@@ -52,7 +52,7 @@ export default function OnboardingDialog() {
     setSaving(true);
     const patch: Record<string, unknown> = { onboarded_at: new Date().toISOString() };
     if (savePrefs) patch.favorite_genres = picked;
-    const { error } = await supabase.from('profiles').update(patch).eq('id', user.id);
+    const { error } = await (supabase as any).from('profiles').update(patch).eq('id', user.id);
     setSaving(false);
     if (error) { toast.error('Não deu pra salvar agora — pode ajustar depois em Configurações.'); }
     setOpen(false);
