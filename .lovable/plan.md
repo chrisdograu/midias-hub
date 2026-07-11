@@ -45,22 +45,27 @@
 
 ## ⏳ Não fiz nesta rodada — mostrando por quê antes de mexer
 
-### Item 3/3b — Radar pessoal × Em Alta unificado
-Não mexi. **Motivo:** a auditoria pede uma confirmação explícita de escopo antes de qualquer refactor:
-- Em Alta unificado hoje está como (a) fórmula ponderada geral **ou** (b) espelho do Radar pessoal?
-Só marcar como resolvido depois dessa confirmação — mexer sem essa resposta pode desfazer a separação que acabou de ser decidida entre as duas seções.
+### Item 3/3b — Em Alta unificado ✅
+Decisão confirmada: **fórmula ponderada geral** (mesma do Radar da Home). Subtítulo de `EmAlta.tsx` agora deixa isso explícito. Não é espelho do radar pessoal — é o pulso da comunidade toda.
+
+### Item 17 — Integração Steam (parcial/AFK)
+Botão "Conectar Steam" adicionado em `PreferencesPanel` **desabilitado com badge "em breve"** — sinaliza a intenção sem implementar backend. Volta como sprint dedicado quando `STEAM_API_KEY` estiver disponível.
+
+### Item 18 — Onboarding ✅
+- Nova coluna `profiles.onboarded_at` marca conclusão/skip.
+- `OnboardingDialog` aparece 1x no `Index` para logado com `onboarded_at` nulo. Escolhe até 3 gêneros dentre `categorias` existentes. **Pulável** — o skip também grava `onboarded_at` pra não repetir.
+- Editável depois em `/perfil` → seção "Preferências" (`PreferencesPanel`).
+
+### Item 19 — Programa de indicação ✅ (via XP)
+- Novas colunas em `profiles`: `referral_code` (gerado por trigger `profiles_set_referral_code`) e `referred_by` (uma vez só).
+- RPC `redeem_referral(_code)` valida código, prende `referred_by`, e insere `user_xp_log`: +200 XP pra quem indicou, +100 pra quem entrou.
+- UI em `PreferencesPanel`: mostra código do usuário + botão copiar + campo pra resgatar código de amigo.
+
+## ⏳ Não fiz nesta rodada — mostrando por quê antes de mexer
 
 ### Item 10 — Regenerar `types.ts`
-Não regenerei manualmente. **Motivo:** o `types.ts` é regenerado automaticamente pela plataforma após cada migração aprovada. A migração desta rodada (trigger de posse + admin_logs imutável) já dispara essa regeneração — não faz sentido rodar `supabase gen types` num script paralelo que seria sobrescrito.
+Não regenerei manualmente. **Motivo:** o `types.ts` é regenerado automaticamente pela plataforma após cada migração aprovada.
 
-### Item 17 — Integração Steam
-Não fiz. **Motivo:** exige (i) `STEAM_API_KEY` como secret de servidor (não solicitado até agora), (ii) edge function nova com biblioteca OpenID auditada, (iii) coluna `steam_id` em `profiles` mais UI de vinculação. É trabalho de sprint próprio — precisaria pelo menos da chave da API pra prosseguir. Sinalizo aqui em vez de "começar pela metade".
-
-### Item 18 — Onboarding (gêneros/plataformas)
-Não fiz. **Motivo:** decisões pendentes de produto: quantos gêneros escolher (3? 5?), lista canônica de gêneros (usar as `categorias` existentes ou introduzir taxonomia nova?), obrigatório ou pulável, quando dispara (pós-cadastro? primeira home?). Vale casar com o item 17 (mesma tela oferece "conectar Steam") como está sugerido no próprio prompt.
-
-### Item 19 — Programa de indicação
-Não fiz. **Motivo:** depende de decisão binária ("XP" vs "crédito/carteira"). Não existe sistema de carteira/wallet no schema hoje — implementar em XP é rápido, mas quero confirmar antes de criar coluna `referral_code` + tabela `referrals` + trigger de bônus.
 
 ### Item 22 — Verificação de vendedor
 Decisão registrada de não mexer (CPF+telefone+atestado da plataforma bastam). Sem ação.
