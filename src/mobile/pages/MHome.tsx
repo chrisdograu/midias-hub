@@ -117,6 +117,7 @@ export default function MHome() {
 
   return (
     <div className="px-4 py-5 space-y-6">
+      <MOnboardingSheet />
       {/* Hero */}
       <motion.section
         initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
