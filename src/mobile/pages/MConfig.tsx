@@ -104,6 +104,8 @@ export default function MConfig() {
 
 
 
+      <MPreferencesSection />
+
       <Section title="🔔 Notificações">
         <Toggle label="Notificações push" checked={form.push_notifications} onChange={v => setForm({ ...form, push_notifications: v })} />
         <Toggle label="Notificações por e-mail" checked={form.email_notifications} onChange={v => setForm({ ...form, email_notifications: v })} />
