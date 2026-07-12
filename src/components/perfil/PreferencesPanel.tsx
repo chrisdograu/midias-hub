@@ -2,14 +2,20 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Copy, Sparkles, Gamepad2, Gift, Loader2, Check } from 'lucide-react';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+} from '@/components/ui/dialog';
+import { Copy, Sparkles, Gamepad2, Gift, Loader2, Check, Info } from 'lucide-react';
 import { toast } from 'sonner';
+
+const MIN_GENRES = 3;
 
 export default function PreferencesPanel() {
   const { user } = useAuth();
   const [loaded, setLoaded] = useState(false);
   const [categories, setCategories] = useState<string[]>([]);
   const [picked, setPicked] = useState<string[]>([]);
+  const [savedPicked, setSavedPicked] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
 
   const [referralCode, setReferralCode] = useState<string | null>(null);
@@ -17,45 +23,59 @@ export default function PreferencesPanel() {
   const [redeemInput, setRedeemInput] = useState('');
   const [redeeming, setRedeeming] = useState(false);
 
+  const [steamOpen, setSteamOpen] = useState(false);
+
+  const refresh = async () => {
+    const [{ data: prof }, { data: cats }] = await Promise.all([
+      (supabase as any).rpc('get_my_profile'),
+      supabase.from('categorias').select('name').order('name'),
+    ]);
+    const row = Array.isArray(prof) ? prof[0] : prof;
+    setCategories((cats || []).map((c: { name: string }) => c.name));
+    if (row) {
+      const genres = row.favorite_genres || [];
+      setPicked(genres);
+      setSavedPicked(genres);
+      setReferralCode(row.referral_code || null);
+      setReferredBy(row.referred_by || null);
+    }
+  };
+
   useEffect(() => {
     if (!user || loaded) return;
-    (async () => {
-      const [{ data: prof }, { data: cats }] = await Promise.all([
-        (supabase as any).rpc('get_my_profile'),
-        supabase.from('categorias').select('name').order('name'),
-      ]);
-      const row = Array.isArray(prof) ? prof[0] : prof;
-      setCategories((cats || []).map((c: { name: string }) => c.name));
-      if (row) {
-        setPicked(row.favorite_genres || []);
-        setReferralCode(row.referral_code || null);
-        setReferredBy(row.referred_by || null);
-      }
-      setLoaded(true);
-    })();
+    (async () => { await refresh(); setLoaded(true); })();
   }, [user, loaded]);
 
   const toggle = (name: string) => {
-    setPicked(prev => {
-      if (prev.includes(name)) return prev.filter(x => x !== name);
-      if (prev.length >= 3) return prev;
-      return [...prev, name];
-    });
+    setPicked(prev => prev.includes(name) ? prev.filter(x => x !== name) : [...prev, name]);
   };
+
+  const dirty = JSON.stringify([...picked].sort()) !== JSON.stringify([...savedPicked].sort());
+  const canSave = picked.length >= MIN_GENRES && dirty;
 
   const savePrefs = async () => {
     if (!user) return;
+    if (picked.length < MIN_GENRES) {
+      toast.error(`Escolha pelo menos ${MIN_GENRES} gêneros.`);
+      return;
+    }
     setSaving(true);
     const { error } = await supabase.from('profiles').update({ favorite_genres: picked }).eq('id', user.id);
+    if (error) { setSaving(false); toast.error('Erro ao salvar preferências'); return; }
+    // Re-lê do banco pra confirmar persistência (sem otimismo cego).
+    await refresh();
     setSaving(false);
-    if (error) toast.error('Erro ao salvar preferências');
-    else toast.success('Preferências atualizadas');
+    toast.success('Preferências salvas');
   };
 
   const copyCode = async () => {
     if (!referralCode) return;
-    await navigator.clipboard.writeText(referralCode);
-    toast.success('Código copiado!');
+    try {
+      await navigator.clipboard.writeText(referralCode);
+      toast.success('Código copiado!');
+    } catch {
+      toast.error('Não deu pra copiar automaticamente.');
+    }
   };
 
   const redeem = async () => {
@@ -63,17 +83,19 @@ export default function PreferencesPanel() {
     if (!code) return;
     setRedeeming(true);
     const { data, error } = await (supabase as any).rpc('redeem_referral', { _code: code });
-    setRedeeming(false);
-    if (error) { toast.error('Erro ao resgatar código'); return; }
+    if (error) { setRedeeming(false); toast.error('Erro ao resgatar código'); return; }
     if (!data?.ok) {
+      setRedeeming(false);
       const err = data?.error;
       if (err === 'already_redeemed') toast.error('Você já resgatou um código de indicação.');
       else if (err === 'invalid_code') toast.error('Código inválido.');
+      else if (err === 'self_referral') toast.error('Você não pode usar seu próprio código.');
       else toast.error('Não foi possível resgatar agora.');
       return;
     }
+    await refresh();
+    setRedeeming(false);
     toast.success('Código resgatado! +100 XP pra você, +200 pra quem te indicou.');
-    setReferredBy(data.referrer);
     setRedeemInput('');
   };
 
@@ -85,23 +107,23 @@ export default function PreferencesPanel() {
         <h2 className="text-base font-semibold text-foreground flex items-center gap-2 mb-1">
           <Sparkles className="h-4 w-4 text-primary" /> Preferências
         </h2>
-        <p className="text-xs text-muted-foreground mb-3">Até 3 gêneros favoritos — usados nas recomendações e no radar.</p>
+        <p className="text-xs text-muted-foreground mb-3">
+          Mínimo <strong>{MIN_GENRES}</strong> gêneros, sem limite máximo — usados nas recomendações e no radar.
+        </p>
         <div className="flex flex-wrap gap-2">
           {categories.length === 0 ? (
             <p className="text-sm text-muted-foreground">Sem categorias cadastradas ainda.</p>
           ) : categories.map(name => {
             const active = picked.includes(name);
-            const disabled = !active && picked.length >= 3;
             return (
               <button
                 key={name}
                 type="button"
                 onClick={() => toggle(name)}
-                disabled={disabled}
                 className={`inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-sm border transition-colors ${
                   active
                     ? 'bg-primary text-primary-foreground border-primary'
-                    : 'bg-secondary text-foreground border-border hover:border-primary/60 disabled:opacity-40'
+                    : 'bg-secondary text-foreground border-border hover:border-primary/60'
                 }`}
               >
                 {active && <Check className="h-3.5 w-3.5" />} {name}
@@ -109,8 +131,13 @@ export default function PreferencesPanel() {
             );
           })}
         </div>
-        <div className="flex justify-end mt-3">
-          <Button size="sm" onClick={savePrefs} disabled={saving}>
+        <div className="flex items-center justify-between mt-3 gap-2">
+          <p className={`text-xs ${picked.length >= MIN_GENRES ? 'text-muted-foreground' : 'text-amber-500'}`}>
+            {picked.length} selecionados {picked.length >= MIN_GENRES
+              ? (dirty ? '· alterações não salvas' : '✓ salvos')
+              : `— faltam ${MIN_GENRES - picked.length} pra atingir o mínimo`}
+          </p>
+          <Button size="sm" onClick={savePrefs} disabled={saving || !canSave}>
             {saving && <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />}
             Salvar preferências
           </Button>
@@ -124,9 +151,8 @@ export default function PreferencesPanel() {
         <p className="text-xs text-muted-foreground mb-3">Puxe sua biblioteca de outras plataformas.</p>
         <button
           type="button"
-          disabled
-          title="Em breve — a integração ficará disponível numa próxima atualização."
-          className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm border border-border bg-secondary text-muted-foreground cursor-not-allowed"
+          onClick={() => setSteamOpen(true)}
+          className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm border border-border bg-secondary text-foreground hover:border-primary/60 transition-colors"
         >
           <Gamepad2 className="h-4 w-4" /> Conectar Steam
           <span className="ml-1 text-[10px] uppercase tracking-wide bg-muted px-1.5 py-0.5 rounded">em breve</span>
@@ -138,7 +164,7 @@ export default function PreferencesPanel() {
           <Gift className="h-4 w-4 text-primary" /> Indicação
         </h3>
         <p className="text-xs text-muted-foreground mb-3">
-          Compartilhe seu código. Quem entrar e resgatar ganha <strong>100 XP</strong>; você ganha <strong>200 XP</strong> por indicação.
+          Compartilhe seu código. Quem entrar e resgatar ganha <strong>100 XP</strong>; você ganha <strong>200 XP</strong> por indicação — sem limite diário.
         </p>
 
         <div className="flex items-center gap-2 mb-4">
@@ -171,6 +197,47 @@ export default function PreferencesPanel() {
           </div>
         )}
       </div>
+
+      <Dialog open={steamOpen} onOpenChange={setSteamOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Gamepad2 className="h-5 w-5 text-primary" /> Integração Steam — em breve
+            </DialogTitle>
+            <DialogDescription>
+              Vamos permitir que você conecte sua conta Steam e importe automaticamente sua biblioteca, tempo de jogo e conquistas.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 text-sm">
+            <div className="flex gap-2 items-start rounded-lg border border-amber-500/40 bg-amber-500/10 p-3">
+              <Info className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold text-amber-500 mb-1">Modo AFK</p>
+                <p className="text-xs text-muted-foreground">
+                  Por enquanto o botão está <strong>desligado</strong> por padrão. Ele existe pra reservar o lugar
+                  na interface — assim, quando ativarmos a integração de verdade, você já sabe onde encontrar.
+                  Nenhum dado seu é enviado à Steam agora.
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <p className="font-semibold mb-1">O que virá depois:</p>
+              <ol className="list-decimal list-inside text-xs text-muted-foreground space-y-1">
+                <li>Você informa seu <span className="font-mono">SteamID</span> ou faz login via OpenID.</li>
+                <li>Puxamos a biblioteca pública e o tempo de jogo.</li>
+                <li>Os jogos aparecem na sua Biblioteca com o selo <em>via Steam</em>.</li>
+                <li>Você pode desconectar a qualquer momento.</li>
+              </ol>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSteamOpen(false)}>Entendi</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -272,19 +272,23 @@ function buildEmbed(url: string | null | undefined, platform: string | null | un
   try {
     const u = new URL(url);
     if (u.protocol !== 'https:' && u.protocol !== 'http:') return null;
-    if (platform === 'twitch' || u.hostname.endsWith('twitch.tv')) {
+    // Match host exactly OR as a proper subdomain (evita bypass tipo "eviltwitch.tv"
+    // que passaria em endsWith("twitch.tv")).
+    const host_ = u.hostname.toLowerCase();
+    const isHost = (root: string) => host_ === root || host_.endsWith('.' + root);
+    if (platform === 'twitch' || isHost('twitch.tv')) {
       const channel = u.pathname.replace(/^\//, '').split('/')[0];
       if (!TWITCH_CHANNEL_RE.test(channel)) return null;
       return `https://player.twitch.tv/?channel=${encodeURIComponent(channel)}&parent=${encodeURIComponent(host)}&muted=false`;
     }
-    if (platform === 'youtube' || u.hostname.endsWith('youtube.com') || u.hostname.endsWith('youtu.be')) {
+    if (platform === 'youtube' || isHost('youtube.com') || isHost('youtu.be')) {
       let id = u.searchParams.get('v');
-      if (!id && u.hostname.endsWith('youtu.be')) id = u.pathname.replace(/^\//, '');
+      if (!id && isHost('youtu.be')) id = u.pathname.replace(/^\//, '');
       if (u.pathname.startsWith('/live/')) id = u.pathname.split('/')[2];
       if (!id || !YOUTUBE_ID_RE.test(id)) return null;
       return `https://www.youtube.com/embed/${encodeURIComponent(id)}?autoplay=1`;
     }
-    if (platform === 'kick' || u.hostname.endsWith('kick.com')) {
+    if (platform === 'kick' || isHost('kick.com')) {
       const channel = u.pathname.replace(/^\//, '').split('/')[0];
       if (!KICK_CHANNEL_RE.test(channel)) return null;
       return `https://player.kick.com/${encodeURIComponent(channel)}`;
