@@ -11,6 +11,7 @@ import { HalfStarDisplay } from '@/components/HalfStarRating';
 import { getFollowingIds } from '@/mobile/lib/useFollow';
 import OrbitRadar from '@/components/radar/OrbitRadar';
 import { FeedItemSkeleton } from '@/components/skeletons';
+import MOnboardingSheet from '@/mobile/components/MOnboardingSheet';
 
 type FeedItem =
   | { kind: 'forum'; id: string; created_at: string; content: string; author: string; authorId: string; product: string; likes: number; replies: number }
