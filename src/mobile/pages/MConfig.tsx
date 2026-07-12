@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import { toast } from 'sonner';
 import { TUTORIALS } from '@/components/tutorial/TutorialContext';
+import MPreferencesSection from '@/mobile/components/MPreferencesSection';
 
 export default function MConfig() {
   const { user } = useAuth();
