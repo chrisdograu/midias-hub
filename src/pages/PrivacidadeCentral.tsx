@@ -1,11 +1,12 @@
 // Página única que agrega todos os controles de privacidade e segurança do usuário.
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Bell, UserX, ArrowLeft, Eye, UserCheck, Lock } from 'lucide-react';
+import { Shield, Bell, UserX, ArrowLeft, Eye, UserCheck, Lock, Download, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { Switch } from '@/components/ui/switch';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PrivacyTab from '@/components/perfil/PrivacyTab';
 import NotificationPrefsTab from '@/components/perfil/NotificationPrefsTab';
