@@ -193,11 +193,13 @@ export default function Moderacao() {
 
   const handleDeleteContent = async (d: Denuncia) => {
     if (!confirm('Tem certeza? Esta ação é irreversível.')) return;
-    let ok = false;
-    if (d.target_type === 'anuncio') { const r = await supabase.from('anuncios').delete().eq('id', d.target_id); ok = !r.error; }
-    else if (d.target_type === 'forum_post') { const r = await supabase.from('forum_posts').delete().eq('id', d.target_id); ok = !r.error; }
-    else if (d.target_type === 'mensagem') { const r = await supabase.from('mensagens').delete().eq('id', d.target_id); ok = !r.error; }
-    if (!ok) { toast({ title: 'Erro ao remover conteúdo', variant: 'destructive' }); return; }
+    const cfg = TARGET_CONFIG[d.target_type];
+    if (!cfg || !cfg.canDelete) {
+      toast({ title: 'Este tipo de conteúdo não pode ser removido por aqui', variant: 'destructive' });
+      return;
+    }
+    const { error } = await (supabase as any).from(cfg.table).delete().eq('id', d.target_id);
+    if (error) { toast({ title: 'Erro ao remover conteúdo', description: error.message, variant: 'destructive' }); return; }
     if (d.target_author_id) await logModeration(d.target_author_id, 'delete_content', { reason: d.reason, reference_type: d.target_type, reference_id: d.target_id });
     await handleResolve(d);
     toast({ title: 'Conteúdo removido' });
