@@ -52,12 +52,8 @@ export default function Index() {
   }, [pickOverride, inStock, fallbackPick]);
   const pickReason = pickOverride?.reason ?? null;
 
-  // Tick para countdown da flash promo
+  // Tick para countdown da flash promo — só arma quando existe promo ativa
   const [now, setNow] = useState(Date.now());
-  useEffect(() => {
-    const tick = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(tick);
-  }, []);
 
   // Dados secundários (flash promo, daily pick override, bundles) via React Query
   const sideData = useQuery({
@@ -93,8 +89,19 @@ export default function Index() {
 
   useEffect(() => {
     if (!sideData.data) return;
-    if (sideData.data.po) setPickOverride(sideData.data.po);
+    // Item 34: sincroniza inclusive quando admin remove a escolha do dia
+    setPickOverride(sideData.data.po ?? null);
   }, [sideData.data]);
+
+  // Item 33: só arma o intervalo quando existe promoção relâmpago ativa
+  useEffect(() => {
+    const fp = sideData.data?.fp;
+    if (!fp) return;
+    const endsAt = new Date(fp.ends_at).getTime();
+    if (endsAt <= Date.now()) return;
+    const tick = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(tick);
+  }, [sideData.data?.fp]);
 
   const flashPromo = useMemo(() => {
     const fp = sideData.data?.fp;
