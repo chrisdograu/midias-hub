@@ -115,31 +115,49 @@ export default function Moderacao() {
 
     if (denData) {
       const reporterIds = [...new Set(denData.map(d => d.reporter_id))];
-      const anuncioIds = denData.filter(d => d.target_type === 'anuncio').map(d => d.target_id);
-      const forumIds = denData.filter(d => d.target_type === 'forum_post').map(d => d.target_id);
-      const profileIds = denData.filter(d => d.target_type === 'profile' || d.target_type === 'usuario').map(d => d.target_id);
-      const mensagemIds = denData.filter(d => d.target_type === 'mensagem').map(d => d.target_id);
-      const allProfileIds = [...new Set([...reporterIds, ...profileIds])];
+      // Agrupa target_ids por tipo, usando TARGET_CONFIG genérico
+      const idsByType = new Map<string, string[]>();
+      denData.forEach(d => {
+        if (!TARGET_CONFIG[d.target_type]) return;
+        const arr = idsByType.get(d.target_type) || [];
+        arr.push(d.target_id);
+        idsByType.set(d.target_type, arr);
+      });
 
-      const [profilesRes, anunciosRes, forumRes, mensagensRes] = await Promise.all([
+      // Perfis referenciados (reporters + alvos que são perfis)
+      const profileTargetIds = [...(idsByType.get('profile') || []), ...(idsByType.get('usuario') || [])];
+      const allProfileIds = [...new Set([...reporterIds, ...profileTargetIds])];
+
+      const rowMaps = new Map<string, Map<string, any>>();
+      const [profilesRes, ...typeResults] = await Promise.all([
         allProfileIds.length ? supabase.from('profiles').select('id, display_name').in('id', allProfileIds) : Promise.resolve({ data: [] as any[] }),
-        anuncioIds.length ? supabase.from('anuncios').select('id, title, seller_id').in('id', anuncioIds) : Promise.resolve({ data: [] as any[] }),
-        forumIds.length ? supabase.from('forum_posts').select('id, content, user_id').in('id', forumIds) : Promise.resolve({ data: [] as any[] }),
-        mensagemIds.length ? supabase.from('mensagens').select('id, content, sender_id').in('id', mensagemIds) : Promise.resolve({ data: [] as any[] }),
+        ...Array.from(idsByType.entries()).map(async ([type, ids]) => {
+          const cfg = TARGET_CONFIG[type];
+          if (!cfg || !ids.length) return { type, data: [] as any[] };
+          const { data } = await (supabase as any).from(cfg.table).select(`id, ${cfg.select}`).in('id', ids);
+          return { type, data: (data as any[]) || [] };
+        }),
       ]);
-
+      typeResults.forEach(r => {
+        rowMaps.set(r.type, new Map<string, any>(r.data.map((x: any) => [x.id, x])));
+      });
       const profileMap = new Map<string, string>((profilesRes.data || []).map((p: any) => [p.id, p.display_name || 'Usuário']));
-      const anuncioMap = new Map<string, any>((anunciosRes.data || []).map((a: any) => [a.id, a]));
-      const forumMap = new Map<string, any>((forumRes.data || []).map((f: any) => [f.id, f]));
-      const mensagemMap = new Map<string, any>((mensagensRes.data || []).map((m: any) => [m.id, m]));
 
       setDenuncias(denData.map(d => {
+        const cfg = TARGET_CONFIG[d.target_type];
         let target_label = d.target_id.slice(0, 8);
         let target_author_id: string | null = null;
-        if (d.target_type === 'anuncio') { const a = anuncioMap.get(d.target_id); target_label = a?.title || target_label; target_author_id = a?.seller_id || null; }
-        else if (d.target_type === 'forum_post') { const f = forumMap.get(d.target_id); target_label = f?.content?.slice(0, 60) || target_label; target_author_id = f?.user_id || null; }
-        else if (d.target_type === 'profile' || d.target_type === 'usuario') { target_label = profileMap.get(d.target_id) || target_label; target_author_id = d.target_id; }
-        else if (d.target_type === 'mensagem') { const m = mensagemMap.get(d.target_id); target_label = m?.content?.slice(0, 60) || target_label; target_author_id = m?.sender_id || null; }
+        if (cfg) {
+          const row = rowMaps.get(d.target_type)?.get(d.target_id);
+          if (row) {
+            const raw = row[cfg.titleField];
+            target_label = typeof raw === 'string' ? raw.slice(0, 80) : (raw ? String(raw) : target_label);
+            target_author_id = row[cfg.authorField] || null;
+            if (d.target_type === 'profile' || d.target_type === 'usuario') {
+              target_label = profileMap.get(d.target_id) || target_label;
+            }
+          }
+        }
         return { ...d, reporter_name: profileMap.get(d.reporter_id) || 'Usuário', target_label, target_author_id };
       }));
     }
