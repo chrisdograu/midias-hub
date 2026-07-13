@@ -84,6 +84,17 @@ export default function PrivacidadeCentral() {
         </Row>
       </section>
 
+      {/* Item 32: Baixar meus dados */}
+      <section className="bg-card border border-border rounded-xl p-5 mb-6 flex items-start justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold flex items-center gap-1.5"><Download className="h-4 w-4 text-primary" /> Baixar meus dados</p>
+          <p className="text-xs text-muted-foreground">Arquivo JSON com seu perfil, biblioteca, avaliações, pedidos e mensagens enviadas.</p>
+        </div>
+        <Button size="sm" variant="outline" onClick={exportData} disabled={exporting || !user}>
+          {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Download className="h-4 w-4 mr-1" /> Exportar</>}
+        </Button>
+      </section>
+
       <Tabs defaultValue="visibilidade">
         <TabsList className="w-full grid grid-cols-3">
           <TabsTrigger value="visibilidade"><Eye className="h-4 w-4 mr-1.5" />Visibilidade</TabsTrigger>
