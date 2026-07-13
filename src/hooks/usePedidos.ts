@@ -41,45 +41,35 @@ export function usePedidos() {
     enabled: !!user,
   });
 
+  // Criação de pedido via RPC segura (server-side price + stock lock)
   const criarPedido = useMutation({
     mutationFn: async ({
-      items, subtotal, discountAmount, total, paymentMethod, installments, couponCode,
+      items, total, paymentMethod, installments, couponCode,
     }: {
-      items: CartItem[];
-      subtotal: number;
-      discountAmount: number;
+      items: (CartItem & { bundleId?: string | null })[];
+      // Mantidos por compat, mas o servidor ignora e recalcula
+      subtotal?: number;
+      discountAmount?: number;
       total: number;
       paymentMethod: string;
       installments: number;
       couponCode: string | null;
     }) => {
       if (!user) throw new Error('Not authenticated');
-      const { data: pedido, error: pedidoError } = await supabase
-        .from('pedidos')
-        .insert({
-          user_id: user.id,
-          subtotal,
-          discount_amount: discountAmount,
-          total,
-          payment_method: paymentMethod,
-          installments,
-          coupon_code: couponCode,
-          status: 'confirmed',
-        })
-        .select()
-        .single();
-      if (pedidoError) throw pedidoError;
-
-      const itens = items.map(item => ({
-        order_id: pedido.id,
-        product_id: item.game.id,
-        quantity: item.quantity,
-        price_at_purchase: item.game.price,
+      const payload = items.map(it => ({
+        product_id: it.game.id,
+        quantity: it.quantity,
+        bundle_id: (it as any).bundleId ?? null,
       }));
-      const { error: itensError } = await supabase.from('itens_pedido').insert(itens);
-      if (itensError) throw itensError;
-
-      return pedido;
+      const { data, error } = await (supabase as any).rpc('create_order_secure', {
+        _items: payload,
+        _payment_method: paymentMethod,
+        _installments: installments,
+        _coupon_code: couponCode,
+        _client_total: total,
+      });
+      if (error) throw error;
+      return { id: (data as any)?.order_id, ...(data as any) };
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['pedidos'] }),
   });
