@@ -1,15 +1,36 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useFavoritos } from '@/hooks/useFavoritos';
-import { useProdutos } from '@/hooks/useProdutos';
+import { supabase } from '@/integrations/supabase/client';
+import { mapProdutoToGame, Game } from '@/lib/gameData';
 import GameCard from '@/components/GameCard';
 import { Heart, Loader2, ArrowLeft } from 'lucide-react';
 
 export default function Favoritos() {
   const { favoritos, loading } = useFavoritos();
-  const { data: games = [], isLoading } = useProdutos();
-  const favGames = games.filter(g => favoritos.includes(g.id));
+  const [favGames, setFavGames] = useState<Game[]>([]);
+  const [loadingGames, setLoadingGames] = useState(false);
 
-  if (loading || isLoading) return <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+  // Item 36: filtra direto na query em vez de carregar catálogo inteiro
+  useEffect(() => {
+    if (loading) return;
+    if (!favoritos.length) { setFavGames([]); return; }
+    let cancelled = false;
+    setLoadingGames(true);
+    (async () => {
+      const { data } = await supabase
+        .from('produtos')
+        .select('*')
+        .in('id', favoritos)
+        .eq('is_active', true);
+      if (cancelled) return;
+      setFavGames((data || []).map(mapProdutoToGame));
+      setLoadingGames(false);
+    })();
+    return () => { cancelled = true; };
+  }, [favoritos, loading]);
+
+  if (loading || loadingGames) return <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
 
   return (
     <div className="container mx-auto px-4 py-8">
