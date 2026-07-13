@@ -17,6 +17,7 @@ export default function PrivacidadeCentral() {
   const [isPrivate, setIsPrivate] = useState(false);
   const [requireApproval, setRequireApproval] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -31,6 +32,40 @@ export default function PrivacidadeCentral() {
     if (!user) return;
     const { error } = await supabase.from('profiles').update({ [field]: value } as any).eq('id', user.id);
     if (error) toast.error('Erro ao salvar'); else toast.success('Atualizado');
+  };
+
+  const exportData = async () => {
+    if (!user) return;
+    setExporting(true);
+    try {
+      const [prof, lib, aval, ped, msg] = await Promise.all([
+        supabase.from('profiles').select('*').eq('id', user.id).maybeSingle(),
+        supabase.from('biblioteca_usuario').select('*').eq('user_id', user.id),
+        supabase.from('avaliacoes').select('*').eq('user_id', user.id),
+        supabase.from('pedidos').select('*, itens_pedido(*)').eq('user_id', user.id),
+        supabase.from('mensagens').select('*').eq('sender_id', user.id),
+      ]);
+      const bundle = {
+        exported_at: new Date().toISOString(),
+        user_id: user.id,
+        profile: prof.data,
+        library: lib.data,
+        reviews: aval.data,
+        orders: ped.data,
+        messages_sent: msg.data,
+      };
+      const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `midias-meus-dados-${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success('Arquivo gerado — verifique seus downloads.');
+    } catch {
+      toast.error('Não foi possível gerar o arquivo agora.');
+    } finally {
+      setExporting(false);
+    }
   };
 
   return (
