@@ -388,7 +388,7 @@ export default function Moderacao() {
                 <div className="flex flex-wrap gap-2 justify-end pt-2 border-t border-border">
                   <Button variant="outline" size="sm" onClick={() => handleDismiss(detail)}><XCircle className="h-4 w-4 mr-1" />Improcedente</Button>
                   <Button variant="outline" size="sm" onClick={() => handleResolve(detail)}><CheckCircle className="h-4 w-4 mr-1" />Resolver</Button>
-                  {detail.target_type !== 'profile' && detail.target_type !== 'usuario' && (
+                  {TARGET_CONFIG[detail.target_type]?.canDelete && (
                     <Button variant="outline" size="sm" className="text-purple-400 hover:text-purple-300" onClick={() => handleDeleteContent(detail)}><Trash2 className="h-4 w-4 mr-1" />Remover conteúdo</Button>
                   )}
                   {detail.target_author_id && (
