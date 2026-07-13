@@ -13,27 +13,26 @@ import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-type TargetType = 'anuncio' | 'forum_post' | 'profile' | 'usuario' | 'mensagem' | string;
+type TargetType = 'anuncio' | 'forum_post' | 'profile' | 'usuario' | 'mensagem'
+  | 'reviews_completas' | 'game_opinions' | 'game_screenshots' | 'game_clips' | 'avaliacoes'
+  | 'forum_replies' | string;
 
-interface Denuncia {
-  id: string; target_type: TargetType; target_id: string; reporter_id: string;
-  reason: string; description: string | null; status: string; created_at: string;
-  reporter_name: string;
-  target_label: string;
-  target_author_id: string | null;
-}
+// Config de tipos denunciáveis: qual tabela consultar, campo de título, autor e preview
+const TARGET_CONFIG: Record<string, { label: string; table: string; select: string; titleField: string; authorField: string; canDelete: boolean }> = {
+  anuncio:            { label: 'Anúncio',        table: 'anuncios',           select: 'title, description, price, status, seller_id', titleField: 'title',   authorField: 'seller_id', canDelete: true },
+  forum_post:         { label: 'Post do Fórum',  table: 'forum_posts',        select: 'title, content, user_id',                        titleField: 'title',   authorField: 'user_id',   canDelete: true },
+  forum_replies:      { label: 'Resposta Fórum', table: 'forum_replies',      select: 'content, user_id',                               titleField: 'content', authorField: 'user_id',   canDelete: true },
+  profile:            { label: 'Usuário',        table: 'profiles',           select: 'display_name, bio, banned_until',                titleField: 'display_name', authorField: 'id',   canDelete: false },
+  usuario:            { label: 'Usuário',        table: 'profiles',           select: 'display_name, bio, banned_until',                titleField: 'display_name', authorField: 'id',   canDelete: false },
+  mensagem:           { label: 'Mensagem',       table: 'mensagens',          select: 'content, sender_id',                             titleField: 'content', authorField: 'sender_id', canDelete: true },
+  reviews_completas:  { label: 'Review Longa',   table: 'reviews_completas',  select: 'title, content, user_id',                        titleField: 'title',   authorField: 'user_id',   canDelete: true },
+  avaliacoes:         { label: 'Avaliação',      table: 'avaliacoes',         select: 'comment, rating, user_id',                       titleField: 'comment', authorField: 'user_id',   canDelete: true },
+  game_opinions:      { label: 'Opinião',        table: 'game_opinions',      select: 'text, user_id',                                  titleField: 'text',    authorField: 'user_id',   canDelete: true },
+  game_screenshots:   { label: 'Screenshot',     table: 'game_screenshots',   select: 'caption, user_id',                               titleField: 'caption', authorField: 'user_id',   canDelete: true },
+  game_clips:         { label: 'Clip',           table: 'game_clips',         select: 'title, user_id',                                 titleField: 'title',   authorField: 'user_id',   canDelete: true },
+};
 
-interface BannedUser { id: string; display_name: string | null; banned_until: string }
-interface HistoryRow {
-  id: string; target_user_id: string; moderator_id: string; action: string;
-  duration_days: number | null; reason: string | null; reference_type: string | null;
-  reference_id: string | null; created_at: string;
-  target_name: string; moderator_name: string;
-}
-
-const targetTypeLabel = (t: TargetType) => ({
-  anuncio: 'Anúncio', forum_post: 'Post do Fórum', profile: 'Usuário', usuario: 'Usuário', mensagem: 'Mensagem',
-} as Record<string, string>)[t] || t;
+const targetTypeLabel = (t: TargetType) => TARGET_CONFIG[t]?.label || t;
 
 const statusBadgeClass = (s: string) =>
   s === 'pending' ? 'bg-yellow-500/20 text-yellow-400'
