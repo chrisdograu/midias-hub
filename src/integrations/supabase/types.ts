@@ -1965,6 +1965,7 @@ export type Database = {
       }
       itens_pedido: {
         Row: {
+          bundle_id: string | null
           created_at: string
           id: string
           order_id: string
@@ -1973,6 +1974,7 @@ export type Database = {
           quantity: number
         }
         Insert: {
+          bundle_id?: string | null
           created_at?: string
           id?: string
           order_id: string
@@ -1981,6 +1983,7 @@ export type Database = {
           quantity?: number
         }
         Update: {
+          bundle_id?: string | null
           created_at?: string
           id?: string
           order_id?: string
@@ -1989,6 +1992,13 @@ export type Database = {
           quantity?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "itens_pedido_bundle_id_fkey"
+            columns: ["bundle_id"]
+            isOneToOne: false
+            referencedRelation: "bundles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "itens_pedido_order_id_fkey"
             columns: ["order_id"]
@@ -3145,6 +3155,33 @@ export type Database = {
           updated_at?: string
           updated_by?: string | null
           value?: Json
+        }
+        Relationships: []
+      }
+      site_settings_history: {
+        Row: {
+          changed_at: string
+          changed_by: string | null
+          id: string
+          new_value: Json | null
+          old_value: Json | null
+          setting_key: string
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+          setting_key: string
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+          setting_key?: string
         }
         Relationships: []
       }
@@ -4587,6 +4624,16 @@ export type Database = {
       check_game_reward_unlocks: {
         Args: { _product_id: string; _user_id: string }
         Returns: undefined
+      }
+      create_order_secure: {
+        Args: {
+          _client_total: number
+          _coupon_code: string
+          _installments: number
+          _items: Json
+          _payment_method: string
+        }
+        Returns: Json
       }
       gen_referral_code: { Args: never; Returns: string }
       get_employee_position: {
