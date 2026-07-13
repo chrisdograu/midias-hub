@@ -24,11 +24,12 @@ export const CartProvider: FC<{ children: ReactNode }> = ({ children }) => {
     }
   }, [items]);
 
-  const addItem = useCallback((game: Game) => {
+  const addItem = useCallback((game: Game, opts?: { bundleId?: string | null }) => {
+    const bundleId = opts?.bundleId ?? null;
     setItems(prev => {
-      const existing = prev.find(i => i.game.id === game.id);
-      if (existing) return prev.map(i => i.game.id === game.id ? { ...i, quantity: i.quantity + 1 } : i);
-      return [...prev, { game, quantity: 1 }];
+      const existing = prev.find(i => i.game.id === game.id && (i.bundleId ?? null) === bundleId);
+      if (existing) return prev.map(i => (i.game.id === game.id && (i.bundleId ?? null) === bundleId) ? { ...i, quantity: i.quantity + 1 } : i);
+      return [...prev, { game, quantity: 1, bundleId }];
     });
   }, []);
 

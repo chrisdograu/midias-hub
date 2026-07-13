@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useCart } from '@/hooks/useCart';
 import { useCupom } from '@/hooks/useCupom';
 import { usePedidos } from '@/hooks/usePedidos';
@@ -6,11 +6,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, CreditCard, QrCode, Building, ShieldCheck, Lock, Tag, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 type PaymentMethod = 'credit' | 'pix' | 'boleto';
 
 export default function Checkout() {
-  const { items, total, clearCart } = useCart();
+  const { items, total: rawTotal, clearCart } = useCart();
   const { cupom, loading: cupomLoading, error: cupomError, validarCupom, removerCupom } = useCupom();
   const { criarPedido } = usePedidos();
   const navigate = useNavigate();
@@ -19,12 +20,33 @@ export default function Checkout() {
   const [processing, setProcessing] = useState(false);
   const [cupomCode, setCupomCode] = useState('');
 
+  // Preços de bundles referenciados no carrinho — para bater com o servidor
+  const [bundlePrices, setBundlePrices] = useState<Record<string, number>>({});
+  useEffect(() => {
+    const ids = Array.from(new Set(items.map(i => i.bundleId).filter(Boolean))) as string[];
+    if (ids.length === 0) { setBundlePrices({}); return; }
+    (async () => {
+      const { data } = await supabase.from('bundles' as any).select('id, price').in('id', ids);
+      const map: Record<string, number> = {};
+      (data as any[] || []).forEach(b => { map[b.id] = Number(b.price); });
+      setBundlePrices(map);
+    })();
+  }, [items]);
+
+  // Subtotal bundle-aware: soma preço do bundle uma única vez em vez do somatório dos itens
+  const subtotalItens = items
+    .filter(i => !i.bundleId)
+    .reduce((s, i) => s + i.game.price * i.quantity, 0);
+  const bundleIds = Array.from(new Set(items.map(i => i.bundleId).filter(Boolean))) as string[];
+  const subtotalBundles = bundleIds.reduce((s, bid) => s + (bundlePrices[bid] || 0), 0);
+  const total = subtotalItens + subtotalBundles;
+
   const installmentOptions = Array.from({ length: 12 }, (_, i) => i + 1);
 
-  const pixDiscount = paymentMethod === 'pix' ? total * 0.05 : 0;
-  const cupomDiscount = cupom ? total * (cupom.discount_percent / 100) : 0;
+  const pixDiscount = paymentMethod === 'pix' ? Math.round(total * 0.05 * 100) / 100 : 0;
+  const cupomDiscount = cupom ? Math.round(total * (cupom.discount_percent / 100) * 100) / 100 : 0;
   const totalDiscount = pixDiscount + cupomDiscount;
-  const finalTotal = total - totalDiscount;
+  const finalTotal = Math.max(0, total - totalDiscount);
 
   const handleApplyCoupon = async () => {
     if (!cupomCode.trim()) return;

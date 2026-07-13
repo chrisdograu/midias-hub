@@ -13,7 +13,9 @@ import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-type TargetType = 'anuncio' | 'forum_post' | 'profile' | 'usuario' | 'mensagem' | string;
+type TargetType = 'anuncio' | 'forum_post' | 'profile' | 'usuario' | 'mensagem'
+  | 'reviews_completas' | 'game_opinions' | 'game_screenshots' | 'game_clips' | 'avaliacoes'
+  | 'forum_replies' | string;
 
 interface Denuncia {
   id: string; target_type: TargetType; target_id: string; reporter_id: string;
@@ -31,9 +33,22 @@ interface HistoryRow {
   target_name: string; moderator_name: string;
 }
 
-const targetTypeLabel = (t: TargetType) => ({
-  anuncio: 'Anúncio', forum_post: 'Post do Fórum', profile: 'Usuário', usuario: 'Usuário', mensagem: 'Mensagem',
-} as Record<string, string>)[t] || t;
+// Config de tipos denunciáveis: qual tabela consultar, campo de título, autor e preview
+const TARGET_CONFIG: Record<string, { label: string; table: string; select: string; titleField: string; authorField: string; canDelete: boolean }> = {
+  anuncio:            { label: 'Anúncio',        table: 'anuncios',           select: 'title, description, price, status, seller_id', titleField: 'title',   authorField: 'seller_id', canDelete: true },
+  forum_post:         { label: 'Post do Fórum',  table: 'forum_posts',        select: 'title, content, user_id',                        titleField: 'title',   authorField: 'user_id',   canDelete: true },
+  forum_replies:      { label: 'Resposta Fórum', table: 'forum_replies',      select: 'content, user_id',                               titleField: 'content', authorField: 'user_id',   canDelete: true },
+  profile:            { label: 'Usuário',        table: 'profiles',           select: 'display_name, bio, banned_until',                titleField: 'display_name', authorField: 'id',   canDelete: false },
+  usuario:            { label: 'Usuário',        table: 'profiles',           select: 'display_name, bio, banned_until',                titleField: 'display_name', authorField: 'id',   canDelete: false },
+  mensagem:           { label: 'Mensagem',       table: 'mensagens',          select: 'content, sender_id',                             titleField: 'content', authorField: 'sender_id', canDelete: true },
+  reviews_completas:  { label: 'Review Longa',   table: 'reviews_completas',  select: 'title, content, user_id',                        titleField: 'title',   authorField: 'user_id',   canDelete: true },
+  avaliacoes:         { label: 'Avaliação',      table: 'avaliacoes',         select: 'comment, rating, user_id',                       titleField: 'comment', authorField: 'user_id',   canDelete: true },
+  game_opinions:      { label: 'Opinião',        table: 'game_opinions',      select: 'text, user_id',                                  titleField: 'text',    authorField: 'user_id',   canDelete: true },
+  game_screenshots:   { label: 'Screenshot',     table: 'game_screenshots',   select: 'caption, user_id',                               titleField: 'caption', authorField: 'user_id',   canDelete: true },
+  game_clips:         { label: 'Clip',           table: 'game_clips',         select: 'title, user_id',                                 titleField: 'title',   authorField: 'user_id',   canDelete: true },
+};
+
+const targetTypeLabel = (t: TargetType) => TARGET_CONFIG[t]?.label || t;
 
 const statusBadgeClass = (s: string) =>
   s === 'pending' ? 'bg-yellow-500/20 text-yellow-400'
@@ -100,31 +115,49 @@ export default function Moderacao() {
 
     if (denData) {
       const reporterIds = [...new Set(denData.map(d => d.reporter_id))];
-      const anuncioIds = denData.filter(d => d.target_type === 'anuncio').map(d => d.target_id);
-      const forumIds = denData.filter(d => d.target_type === 'forum_post').map(d => d.target_id);
-      const profileIds = denData.filter(d => d.target_type === 'profile' || d.target_type === 'usuario').map(d => d.target_id);
-      const mensagemIds = denData.filter(d => d.target_type === 'mensagem').map(d => d.target_id);
-      const allProfileIds = [...new Set([...reporterIds, ...profileIds])];
+      // Agrupa target_ids por tipo, usando TARGET_CONFIG genérico
+      const idsByType = new Map<string, string[]>();
+      denData.forEach(d => {
+        if (!TARGET_CONFIG[d.target_type]) return;
+        const arr = idsByType.get(d.target_type) || [];
+        arr.push(d.target_id);
+        idsByType.set(d.target_type, arr);
+      });
 
-      const [profilesRes, anunciosRes, forumRes, mensagensRes] = await Promise.all([
+      // Perfis referenciados (reporters + alvos que são perfis)
+      const profileTargetIds = [...(idsByType.get('profile') || []), ...(idsByType.get('usuario') || [])];
+      const allProfileIds = [...new Set([...reporterIds, ...profileTargetIds])];
+
+      const rowMaps = new Map<string, Map<string, any>>();
+      const [profilesRes, ...typeResults] = await Promise.all([
         allProfileIds.length ? supabase.from('profiles').select('id, display_name').in('id', allProfileIds) : Promise.resolve({ data: [] as any[] }),
-        anuncioIds.length ? supabase.from('anuncios').select('id, title, seller_id').in('id', anuncioIds) : Promise.resolve({ data: [] as any[] }),
-        forumIds.length ? supabase.from('forum_posts').select('id, content, user_id').in('id', forumIds) : Promise.resolve({ data: [] as any[] }),
-        mensagemIds.length ? supabase.from('mensagens').select('id, content, sender_id').in('id', mensagemIds) : Promise.resolve({ data: [] as any[] }),
+        ...Array.from(idsByType.entries()).map(async ([type, ids]) => {
+          const cfg = TARGET_CONFIG[type];
+          if (!cfg || !ids.length) return { type, data: [] as any[] };
+          const { data } = await (supabase as any).from(cfg.table).select(`id, ${cfg.select}`).in('id', ids);
+          return { type, data: (data as any[]) || [] };
+        }),
       ]);
-
+      typeResults.forEach(r => {
+        rowMaps.set(r.type, new Map<string, any>(r.data.map((x: any) => [x.id, x])));
+      });
       const profileMap = new Map<string, string>((profilesRes.data || []).map((p: any) => [p.id, p.display_name || 'Usuário']));
-      const anuncioMap = new Map<string, any>((anunciosRes.data || []).map((a: any) => [a.id, a]));
-      const forumMap = new Map<string, any>((forumRes.data || []).map((f: any) => [f.id, f]));
-      const mensagemMap = new Map<string, any>((mensagensRes.data || []).map((m: any) => [m.id, m]));
 
       setDenuncias(denData.map(d => {
+        const cfg = TARGET_CONFIG[d.target_type];
         let target_label = d.target_id.slice(0, 8);
         let target_author_id: string | null = null;
-        if (d.target_type === 'anuncio') { const a = anuncioMap.get(d.target_id); target_label = a?.title || target_label; target_author_id = a?.seller_id || null; }
-        else if (d.target_type === 'forum_post') { const f = forumMap.get(d.target_id); target_label = f?.content?.slice(0, 60) || target_label; target_author_id = f?.user_id || null; }
-        else if (d.target_type === 'profile' || d.target_type === 'usuario') { target_label = profileMap.get(d.target_id) || target_label; target_author_id = d.target_id; }
-        else if (d.target_type === 'mensagem') { const m = mensagemMap.get(d.target_id); target_label = m?.content?.slice(0, 60) || target_label; target_author_id = m?.sender_id || null; }
+        if (cfg) {
+          const row = rowMaps.get(d.target_type)?.get(d.target_id);
+          if (row) {
+            const raw = row[cfg.titleField];
+            target_label = typeof raw === 'string' ? raw.slice(0, 80) : (raw ? String(raw) : target_label);
+            target_author_id = row[cfg.authorField] || null;
+            if (d.target_type === 'profile' || d.target_type === 'usuario') {
+              target_label = profileMap.get(d.target_id) || target_label;
+            }
+          }
+        }
         return { ...d, reporter_name: profileMap.get(d.reporter_id) || 'Usuário', target_label, target_author_id };
       }));
     }
@@ -160,11 +193,13 @@ export default function Moderacao() {
 
   const handleDeleteContent = async (d: Denuncia) => {
     if (!confirm('Tem certeza? Esta ação é irreversível.')) return;
-    let ok = false;
-    if (d.target_type === 'anuncio') { const r = await supabase.from('anuncios').delete().eq('id', d.target_id); ok = !r.error; }
-    else if (d.target_type === 'forum_post') { const r = await supabase.from('forum_posts').delete().eq('id', d.target_id); ok = !r.error; }
-    else if (d.target_type === 'mensagem') { const r = await supabase.from('mensagens').delete().eq('id', d.target_id); ok = !r.error; }
-    if (!ok) { toast({ title: 'Erro ao remover conteúdo', variant: 'destructive' }); return; }
+    const cfg = TARGET_CONFIG[d.target_type];
+    if (!cfg || !cfg.canDelete) {
+      toast({ title: 'Este tipo de conteúdo não pode ser removido por aqui', variant: 'destructive' });
+      return;
+    }
+    const { error } = await (supabase as any).from(cfg.table).delete().eq('id', d.target_id);
+    if (error) { toast({ title: 'Erro ao remover conteúdo', description: error.message, variant: 'destructive' }); return; }
     if (d.target_author_id) await logModeration(d.target_author_id, 'delete_content', { reason: d.reason, reference_type: d.target_type, reference_id: d.target_id });
     await handleResolve(d);
     toast({ title: 'Conteúdo removido' });
@@ -205,19 +240,17 @@ export default function Moderacao() {
   const openDetail = async (d: Denuncia) => {
     setDetail(d); setDetailContent(''); setLoadingDetail(true);
     try {
-      if (d.target_type === 'anuncio') {
-        const { data } = await supabase.from('anuncios').select('title, description, price, status').eq('id', d.target_id).maybeSingle();
-        setDetailContent(data ? `${data.title}\n\n${data.description || '(sem descrição)'}\n\nPreço: R$ ${Number(data.price).toFixed(2)} • Status: ${data.status}` : 'Anúncio removido ou não encontrado.');
-      } else if (d.target_type === 'forum_post') {
-        const { data } = await supabase.from('forum_posts').select('content').eq('id', d.target_id).maybeSingle();
-        setDetailContent(data?.content || 'Post removido ou não encontrado.');
-      } else if (d.target_type === 'profile' || d.target_type === 'usuario') {
-        const { data } = await supabase.from('profiles').select('display_name, bio, banned_until').eq('id', d.target_id).maybeSingle();
-        setDetailContent(data ? `${data.display_name || 'Sem nome'}\n\n${data.bio || '(sem bio)'}${data.banned_until ? `\n\n⛔ Banido até ${new Date(data.banned_until).toLocaleString('pt-BR')}` : ''}` : 'Perfil não encontrado.');
-      } else if (d.target_type === 'mensagem') {
-        const { data } = await supabase.from('mensagens').select('content').eq('id', d.target_id).maybeSingle();
-        setDetailContent(data?.content || 'Mensagem removida ou não encontrada.');
-      } else setDetailContent(`Tipo desconhecido: ${d.target_type}`);
+      const cfg = TARGET_CONFIG[d.target_type];
+      if (!cfg) { setDetailContent(`Tipo desconhecido: ${d.target_type}`); return; }
+      const { data } = await (supabase as any).from(cfg.table).select(cfg.select).eq('id', d.target_id).maybeSingle();
+      if (!data) { setDetailContent('Conteúdo removido ou não encontrado.'); return; }
+      // Renderização genérica: título + resto dos campos
+      const title = (data as any)[cfg.titleField];
+      const rest = Object.entries(data as any)
+        .filter(([k]) => k !== cfg.titleField && k !== cfg.authorField && k !== 'id')
+        .map(([k, v]) => `${k}: ${typeof v === 'string' ? v : JSON.stringify(v)}`)
+        .join('\n');
+      setDetailContent(`${title || '(sem título)'}\n\n${rest}`);
     } finally { setLoadingDetail(false); }
   };
 
@@ -355,7 +388,7 @@ export default function Moderacao() {
                 <div className="flex flex-wrap gap-2 justify-end pt-2 border-t border-border">
                   <Button variant="outline" size="sm" onClick={() => handleDismiss(detail)}><XCircle className="h-4 w-4 mr-1" />Improcedente</Button>
                   <Button variant="outline" size="sm" onClick={() => handleResolve(detail)}><CheckCircle className="h-4 w-4 mr-1" />Resolver</Button>
-                  {detail.target_type !== 'profile' && detail.target_type !== 'usuario' && (
+                  {TARGET_CONFIG[detail.target_type]?.canDelete && (
                     <Button variant="outline" size="sm" className="text-purple-400 hover:text-purple-300" onClick={() => handleDeleteContent(detail)}><Trash2 className="h-4 w-4 mr-1" />Remover conteúdo</Button>
                   )}
                   {detail.target_author_id && (

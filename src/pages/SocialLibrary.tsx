@@ -23,8 +23,21 @@ export default function SocialLibrary() {
   const [tab, setTab] = useState<Tab>('new');
   const [items, setItems] = useState<FriendActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [favCount, setFavCount] = useState(0);
 
-  // Load activity from friends (library + reviews + posts), merge with state
+  // Conta favoritos reais (item 35)
+  useEffect(() => {
+    if (!user) { setFavCount(0); return; }
+    let cancelled = false;
+    (async () => {
+      const { count } = await supabase
+        .from('social_favorites')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id);
+      if (!cancelled) setFavCount(count ?? 0);
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id, tab]);
   useEffect(() => {
     if (!user) { setLoading(false); return; }
     if (friendIds.length === 0) { setItems([]); setLoading(false); return; }
@@ -111,7 +124,7 @@ export default function SocialLibrary() {
     { k: 'new', label: 'Novidades', icon: Sparkles, count: withState.filter(i => i.state === 'new').length },
     { k: 'liked', label: 'Curtidos', icon: Heart, count: withState.filter(i => i.state === 'liked').length },
     { k: 'saved', label: 'Salvos', icon: Bookmark, count: withState.filter(i => i.state === 'saved').length },
-    { k: 'favoritos', label: 'Favoritos', icon: Star, count: 0 },
+    { k: 'favoritos', label: 'Favoritos', icon: Star, count: favCount },
     { k: 'hidden', label: 'Ocultos', icon: EyeOff, count: withState.filter(i => i.state === 'hidden').length },
   ];
 

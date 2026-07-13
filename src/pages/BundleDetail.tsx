@@ -68,12 +68,14 @@ export default function BundleDetail() {
   ];
 
   const addAll = guard(async () => {
+    // Adiciona itens marcados com bundle_id — o servidor valida no checkout
+    // que todos os itens do bundle estejam presentes para aplicar o preço promocional.
     for (const it of bundle.items) {
       cart.addItem({
-        id: it.product_id, title: it.title, price: bundle.price / bundle.items.length,
+        id: it.product_id, title: it.title, price: it.price,
         image: it.image_url || '', category: it.category || '', platform: [], rating: 0,
         originalPrice: it.price, discount: 0, description: '',
-      } as any);
+      } as any, { bundleId: bundle.id });
     }
     toast.success(`Bundle "${bundle.title}" adicionado ao carrinho`);
   });
