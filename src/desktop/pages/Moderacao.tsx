@@ -17,6 +17,22 @@ type TargetType = 'anuncio' | 'forum_post' | 'profile' | 'usuario' | 'mensagem'
   | 'reviews_completas' | 'game_opinions' | 'game_screenshots' | 'game_clips' | 'avaliacoes'
   | 'forum_replies' | string;
 
+interface Denuncia {
+  id: string; target_type: TargetType; target_id: string; reporter_id: string;
+  reason: string; description: string | null; status: string; created_at: string;
+  reporter_name: string;
+  target_label: string;
+  target_author_id: string | null;
+}
+
+interface BannedUser { id: string; display_name: string | null; banned_until: string }
+interface HistoryRow {
+  id: string; target_user_id: string; moderator_id: string; action: string;
+  duration_days: number | null; reason: string | null; reference_type: string | null;
+  reference_id: string | null; created_at: string;
+  target_name: string; moderator_name: string;
+}
+
 // Config de tipos denunciáveis: qual tabela consultar, campo de título, autor e preview
 const TARGET_CONFIG: Record<string, { label: string; table: string; select: string; titleField: string; authorField: string; canDelete: boolean }> = {
   anuncio:            { label: 'Anúncio',        table: 'anuncios',           select: 'title, description, price, status, seller_id', titleField: 'title',   authorField: 'seller_id', canDelete: true },
