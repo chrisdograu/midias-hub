@@ -124,7 +124,7 @@ export default function SocialLibrary() {
     { k: 'new', label: 'Novidades', icon: Sparkles, count: withState.filter(i => i.state === 'new').length },
     { k: 'liked', label: 'Curtidos', icon: Heart, count: withState.filter(i => i.state === 'liked').length },
     { k: 'saved', label: 'Salvos', icon: Bookmark, count: withState.filter(i => i.state === 'saved').length },
-    { k: 'favoritos', label: 'Favoritos', icon: Star, count: 0 },
+    { k: 'favoritos', label: 'Favoritos', icon: Star, count: favCount },
     { k: 'hidden', label: 'Ocultos', icon: EyeOff, count: withState.filter(i => i.state === 'hidden').length },
   ];
 
