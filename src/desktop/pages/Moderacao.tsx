@@ -240,19 +240,17 @@ export default function Moderacao() {
   const openDetail = async (d: Denuncia) => {
     setDetail(d); setDetailContent(''); setLoadingDetail(true);
     try {
-      if (d.target_type === 'anuncio') {
-        const { data } = await supabase.from('anuncios').select('title, description, price, status').eq('id', d.target_id).maybeSingle();
-        setDetailContent(data ? `${data.title}\n\n${data.description || '(sem descrição)'}\n\nPreço: R$ ${Number(data.price).toFixed(2)} • Status: ${data.status}` : 'Anúncio removido ou não encontrado.');
-      } else if (d.target_type === 'forum_post') {
-        const { data } = await supabase.from('forum_posts').select('content').eq('id', d.target_id).maybeSingle();
-        setDetailContent(data?.content || 'Post removido ou não encontrado.');
-      } else if (d.target_type === 'profile' || d.target_type === 'usuario') {
-        const { data } = await supabase.from('profiles').select('display_name, bio, banned_until').eq('id', d.target_id).maybeSingle();
-        setDetailContent(data ? `${data.display_name || 'Sem nome'}\n\n${data.bio || '(sem bio)'}${data.banned_until ? `\n\n⛔ Banido até ${new Date(data.banned_until).toLocaleString('pt-BR')}` : ''}` : 'Perfil não encontrado.');
-      } else if (d.target_type === 'mensagem') {
-        const { data } = await supabase.from('mensagens').select('content').eq('id', d.target_id).maybeSingle();
-        setDetailContent(data?.content || 'Mensagem removida ou não encontrada.');
-      } else setDetailContent(`Tipo desconhecido: ${d.target_type}`);
+      const cfg = TARGET_CONFIG[d.target_type];
+      if (!cfg) { setDetailContent(`Tipo desconhecido: ${d.target_type}`); return; }
+      const { data } = await (supabase as any).from(cfg.table).select(cfg.select).eq('id', d.target_id).maybeSingle();
+      if (!data) { setDetailContent('Conteúdo removido ou não encontrado.'); return; }
+      // Renderização genérica: título + resto dos campos
+      const title = (data as any)[cfg.titleField];
+      const rest = Object.entries(data as any)
+        .filter(([k]) => k !== cfg.titleField && k !== cfg.authorField && k !== 'id')
+        .map(([k, v]) => `${k}: ${typeof v === 'string' ? v : JSON.stringify(v)}`)
+        .join('\n');
+      setDetailContent(`${title || '(sem título)'}\n\n${rest}`);
     } finally { setLoadingDetail(false); }
   };
 
