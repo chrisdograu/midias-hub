@@ -42,12 +42,22 @@ export default function NotificacoesEspeciais() {
     return [];
   };
 
-  const send = async () => {
+  const preview = async () => {
     if (!form.title) return toast.error('Título obrigatório');
-    if (!confirm(`Confirma envio para audiência "${form.audience}"?`)) return;
+    setPreviewing(true);
+    const ids = await audienceQuery();
+    setPreviewing(false);
+    setPreviewCount(ids.length);
+    setPendingIds(ids);
+    if (ids.length === 0) { toast.error('Nenhum destinatário nessa audiência.'); return; }
+    setConfirmOpen(true);
+  };
+
+  const confirmSend = async () => {
+    const userIds = pendingIds || [];
+    if (userIds.length === 0) return;
+    setConfirmOpen(false);
     setSending(true);
-    const userIds = await audienceQuery();
-    if (userIds.length === 0) { setSending(false); return toast.error('Nenhum destinatário'); }
     const rows = userIds.map(uid => ({
       user_id: uid, type: 'nova_mensagem' as any, kind: form.kind as any,
       title: form.title, body: form.body || null,
@@ -59,6 +69,7 @@ export default function NotificacoesEspeciais() {
     await adminLog({ action: 'notif_broadcast', entity: 'notification', payload: { count: rows.length, audience: form.audience, kind: form.kind, title: form.title } });
     toast.success(`Enviadas ${rows.length} notificações`);
     setForm({ title: '', body: '', kind: 'especial', banner_url: '', cta_label: '', cta_url: '', audience: 'all' });
+    setPreviewCount(null); setPendingIds(null);
   };
 
   return (
