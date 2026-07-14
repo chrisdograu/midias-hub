@@ -24,6 +24,8 @@ export default function BundlesAdmin() {
   const [produtos, setProdutos] = useState<any[]>([]);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [form, setForm] = useState({ title: '', description: '', price: 0, image_url: '', is_active: true });
+  const [pendingDelete, setPendingDelete] = useState<any | null>(null);
+  const [deleteReason, setDeleteReason] = useState('');
 
   const load = async () => {
     setLoading(true);
