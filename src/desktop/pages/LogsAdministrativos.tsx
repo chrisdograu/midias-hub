@@ -134,6 +134,16 @@ export default function LogsAdministrativos() {
             </TableBody>
           </Table>
         )}
+        {!loading && hasMore && (
+          <div className="p-3 border-t border-border flex justify-center">
+            <Button size="sm" variant="outline" onClick={loadMore} disabled={loadingMore}>
+              {loadingMore ? <><Loader2 className="h-4 w-4 mr-1 animate-spin" />Carregando…</> : 'Carregar mais 500 logs anteriores'}
+            </Button>
+          </div>
+        )}
+        {!loading && !hasMore && rows.length > 0 && (
+          <div className="p-3 border-t border-border text-center text-xs text-muted-foreground">Fim da lista — {rows.length} logs carregados.</div>
+        )}
       </CardContent></Card>
     </div>
   );
