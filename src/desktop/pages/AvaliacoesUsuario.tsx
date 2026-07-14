@@ -99,7 +99,7 @@ export default function AvaliacoesUsuario() {
                   <TableCell className="text-sm truncate max-w-[250px]">{a.comment || '—'}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">{new Date(a.created_at).toLocaleDateString('pt-BR')}</TableCell>
                   <TableCell className="text-center">
-                    <Button variant="ghost" size="sm" className="text-xs h-7 text-destructive" onClick={() => handleDelete(a.id)}><Trash2 className="h-3 w-3 mr-1" />Remover</Button>
+                    <Button variant="ghost" size="sm" className="text-xs h-7 text-destructive" onClick={() => setPendingDelete(a)}><Trash2 className="h-3 w-3 mr-1" />Remover</Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -107,6 +107,21 @@ export default function AvaliacoesUsuario() {
           </Table>
         </CardContent>
       </Card>
+
+      <AlertDialog open={!!pendingDelete} onOpenChange={(o) => !o && setPendingDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remover avaliação</AlertDialogTitle>
+            <AlertDialogDescription>
+              Remover a avaliação de <b>{pendingDelete?.reviewer_name}</b> sobre <b>{pendingDelete?.reviewed_name}</b>? Essa ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">Remover</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
