@@ -54,6 +54,9 @@ export default function ReviewCompletaEditor() {
     },
   });
 
+  const draftKey = user && id ? `review-draft:${user.id}:${id}` : null;
+
+  // Restaura rascunho do localStorage ao abrir o editor — só se não houver review já persistida.
   useEffect(() => {
     if (existing) {
       setAnalise(existing.analise || '');
@@ -71,8 +74,46 @@ export default function ReviewCompletaEditor() {
       setVisibility((existing.visibility as Visibility) || 'friends');
       setIsSpoiler(!!existing.is_spoiler);
       setSpoilerAch(existing.spoiler_achievement_name || null);
+      return;
     }
-  }, [existing]);
+    if (!draftKey) return;
+    try {
+      const raw = localStorage.getItem(draftKey);
+      if (!raw) return;
+      const d = JSON.parse(raw);
+      if (d.analise) setAnalise(d.analise);
+      if (d.horas) setHoras(d.horas);
+      if (d.plataforma) setPlataforma(d.plataforma);
+      if (d.dificuldade) setDificuldade(d.dificuldade);
+      if (d.status) setStatus(d.status);
+      if (d.recomendacao) setRecomendacao(d.recomendacao);
+      if (d.personagens) setPersonagens(d.personagens);
+      if (d.trilha) setTrilha(d.trilha);
+      if (d.momentos) setMomentos(d.momentos);
+      if (d.pros) setPros(d.pros);
+      if (d.contras) setContras(d.contras);
+      if (Array.isArray(d.tags)) setTags(d.tags);
+      if (d.visibility) setVisibility(d.visibility);
+      if (typeof d.isSpoiler === 'boolean') setIsSpoiler(d.isSpoiler);
+      if (d.spoilerAch) setSpoilerAch(d.spoilerAch);
+      toast.info('Rascunho restaurado do dispositivo.');
+    } catch { /* ignore */ }
+  }, [existing, draftKey]);
+
+  // Autosave debounced: 800ms depois da última mudança. Salva enquanto não existir review persistida.
+  useEffect(() => {
+    if (!draftKey || existing) return;
+    const t = setTimeout(() => {
+      try {
+        localStorage.setItem(draftKey, JSON.stringify({
+          analise, horas, plataforma, dificuldade, status, recomendacao,
+          personagens, trilha, momentos, pros, contras, tags,
+          visibility, isSpoiler, spoilerAch,
+        }));
+      } catch { /* quota etc. — silencioso */ }
+    }, 800);
+    return () => clearTimeout(t);
+  }, [draftKey, existing, analise, horas, plataforma, dificuldade, status, recomendacao, personagens, trilha, momentos, pros, contras, tags, visibility, isSpoiler, spoilerAch]);
 
   if (!user) {
     return <div className="container mx-auto px-4 py-16 text-center text-muted-foreground">Faça login para escrever uma Review Completa.</div>;
