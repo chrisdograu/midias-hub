@@ -152,6 +152,7 @@ export default function ReviewCompletaEditor() {
       : await supabase.from('reviews_completas' as any).insert(payload);
     setSaving(false);
     if (error) { toast.error('Erro ao salvar'); return; }
+    if (draftKey) { try { localStorage.removeItem(draftKey); } catch { /* ignore */ } }
     toast.success('Review completa salva!');
     navigate(`/jogo/${id}/social`);
   };
