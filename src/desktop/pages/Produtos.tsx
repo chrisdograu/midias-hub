@@ -239,6 +239,18 @@ export default function Produtos() {
             <div className="col-span-2 space-y-2"><Label>Descrição</Label><Textarea placeholder="Descrição" rows={3} value={fDesc} onChange={e => setFDesc(e.target.value)} /></div>
             <div className="space-y-2"><Label>Preço de Custo</Label><Input type="number" placeholder="0.00" value={fCost} onChange={e => setFCost(e.target.value)} /></div>
             <div className="space-y-2"><Label>Preço de Venda</Label><Input type="number" placeholder="0.00" value={fPrice} onChange={e => setFPrice(e.target.value)} /></div>
+            <div className="col-span-2 space-y-2">
+              <Label>Preço original (para exibir desconto)</Label>
+              <Input type="number" placeholder="Deixe vazio se não há desconto" value={fOriginalPrice} onChange={e => setFOriginalPrice(e.target.value)} />
+              <p className="text-xs text-muted-foreground">Se preenchido e maior que o preço de venda, exibe % de desconto nas vitrines. Editar outros campos do produto não altera esse valor.</p>
+            </div>
+            <div className="col-span-2 flex items-center gap-3 rounded-lg border border-border p-3">
+              <Switch checked={fFeatured} onCheckedChange={setFFeatured} />
+              <div>
+                <Label className="cursor-pointer">Destacar na Home</Label>
+                <p className="text-xs text-muted-foreground">Aparece na prateleira de destaques quando ativo.</p>
+              </div>
+            </div>
             <div className="space-y-2"><Label>Tipo</Label>
               <Select value={fType} onValueChange={v => setFType(v as any)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
