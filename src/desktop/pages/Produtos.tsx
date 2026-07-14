@@ -36,6 +36,7 @@ export default function Produtos() {
   const [fDesc, setFDesc] = useState('');
   const [fCost, setFCost] = useState('');
   const [fPrice, setFPrice] = useState('');
+  const [fOriginalPrice, setFOriginalPrice] = useState('');
   const [fType, setFType] = useState<'digital' | 'physical' | 'subscription'>('digital');
   const [fPlatform, setFPlatform] = useState('');
   const [fStock, setFStock] = useState('');
@@ -43,6 +44,7 @@ export default function Produtos() {
   const [fCatId, setFCatId] = useState('');
   const [fSuppId, setFSuppId] = useState('');
   const [fImage, setFImage] = useState('');
+  const [fFeatured, setFFeatured] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
