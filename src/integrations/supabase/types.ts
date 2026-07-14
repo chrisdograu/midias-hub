@@ -4864,6 +4864,33 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      read_user_library_admin: {
+        Args: { _reason: string; _target: string }
+        Returns: {
+          acquired_at: string
+          badge_completed: boolean
+          badge_platinum: boolean
+          badge_verified_source: string | null
+          completed_at: string | null
+          hours_played: number
+          id: string
+          mood_tags: string[]
+          my_screenshots: string[]
+          personal_note: string | null
+          personal_rating: number | null
+          product_id: string
+          started_at: string | null
+          status: string
+          status_updated_at: string
+          user_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "biblioteca_usuario"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       redeem_referral: { Args: { _code: string }; Returns: Json }
       should_notify: { Args: { _pref: string; _uid: string }; Returns: boolean }
       show_limit: { Args: never; Returns: number }
