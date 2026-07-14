@@ -45,9 +45,12 @@ export default function AvaliacoesUsuario() {
 
   useEffect(() => { fetchReviews(); }, []);
 
-  const handleDelete = async (id: string) => {
-    await supabase.from('avaliacoes_usuario').delete().eq('id', id);
-    toast({ title: 'Avaliação removida' }); fetchReviews();
+  const handleDelete = async () => {
+    if (!pendingDelete) return;
+    await supabase.from('avaliacoes_usuario').delete().eq('id', pendingDelete.id);
+    toast({ title: 'Avaliação removida' });
+    setPendingDelete(null);
+    fetchReviews();
   };
 
   const avgRating = reviews.length > 0 ? (reviews.reduce((s, a) => s + a.rating, 0) / reviews.length).toFixed(1) : '0';
