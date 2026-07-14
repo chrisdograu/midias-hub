@@ -53,12 +53,14 @@ export default function BundlesAdmin() {
     toast.success('Salvo'); setEditing(null); load();
   };
 
-  const remove = async (b: any) => {
-    const reason = prompt('Justificativa para excluir:'); if (!reason) return;
+  const confirmDelete = async () => {
+    const b = pendingDelete;
+    if (!b) return;
+    if (deleteReason.trim().length < 4) { toast.error('Justificativa muito curta'); return; }
     const { error } = await supabase.from('bundles').delete().eq('id', b.id);
     if (error) return toast.error(error.message);
-    await adminLog({ action: 'bundle_delete', entity: 'bundle', entity_id: b.id, reason, payload: b });
-    toast.success('Excluído'); load();
+    await adminLog({ action: 'bundle_delete', entity: 'bundle', entity_id: b.id, reason: deleteReason, payload: b });
+    toast.success('Excluído'); setPendingDelete(null); setDeleteReason(''); load();
   };
 
   const toggleActive = async (b: any) => {
