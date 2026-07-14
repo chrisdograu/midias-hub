@@ -124,7 +124,7 @@ export default function BundlesAdmin() {
                     <TableCell className="text-right space-x-1">
                       <Button size="sm" variant="outline" onClick={() => openItems(b)}><Package className="h-3.5 w-3.5 mr-1" />Itens</Button>
                       <Button size="sm" variant="outline" onClick={() => openEdit(b)}><Edit className="h-3.5 w-3.5" /></Button>
-                      <Button size="sm" variant="ghost" onClick={() => remove(b)}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button>
+                      <Button size="sm" variant="ghost" onClick={() => { setPendingDelete(b); setDeleteReason(''); }}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button>
                     </TableCell>
                   </TableRow>
                 ))}
