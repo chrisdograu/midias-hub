@@ -36,10 +36,11 @@ export default function TitulosAdmin() {
   useEffect(() => { load(); }, []);
 
   useEffect(() => {
-    if (!debounced || debounced.length < 2) { setUserResults([]); return; }
+    const q = sanitizePgrst(debounced || '');
+    if (!q || q.length < 2) { setUserResults([]); return; }
     (async () => {
       const { data } = await supabase.from('profiles').select('id, display_name, handle')
-        .or(`display_name.ilike.%${debounced}%,handle.ilike.%${debounced}%`).limit(8);
+        .or(`display_name.ilike.%${q}%,handle.ilike.%${q}%`).limit(8);
       setUserResults(data || []);
     })();
   }, [debounced]);
@@ -51,6 +52,12 @@ export default function TitulosAdmin() {
 
   const award = async () => {
     if (!form.user_id || !form.name) return toast.error('Preencha tudo');
+    // Evita conceder o mesmo título duas vezes para o mesmo usuário
+    const { data: existing } = await supabase.from('user_titles')
+      .select('id').eq('user_id', form.user_id).eq('name', form.name).limit(1);
+    if (existing && existing.length > 0) {
+      return toast.error('Esse usuário já tem esse título.');
+    }
     const { data: { user } } = await supabase.auth.getUser();
     const { data, error } = await supabase.from('user_titles').insert({ ...form, source: 'admin', awarded_by: user?.id } as any).select().single();
     if (error) return toast.error(error.message);
@@ -58,12 +65,14 @@ export default function TitulosAdmin() {
     toast.success('Título concedido'); setOpen(false); setForm({ user_id: '', name: '' }); setUserSearch(''); load();
   };
 
-  const remove = async (r: any) => {
-    const reason = prompt('Motivo da remoção:'); if (!reason) return;
+  const confirmRemove = async () => {
+    const r = pendingRemove;
+    if (!r) return;
+    if (removeReason.trim().length < 4) return toast.error('Motivo muito curto');
     const { error } = await supabase.from('user_titles').delete().eq('id', r.id);
     if (error) return toast.error(error.message);
-    await adminLog({ action: 'titulo_revoke', entity: 'user_title', entity_id: r.id, reason, payload: r });
-    toast.success('Removido'); load();
+    await adminLog({ action: 'titulo_revoke', entity: 'user_title', entity_id: r.id, reason: removeReason, payload: r });
+    toast.success('Removido'); setPendingRemove(null); setRemoveReason(''); load();
   };
 
   return (
