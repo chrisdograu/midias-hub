@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bell, Loader2, Megaphone, Eye } from 'lucide-react';
+import { Bell, Loader2, Megaphone, Eye, Users } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { AdminPageHeader } from '../components/AdminPageHeader';
@@ -15,6 +16,10 @@ import { adminLog } from '../lib/adminLog';
 export default function NotificacoesEspeciais() {
   const [form, setForm] = useState({ title: '', body: '', kind: 'especial', banner_url: '', cta_label: '', cta_url: '', audience: 'all' });
   const [sending, setSending] = useState(false);
+  const [previewCount, setPreviewCount] = useState<number | null>(null);
+  const [previewing, setPreviewing] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingIds, setPendingIds] = useState<string[] | null>(null);
 
   const audienceQuery = async (): Promise<string[]> => {
     if (form.audience === 'all') {
@@ -37,12 +42,22 @@ export default function NotificacoesEspeciais() {
     return [];
   };
 
-  const send = async () => {
+  const preview = async () => {
     if (!form.title) return toast.error('Título obrigatório');
-    if (!confirm(`Confirma envio para audiência "${form.audience}"?`)) return;
+    setPreviewing(true);
+    const ids = await audienceQuery();
+    setPreviewing(false);
+    setPreviewCount(ids.length);
+    setPendingIds(ids);
+    if (ids.length === 0) { toast.error('Nenhum destinatário nessa audiência.'); return; }
+    setConfirmOpen(true);
+  };
+
+  const confirmSend = async () => {
+    const userIds = pendingIds || [];
+    if (userIds.length === 0) return;
+    setConfirmOpen(false);
     setSending(true);
-    const userIds = await audienceQuery();
-    if (userIds.length === 0) { setSending(false); return toast.error('Nenhum destinatário'); }
     const rows = userIds.map(uid => ({
       user_id: uid, type: 'nova_mensagem' as any, kind: form.kind as any,
       title: form.title, body: form.body || null,
@@ -54,6 +69,7 @@ export default function NotificacoesEspeciais() {
     await adminLog({ action: 'notif_broadcast', entity: 'notification', payload: { count: rows.length, audience: form.audience, kind: form.kind, title: form.title } });
     toast.success(`Enviadas ${rows.length} notificações`);
     setForm({ title: '', body: '', kind: 'especial', banner_url: '', cta_label: '', cta_url: '', audience: 'all' });
+    setPreviewCount(null); setPendingIds(null);
   };
 
   return (
@@ -93,8 +109,30 @@ export default function NotificacoesEspeciais() {
               <div><Label>CTA URL</Label><Input value={form.cta_url} onChange={e => setForm({ ...form, cta_url: e.target.value })} /></div>
             </div>
           </>}
-          <Button onClick={send} disabled={sending}>{sending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}<Bell className="h-4 w-4 mr-1" /> Enviar e registrar</Button>
+          <Button onClick={preview} disabled={sending || previewing}>
+            {(sending || previewing) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+            <Users className="h-4 w-4 mr-1" /> Ver quantos vão receber
+          </Button>
         </CardContent></Card>
+
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar envio em massa</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta notificação será enviada para <b>{previewCount ?? 0}</b> usuário(s) da audiência <b>{form.audience}</b>.
+              <br /><br />
+              Notificações especiais em massa ignoram preferências individuais de notificação — use apenas para avisos realmente importantes (ex.: manutenção, alertas de segurança).
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmSend}>
+              <Bell className="h-4 w-4 mr-1" /> Enviar para {previewCount ?? 0}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
         <Card className="border-border/50"><CardContent className="p-6">
           <div className="flex items-center gap-2 mb-3 text-sm text-muted-foreground"><Eye className="h-4 w-4" />Preview</div>

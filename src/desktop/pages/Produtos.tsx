@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { supabase } from '@/integrations/supabase/client';
@@ -36,6 +37,7 @@ export default function Produtos() {
   const [fDesc, setFDesc] = useState('');
   const [fCost, setFCost] = useState('');
   const [fPrice, setFPrice] = useState('');
+  const [fOriginalPrice, setFOriginalPrice] = useState('');
   const [fType, setFType] = useState<'digital' | 'physical' | 'subscription'>('digital');
   const [fPlatform, setFPlatform] = useState('');
   const [fStock, setFStock] = useState('');
@@ -43,6 +45,7 @@ export default function Produtos() {
   const [fCatId, setFCatId] = useState('');
   const [fSuppId, setFSuppId] = useState('');
   const [fImage, setFImage] = useState('');
+  const [fFeatured, setFFeatured] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -62,30 +65,40 @@ export default function Produtos() {
   useEffect(() => { fetchAll(); }, []);
 
   const resetForm = () => {
-    setFTitle(''); setFDesc(''); setFCost(''); setFPrice(''); setFType('digital');
-    setFPlatform(''); setFStock(''); setFAlert('5'); setFCatId(''); setFSuppId(''); setFImage('');
+    setFTitle(''); setFDesc(''); setFCost(''); setFPrice(''); setFOriginalPrice(''); setFType('digital');
+    setFPlatform(''); setFStock(''); setFAlert('5'); setFCatId(''); setFSuppId(''); setFImage(''); setFFeatured(false);
     setSelected(null);
   };
 
   const openCreate = () => { resetForm(); setDialogOpen(true); };
   const openEdit = (p: Produto) => {
     setSelected(p); setFTitle(p.title); setFDesc(p.description || ''); setFCost(String(p.cost_price || 0));
-    setFPrice(String(p.price)); setFType(p.product_type); setFPlatform((p.platform || []).join(', '));
+    setFPrice(String(p.price));
+    setFOriginalPrice(String((p as any).original_price ?? p.price));
+    setFType(p.product_type); setFPlatform((p.platform || []).join(', '));
     setFStock(String(p.stock)); setFAlert(String(p.stock_alert_threshold)); setFCatId(p.category_id || '');
-    setFSuppId(p.supplier_id || ''); setFImage(p.image_url || ''); setDialogOpen(true);
+    setFSuppId(p.supplier_id || ''); setFImage(p.image_url || '');
+    setFFeatured(!!(p as any).featured);
+    setDialogOpen(true);
   };
 
   const handleSave = async () => {
     if (!fTitle.trim()) { toast({ title: 'Nome obrigatório', variant: 'destructive' }); return; }
     setSaving(true);
     const catName = categorias.find(c => c.id === fCatId)?.name || null;
-    const payload = {
+    const priceNum = Number(fPrice) || 0;
+    // Se o admin não preencheu "preço original", usamos o preço atual (produto sem desconto).
+    const originalPriceNum = fOriginalPrice.trim() === '' ? priceNum : Number(fOriginalPrice) || 0;
+    const payload: any = {
       title: fTitle, description: fDesc || null, cost_price: Number(fCost) || 0,
-      price: Number(fPrice) || 0, original_price: Number(fPrice) || 0, product_type: fType as any,
+      price: priceNum,
+      original_price: originalPriceNum,
+      product_type: fType as any,
       platform: fPlatform.split(',').map(s => s.trim()).filter(Boolean),
       stock: Number(fStock) || 0, stock_alert_threshold: Number(fAlert) || 5,
       category_id: fCatId || null, category: catName, supplier_id: fSuppId || null,
       image_url: fImage || null,
+      featured: fFeatured,
     };
     if (selected) {
       await supabase.from('produtos').update(payload).eq('id', selected.id);
@@ -226,6 +239,18 @@ export default function Produtos() {
             <div className="col-span-2 space-y-2"><Label>Descrição</Label><Textarea placeholder="Descrição" rows={3} value={fDesc} onChange={e => setFDesc(e.target.value)} /></div>
             <div className="space-y-2"><Label>Preço de Custo</Label><Input type="number" placeholder="0.00" value={fCost} onChange={e => setFCost(e.target.value)} /></div>
             <div className="space-y-2"><Label>Preço de Venda</Label><Input type="number" placeholder="0.00" value={fPrice} onChange={e => setFPrice(e.target.value)} /></div>
+            <div className="col-span-2 space-y-2">
+              <Label>Preço original (para exibir desconto)</Label>
+              <Input type="number" placeholder="Deixe vazio se não há desconto" value={fOriginalPrice} onChange={e => setFOriginalPrice(e.target.value)} />
+              <p className="text-xs text-muted-foreground">Se preenchido e maior que o preço de venda, exibe % de desconto nas vitrines. Editar outros campos do produto não altera esse valor.</p>
+            </div>
+            <div className="col-span-2 flex items-center gap-3 rounded-lg border border-border p-3">
+              <Switch checked={fFeatured} onCheckedChange={setFFeatured} />
+              <div>
+                <Label className="cursor-pointer">Destacar na Home</Label>
+                <p className="text-xs text-muted-foreground">Aparece na prateleira de destaques quando ativo.</p>
+              </div>
+            </div>
             <div className="space-y-2"><Label>Tipo</Label>
               <Select value={fType} onValueChange={v => setFType(v as any)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>

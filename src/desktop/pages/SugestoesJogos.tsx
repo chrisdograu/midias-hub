@@ -81,6 +81,7 @@ export default function SugestoesJogos() {
       stock: 0,
       is_active: true,
       awaiting_first_stock: true,
+      featured: false,
       product_type: 'digital',
     }).select('id').single();
     if (prodError || !prod) {

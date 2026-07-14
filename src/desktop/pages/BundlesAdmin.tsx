@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -23,6 +24,8 @@ export default function BundlesAdmin() {
   const [produtos, setProdutos] = useState<any[]>([]);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [form, setForm] = useState({ title: '', description: '', price: 0, image_url: '', is_active: true });
+  const [pendingDelete, setPendingDelete] = useState<any | null>(null);
+  const [deleteReason, setDeleteReason] = useState('');
 
   const load = async () => {
     setLoading(true);
@@ -50,12 +53,14 @@ export default function BundlesAdmin() {
     toast.success('Salvo'); setEditing(null); load();
   };
 
-  const remove = async (b: any) => {
-    const reason = prompt('Justificativa para excluir:'); if (!reason) return;
+  const confirmDelete = async () => {
+    const b = pendingDelete;
+    if (!b) return;
+    if (deleteReason.trim().length < 4) { toast.error('Justificativa muito curta'); return; }
     const { error } = await supabase.from('bundles').delete().eq('id', b.id);
     if (error) return toast.error(error.message);
-    await adminLog({ action: 'bundle_delete', entity: 'bundle', entity_id: b.id, reason, payload: b });
-    toast.success('Excluído'); load();
+    await adminLog({ action: 'bundle_delete', entity: 'bundle', entity_id: b.id, reason: deleteReason, payload: b });
+    toast.success('Excluído'); setPendingDelete(null); setDeleteReason(''); load();
   };
 
   const toggleActive = async (b: any) => {
@@ -119,7 +124,7 @@ export default function BundlesAdmin() {
                     <TableCell className="text-right space-x-1">
                       <Button size="sm" variant="outline" onClick={() => openItems(b)}><Package className="h-3.5 w-3.5 mr-1" />Itens</Button>
                       <Button size="sm" variant="outline" onClick={() => openEdit(b)}><Edit className="h-3.5 w-3.5" /></Button>
-                      <Button size="sm" variant="ghost" onClick={() => remove(b)}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button>
+                      <Button size="sm" variant="ghost" onClick={() => { setPendingDelete(b); setDeleteReason(''); }}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -157,6 +162,25 @@ export default function BundlesAdmin() {
           <Button onClick={saveItems}>Salvar ({selectedItems.size} selecionados)</Button>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!pendingDelete} onOpenChange={(o) => { if (!o) { setPendingDelete(null); setDeleteReason(''); } }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir bundle</AlertDialogTitle>
+            <AlertDialogDescription>
+              Você está prestes a excluir <b>{pendingDelete?.title}</b>. Essa ação é registrada no log administrativo.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2 py-2">
+            <Label>Justificativa</Label>
+            <Input value={deleteReason} onChange={e => setDeleteReason(e.target.value)} placeholder="Motivo da exclusão" />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground">Excluir</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

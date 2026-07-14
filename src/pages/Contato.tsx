@@ -8,12 +8,21 @@ interface StoreInfo { name?: string; email?: string; phone?: string }
 export default function Contato() {
   const { value: store } = useSiteSettings<StoreInfo>('store_info');
   const [form, setForm] = useState({ nome: '', email: '', assunto: '', mensagem: '' });
+  // Honeypot: campo escondido que só um bot preencheria.
+  const [website, setWebsite] = useState('');
   const [sending, setSending] = useState(false);
   const contactEmail = store?.email || 'suporte@midias.com.br';
   const contactPhone = store?.phone;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (website.trim() !== '') {
+      // Silenciosamente descarta submissão de bot.
+      setForm({ nome: '', email: '', assunto: '', mensagem: '' });
+      setWebsite('');
+      toast.success('Mensagem enviada com sucesso! Responderemos em breve.');
+      return;
+    }
     if (!form.nome || !form.email || !form.mensagem) {
       toast.error('Preencha todos os campos obrigatórios');
       return;
@@ -48,6 +57,12 @@ export default function Contato() {
       </div>
 
       <form onSubmit={handleSubmit} className="bg-card border border-border rounded-xl p-6 space-y-4">
+        {/* Honeypot anti-spam: escondido de usuários reais, visível a bots automatizados */}
+        <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', top: 'auto', width: '1px', height: '1px', overflow: 'hidden' }}>
+          <label>Não preencha este campo
+            <input type="text" tabIndex={-1} autoComplete="off" value={website} onChange={e => setWebsite(e.target.value)} />
+          </label>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="text-sm font-medium text-foreground">Nome *</label>

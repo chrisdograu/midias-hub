@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,7 +21,12 @@ export default function TitulosAdmin() {
   const [userSearch, setUserSearch] = useState('');
   const [userResults, setUserResults] = useState<any[]>([]);
   const [filterSearch, setFilterSearch] = useState('');
+  const [pendingRemove, setPendingRemove] = useState<any | null>(null);
+  const [removeReason, setRemoveReason] = useState('');
   const debounced = useDebounce(userSearch, 300);
+
+  // Remove caracteres que quebram o parser do PostgREST no operador .or()
+  const sanitizePgrst = (s: string) => s.replace(/[,()\\*]/g, ' ').trim();
 
   const load = async () => {
     setLoading(true);
@@ -30,10 +36,11 @@ export default function TitulosAdmin() {
   useEffect(() => { load(); }, []);
 
   useEffect(() => {
-    if (!debounced || debounced.length < 2) { setUserResults([]); return; }
+    const q = sanitizePgrst(debounced || '');
+    if (!q || q.length < 2) { setUserResults([]); return; }
     (async () => {
       const { data } = await supabase.from('profiles').select('id, display_name, handle')
-        .or(`display_name.ilike.%${debounced}%,handle.ilike.%${debounced}%`).limit(8);
+        .or(`display_name.ilike.%${q}%,handle.ilike.%${q}%`).limit(8);
       setUserResults(data || []);
     })();
   }, [debounced]);
@@ -45,6 +52,12 @@ export default function TitulosAdmin() {
 
   const award = async () => {
     if (!form.user_id || !form.name) return toast.error('Preencha tudo');
+    // Evita conceder o mesmo título duas vezes para o mesmo usuário
+    const { data: existing } = await supabase.from('user_titles')
+      .select('id').eq('user_id', form.user_id).eq('name', form.name).limit(1);
+    if (existing && existing.length > 0) {
+      return toast.error('Esse usuário já tem esse título.');
+    }
     const { data: { user } } = await supabase.auth.getUser();
     const { data, error } = await supabase.from('user_titles').insert({ ...form, source: 'admin', awarded_by: user?.id } as any).select().single();
     if (error) return toast.error(error.message);
@@ -52,12 +65,14 @@ export default function TitulosAdmin() {
     toast.success('Título concedido'); setOpen(false); setForm({ user_id: '', name: '' }); setUserSearch(''); load();
   };
 
-  const remove = async (r: any) => {
-    const reason = prompt('Motivo da remoção:'); if (!reason) return;
+  const confirmRemove = async () => {
+    const r = pendingRemove;
+    if (!r) return;
+    if (removeReason.trim().length < 4) return toast.error('Motivo muito curto');
     const { error } = await supabase.from('user_titles').delete().eq('id', r.id);
     if (error) return toast.error(error.message);
-    await adminLog({ action: 'titulo_revoke', entity: 'user_title', entity_id: r.id, reason, payload: r });
-    toast.success('Removido'); load();
+    await adminLog({ action: 'titulo_revoke', entity: 'user_title', entity_id: r.id, reason: removeReason, payload: r });
+    toast.success('Removido'); setPendingRemove(null); setRemoveReason(''); load();
   };
 
   return (
@@ -108,13 +123,30 @@ export default function TitulosAdmin() {
                     <TableCell className="font-medium">{r.name}</TableCell>
                     <TableCell className="text-muted-foreground">{r.source}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{new Date(r.awarded_at).toLocaleString('pt-BR')}</TableCell>
-                    <TableCell className="text-right"><Button variant="ghost" size="icon" aria-label="Excluir" onClick={() => remove(r)}><Trash2 className="h-4 w-4 text-destructive" /></Button></TableCell>
+                    <TableCell className="text-right"><Button variant="ghost" size="icon" aria-label="Excluir" onClick={() => { setPendingRemove(r); setRemoveReason(''); }}><Trash2 className="h-4 w-4 text-destructive" /></Button></TableCell>
                   </TableRow>
                 ))}
             </TableBody>
           </Table>
         )}
       </CardContent></Card>
+
+      <AlertDialog open={!!pendingRemove} onOpenChange={(o) => { if (!o) { setPendingRemove(null); setRemoveReason(''); } }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remover título</AlertDialogTitle>
+            <AlertDialogDescription>Revogar <b>{pendingRemove?.name}</b>? Essa ação é registrada no log administrativo.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2 py-2">
+            <Label>Motivo</Label>
+            <Input value={removeReason} onChange={e => setRemoveReason(e.target.value)} placeholder="Motivo da remoção" />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmRemove} className="bg-destructive text-destructive-foreground">Remover</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

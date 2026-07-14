@@ -34,17 +34,14 @@ export default function BibliotecaSocialAdmin() {
 
   const confirmView = async () => {
     if (reason.trim().length < 6) return toast.error('Justificativa muito curta');
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      await supabase.from('admin_logs').insert({
-        admin_id: user.id, action: 'view_social_library', entity: 'biblioteca_usuario',
-        entity_id: target.id, reason,
-      });
-    }
-    const { data } = await supabase.from('biblioteca_usuario')
-      .select('id, status, hours_played, personal_rating, product_id, status_updated_at')
-      .eq('user_id', target.id).order('status_updated_at', { ascending: false });
-    setItems(data || []);
+    // RPC autoritária: valida is_admin() e escreve o log em admin_logs no servidor.
+    // O SELECT direto na tabela como fallback não existe mais para admins.
+    const { data, error } = await supabase.rpc('read_user_library_admin' as any, {
+      _target: target.id,
+      _reason: reason.trim(),
+    });
+    if (error) { toast.error(error.message || 'Falha ao consultar biblioteca'); return; }
+    setItems((data as any[]) || []);
     setOpen(false);
     toast.success('Acesso registrado no log');
   };

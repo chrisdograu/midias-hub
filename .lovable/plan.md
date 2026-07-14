@@ -1,6 +1,37 @@
 # Plano de correção — MIDIAS
 
-## ✅ Nesta rodada
+## ✅ Rodada 4 (auditoria itens 38–57)
+
+### Banco (migração `20260714_...`)
+- **#40** `is_user_banned()` agora barra INSERT em `avaliacoes` e `pedidos` — usuário suspenso não avalia nem finaliza compra.
+- **#46** Bloqueio bidirecional: policies de INSERT de `mensagens` (direta, com `receiver_id`) e `follow_requests` rejeitam quando o alvo bloqueou o remetente (`blocked_users`).
+- **#53** `admin_grant` entrou na whitelist do índice único diário de `user_xp_log` — múltiplas concessões manuais por dia agora somam sem perda silenciosa.
+- **#52** Nova RPC `read_user_library_admin(_target, _reason)` (`SECURITY DEFINER`): valida `is_admin()`, exige justificativa ≥6 chars, escreve `admin_logs` no servidor e só então retorna `biblioteca_usuario` — chamar direto a tabela não é mais uma bypass.
+- **#38** Já resolvido na rodada anterior (`create_order_secure` decrementa estoque com lock).
+
+### Frontend
+- **#39** `Produtos.tsx`: `original_price` agora é campo próprio (`fOriginalPrice`). Editar produto sem tocar no preço original preserva o desconto. Também expõe toggle "Destacar" gravando `featured`.
+- **#42** `BundlesAdmin` e `AvaliacoesUsuario`: substituído `prompt()`/click-direto por `AlertDialog` (com campo de justificativa no bundle, no padrão de `Categorias.tsx`/`Produtos.tsx`).
+- **#44** `LogsAdministrativos`: paginação por cursor (`created_at` decrescente, `range(0, 499)` + "Carregar mais 500 anteriores"). Fim explícito ao esgotar.
+- **#45** `NotificacoesEspeciais`: fluxo agora é "Ver quantos vão receber" → `AlertDialog` mostra a contagem real da audiência ANTES do envio, e explicita que broadcast especial ignora preferências.
+- **#48 / #49** `TitulosAdmin`: `sanitizePgrst()` remove `,()\*` antes do `.or()` (fecha bypass do parser); dedupe (`user_id`+`name`) antes de conceder; `AlertDialog` substitui o `prompt()` de motivo.
+- **#50** Campo "Destaque" adicionado em `CriarJogo` e `Produtos`. `SugestoesJogos` insere com `featured:false` explicitamente (produto novo não vira destaque acidental).
+- **#51** `CriarTorneio`: valida `ends_at > starts_at`, `max_participants ≥ 2`, e potência de 2 quando o formato é `single_elimination`.
+- **#52** UI: `BibliotecaSocialAdmin` agora chama a RPC (não a tabela direta), então honestidade ≠ auditoria mais.
+- **#43** `IntegracoesAdmin`: banner amarelo "Em construção — disparo automático ainda não implementado" acima da tabela, para não sugerir capacidade que não existe.
+- **#47** `Moderacao.tsx`: `TARGET_CONFIG` recebe alias `comentario_forum` → `forum_replies`, então denúncias do mobile passam a aparecer/resolver.
+- **#54** `ReviewCompletaEditor`: autosave por `(user_id, product_id)` em `localStorage` (debounced 800ms), restauro ao reabrir, limpeza após salvar no servidor.
+- **#56** `Contato`: honeypot invisível (campo `website` fora da tela) descarta submissões automáticas silenciosamente.
+
+## ⏳ Não fiz — decisão consciente
+
+- **#41** Cargo/posição de funcionário: guarda de rota real + policies RLS por `position` é retrabalho grande; time é pequeno hoje. Registrado como limitação conhecida no `.lovable/memory` (todos os `role='atendente'` compartilham acesso de banco).
+- **#43** disparo automático de webhooks: só sinalizado como "em construção" — precisa de edge function dedicada.
+- **#55** Evidência em reporte de partida: `TournamentMatch.tsx` não tem hoje formulário direto de reporte pra ser instrumentado. Fica pra quando o fluxo de reporte for reintroduzido.
+- **#57** `TermosDeUso` já tem data de "Última atualização" — sem ação.
+- **#24** Warnings do linter Supabase (agora ~209): mesma decisão da rodada 3.
+
+
 
 ### Item 2 — Admin só vê mensagem privada sob denúncia
 - `MensagensAdmin` agora carrega mapa de denúncias ativas (`target_type='conversa'`) e só abre o thread se houver `denuncia_id` associado.

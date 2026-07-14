@@ -38,6 +38,8 @@ const TARGET_CONFIG: Record<string, { label: string; table: string; select: stri
   anuncio:            { label: 'Anúncio',        table: 'anuncios',           select: 'title, description, price, status, seller_id', titleField: 'title',   authorField: 'seller_id', canDelete: true },
   forum_post:         { label: 'Post do Fórum',  table: 'forum_posts',        select: 'title, content, user_id',                        titleField: 'title',   authorField: 'user_id',   canDelete: true },
   forum_replies:      { label: 'Resposta Fórum', table: 'forum_replies',      select: 'content, user_id',                               titleField: 'content', authorField: 'user_id',   canDelete: true },
+  // alias emitido pelo mobile (MForumPost) — usa a mesma tabela de respostas
+  comentario_forum:   { label: 'Comentário Fórum', table: 'forum_replies',    select: 'content, user_id',                               titleField: 'content', authorField: 'user_id',   canDelete: true },
   profile:            { label: 'Usuário',        table: 'profiles',           select: 'display_name, bio, banned_until',                titleField: 'display_name', authorField: 'id',   canDelete: false },
   usuario:            { label: 'Usuário',        table: 'profiles',           select: 'display_name, bio, banned_until',                titleField: 'display_name', authorField: 'id',   canDelete: false },
   mensagem:           { label: 'Mensagem',       table: 'mensagens',          select: 'content, sender_id',                             titleField: 'content', authorField: 'sender_id', canDelete: true },
