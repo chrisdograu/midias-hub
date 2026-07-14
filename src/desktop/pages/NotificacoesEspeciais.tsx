@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bell, Loader2, Megaphone, Eye } from 'lucide-react';
+import { Bell, Loader2, Megaphone, Eye, Users } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { AdminPageHeader } from '../components/AdminPageHeader';
@@ -15,6 +16,10 @@ import { adminLog } from '../lib/adminLog';
 export default function NotificacoesEspeciais() {
   const [form, setForm] = useState({ title: '', body: '', kind: 'especial', banner_url: '', cta_label: '', cta_url: '', audience: 'all' });
   const [sending, setSending] = useState(false);
+  const [previewCount, setPreviewCount] = useState<number | null>(null);
+  const [previewing, setPreviewing] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingIds, setPendingIds] = useState<string[] | null>(null);
 
   const audienceQuery = async (): Promise<string[]> => {
     if (form.audience === 'all') {
