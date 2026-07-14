@@ -89,6 +89,10 @@ export default function IntegracoesAdmin() {
           <Button size="sm" onClick={openCreate}><Plus className="h-4 w-4 mr-1" />Novo webhook</Button>
         </>} />
 
+      <div className="rounded-lg border border-yellow-500/40 bg-yellow-500/5 p-3 text-sm text-yellow-200">
+        <b>Em construção:</b> os webhooks cadastrados aqui podem ser testados manualmente (botão "Testar"), mas ainda não são disparados automaticamente em eventos do sistema (novo pedido, novo usuário, denúncia etc.). O disparo automático depende de uma edge function dedicada, ainda não implementada.
+      </div>
+
       <Card className="border-border/50"><CardContent className="p-4 flex flex-wrap gap-2 items-end">
         <div className="flex-1 min-w-[200px]">
           <Label className="text-xs">Buscar</Label>
