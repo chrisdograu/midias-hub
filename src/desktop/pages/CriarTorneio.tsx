@@ -18,8 +18,22 @@ export default function CriarTorneio() {
   const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
 
+  const isPowerOf2 = (n: number) => n >= 2 && (n & (n - 1)) === 0;
+
   const save = async () => {
     if (!form.title) return toast.error('Título obrigatório');
+    if (form.starts_at && form.ends_at) {
+      const s = new Date(form.starts_at).getTime();
+      const e = new Date(form.ends_at).getTime();
+      if (isFinite(s) && isFinite(e) && e <= s) {
+        return toast.error('A data de fim precisa ser depois da data de início.');
+      }
+    }
+    const max = Number(form.max_participants) || 0;
+    if (max < 2) return toast.error('O torneio precisa de pelo menos 2 participantes.');
+    if (form.type === 'single_elimination' && !isPowerOf2(max)) {
+      return toast.error('Chaveamento de eliminação simples exige potência de 2 (8, 16, 32, 64…).');
+    }
     setSaving(true);
     const { data: { user } } = await supabase.auth.getUser();
     const { error } = await supabase.from('tournaments').insert({

@@ -5,21 +5,28 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { AdminPageHeader } from '../components/AdminPageHeader';
 
 export default function CriarJogo() {
-  const [form, setForm] = useState({ title: '', description: '', price: 0, stock: 0, image_url: '', publisher: '' });
+  const [form, setForm] = useState({ title: '', description: '', price: 0, original_price: 0, stock: 0, image_url: '', publisher: '' });
+  const [featured, setFeatured] = useState(false);
   const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
 
   const save = async () => {
     if (!form.title.trim()) return toast.error('Título é obrigatório');
     setSaving(true);
+    const originalPrice = form.original_price && form.original_price > 0 ? form.original_price : form.price;
     const { error } = await supabase.from('produtos').insert({
-      ...form, product_type: 'jogo', estado_publicacao: 'ativo',
+      ...form,
+      original_price: originalPrice,
+      featured,
+      product_type: 'jogo',
+      estado_publicacao: 'ativo',
     } as any);
     setSaving(false);
     if (error) return toast.error(error.message);
@@ -36,11 +43,19 @@ export default function CriarJogo() {
             <div key={k}><Label className="capitalize">{k.replace('_', ' ')}</Label>
               <Input value={(form as any)[k]} onChange={e => setForm({ ...form, [k]: e.target.value })} /></div>
           ))}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <div><Label>Preço</Label><Input type="number" step="0.01" value={form.price} onChange={e => setForm({ ...form, price: Number(e.target.value) })} /></div>
+            <div><Label>Preço original</Label><Input type="number" step="0.01" value={form.original_price} onChange={e => setForm({ ...form, original_price: Number(e.target.value) })} /></div>
             <div><Label>Estoque</Label><Input type="number" value={form.stock} onChange={e => setForm({ ...form, stock: Number(e.target.value) })} /></div>
           </div>
           <div><Label>Descrição</Label><Textarea rows={5} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} /></div>
+          <div className="flex items-center gap-3 rounded-lg border border-border p-3">
+            <Switch checked={featured} onCheckedChange={setFeatured} />
+            <div>
+              <Label className="cursor-pointer">Destacar na Home</Label>
+              <p className="text-xs text-muted-foreground">Aparece na prateleira de destaques quando ativo.</p>
+            </div>
+          </div>
           <Button onClick={save} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Criar jogo</Button>
         </CardContent>
       </Card>
