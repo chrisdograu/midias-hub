@@ -64,30 +64,40 @@ export default function Produtos() {
   useEffect(() => { fetchAll(); }, []);
 
   const resetForm = () => {
-    setFTitle(''); setFDesc(''); setFCost(''); setFPrice(''); setFType('digital');
-    setFPlatform(''); setFStock(''); setFAlert('5'); setFCatId(''); setFSuppId(''); setFImage('');
+    setFTitle(''); setFDesc(''); setFCost(''); setFPrice(''); setFOriginalPrice(''); setFType('digital');
+    setFPlatform(''); setFStock(''); setFAlert('5'); setFCatId(''); setFSuppId(''); setFImage(''); setFFeatured(false);
     setSelected(null);
   };
 
   const openCreate = () => { resetForm(); setDialogOpen(true); };
   const openEdit = (p: Produto) => {
     setSelected(p); setFTitle(p.title); setFDesc(p.description || ''); setFCost(String(p.cost_price || 0));
-    setFPrice(String(p.price)); setFType(p.product_type); setFPlatform((p.platform || []).join(', '));
+    setFPrice(String(p.price));
+    setFOriginalPrice(String((p as any).original_price ?? p.price));
+    setFType(p.product_type); setFPlatform((p.platform || []).join(', '));
     setFStock(String(p.stock)); setFAlert(String(p.stock_alert_threshold)); setFCatId(p.category_id || '');
-    setFSuppId(p.supplier_id || ''); setFImage(p.image_url || ''); setDialogOpen(true);
+    setFSuppId(p.supplier_id || ''); setFImage(p.image_url || '');
+    setFFeatured(!!(p as any).featured);
+    setDialogOpen(true);
   };
 
   const handleSave = async () => {
     if (!fTitle.trim()) { toast({ title: 'Nome obrigatório', variant: 'destructive' }); return; }
     setSaving(true);
     const catName = categorias.find(c => c.id === fCatId)?.name || null;
-    const payload = {
+    const priceNum = Number(fPrice) || 0;
+    // Se o admin não preencheu "preço original", usamos o preço atual (produto sem desconto).
+    const originalPriceNum = fOriginalPrice.trim() === '' ? priceNum : Number(fOriginalPrice) || 0;
+    const payload: any = {
       title: fTitle, description: fDesc || null, cost_price: Number(fCost) || 0,
-      price: Number(fPrice) || 0, original_price: Number(fPrice) || 0, product_type: fType as any,
+      price: priceNum,
+      original_price: originalPriceNum,
+      product_type: fType as any,
       platform: fPlatform.split(',').map(s => s.trim()).filter(Boolean),
       stock: Number(fStock) || 0, stock_alert_threshold: Number(fAlert) || 5,
       category_id: fCatId || null, category: catName, supplier_id: fSuppId || null,
       image_url: fImage || null,
+      featured: fFeatured,
     };
     if (selected) {
       await supabase.from('produtos').update(payload).eq('id', selected.id);
