@@ -162,6 +162,25 @@ export default function BundlesAdmin() {
           <Button onClick={saveItems}>Salvar ({selectedItems.size} selecionados)</Button>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!pendingDelete} onOpenChange={(o) => { if (!o) { setPendingDelete(null); setDeleteReason(''); } }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir bundle</AlertDialogTitle>
+            <AlertDialogDescription>
+              Você está prestes a excluir <b>{pendingDelete?.title}</b>. Essa ação é registrada no log administrativo.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2 py-2">
+            <Label>Justificativa</Label>
+            <Input value={deleteReason} onChange={e => setDeleteReason(e.target.value)} placeholder="Motivo da exclusão" />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground">Excluir</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
