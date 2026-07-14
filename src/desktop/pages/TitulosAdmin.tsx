@@ -123,13 +123,30 @@ export default function TitulosAdmin() {
                     <TableCell className="font-medium">{r.name}</TableCell>
                     <TableCell className="text-muted-foreground">{r.source}</TableCell>
                     <TableCell className="text-sm text-muted-foreground">{new Date(r.awarded_at).toLocaleString('pt-BR')}</TableCell>
-                    <TableCell className="text-right"><Button variant="ghost" size="icon" aria-label="Excluir" onClick={() => remove(r)}><Trash2 className="h-4 w-4 text-destructive" /></Button></TableCell>
+                    <TableCell className="text-right"><Button variant="ghost" size="icon" aria-label="Excluir" onClick={() => { setPendingRemove(r); setRemoveReason(''); }}><Trash2 className="h-4 w-4 text-destructive" /></Button></TableCell>
                   </TableRow>
                 ))}
             </TableBody>
           </Table>
         )}
       </CardContent></Card>
+
+      <AlertDialog open={!!pendingRemove} onOpenChange={(o) => { if (!o) { setPendingRemove(null); setRemoveReason(''); } }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remover título</AlertDialogTitle>
+            <AlertDialogDescription>Revogar <b>{pendingRemove?.name}</b>? Essa ação é registrada no log administrativo.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2 py-2">
+            <Label>Motivo</Label>
+            <Input value={removeReason} onChange={e => setRemoveReason(e.target.value)} placeholder="Motivo da remoção" />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmRemove} className="bg-destructive text-destructive-foreground">Remover</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
