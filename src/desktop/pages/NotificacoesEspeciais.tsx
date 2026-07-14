@@ -109,8 +109,30 @@ export default function NotificacoesEspeciais() {
               <div><Label>CTA URL</Label><Input value={form.cta_url} onChange={e => setForm({ ...form, cta_url: e.target.value })} /></div>
             </div>
           </>}
-          <Button onClick={send} disabled={sending}>{sending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}<Bell className="h-4 w-4 mr-1" /> Enviar e registrar</Button>
+          <Button onClick={preview} disabled={sending || previewing}>
+            {(sending || previewing) && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+            <Users className="h-4 w-4 mr-1" /> Ver quantos vão receber
+          </Button>
         </CardContent></Card>
+
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar envio em massa</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta notificação será enviada para <b>{previewCount ?? 0}</b> usuário(s) da audiência <b>{form.audience}</b>.
+              <br /><br />
+              Notificações especiais em massa ignoram preferências individuais de notificação — use apenas para avisos realmente importantes (ex.: manutenção, alertas de segurança).
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmSend}>
+              <Bell className="h-4 w-4 mr-1" /> Enviar para {previewCount ?? 0}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
         <Card className="border-border/50"><CardContent className="p-6">
           <div className="flex items-center gap-2 mb-3 text-sm text-muted-foreground"><Eye className="h-4 w-4" />Preview</div>
