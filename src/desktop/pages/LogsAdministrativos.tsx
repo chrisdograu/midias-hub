@@ -24,11 +24,34 @@ export default function LogsAdministrativos() {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
 
+  const PAGE_SIZE = 500;
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+
   const load = async () => {
     setLoading(true);
-    const { data } = await supabase.from('admin_logs').select('*').order('created_at', { ascending: false }).limit(1000);
-    setRows(data || []); setLoading(false);
+    const { data } = await supabase.from('admin_logs').select('*').order('created_at', { ascending: false }).range(0, PAGE_SIZE - 1);
+    const list = data || [];
+    setRows(list);
+    setHasMore(list.length === PAGE_SIZE);
+    setLoading(false);
   };
+
+  const loadMore = async () => {
+    if (rows.length === 0 || loadingMore) return;
+    setLoadingMore(true);
+    const oldest = rows[rows.length - 1].created_at;
+    const { data } = await supabase.from('admin_logs')
+      .select('*')
+      .lt('created_at', oldest)
+      .order('created_at', { ascending: false })
+      .range(0, PAGE_SIZE - 1);
+    const list = data || [];
+    setRows(prev => [...prev, ...list]);
+    setHasMore(list.length === PAGE_SIZE);
+    setLoadingMore(false);
+  };
+
   useEffect(() => { load(); }, []);
 
   const entities = useMemo(() => Array.from(new Set(rows.map(r => r.entity).filter(Boolean))), [rows]);
