@@ -21,7 +21,12 @@ export default function TitulosAdmin() {
   const [userSearch, setUserSearch] = useState('');
   const [userResults, setUserResults] = useState<any[]>([]);
   const [filterSearch, setFilterSearch] = useState('');
+  const [pendingRemove, setPendingRemove] = useState<any | null>(null);
+  const [removeReason, setRemoveReason] = useState('');
   const debounced = useDebounce(userSearch, 300);
+
+  // Remove caracteres que quebram o parser do PostgREST no operador .or()
+  const sanitizePgrst = (s: string) => s.replace(/[,()\\*]/g, ' ').trim();
 
   const load = async () => {
     setLoading(true);
