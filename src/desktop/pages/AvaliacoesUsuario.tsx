@@ -15,6 +15,7 @@ interface Review {
 export default function AvaliacoesUsuario() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pendingDelete, setPendingDelete] = useState<Review | null>(null);
   const { toast } = useToast();
 
   const fetchReviews = async () => {
