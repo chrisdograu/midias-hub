@@ -57,6 +57,12 @@ export default function Contato() {
       </div>
 
       <form onSubmit={handleSubmit} className="bg-card border border-border rounded-xl p-6 space-y-4">
+        {/* Honeypot anti-spam: escondido de usuários reais, visível a bots automatizados */}
+        <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', top: 'auto', width: '1px', height: '1px', overflow: 'hidden' }}>
+          <label>Não preencha este campo
+            <input type="text" tabIndex={-1} autoComplete="off" value={website} onChange={e => setWebsite(e.target.value)} />
+          </label>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="text-sm font-medium text-foreground">Nome *</label>
