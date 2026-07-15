@@ -72,7 +72,7 @@ export default function Checkout() {
         const couponId = await redeemCupom(pedido.id);
         if (!couponId) {
           // Cupom pode ter esgotado entre o clique e a confirmação — cancelar o pedido.
-          await supabase.from('pedidos').update({ status: 'cancelado' }).eq('id', pedido.id);
+          await supabase.from('pedidos').update({ status: 'cancelled' as any }).eq('id', pedido.id);
           toast.error('Cupom não pôde ser aplicado (esgotado ou inválido). Pedido cancelado.');
           return;
         }
