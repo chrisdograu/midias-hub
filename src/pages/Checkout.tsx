@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useCart } from '@/hooks/useCart';
 import { useCupom } from '@/hooks/useCupom';
 import { usePedidos } from '@/hooks/usePedidos';
+import { useSubmitGuard } from '@/hooks/useSubmitGuard';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, CreditCard, QrCode, Building, ShieldCheck, Lock, Tag, X } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -12,12 +13,12 @@ type PaymentMethod = 'credit' | 'pix' | 'boleto';
 
 export default function Checkout() {
   const { items, total: rawTotal, clearCart } = useCart();
-  const { cupom, loading: cupomLoading, error: cupomError, validarCupom, removerCupom } = useCupom();
+  const { cupom, loading: cupomLoading, error: cupomError, validarCupom, removerCupom, redeemCupom } = useCupom();
   const { criarPedido } = usePedidos();
   const navigate = useNavigate();
+  const { submitting: processing, guard } = useSubmitGuard();
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('credit');
   const [installments, setInstallments] = useState(1);
-  const [processing, setProcessing] = useState(false);
   const [cupomCode, setCupomCode] = useState('');
 
   // Preços de bundles referenciados no carrinho — para bater com o servidor
@@ -53,10 +54,10 @@ export default function Checkout() {
     await validarCupom(cupomCode.trim());
   };
 
-  const handlePurchase = async () => {
-    setProcessing(true);
+  const handlePurchase = guard(async () => {
+    let pedido: any = null;
     try {
-      const pedido = await criarPedido.mutateAsync({
+      pedido = await criarPedido.mutateAsync({
         items,
         subtotal: total,
         discountAmount: totalDiscount,
@@ -65,14 +66,25 @@ export default function Checkout() {
         installments: paymentMethod === 'credit' ? installments : 1,
         couponCode: cupom?.code || null,
       });
+
+      // Resgate atômico do cupom (RPC com lock) — só marca sucesso se passar.
+      if (cupom && pedido?.id) {
+        const couponId = await redeemCupom(pedido.id);
+        if (!couponId) {
+          // Cupom pode ter esgotado entre o clique e a confirmação — cancelar o pedido.
+          await supabase.from('pedidos').update({ status: 'cancelled' as any }).eq('id', pedido.id);
+          toast.error('Cupom não pôde ser aplicado (esgotado ou inválido). Pedido cancelado.');
+          return;
+        }
+      }
+
       clearCart();
       toast.success('Compra realizada com sucesso!');
       navigate('/checkout/sucesso', { state: { orderId: pedido?.id } });
     } catch (err: any) {
-      toast.error('Erro ao processar pedido. Tente novamente.');
+      toast.error(err?.message || 'Erro ao processar pedido. Tente novamente.');
     }
-    setProcessing(false);
-  };
+  });
 
   if (items.length === 0) {
     return (

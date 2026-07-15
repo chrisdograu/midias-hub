@@ -1,11 +1,24 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const ALLOWED_ORIGINS = [
+  'https://midias-midas.lovable.app',
+  'https://id-preview--c1cfbae2-5609-422d-b6ab-69f5e8880b6d.lovable.app',
+  'http://localhost:8080',
+  'http://localhost:5173',
+];
+
+function corsFor(req: Request) {
+  const origin = req.headers.get('origin') ?? '';
+  const allowed = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  return {
+    "Access-Control-Allow-Origin": allowed,
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Vary": "Origin",
+  };
+}
 
 Deno.serve(async (req) => {
+  const corsHeaders = corsFor(req);
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -145,40 +158,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (action === "create_batch") {
-      // For creating multiple test employees at once
-      const { employees } = body;
-      const results = [];
-
-      for (const emp of employees) {
-        const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
-          email: emp.email,
-          password: emp.password,
-          email_confirm: true,
-          user_metadata: { display_name: emp.display_name },
-        });
-
-        if (createError) {
-          results.push({ email: emp.email, error: createError.message });
-          continue;
-        }
-
-        if (emp.phone) {
-          await supabaseAdmin.from("profiles").update({ phone: emp.phone }).eq("id", newUser.user.id);
-        }
-
-        await supabaseAdmin
-          .from("user_roles")
-          .update({ role: emp.role, position: emp.position })
-          .eq("user_id", newUser.user.id);
-
-        results.push({ email: emp.email, success: true, user_id: newUser.user.id });
-      }
-
-      return new Response(JSON.stringify({ results }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    // Ação `create_batch` removida — seed em massa fica isolado nas funções `seed-*`.
 
     return new Response(JSON.stringify({ error: "Ação inválida" }), {
       status: 400,

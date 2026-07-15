@@ -144,12 +144,16 @@ export function useGameRewards(productId: string | null | undefined) {
 }
 
 // --- Library helper for "Customizar" gate ---
+// Posse real: `quero_jogar` (lista de desejos) NÃO conta, mesma regra do trigger de avaliações.
+export const OWNERSHIP_STATUSES = ['ja_joguei','zerado','jogando','pausado','abandonado','platinado'] as const;
+
 export async function userOwnsGame(userId: string, productId: string): Promise<boolean> {
   const { data } = await supabase
     .from('biblioteca_usuario' as any)
-    .select('id')
+    .select('id, status')
     .eq('user_id', userId)
     .eq('product_id', productId)
+    .in('status', OWNERSHIP_STATUSES as unknown as string[])
     .maybeSingle();
   return !!data;
 }

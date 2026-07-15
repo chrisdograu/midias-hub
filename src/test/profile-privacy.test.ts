@@ -112,6 +112,11 @@ describe('perfil público — contrato de visibilidade', () => {
 describe('semântica de can_view_full_profile', () => {
   // Simula a lógica SQL de `can_view_full_profile(_owner, _viewer)`:
   //   self OR admin OR viewer ∈ privacy_exceptions OR close_friend OR mutual
+  //
+  // NOTA: "amigo mútuo" (mutual) aqui é o que `are_mutual_friends()` faz no SQL —
+  // existência de uma linha em `conversas` com status = 'accepted' entre os dois.
+  // NÃO é follow bidirecional em `user_follows`. É a mesma definição usada por
+  // `get_mutual_friends()` (base da Biblioteca Social).
   type Ctx = {
     self?: boolean; admin?: boolean; exception?: boolean;
     closeFriend?: boolean; mutual?: boolean;
@@ -131,11 +136,10 @@ describe('semântica de can_view_full_profile', () => {
   it('close friend libera', () => {
     expect(canView({ closeFriend: true })).toBe(true);
   });
-  it('amigo mútuo (follow assimétrico ida + volta) libera', () => {
+  it('amigo mútuo (conversa aceita entre os dois) libera', () => {
     expect(canView({ mutual: true })).toBe(true);
   });
-  it('follow unilateral (só ida) NÃO libera', () => {
-    // follow assimétrico: A segue B, mas B não segue A → não é mutual.
+  it('sem conversa aceita entre os dois NÃO libera', () => {
     expect(canView({ mutual: false })).toBe(false);
   });
   it('estranho autenticado não libera', () => {

@@ -1,5 +1,30 @@
 # Plano de correção — MIDIAS
 
+## ✅ Rodada 5/6/7 (itens 58–70)
+
+### Banco (migração `20260715_...`)
+- **#62** `notification_type` ganhou valor `lembrete_torneio` — `tournament-reminders` agora usa o tipo certo.
+- **#69** `biblioteca_usuario.status` recebeu `CHECK` restrito a `ja_joguei, zerado, jogando, pausado, abandonado, quero_jogar, platinado`.
+
+### Edge Functions
+- **#58** `seed-admin-friends` e `seed-test-users`: senha por conta agora é `crypto.randomUUID()`. Devolve credenciais só para as contas **criadas nesta execução** (campo `new_credentials`) — chamadas subsequentes não repetem a senha, e nada é logado.
+- **#59** Todas as 4 Edge Functions: CORS agora vem de allowlist (`midias-midas.lovable.app`, preview, localhost dev). Fim do `Allow-Origin: *`.
+- **#60** Ação `create_batch` removida de `manage-employee` — seed em massa é responsabilidade das funções `seed-*` dedicadas.
+- **#61** `tournament-reminders` exige header `x-cron-secret` igual a `TOURNAMENT_CRON_SECRET` (se a variável estiver setada). Sem o segredo, 403.
+- **#65** `seed-test-users`: `listUsers()` saiu do loop, agora executa 1x igual `seed-admin-friends`.
+
+### Frontend
+- **Rodada 6 / crítico**: `Checkout` agora chama `redeemCupom(pedido.id)` depois de `criarPedido` — sucesso só é declarado se o resgate atômico (RPC `validate_and_use_coupon`) passar. Se o cupom esgotar entre o clique e a confirmação, o pedido é marcado `cancelled` e o usuário vê erro. Item 5 (rodada 1) volta a ficar honestamente ✅.
+- **Rodada 6 / duplo clique**: `Checkout` migrou de `useState(processing)` para `useSubmitGuard` (mesma trava `useRef` já usada em 4 outros pontos).
+- **#66** `userOwnsGame` em `useCosmetics` agora filtra por `status IN (ja_joguei, zerado, jogando, pausado, abandonado, platinado)` — `quero_jogar` deixou de liberar customização cosmética. Constante `OWNERSHIP_STATUSES` exportada para virar fonte única de verdade.
+- **#67** `ProtectedRoute`: `DEV_BYPASS` agora é `false && import.meta.env.DEV` — no build de produção o Vite elimina o ramo por completo, então nem um commit acidental de `true` liga o bypass em prod.
+- **#63** `profile-privacy.test.ts`: comentário sobre "amigo mútuo" corrigido — a definição é `conversas.status = 'accepted'` (o que `are_mutual_friends()` faz), não follow bidirecional.
+- **#70** `useFavoritoAnuncio.toggle` agora checa `error` também no ramo de **remover**, revertendo o toast e o estado visual se o `delete` falhar.
+
+## ⏳ Não fiz nesta rodada — decisão consciente
+- **#64** É a raiz do #25, já corrigido no servidor (`create_order_secure`); nenhuma ação nova aqui.
+- **#68** Nota descritiva sobre `canAccess` — sem ação de código.
+
 ## ✅ Rodada 4 (auditoria itens 38–57)
 
 ### Banco (migração `20260714_...`)

@@ -4939,6 +4939,7 @@ export type Database = {
         | "certificado_recusado"
         | "certificado_revogado"
         | "novo_seguidor"
+        | "lembrete_torneio"
       order_status:
         | "pending"
         | "confirmed"
@@ -5127,6 +5128,7 @@ export const Constants = {
         "certificado_recusado",
         "certificado_revogado",
         "novo_seguidor",
+        "lembrete_torneio",
       ],
       order_status: [
         "pending",

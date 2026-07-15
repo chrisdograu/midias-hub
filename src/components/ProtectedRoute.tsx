@@ -1,7 +1,10 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 
-const DEV_BYPASS = false; // autenticação ativa
+// Bypass só existe em builds de desenvolvimento — em produção Vite garante
+// import.meta.env.DEV = false, então esse ramo é morto no build final e não pode
+// ser ativado por commit acidental de um booleano solto.
+const DEV_BYPASS = false && import.meta.env.DEV;
 
 export default function ProtectedRoute({
   children,
