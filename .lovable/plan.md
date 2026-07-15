@@ -25,7 +25,7 @@
 - **#64** É a raiz do #25, já corrigido no servidor (`create_order_secure`); nenhuma ação nova aqui.
 - **#68** Nota descritiva sobre `canAccess` — sem ação de código.
 
-
+## ✅ Rodada 4 (auditoria itens 38–57)
 
 ### Banco (migração `20260714_...`)
 - **#40** `is_user_banned()` agora barra INSERT em `avaliacoes` e `pedidos` — usuário suspenso não avalia nem finaliza compra.
