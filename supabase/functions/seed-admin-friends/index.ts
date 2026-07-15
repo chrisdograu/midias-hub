@@ -4,13 +4,29 @@
 // IDEMPOTENTE — pode ser chamada várias vezes.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+const ALLOWED_ORIGINS = [
+  'https://midias-midas.lovable.app',
+  'https://id-preview--c1cfbae2-5609-422d-b6ab-69f5e8880b6d.lovable.app',
+  'http://localhost:8080',
+  'http://localhost:5173',
+];
+
+function corsFor(req: Request) {
+  const origin = req.headers.get('origin') ?? '';
+  const allowed = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  return {
+    'Access-Control-Allow-Origin': allowed,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Vary': 'Origin',
+  };
+}
 
 const ADMIN_EMAIL = 'admin2@midias.com';
-const PASSWORD = 'Amigo@123';
+
+// Senha aleatória gerada por execução (nunca hardcoded).
+function generatePassword(): string {
+  return crypto.randomUUID().replace(/-/g, '') + 'A@1';
+}
 
 const FRIENDS = [
   { email: 'amigo.gamer@midias.test',    display_name: '🎮 Léo Gamer',       bio: 'Platinei 80+ jogos. RPGs e Souls são minha vida.',     persona: 'gamer' },
@@ -22,6 +38,7 @@ const FRIENDS = [
 ];
 
 Deno.serve(async (req) => {
+  const corsHeaders = corsFor(req);
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   try {
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
@@ -31,31 +48,35 @@ Deno.serve(async (req) => {
 
     const userClient = createClient(SUPABASE_URL, ANON, { global: { headers: { Authorization: authHeader } } });
     const { data: { user }, error: userErr } = await userClient.auth.getUser();
-    if (userErr || !user) return json({ error: 'Não autenticado' }, 401);
+    if (userErr || !user) return json({ error: 'Não autenticado' }, 401, corsHeaders);
 
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE);
     const { data: roleRow } = await admin.from('user_roles').select('role').eq('user_id', user.id).eq('role', 'admin').maybeSingle();
-    if (!roleRow) return json({ error: 'Apenas admins' }, 403);
+    if (!roleRow) return json({ error: 'Apenas admins' }, 403, corsHeaders);
 
     // 1) Localizar admin master
     const { data: list } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
     const adminMaster = list?.users?.find(u => u.email === ADMIN_EMAIL);
-    if (!adminMaster) return json({ error: `Admin master ${ADMIN_EMAIL} não encontrado` }, 404);
+    if (!adminMaster) return json({ error: `Admin master ${ADMIN_EMAIL} não encontrado` }, 404, corsHeaders);
     const ADMIN_ID = adminMaster.id;
 
-    // 2) Criar/recuperar os 6 amigos
+    // 2) Criar/recuperar os 6 amigos (senha aleatória por conta criada nesta execução)
     const friendIds: Record<string, string> = {};
+    const createdCredentials: Array<{ email: string; password: string }> = [];
     for (const f of FRIENDS) {
       const existing = list?.users?.find(u => u.email === f.email);
       let uid: string;
       if (existing) uid = existing.id;
       else {
+        const pwd = generatePassword();
         const { data: c, error: cErr } = await admin.auth.admin.createUser({
-          email: f.email, password: PASSWORD, email_confirm: true,
+          email: f.email, password: pwd, email_confirm: true,
           user_metadata: { display_name: f.display_name },
         });
         if (cErr || !c.user) throw new Error(`Falha ao criar ${f.email}: ${cErr?.message}`);
         uid = c.user.id;
+        // Credenciais devolvidas UMA vez — o admin que chamou deve anotar. Não salvamos em log/DB.
+        createdCredentials.push({ email: f.email, password: pwd });
       }
       friendIds[f.persona] = uid;
       await admin.from('profiles').update({
@@ -137,7 +158,6 @@ Deno.serve(async (req) => {
           opId = op?.id;
         }
         if (opId) {
-          // Admin responde -> cria conversation
           const { data: conv } = await admin.from('opinion_conversations').upsert({
             opinion_id: opId, responder_id: ADMIN_ID,
           }, { onConflict: 'opinion_id,responder_id' }).select('id').single();
@@ -205,7 +225,6 @@ Deno.serve(async (req) => {
         }).select('id').single();
         if (ins) adIds.push(ins.id);
       }
-      // Admin conversa como comprador com o vendedor
       if (adIds.length > 0) {
         const msgs = [
           { sender: ADMIN_ID, receiver: friendIds.seller, content: 'Oi! Esse jogo ainda tá disponível?' },
@@ -286,7 +305,6 @@ Deno.serve(async (req) => {
             tournament_id: tId, user_id: uid, chat_role: 'participant',
           }, { onConflict: 'tournament_id,user_id' });
         }
-        // mensagem no chat do torneio
         const { data: chatEx } = await admin.from('tournament_chat_messages')
           .select('id').eq('tournament_id', tId).limit(1);
         if (!chatEx || chatEx.length === 0) {
@@ -305,17 +323,20 @@ Deno.serve(async (req) => {
       admin: ADMIN_EMAIL,
       friends: Object.entries(friendIds).map(([persona, id]) => {
         const f = FRIENDS.find(x => x.persona === persona)!;
-        return { persona, name: f.display_name, email: f.email, password: PASSWORD, id };
+        return { persona, name: f.display_name, email: f.email, id };
       }),
+      // Credenciais devolvidas APENAS para contas criadas nesta execução.
+      // Anote agora — não são armazenadas em log nem retornadas em chamadas futuras.
+      new_credentials: createdCredentials,
       counts: { biblioteca: bibCount, opinions: opCount, screenshots: scCount, anuncios: adIds.length },
-    });
+    }, 200, corsHeaders);
   } catch (e) {
     console.error('seed-admin-friends error', e);
-    return json({ error: (e as Error).message }, 500);
+    return json({ error: (e as Error).message }, 500, corsFor(req));
   }
 });
 
-function json(b: unknown, status = 200) {
+function json(b: unknown, status: number, corsHeaders: Record<string, string>) {
   return new Response(JSON.stringify(b), {
     status, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   });

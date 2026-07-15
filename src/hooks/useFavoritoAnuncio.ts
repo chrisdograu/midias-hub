@@ -22,7 +22,8 @@ export function useFavoritoAnuncio(anuncioId?: string) {
     if (!anuncioId) return;
     setLoading(true);
     if (isFav) {
-      await supabase.from('favoritos_anuncio').delete().eq('user_id', user.id).eq('anuncio_id', anuncioId);
+      const { error } = await supabase.from('favoritos_anuncio').delete().eq('user_id', user.id).eq('anuncio_id', anuncioId);
+      if (error) { toast.error('Não foi possível remover dos favoritos'); setLoading(false); return; }
       setIsFav(false);
     } else {
       const { error } = await supabase.from('favoritos_anuncio').insert({ user_id: user.id, anuncio_id: anuncioId });

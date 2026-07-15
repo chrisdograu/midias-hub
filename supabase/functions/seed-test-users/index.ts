@@ -3,10 +3,22 @@
 // Idempotente: pode ser chamada várias vezes sem duplicar
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+const ALLOWED_ORIGINS = [
+  'https://midias-midas.lovable.app',
+  'https://id-preview--c1cfbae2-5609-422d-b6ab-69f5e8880b6d.lovable.app',
+  'http://localhost:8080',
+  'http://localhost:5173',
+];
+
+function corsFor(req: Request) {
+  const origin = req.headers.get('origin') ?? '';
+  const allowed = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  return {
+    'Access-Control-Allow-Origin': allowed,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Vary': 'Origin',
+  };
+}
 
 const TEST_USERS = [
   { email: 'cliente1@teste.com', display_name: 'João Cliente',  bio: 'Comprador frequente, fã de RPGs.', phone: '11999990001' },
@@ -14,9 +26,14 @@ const TEST_USERS = [
   { email: 'cliente3@teste.com', display_name: 'Pedro Avaliador', bio: 'Adoro escrever reviews de jogos.', phone: '11999990003' },
   { email: 'banido@teste.com', display_name: 'Usuário Banido', bio: 'Conta usada para testar o banimento.', phone: '11999990004' },
 ];
-const PASSWORD = 'Teste@123';
+
+// Senha aleatória por execução — nunca hardcoded, nunca logada.
+function generatePassword(): string {
+  return crypto.randomUUID().replace(/-/g, '') + 'A@1';
+}
 
 Deno.serve(async (req) => {
+  const corsHeaders = corsFor(req);
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
@@ -25,7 +42,6 @@ Deno.serve(async (req) => {
     const ANON = Deno.env.get('SUPABASE_ANON_KEY')!;
     const authHeader = req.headers.get('Authorization') ?? '';
 
-    // Validar caller é admin
     const userClient = createClient(SUPABASE_URL, ANON, { global: { headers: { Authorization: authHeader } } });
     const { data: { user }, error: userErr } = await userClient.auth.getUser();
     if (userErr || !user) return new Response(JSON.stringify({ error: 'Não autenticado' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
@@ -34,27 +50,28 @@ Deno.serve(async (req) => {
     const { data: roleRow } = await admin.from('user_roles').select('role').eq('user_id', user.id).eq('role', 'admin').maybeSingle();
     if (!roleRow) return new Response(JSON.stringify({ error: 'Apenas admins podem popular dados' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
-    // 1) Criar/recuperar os 4 usuários
+    // 1) Criar/recuperar os 4 usuários — busca a lista UMA vez, fora do loop
+    const { data: list } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
     const userIds: Record<string, string> = {};
+    const createdCredentials: Array<{ email: string; password: string }> = [];
     for (const u of TEST_USERS) {
-      // Tenta encontrar primeiro
-      const { data: list } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
       const existing = list?.users?.find(x => x.email === u.email);
       let uid: string;
       if (existing) {
         uid = existing.id;
       } else {
+        const pwd = generatePassword();
         const { data: created, error: cErr } = await admin.auth.admin.createUser({
           email: u.email,
-          password: PASSWORD,
+          password: pwd,
           email_confirm: true,
           user_metadata: { display_name: u.display_name },
         });
         if (cErr || !created.user) throw new Error(`Falha ao criar ${u.email}: ${cErr?.message}`);
         uid = created.user.id;
+        createdCredentials.push({ email: u.email, password: pwd });
       }
       userIds[u.email] = uid;
-      // Atualizar perfil
       await admin.from('profiles').update({
         display_name: u.display_name,
         bio: u.bio,
@@ -105,7 +122,6 @@ Deno.serve(async (req) => {
         if (existing) continue;
         const { data: post } = await admin.from('forum_posts').insert(p).select('id').single();
         if (post) {
-          // Resposta opcional
           await admin.from('forum_replies').insert({ post_id: post.id, user_id: c3, content: 'Concordo totalmente!' });
         }
       }
@@ -165,7 +181,9 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({
       ok: true,
       message: 'Dados de teste criados com sucesso',
-      users: Object.fromEntries(Object.entries(userIds).map(([email, id]) => [email, { id, password: PASSWORD }])),
+      users: Object.fromEntries(Object.entries(userIds).map(([email, id]) => [email, { id }])),
+      // Credenciais só das contas criadas nesta execução. Anote agora — não vamos devolver de novo.
+      new_credentials: createdCredentials,
       counts: { anuncios: anuncioIds.length },
     }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (e) {
