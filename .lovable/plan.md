@@ -1,5 +1,16 @@
 # Plano de correção — MIDIAS
 
+## ✅ Rodada 8/9 (itens 71–75)
+
+### Frontend
+- **#71 (crítico)** `PrivacyTab.persistVisibility` agora atualiza `is_private = (v !== 'public')` junto com `library_visibility`. Sem isso, o seletor Público/Amigos/Privado era decorativo — a RLS de `biblioteca_usuario` só olha `is_private`. Distinção fina entre `friends` e `private` continua sendo só copy até uma futura policy granular por `library_visibility`.
+- **#74** Criado `src/lib/escapeIlike.ts` (`escapeIlikeTerm`) — utilitário único que escapa `%`, `_`, `\` e neutraliza `,` e parênteses (quebram o parser de `.or()`). Aplicado em: `Header.tsx`, `MFriends.tsx`, `PrivacyTab.tsx`, `TitulosAdmin.tsx` (substituindo o `sanitizePgrst` local), `mobile/lib/mentions.ts`, `MentionCard.tsx` e `mobile/components/MentionText.tsx`. Ponto único de manutenção para futuras ocorrências.
+
+### Não fiz — decisão consciente
+- **#72** Adotar `useAdminTable` nas ~41 telas admin restantes é refactor amplo de UX. Fica registrado como P2.
+- **#73** Migrar `adminLog()` para RPCs transacionais nas ações críticas é uma reforma arquitetural — o item #52 (rodada 4) já cobriu o caso mais sensível (`read_user_library_admin`). Fica como padrão a ser aplicado incrementalmente.
+- **#75** `strictNullChecks`/`noImplicitAny`: ligar gera pilha de erros que precisa ser resolvida aos poucos — fora do escopo desta rodada.
+
 ## ✅ Rodada 5/6/7 (itens 58–70)
 
 ### Banco (migração `20260715_...`)

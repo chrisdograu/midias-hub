@@ -1,5 +1,6 @@
 // Sistema de menções compartilhado — suporta @usuario (pessoal) e $vendedor (seller)
 import { supabase } from '@/integrations/supabase/client';
+import { escapeIlikeTerm } from '@/lib/escapeIlike';
 
 const MENTION_RE = /([@$])([a-zA-Z0-9_.-]{2,32})/g;
 
@@ -33,7 +34,7 @@ export async function resolveMentions(items: { handle: string; kind: MentionKind
   if (personal.length) {
     const { data } = await supabase
       .from('profiles').select('id, display_name')
-      .or(personal.map(h => `display_name.ilike.${h}`).join(','))
+      .or(personal.map(h => `display_name.ilike.${escapeIlikeTerm(h)}`).join(','))
       .limit(50);
     (data || []).forEach(p => results.push({ id: p.id as string, handle: (p.display_name || '').toLowerCase(), kind: 'personal' }));
   }

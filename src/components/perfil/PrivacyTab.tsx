@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Shield, Plus, X, Loader2, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { Checkbox } from '@/components/ui/checkbox';
+import { escapeIlikeTerm } from '@/lib/escapeIlike';
 
 type Visibility = 'public' | 'friends' | 'private';
 type Scope = 'reviews_completas' | 'screenshots' | 'opinions' | 'stats' | 'achievements' | 'library_items' | 'full';
@@ -66,7 +67,13 @@ export default function PrivacyTab() {
   const persistVisibility = async (v: Visibility) => {
     setVisibility(v);
     if (!user) return;
-    const { error } = await supabase.from('profiles').update({ library_visibility: v } as any).eq('id', user.id);
+    // Mantém `is_private` sincronizado com o seletor — sem isso, a RLS de
+    // `biblioteca_usuario` (que só checa `is_private`) ignoraria a escolha
+    // do usuário e a tela viraria puramente decorativa.
+    const { error } = await supabase
+      .from('profiles')
+      .update({ library_visibility: v, is_private: v !== 'public' } as any)
+      .eq('id', user.id);
     if (error) toast.error('Erro ao salvar'); else toast.success('Visibilidade atualizada');
   };
 
@@ -90,7 +97,7 @@ export default function PrivacyTab() {
     const { data } = await supabase
       .from('profiles')
       .select('id, display_name, avatar_url')
-      .ilike('display_name', `%${query}%`)
+      .ilike('display_name', `%${escapeIlikeTerm(query)}%`)
       .neq('id', user!.id)
       .limit(8);
     setResults((data as any) || []);
