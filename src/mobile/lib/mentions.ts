@@ -34,7 +34,7 @@ export async function resolveMentions(items: { handle: string; kind: MentionKind
   if (personal.length) {
     const { data } = await supabase
       .from('profiles').select('id, display_name')
-      .or(personal.map(h => `display_name.ilike.${h}`).join(','))
+      .or(personal.map(h => `display_name.ilike.${escapeIlikeTerm(h)}`).join(','))
       .limit(50);
     (data || []).forEach(p => results.push({ id: p.id as string, handle: (p.display_name || '').toLowerCase(), kind: 'personal' }));
   }
