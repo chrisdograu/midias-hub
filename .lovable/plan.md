@@ -1,5 +1,30 @@
 # Plano de correção — MIDIAS
 
+## ✅ Rodada 10 (itens 76–82)
+
+### #76 — Webhooks disparados de verdade
+- Nova edge function `dispatch-webhook` (server-side, protegida por `WEBHOOK_DISPATCH_SECRET`) recebe `{event, payload}`, consulta `integration_webhooks` ativos com evento correspondente, faz `POST` em cada URL enviando o segredo cadastrado no header `X-Webhook-Secret`, e grava `last_test_status`/`last_test_at` por hook. Timeout de 8s por chamada.
+- Nova RPC `public.emit_webhook_event(_event, _payload)` (`SECURITY DEFINER`, `search_path` fixo, `EXECUTE` só para `service_role`) usa `pg_net` para POSTar na edge function. Pula a chamada HTTP quando não há hook ativo para o evento, e nunca derruba a transação de negócio (bloco `EXCEPTION WHEN OTHERS THEN RAISE WARNING`).
+- Triggers `AFTER INSERT`:
+  - `on_pedido_created_webhook` em `pedidos` → emite `order.created` (id, user, total, status).
+  - `on_profile_created_webhook` em `profiles` → emite `user.registered` (via `handle_new_user`).
+- Banner "em construção" de `IntegracoesAdmin` substituído por banner verde documentando os eventos suportados hoje.
+- **Nunca dispara do client** — o botão "Testar" continua sendo ping manual, mas o fluxo automático é 100% servidor.
+
+### #77 — Termos de Uso reais
+- `TermosDeUso.tsx` reescrito com 14 seções que refletem o funcionamento real do projeto: loja da plataforma + marketplace C2C + comunidade, checkout simulado do TCC, política de reembolso (chave ativada vs não-ativada), reviews só com posse comprovada, banimento e exclusão de conta com anonimização, privacidade da biblioteca com exceções granulares, torneios com verificação por Modo Live, contato. Nota explicando que é linguagem simples e não substitui parecer jurídico formal.
+- Data de última atualização visível (`16 de julho de 2026`).
+
+### #82 — Warnings do linter Supabase (parcial)
+- `DO $$ ... $$` na migração faz `ALTER FUNCTION ... SET search_path = public` em massa em todas as funções `SECURITY DEFINER` do schema `public` que ainda não tinham `search_path` fixo. Ignora erros individuais para não quebrar a migração inteira.
+- Warnings restantes (extensão `pg_net` em `public`, buckets públicos com listagem, funções ainda executáveis por anon) são casos que exigem decisão de negócio (mover extensão para schema próprio, restringir listagem de buckets) — ficam registrados como P2.
+
+### Não fiz nesta rodada — decisão consciente
+- **#78** Regenerar `types.ts` manualmente: o arquivo é regenerado pela plataforma após cada migração aprovada. Se a contagem de `as any` continua subindo, o trabalho real é remover casts caso a caso — item registrado como P2 (refactor incremental por módulo).
+- **#79** Verificação de resultado por Modo Live: precisa de campo em `tournament_matches` (`verified_by_live boolean`) + cruzamento com `tournament_live_events`. Reserva pra sprint dedicada ao fluxo de reporte de partida (que ainda não tem UI).
+- **#80** Adoção ampla de `useAdminTable` nas ~41 telas restantes: refactor grande, sem valor imediato de segurança/integridade. Fica como P2.
+- **#81** `strictNullChecks`/`noImplicitAny`: ligar gera pilha de erros que precisa ser resolvida aos poucos por módulo. P2.
+
 ## ✅ Rodada 8/9 (itens 71–75)
 
 ### Frontend
