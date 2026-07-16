@@ -4,6 +4,7 @@ import { ArrowLeft, Loader2, UserPlus, UserCheck, Users, Search, Check, X, Clock
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { escapeIlikeTerm } from '@/lib/escapeIlike';
 
 interface Person { id: string; display_name: string | null; avatar_url: string | null; username: string | null }
 interface Request { id: string; requester_id: string; created_at: string; profile: Person | null }
