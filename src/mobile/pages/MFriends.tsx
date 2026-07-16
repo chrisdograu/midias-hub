@@ -109,9 +109,10 @@ export default function MFriends() {
     const q = query.trim();
     if (q.length < 2) { setDiscover([]); return; }
     const t = setTimeout(async () => {
+      const term = escapeIlikeTerm(q);
       const { data } = await supabase
         .from('profiles').select('id, display_name, avatar_url, username')
-        .or(`display_name.ilike.%${q}%,username.ilike.%${q}%`).limit(30);
+        .or(`display_name.ilike.%${term}%,username.ilike.%${term}%`).limit(30);
       setDiscover((data as Person[]) || []);
     }, 250);
     return () => clearTimeout(t);
