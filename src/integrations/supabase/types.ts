@@ -4635,6 +4635,10 @@ export type Database = {
         }
         Returns: Json
       }
+      emit_webhook_event: {
+        Args: { _event: string; _payload: Json }
+        Returns: undefined
+      }
       gen_referral_code: { Args: never; Returns: string }
       get_employee_position: {
         Args: { _user_id: string }
