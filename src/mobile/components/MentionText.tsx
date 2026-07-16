@@ -20,7 +20,7 @@ export function MentionText({ text, className }: { text: string; className?: str
     (async () => {
       if (personalHandles.length) {
         const { data } = await supabase.from('profiles').select('id, display_name, avatar_url')
-          .or(personalHandles.map(h => `display_name.ilike.${h}`).join(',')).limit(50);
+          .or(personalHandles.map(h => `display_name.ilike.${escapeIlikeTerm(h)}`).join(',')).limit(50);
         if (!cancel && data) {
           const m: any = {}; data.forEach(p => { m[(p.display_name || '').toLowerCase()] = p; }); setPmap(m);
         }
