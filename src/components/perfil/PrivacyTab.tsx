@@ -66,7 +66,13 @@ export default function PrivacyTab() {
   const persistVisibility = async (v: Visibility) => {
     setVisibility(v);
     if (!user) return;
-    const { error } = await supabase.from('profiles').update({ library_visibility: v } as any).eq('id', user.id);
+    // Mantém `is_private` sincronizado com o seletor — sem isso, a RLS de
+    // `biblioteca_usuario` (que só checa `is_private`) ignoraria a escolha
+    // do usuário e a tela viraria puramente decorativa.
+    const { error } = await supabase
+      .from('profiles')
+      .update({ library_visibility: v, is_private: v !== 'public' } as any)
+      .eq('id', user.id);
     if (error) toast.error('Erro ao salvar'); else toast.success('Visibilidade atualizada');
   };
 
