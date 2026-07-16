@@ -1,5 +1,6 @@
 // Sistema de menções compartilhado — suporta @usuario (pessoal) e $vendedor (seller)
 import { supabase } from '@/integrations/supabase/client';
+import { escapeIlikeTerm } from '@/lib/escapeIlike';
 
 const MENTION_RE = /([@$])([a-zA-Z0-9_.-]{2,32})/g;
 
