@@ -53,7 +53,7 @@ export default function Header() {
   useEffect(() => {
     const q = searchQuery.trim();
     if (!q.startsWith('@') || q.length < 2) { setUserResults([]); return; }
-    const term = q.slice(1);
+    const term = escapeIlikeTerm(q.slice(1));
     const t = setTimeout(async () => {
       const { data } = await supabase
         .from('profiles').select('id, display_name, username, avatar_url')
