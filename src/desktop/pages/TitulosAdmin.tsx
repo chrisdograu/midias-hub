@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { AdminPageHeader } from '../components/AdminPageHeader';
 import { adminLog, exportCsv } from '../lib/adminLog';
 import { useDebounce } from '@/hooks/useDebounce';
+import { escapeIlikeTerm } from '@/lib/escapeIlike';
 
 export default function TitulosAdmin() {
   const [rows, setRows] = useState<any[]>([]);
