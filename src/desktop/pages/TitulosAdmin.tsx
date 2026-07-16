@@ -26,8 +26,9 @@ export default function TitulosAdmin() {
   const [removeReason, setRemoveReason] = useState('');
   const debounced = useDebounce(userSearch, 300);
 
-  // Remove caracteres que quebram o parser do PostgREST no operador .or()
-  const sanitizePgrst = (s: string) => s.replace(/[,()\\*]/g, ' ').trim();
+  // Reaproveita o utilitário compartilhado (`escapeIlikeTerm`) — antes tinha
+  // uma implementação local `sanitizePgrst`; migramos para o helper canônico.
+  const sanitizePgrst = escapeIlikeTerm;
 
   const load = async () => {
     setLoading(true);
