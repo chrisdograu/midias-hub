@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Shield, Plus, X, Loader2, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { Checkbox } from '@/components/ui/checkbox';
+import { escapeIlikeTerm } from '@/lib/escapeIlike';
 
 type Visibility = 'public' | 'friends' | 'private';
 type Scope = 'reviews_completas' | 'screenshots' | 'opinions' | 'stats' | 'achievements' | 'library_items' | 'full';
