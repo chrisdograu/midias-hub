@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { parseMentionParts } from '@/mobile/lib/mentions';
+import { escapeIlikeTerm } from '@/lib/escapeIlike';
 
 /**
  * Web mention renderer — suporta @usuario e $vendedor com cartões distintos.
