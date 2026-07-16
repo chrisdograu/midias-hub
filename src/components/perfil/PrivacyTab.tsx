@@ -97,7 +97,7 @@ export default function PrivacyTab() {
     const { data } = await supabase
       .from('profiles')
       .select('id, display_name, avatar_url')
-      .ilike('display_name', `%${query}%`)
+      .ilike('display_name', `%${escapeIlikeTerm(query)}%`)
       .neq('id', user!.id)
       .limit(8);
     setResults((data as any) || []);
