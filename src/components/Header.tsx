@@ -9,6 +9,7 @@ import NotificationBell from './NotificationBell';
 import { supabase } from '@/integrations/supabase/client';
 import { usePrefetchRoute } from '@/hooks/usePrefetchRoute';
 import { CosmeticUnlocksCenter } from '@/components/cosmetics/CosmeticUnlocksCenter';
+import { escapeIlikeTerm } from '@/lib/escapeIlike';
 
 export default function Header() {
   const { itemCount } = useCart();
