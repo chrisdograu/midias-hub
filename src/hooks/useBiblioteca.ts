@@ -8,6 +8,7 @@ export interface BibliotecaItem {
   product_id: string;
   status: string;
   acquired_at: string;
+  lista_custom?: string | null;
   produto?: {
     title: string;
     image_url: string | null;
@@ -26,7 +27,7 @@ export function useBiblioteca() {
       if (!user) return [];
       const { data, error } = await supabase
         .from('biblioteca_usuario')
-        .select('*, badge_completed, badge_platinum, badge_verified_source, produto:product_id(title, image_url, platform, category)')
+        .select('*, badge_completed, badge_platinum, badge_verified_source, lista_custom, produto:product_id(title, image_url, platform, category)')
         .eq('user_id', user.id)
         .order('acquired_at', { ascending: false });
       if (error) throw error;
@@ -46,5 +47,17 @@ export function useBiblioteca() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['biblioteca'] }),
   });
 
-  return { biblioteca, updateStatus, isLoading: query.isLoading };
+  const updateListaCustom = useMutation({
+    mutationFn: async ({ id, lista }: { id: string; lista: string | null }) => {
+      const trimmed = lista?.trim().slice(0, 40) || null;
+      const { error } = await supabase
+        .from('biblioteca_usuario')
+        .update({ lista_custom: trimmed } as any)
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['biblioteca'] }),
+  });
+
+  return { biblioteca, updateStatus, updateListaCustom, isLoading: query.isLoading };
 }

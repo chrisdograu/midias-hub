@@ -33,11 +33,17 @@ const REASONS = [
   'Outro',
 ];
 
+// Denúncias com contexto de marketplace/troca ganham campo opcional de evidência
+// (link de print, foto, mensagem). Não trava o envio — só sinaliza que resolve mais rápido.
+const MARKETPLACE_TARGETS: TargetType[] = ['anuncio', 'mensagem', 'conversa'];
+
 export function ReportDialog({ open, onClose, targetType, targetId, label }: ReportDialogProps) {
   const { user } = useAuth();
   const [reason, setReason] = useState(REASONS[0]);
   const [desc, setDesc] = useState('');
+  const [evidence, setEvidence] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const showEvidence = MARKETPLACE_TARGETS.includes(targetType);
 
   const submit = async () => {
     if (!user) {
@@ -45,12 +51,18 @@ export function ReportDialog({ open, onClose, targetType, targetId, label }: Rep
       return;
     }
     setSubmitting(true);
+    const evidenceTrim = evidence.trim();
+    const descTrim = desc.trim();
+    const fullDescription = [
+      descTrim || null,
+      evidenceTrim ? `[Evidência anexada pelo denunciante]: ${evidenceTrim}` : null,
+    ].filter(Boolean).join('\n\n') || null;
     const { error } = await supabase.from('denuncias').insert({
       reporter_id: user.id,
       target_type: targetType,
       target_id: targetId,
       reason,
-      description: desc.trim() || null,
+      description: fullDescription,
     });
     setSubmitting(false);
     if (error) {
@@ -59,6 +71,7 @@ export function ReportDialog({ open, onClose, targetType, targetId, label }: Rep
     }
     toast.success('Denúncia enviada para análise');
     setDesc('');
+    setEvidence('');
     onClose();
   };
 
@@ -77,7 +90,7 @@ export function ReportDialog({ open, onClose, targetType, targetId, label }: Rep
             animate={{ y: 0 }}
             exit={{ y: 200 }}
             onClick={(e) => e.stopPropagation()}
-            className="w-full sm:max-w-md bg-card rounded-t-2xl sm:rounded-2xl p-5 space-y-3 border border-border"
+            className="w-full sm:max-w-md bg-card rounded-t-2xl sm:rounded-2xl p-5 space-y-3 border border-border max-h-[90vh] overflow-y-auto"
           >
             <div className="flex items-center justify-between">
               <h3 className="font-bold flex items-center gap-2">
@@ -104,6 +117,23 @@ export function ReportDialog({ open, onClose, targetType, targetId, label }: Rep
               placeholder="Detalhes (opcional)..."
               className="w-full p-3 bg-background border border-border rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/50"
             />
+            {showEvidence && (
+              <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-2">
+                <p className="text-xs text-foreground font-semibold">
+                  Anexar evidência (opcional, mas ajuda muito)
+                </p>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  Cole um link de print da conversa, foto do item ou comprovante. Denúncias com evidência são resolvidas mais rápido — protege quem denuncia e quem foi denunciado.
+                </p>
+                <input
+                  value={evidence}
+                  onChange={(e) => setEvidence(e.target.value)}
+                  maxLength={500}
+                  placeholder="https://... ou descrição da evidência"
+                  className="w-full p-2 bg-background border border-border rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-primary/50"
+                />
+              </div>
+            )}
             <div className="flex gap-2">
               <button onClick={onClose} className="flex-1 py-2.5 rounded-lg bg-secondary text-sm font-semibold">
                 Cancelar

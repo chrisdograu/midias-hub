@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useBiblioteca } from '@/hooks/useBiblioteca';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Library, Gamepad2, Loader2, Camera } from 'lucide-react';
+import { Library, Gamepad2, Loader2, Camera, Tag, Pencil } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import CustomCoverEditor from '@/components/biblioteca/CustomCoverEditor';
@@ -13,11 +13,13 @@ type StatusFilter = 'todos' | 'ja_joguei' | 'quero_jogar';
 type SortKey = 'recent' | 'title' | 'status';
 
 export default function Biblioteca() {
-  const { biblioteca, updateStatus, isLoading } = useBiblioteca();
+  const { biblioteca, updateStatus, updateListaCustom, isLoading } = useBiblioteca();
   const { user } = useAuth();
   const [filter, setFilter] = useState<StatusFilter>('todos');
   const [sort, setSort] = useState<SortKey>('recent');
   const [platform, setPlatform] = useState<string>('todas');
+  const [listaFilter, setListaFilter] = useState<string>('todas');
+  const [editingLista, setEditingLista] = useState<{ id: string; current: string } | null>(null);
 
   const stats = {
     total: biblioteca.length,
@@ -40,13 +42,22 @@ export default function Biblioteca() {
 
   const JA_JOGUEI_STATUSES = ['ja_joguei', 'zerado', 'jogando', 'pausado', 'abandonado'];
   const allPlatforms = Array.from(new Set(biblioteca.flatMap(b => b.produto?.platform || []))).sort();
+  const allListas = useMemo(
+    () => Array.from(new Set(biblioteca.map(b => (b as any).lista_custom).filter((v): v is string => !!v))).sort(),
+    [biblioteca]
+  );
   const base = filter === 'todos'
     ? biblioteca
     : filter === 'ja_joguei'
       ? biblioteca.filter(b => JA_JOGUEI_STATUSES.includes(b.status))
       : biblioteca.filter(b => b.status === filter);
   const platformFiltered = platform === 'todas' ? base : base.filter(b => (b.produto?.platform || []).includes(platform));
-  const filtered = [...platformFiltered].sort((a, b) => {
+  const listaFiltered = listaFilter === 'todas'
+    ? platformFiltered
+    : listaFilter === '__sem'
+      ? platformFiltered.filter(b => !(b as any).lista_custom)
+      : platformFiltered.filter(b => (b as any).lista_custom === listaFilter);
+  const filtered = [...listaFiltered].sort((a, b) => {
     if (sort === 'title') return (a.produto?.title || '').localeCompare(b.produto?.title || '');
     if (sort === 'status') return (a.status || '').localeCompare(b.status || '');
     return new Date(b.acquired_at).getTime() - new Date(a.acquired_at).getTime();
@@ -59,6 +70,16 @@ export default function Biblioteca() {
       toast.success('Status atualizado!');
     } catch {
       toast.error('Erro ao atualizar status');
+    }
+  };
+
+  const handleSaveLista = async (id: string, value: string) => {
+    try {
+      await updateListaCustom.mutateAsync({ id, lista: value.trim() ? value : null });
+      toast.success(value.trim() ? 'Etiqueta salva' : 'Etiqueta removida');
+      setEditingLista(null);
+    } catch {
+      toast.error('Erro ao salvar etiqueta');
     }
   };
 
@@ -138,6 +159,27 @@ export default function Biblioteca() {
         </div>
       )}
 
+      {allListas.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mb-6 items-center">
+          <Tag className="h-3.5 w-3.5 text-muted-foreground" />
+          <span className="text-[11px] uppercase text-muted-foreground tracking-wide mr-1">Etiquetas</span>
+          <button onClick={() => setListaFilter('todas')}
+            className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${listaFilter === 'todas' ? 'bg-primary/80 text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'}`}>
+            Todas
+          </button>
+          {allListas.map(l => (
+            <button key={l} onClick={() => setListaFilter(l)}
+              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${listaFilter === l ? 'bg-primary/80 text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'}`}>
+              {l}
+            </button>
+          ))}
+          <button onClick={() => setListaFilter('__sem')}
+            className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${listaFilter === '__sem' ? 'bg-primary/80 text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'}`}>
+            Sem etiqueta
+          </button>
+        </div>
+      )}
+
 
 
 
@@ -197,6 +239,13 @@ export default function Biblioteca() {
                   className="w-full px-2 py-1 bg-secondary hover:bg-primary/20 border border-border rounded text-[10px] font-medium flex items-center justify-center gap-1">
                   <Camera className="h-3 w-3" /> {customCovers[item.product_id] ? 'Editar capa' : 'Capa custom'}
                 </button>
+                <button onClick={() => setEditingLista({ id: item.id, current: (item as any).lista_custom || '' })}
+                  className="w-full px-2 py-1 bg-secondary hover:bg-primary/20 border border-border rounded text-[10px] font-medium flex items-center justify-center gap-1 truncate"
+                  title={(item as any).lista_custom || 'Adicionar etiqueta'}>
+                  {(item as any).lista_custom
+                    ? (<><Tag className="h-3 w-3 flex-shrink-0 text-primary" /><span className="truncate">{(item as any).lista_custom}</span><Pencil className="h-2.5 w-2.5 flex-shrink-0 opacity-60" /></>)
+                    : (<><Tag className="h-3 w-3" /> Adicionar etiqueta</>)}
+                </button>
               </div>
             </motion.div>
           );})}
@@ -212,6 +261,73 @@ export default function Biblioteca() {
           onSaved={() => refetchCovers()}
         />
       )}
+      {editingLista && (
+        <ListaCustomEditor
+          initial={editingLista.current}
+          suggestions={allListas}
+          onCancel={() => setEditingLista(null)}
+          onSave={(v) => handleSaveLista(editingLista.id, v)}
+        />
+      )}
+    </div>
+  );
+}
+
+function ListaCustomEditor({
+  initial,
+  suggestions,
+  onCancel,
+  onSave,
+}: {
+  initial: string;
+  suggestions: string[];
+  onCancel: () => void;
+  onSave: (value: string) => void;
+}) {
+  const [value, setValue] = useState(initial);
+  return (
+    <div className="fixed inset-0 z-[70] bg-black/60 flex items-end sm:items-center justify-center p-4" onClick={onCancel}>
+      <div onClick={(e) => e.stopPropagation()}
+        className="w-full sm:max-w-md bg-card border border-border rounded-2xl p-5 space-y-3">
+        <div className="flex items-center gap-2">
+          <Tag className="h-4 w-4 text-primary" />
+          <h3 className="font-bold">Etiqueta do jogo</h3>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Uma nota curta que fica em cima do status — "presente pra irmão", "quando trocar de PC", "esperando promoção". Máximo 40 caracteres.
+        </p>
+        <input
+          value={value}
+          onChange={(e) => setValue(e.target.value.slice(0, 40))}
+          maxLength={40}
+          placeholder="Ex.: quando trocar de PC"
+          className="w-full p-2.5 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+          autoFocus
+        />
+        {suggestions.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {suggestions.slice(0, 8).map((s) => (
+              <button key={s} type="button" onClick={() => setValue(s)}
+                className="px-2 py-1 rounded-full text-[11px] bg-secondary hover:bg-primary/20 text-muted-foreground">
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
+        <div className="flex gap-2 pt-1">
+          <button onClick={onCancel} className="flex-1 py-2.5 rounded-lg bg-secondary text-sm font-semibold">
+            Cancelar
+          </button>
+          {initial && (
+            <button onClick={() => onSave('')} className="flex-1 py-2.5 rounded-lg bg-destructive/80 text-destructive-foreground text-sm font-semibold">
+              Remover
+            </button>
+          )}
+          <button onClick={() => onSave(value)} className="flex-1 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-semibold">
+            Salvar
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
