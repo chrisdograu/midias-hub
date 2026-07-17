@@ -239,6 +239,13 @@ export default function Biblioteca() {
                   className="w-full px-2 py-1 bg-secondary hover:bg-primary/20 border border-border rounded text-[10px] font-medium flex items-center justify-center gap-1">
                   <Camera className="h-3 w-3" /> {customCovers[item.product_id] ? 'Editar capa' : 'Capa custom'}
                 </button>
+                <button onClick={() => setEditingLista({ id: item.id, current: (item as any).lista_custom || '' })}
+                  className="w-full px-2 py-1 bg-secondary hover:bg-primary/20 border border-border rounded text-[10px] font-medium flex items-center justify-center gap-1 truncate"
+                  title={(item as any).lista_custom || 'Adicionar etiqueta'}>
+                  {(item as any).lista_custom
+                    ? (<><Tag className="h-3 w-3 flex-shrink-0 text-primary" /><span className="truncate">{(item as any).lista_custom}</span><Pencil className="h-2.5 w-2.5 flex-shrink-0 opacity-60" /></>)
+                    : (<><Tag className="h-3 w-3" /> Adicionar etiqueta</>)}
+                </button>
               </div>
             </motion.div>
           );})}
