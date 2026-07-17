@@ -42,13 +42,22 @@ export default function Biblioteca() {
 
   const JA_JOGUEI_STATUSES = ['ja_joguei', 'zerado', 'jogando', 'pausado', 'abandonado'];
   const allPlatforms = Array.from(new Set(biblioteca.flatMap(b => b.produto?.platform || []))).sort();
+  const allListas = useMemo(
+    () => Array.from(new Set(biblioteca.map(b => (b as any).lista_custom).filter((v): v is string => !!v))).sort(),
+    [biblioteca]
+  );
   const base = filter === 'todos'
     ? biblioteca
     : filter === 'ja_joguei'
       ? biblioteca.filter(b => JA_JOGUEI_STATUSES.includes(b.status))
       : biblioteca.filter(b => b.status === filter);
   const platformFiltered = platform === 'todas' ? base : base.filter(b => (b.produto?.platform || []).includes(platform));
-  const filtered = [...platformFiltered].sort((a, b) => {
+  const listaFiltered = listaFilter === 'todas'
+    ? platformFiltered
+    : listaFilter === '__sem'
+      ? platformFiltered.filter(b => !(b as any).lista_custom)
+      : platformFiltered.filter(b => (b as any).lista_custom === listaFilter);
+  const filtered = [...listaFiltered].sort((a, b) => {
     if (sort === 'title') return (a.produto?.title || '').localeCompare(b.produto?.title || '');
     if (sort === 'status') return (a.status || '').localeCompare(b.status || '');
     return new Date(b.acquired_at).getTime() - new Date(a.acquired_at).getTime();
