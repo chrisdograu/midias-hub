@@ -73,6 +73,16 @@ export default function Biblioteca() {
     }
   };
 
+  const handleSaveLista = async (id: string, value: string) => {
+    try {
+      await updateListaCustom.mutateAsync({ id, lista: value.trim() ? value : null });
+      toast.success(value.trim() ? 'Etiqueta salva' : 'Etiqueta removida');
+      setEditingLista(null);
+    } catch {
+      toast.error('Erro ao salvar etiqueta');
+    }
+  };
+
   if (isLoading) {
     return <div className="flex justify-center py-16"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
