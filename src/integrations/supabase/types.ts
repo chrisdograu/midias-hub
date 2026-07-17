@@ -256,6 +256,7 @@ export type Database = {
           completed_at: string | null
           hours_played: number
           id: string
+          lista_custom: string | null
           mood_tags: string[]
           my_screenshots: string[]
           personal_note: string | null
@@ -274,6 +275,7 @@ export type Database = {
           completed_at?: string | null
           hours_played?: number
           id?: string
+          lista_custom?: string | null
           mood_tags?: string[]
           my_screenshots?: string[]
           personal_note?: string | null
@@ -292,6 +294,7 @@ export type Database = {
           completed_at?: string | null
           hours_played?: number
           id?: string
+          lista_custom?: string | null
           mood_tags?: string[]
           my_screenshots?: string[]
           personal_note?: string | null
@@ -4878,6 +4881,7 @@ export type Database = {
           completed_at: string | null
           hours_played: number
           id: string
+          lista_custom: string | null
           mood_tags: string[]
           my_screenshots: string[]
           personal_note: string | null
