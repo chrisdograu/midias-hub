@@ -272,3 +272,62 @@ export default function Biblioteca() {
     </div>
   );
 }
+
+function ListaCustomEditor({
+  initial,
+  suggestions,
+  onCancel,
+  onSave,
+}: {
+  initial: string;
+  suggestions: string[];
+  onCancel: () => void;
+  onSave: (value: string) => void;
+}) {
+  const [value, setValue] = useState(initial);
+  return (
+    <div className="fixed inset-0 z-[70] bg-black/60 flex items-end sm:items-center justify-center p-4" onClick={onCancel}>
+      <div onClick={(e) => e.stopPropagation()}
+        className="w-full sm:max-w-md bg-card border border-border rounded-2xl p-5 space-y-3">
+        <div className="flex items-center gap-2">
+          <Tag className="h-4 w-4 text-primary" />
+          <h3 className="font-bold">Etiqueta do jogo</h3>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Uma nota curta que fica em cima do status — "presente pra irmão", "quando trocar de PC", "esperando promoção". Máximo 40 caracteres.
+        </p>
+        <input
+          value={value}
+          onChange={(e) => setValue(e.target.value.slice(0, 40))}
+          maxLength={40}
+          placeholder="Ex.: quando trocar de PC"
+          className="w-full p-2.5 bg-background border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+          autoFocus
+        />
+        {suggestions.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {suggestions.slice(0, 8).map((s) => (
+              <button key={s} type="button" onClick={() => setValue(s)}
+                className="px-2 py-1 rounded-full text-[11px] bg-secondary hover:bg-primary/20 text-muted-foreground">
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
+        <div className="flex gap-2 pt-1">
+          <button onClick={onCancel} className="flex-1 py-2.5 rounded-lg bg-secondary text-sm font-semibold">
+            Cancelar
+          </button>
+          {initial && (
+            <button onClick={() => onSave('')} className="flex-1 py-2.5 rounded-lg bg-destructive/80 text-destructive-foreground text-sm font-semibold">
+              Remover
+            </button>
+          )}
+          <button onClick={() => onSave(value)} className="flex-1 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-semibold">
+            Salvar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
