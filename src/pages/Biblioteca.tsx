@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useBiblioteca } from '@/hooks/useBiblioteca';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Library, Gamepad2, Loader2, Camera } from 'lucide-react';
+import { Library, Gamepad2, Loader2, Camera, Tag, Pencil } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import CustomCoverEditor from '@/components/biblioteca/CustomCoverEditor';
@@ -13,11 +13,13 @@ type StatusFilter = 'todos' | 'ja_joguei' | 'quero_jogar';
 type SortKey = 'recent' | 'title' | 'status';
 
 export default function Biblioteca() {
-  const { biblioteca, updateStatus, isLoading } = useBiblioteca();
+  const { biblioteca, updateStatus, updateListaCustom, isLoading } = useBiblioteca();
   const { user } = useAuth();
   const [filter, setFilter] = useState<StatusFilter>('todos');
   const [sort, setSort] = useState<SortKey>('recent');
   const [platform, setPlatform] = useState<string>('todas');
+  const [listaFilter, setListaFilter] = useState<string>('todas');
+  const [editingLista, setEditingLista] = useState<{ id: string; current: string } | null>(null);
 
   const stats = {
     total: biblioteca.length,
