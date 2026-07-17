@@ -1,5 +1,31 @@
 # Plano de correção — MIDIAS
 
+## ✅ Rodada 11 (pesquisa aplicada — P1, P3 + diretrizes P5/P6/P7/P8)
+
+### #P1 — Listas customizadas na Biblioteca (feito)
+- Migração adicionou coluna `biblioteca_usuario.lista_custom` (texto opcional, `CHECK ≤ 40 chars`) + índice parcial `(user_id, lista_custom)` para filtro. Sem novas policies: quem já editava a própria biblioteca continua sendo o único a mexer.
+- `useBiblioteca` ganhou mutation `updateListaCustom({ id, lista })` com `trim` + corte de 40 chars.
+- `Biblioteca.tsx`: nova faixa de chips **Etiquetas** (`Todas | <cada etiqueta> | Sem etiqueta`) filtrando em memória; no card, botão dedicado abre o dialog `ListaCustomEditor` com input livre + sugestões das etiquetas já usadas + ação "Remover". Chip é etiqueta de **intenção** paralela ao status — não substitui `status`.
+- Filosofia: "conteúdo é memória" — a pessoa contando a própria história de intenção ("presente pra irmão", "quando trocar de PC"), mesmo espírito do Radar/Centro de Oportunidades.
+
+### #P3 — Evidência opcional em denúncia de marketplace (feito)
+- `ReportDialog` detecta `targetType ∈ { anuncio, mensagem, conversa }` e mostra bloco destacado com input de evidência (link/print/descrição, ≤ 500 chars). Copy: "denúncias com evidência são resolvidas mais rápido — protege quem denuncia e quem foi denunciado". Não trava envio.
+- Evidência é anexada à `description` prefixada com `[Evidência anexada pelo denunciante]:` — reaproveita campo que `Moderacao.tsx` já lê, sem migração/policy nova.
+
+### Diretrizes registradas — implementar quando as features existirem
+- **#P5** Check-in de torneio: todo estado (`confirmado`, `falhou`, `expirado`) visível — nunca tela que trava em silêncio. Reaproveitar `QueryErrorBoundary` + toast por estado quando o fluxo de check-in for reintroduzido.
+- **#P6** Ação de moderador em torneio (desclassificação/walkover/remoção): motivo obrigatório ≥ 6 chars server-side (padrão `read_user_library_admin`, #52) + consultável pelo jogador afetado. Aplicar quando UI de reporte de partida (#55) for construída.
+- **#P7** Critério de seeding visível no `TournamentBracket`/`CinematicBracket` — mesma "cláusula de explicabilidade" que o Radar já aplica. Adicionar quando o seeding virar parametrizável.
+- **#P8** Fórum: post/reply removido por moderação mostra placeholder "removido por moderação" (+ motivo curto), nunca some sem explicação. **NÃO** adicionar contadores tipo "X ações hoje" — vira métrica de vaidade, contradiz filosofia anti-feed. Depende de `removed_by_mod` + `removed_reason` em `forum_posts`/`forum_replies`.
+- **#P10** Busca sempre visível no `useAdminTable` — requisito não-negociável ao migrar as ~41 telas (#72).
+- **#P11** Seleção múltipla no admin sobrevive à troca de página — prevenção, nasce certo.
+- **#P13** Explicabilidade como diretriz de revisão de PR: *"toda vez que o sistema tomar uma decisão que afeta alguém, essa pessoa devia conseguir ver o porquê"*.
+
+### Não fiz — decisão consciente
+- **#P2** (revelação de chave + SLA) e **#P12** (nomes de estados de estoque): dependem de features que **não existem hoje**. Registrar spec pra quando forem construídas evita implementar solução em fluxo inexistente.
+- **#P4** (postura de mediação): já coberto pelos Termos reescritos na rodada 10 (#77); ferramenta `Moderacao.tsx` já existe.
+- **#P9** (útil/não-útil em review): hoje só há `review_likes` positivo — spec registrada **antes** do contador de discordância existir, pra não repetir erro da Steam.
+
 ## ✅ Rodada 10 (itens 76–82)
 
 ### #76 — Webhooks disparados de verdade
