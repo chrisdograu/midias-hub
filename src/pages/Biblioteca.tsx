@@ -159,6 +159,27 @@ export default function Biblioteca() {
         </div>
       )}
 
+      {allListas.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mb-6 items-center">
+          <Tag className="h-3.5 w-3.5 text-muted-foreground" />
+          <span className="text-[11px] uppercase text-muted-foreground tracking-wide mr-1">Etiquetas</span>
+          <button onClick={() => setListaFilter('todas')}
+            className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${listaFilter === 'todas' ? 'bg-primary/80 text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'}`}>
+            Todas
+          </button>
+          {allListas.map(l => (
+            <button key={l} onClick={() => setListaFilter(l)}
+              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${listaFilter === l ? 'bg-primary/80 text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'}`}>
+              {l}
+            </button>
+          ))}
+          <button onClick={() => setListaFilter('__sem')}
+            className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${listaFilter === '__sem' ? 'bg-primary/80 text-primary-foreground' : 'bg-secondary text-muted-foreground hover:text-foreground'}`}>
+            Sem etiqueta
+          </button>
+        </div>
+      )}
+
 
 
 
