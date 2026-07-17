@@ -261,6 +261,14 @@ export default function Biblioteca() {
           onSaved={() => refetchCovers()}
         />
       )}
+      {editingLista && (
+        <ListaCustomEditor
+          initial={editingLista.current}
+          suggestions={allListas}
+          onCancel={() => setEditingLista(null)}
+          onSave={(v) => handleSaveLista(editingLista.id, v)}
+        />
+      )}
     </div>
   );
 }
