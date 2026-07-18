@@ -4580,6 +4580,15 @@ export type Database = {
         Args: { _request_id: string }
         Returns: undefined
       }
+      announce_new_notification_type: {
+        Args: {
+          _body: string
+          _cta_url?: string
+          _pref_column: string
+          _title: string
+        }
+        Returns: number
+      }
       are_mutual_friends: { Args: { _a: string; _b: string }; Returns: boolean }
       are_users_all_mutual_friends: {
         Args: { _users: string[] }
