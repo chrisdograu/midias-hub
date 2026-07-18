@@ -91,13 +91,31 @@ export default function MAuth() {
 
           <form onSubmit={onSubmit} className="space-y-3">
             {mode === 'up' && (
-              <div className="relative">
-                <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <input value={form.displayName} onChange={e => setForm({ ...form, displayName: e.target.value })}
-                  placeholder="Seu nome de exibição"
-                  className="w-full pl-10 pr-3 py-2.5 bg-background/60 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
-              </div>
+              <>
+                <div className="relative">
+                  <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <input value={form.displayName} onChange={e => setForm({ ...form, displayName: e.target.value })}
+                    placeholder="Seu nome de exibição"
+                    className="w-full pl-10 pr-3 py-2.5 bg-background/60 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
+                </div>
+                <div>
+                  <div className="relative">
+                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <input type="date" value={form.birthDate} onChange={e => setForm({ ...form, birthDate: e.target.value })}
+                      max={new Date().toISOString().slice(0, 10)}
+                      aria-label="Data de nascimento"
+                      className="w-full pl-10 pr-3 py-2.5 bg-background/60 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-1 px-1">Obrigatório (Lei 15.211/2025 — ECA Digital). Define quais jogos aparecem para você.</p>
+                </div>
+              </>
             )}
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
+                placeholder="seu@email.com"
+                className="w-full pl-10 pr-3 py-2.5 bg-background/60 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
+            </div>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
