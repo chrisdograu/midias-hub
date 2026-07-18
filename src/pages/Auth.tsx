@@ -81,14 +81,27 @@ export default function Auth() {
         <div className="bg-card border border-border rounded-xl p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === 'signup' && (
-              <div>
-                <label className="text-sm text-muted-foreground mb-1 block">Nome</label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Seu nome" required
-                    className="w-full pl-10 pr-4 py-2.5 bg-secondary border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+              <>
+                <div>
+                  <label className="text-sm text-muted-foreground mb-1 block">Nome</label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Seu nome" required
+                      className="w-full pl-10 pr-4 py-2.5 bg-secondary border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+                  </div>
                 </div>
-              </div>
+                <div>
+                  <label className="text-sm text-muted-foreground mb-1 block">Data de nascimento</label>
+                  <div className="relative">
+                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden />
+                    <input type="date" value={birthDate} onChange={e => setBirthDate(e.target.value)} required
+                      max={new Date().toISOString().slice(0, 10)}
+                      aria-label="Data de nascimento"
+                      className="w-full pl-10 pr-4 py-2.5 bg-secondary border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-1">Obrigatório pela Lei 15.211/2025 (ECA Digital). Determina a classificação indicativa dos jogos que você vê.</p>
+                </div>
+              </>
             )}
             <div>
               <label className="text-sm text-muted-foreground mb-1 block">E-mail</label>
