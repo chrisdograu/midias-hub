@@ -14,6 +14,7 @@ export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [birthDate, setBirthDate] = useState('');
   const [loading, setLoading] = useState(false);
 
   // Redirect if already logged in
