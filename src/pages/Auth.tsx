@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Gamepad2, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { Gamepad2, Mail, Lock, User, Eye, EyeOff, Calendar } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
