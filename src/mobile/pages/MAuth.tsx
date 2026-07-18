@@ -25,7 +25,7 @@ export default function MAuth() {
   const { user, signIn, signUp, resetPassword } = useAuth();
   const navigate = useNavigate();
   const [mode, setMode] = useState<Mode>('in');
-  const [form, setForm] = useState({ displayName: '', email: '', password: '' });
+  const [form, setForm] = useState({ displayName: '', email: '', password: '', birthDate: '' });
   const [loading, setLoading] = useState(false);
 
   if (user) return <Navigate to="/m" replace />;
