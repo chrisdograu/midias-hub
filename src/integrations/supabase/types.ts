@@ -182,27 +182,36 @@ export type Database = {
           comment: string | null
           created_at: string
           id: string
+          is_revealed: boolean
           rating: number
+          reveal_deadline: string
           reviewed_id: string
           reviewer_id: string
+          trade_id: string | null
         }
         Insert: {
           anuncio_id?: string | null
           comment?: string | null
           created_at?: string
           id?: string
+          is_revealed?: boolean
           rating: number
+          reveal_deadline?: string
           reviewed_id: string
           reviewer_id: string
+          trade_id?: string | null
         }
         Update: {
           anuncio_id?: string | null
           comment?: string | null
           created_at?: string
           id?: string
+          is_revealed?: boolean
           rating?: number
+          reveal_deadline?: string
           reviewed_id?: string
           reviewer_id?: string
+          trade_id?: string | null
         }
         Relationships: [
           {
@@ -244,6 +253,42 @@ export type Database = {
           image_url?: string | null
           is_custom?: boolean
           name?: string
+        }
+        Relationships: []
+      }
+      ban_appeals: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          moderator_id: string | null
+          moderator_response: string | null
+          reason: Database["public"]["Enums"]["ban_appeal_reason"]
+          resolved_at: string | null
+          status: Database["public"]["Enums"]["ban_appeal_status"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          moderator_id?: string | null
+          moderator_response?: string | null
+          reason: Database["public"]["Enums"]["ban_appeal_reason"]
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["ban_appeal_status"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          moderator_id?: string | null
+          moderator_response?: string | null
+          reason?: Database["public"]["Enums"]["ban_appeal_reason"]
+          resolved_at?: string | null
+          status?: Database["public"]["Enums"]["ban_appeal_status"]
+          user_id?: string
         }
         Relationships: []
       }
@@ -2617,6 +2662,7 @@ export type Database = {
           awaiting_first_stock: boolean
           category: string | null
           category_id: string | null
+          classificacao_indicativa: Database["public"]["Enums"]["classificacao_indicativa"]
           cost_price: number | null
           created_at: string
           description: string | null
@@ -2644,6 +2690,7 @@ export type Database = {
           awaiting_first_stock?: boolean
           category?: string | null
           category_id?: string | null
+          classificacao_indicativa?: Database["public"]["Enums"]["classificacao_indicativa"]
           cost_price?: number | null
           created_at?: string
           description?: string | null
@@ -2671,6 +2718,7 @@ export type Database = {
           awaiting_first_stock?: boolean
           category?: string | null
           category_id?: string | null
+          classificacao_indicativa?: Database["public"]["Enums"]["classificacao_indicativa"]
           cost_price?: number | null
           created_at?: string
           description?: string | null
@@ -2741,12 +2789,18 @@ export type Database = {
       profiles: {
         Row: {
           active_title_id: string | null
+          age_verified: boolean
           always_hide_spoilers: boolean
+          anonymized_at: string | null
           avatar_url: string | null
           backlog_note: string | null
+          ban_reason: string | null
+          ban_reason_public: string | null
           banned_until: string | null
           banner_url: string | null
           bio: string | null
+          birth_date: string | null
+          chat_privacy_mode: string
           contact_email: string | null
           cpf: string | null
           created_at: string
@@ -2755,9 +2809,11 @@ export type Database = {
           email_notifications: boolean
           favorite_genres: string[] | null
           gamer_personality: string | null
+          guardian_user_id: string | null
           id: string
           is_private: boolean
           library_visibility: string
+          minor_chat_level: string | null
           monthly_favorites: string[] | null
           onboarded_at: string | null
           phone: string | null
@@ -2775,12 +2831,18 @@ export type Database = {
         }
         Insert: {
           active_title_id?: string | null
+          age_verified?: boolean
           always_hide_spoilers?: boolean
+          anonymized_at?: string | null
           avatar_url?: string | null
           backlog_note?: string | null
+          ban_reason?: string | null
+          ban_reason_public?: string | null
           banned_until?: string | null
           banner_url?: string | null
           bio?: string | null
+          birth_date?: string | null
+          chat_privacy_mode?: string
           contact_email?: string | null
           cpf?: string | null
           created_at?: string
@@ -2789,9 +2851,11 @@ export type Database = {
           email_notifications?: boolean
           favorite_genres?: string[] | null
           gamer_personality?: string | null
+          guardian_user_id?: string | null
           id: string
           is_private?: boolean
           library_visibility?: string
+          minor_chat_level?: string | null
           monthly_favorites?: string[] | null
           onboarded_at?: string | null
           phone?: string | null
@@ -2809,12 +2873,18 @@ export type Database = {
         }
         Update: {
           active_title_id?: string | null
+          age_verified?: boolean
           always_hide_spoilers?: boolean
+          anonymized_at?: string | null
           avatar_url?: string | null
           backlog_note?: string | null
+          ban_reason?: string | null
+          ban_reason_public?: string | null
           banned_until?: string | null
           banner_url?: string | null
           bio?: string | null
+          birth_date?: string | null
+          chat_privacy_mode?: string
           contact_email?: string | null
           cpf?: string | null
           created_at?: string
@@ -2823,9 +2893,11 @@ export type Database = {
           email_notifications?: boolean
           favorite_genres?: string[] | null
           gamer_personality?: string | null
+          guardian_user_id?: string | null
           id?: string
           is_private?: boolean
           library_visibility?: string
+          minor_chat_level?: string | null
           monthly_favorites?: string[] | null
           onboarded_at?: string | null
           phone?: string | null
@@ -4580,6 +4652,7 @@ export type Database = {
         Args: { _request_id: string }
         Returns: undefined
       }
+      age_bracket: { Args: { _birth: string }; Returns: string }
       announce_new_notification_type: {
         Args: {
           _body: string
@@ -4594,6 +4667,7 @@ export type Database = {
         Args: { _users: string[] }
         Returns: boolean
       }
+      auto_reveal_stale_ratings: { Args: never; Returns: number }
       award_tournament_rewards: {
         Args: { _tournament_id: string }
         Returns: undefined
@@ -4647,6 +4721,7 @@ export type Database = {
         }
         Returns: Json
       }
+      delete_my_account: { Args: never; Returns: undefined }
       emit_webhook_event: {
         Args: { _event: string; _payload: Json }
         Returns: undefined
@@ -4666,12 +4741,18 @@ export type Database = {
         Args: never
         Returns: {
           active_title_id: string | null
+          age_verified: boolean
           always_hide_spoilers: boolean
+          anonymized_at: string | null
           avatar_url: string | null
           backlog_note: string | null
+          ban_reason: string | null
+          ban_reason_public: string | null
           banned_until: string | null
           banner_url: string | null
           bio: string | null
+          birth_date: string | null
+          chat_privacy_mode: string
           contact_email: string | null
           cpf: string | null
           created_at: string
@@ -4680,9 +4761,11 @@ export type Database = {
           email_notifications: boolean
           favorite_genres: string[] | null
           gamer_personality: string | null
+          guardian_user_id: string | null
           id: string
           is_private: boolean
           library_visibility: string
+          minor_chat_level: string | null
           monthly_favorites: string[] | null
           onboarded_at: string | null
           phone: string | null
@@ -4716,12 +4799,18 @@ export type Database = {
         Args: { _id: string }
         Returns: {
           active_title_id: string | null
+          age_verified: boolean
           always_hide_spoilers: boolean
+          anonymized_at: string | null
           avatar_url: string | null
           backlog_note: string | null
+          ban_reason: string | null
+          ban_reason_public: string | null
           banned_until: string | null
           banner_url: string | null
           bio: string | null
+          birth_date: string | null
+          chat_privacy_mode: string
           contact_email: string | null
           cpf: string | null
           created_at: string
@@ -4730,9 +4819,11 @@ export type Database = {
           email_notifications: boolean
           favorite_genres: string[] | null
           gamer_personality: string | null
+          guardian_user_id: string | null
           id: string
           is_private: boolean
           library_visibility: string
+          minor_chat_level: string | null
           monthly_favorites: string[] | null
           onboarded_at: string | null
           phone: string | null
@@ -4841,12 +4932,18 @@ export type Database = {
         Args: { _ids: string[] }
         Returns: {
           active_title_id: string | null
+          age_verified: boolean
           always_hide_spoilers: boolean
+          anonymized_at: string | null
           avatar_url: string | null
           backlog_note: string | null
+          ban_reason: string | null
+          ban_reason_public: string | null
           banned_until: string | null
           banner_url: string | null
           bio: string | null
+          birth_date: string | null
+          chat_privacy_mode: string
           contact_email: string | null
           cpf: string | null
           created_at: string
@@ -4855,9 +4952,11 @@ export type Database = {
           email_notifications: boolean
           favorite_genres: string[] | null
           gamer_personality: string | null
+          guardian_user_id: string | null
           id: string
           is_private: boolean
           library_visibility: string
+          minor_chat_level: string | null
           monthly_favorites: string[] | null
           onboarded_at: string | null
           phone: string | null
@@ -4879,6 +4978,13 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      pode_acessar_conteudo: {
+        Args: {
+          _classificacao: Database["public"]["Enums"]["classificacao_indicativa"]
+          _user: string
+        }
+        Returns: boolean
       }
       read_user_library_admin: {
         Args: { _reason: string; _target: string }
@@ -4912,6 +5018,13 @@ export type Database = {
       should_notify: { Args: { _pref: string; _uid: string }; Returns: boolean }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
+      submit_ban_appeal: {
+        Args: {
+          _description: string
+          _reason: Database["public"]["Enums"]["ban_appeal_reason"]
+        }
+        Returns: string
+      }
       tournament_post_live_message: {
         Args: { _kind: string; _text: string; _tournament_id: string }
         Returns: string
@@ -4932,12 +5045,15 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user" | "atendente"
+      ban_appeal_reason: "nao_concordo" | "conta_invadida"
+      ban_appeal_status: "pendente" | "em_analise" | "deferido" | "indeferido"
       certificate_status:
         | "pendente"
         | "ativo"
         | "recusado"
         | "revogado"
         | "expirado"
+      classificacao_indicativa: "L" | "10" | "12" | "14" | "16" | "18"
       employee_position:
         | "admin"
         | "gerente"
@@ -5119,6 +5235,8 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user", "atendente"],
+      ban_appeal_reason: ["nao_concordo", "conta_invadida"],
+      ban_appeal_status: ["pendente", "em_analise", "deferido", "indeferido"],
       certificate_status: [
         "pendente",
         "ativo",
@@ -5126,6 +5244,7 @@ export const Constants = {
         "revogado",
         "expirado",
       ],
+      classificacao_indicativa: ["L", "10", "12", "14", "16", "18"],
       employee_position: [
         "admin",
         "gerente",
