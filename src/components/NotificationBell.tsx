@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 interface Notif {
   id: string; title: string; body: string | null; type: string;
   is_read: boolean; created_at: string; reference_type: string | null; reference_id: string | null;
+  kind?: string | null; cta_label?: string | null; cta_url?: string | null;
   href?: string;
 }
 
