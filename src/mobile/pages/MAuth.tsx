@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { Mail, Lock, User as UserIcon, Loader2, ArrowLeft } from 'lucide-react';
+import { Mail, Lock, User as UserIcon, Loader2, ArrowLeft, Calendar } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { z } from 'zod';
 import { toast } from 'sonner';
 
@@ -10,6 +11,7 @@ const signUpSchema = z.object({
   displayName: z.string().trim().min(2, 'Nome muito curto').max(60),
   email: z.string().trim().email('E-mail inválido').max(255),
   password: z.string().min(6, 'Mínimo 6 caracteres').max(72),
+  birthDate: z.string().min(10, 'Informe sua data de nascimento'),
 });
 const signInSchema = z.object({
   email: z.string().trim().email('E-mail inválido').max(255),
@@ -23,7 +25,7 @@ export default function MAuth() {
   const { user, signIn, signUp, resetPassword } = useAuth();
   const navigate = useNavigate();
   const [mode, setMode] = useState<Mode>('in');
-  const [form, setForm] = useState({ displayName: '', email: '', password: '' });
+  const [form, setForm] = useState({ displayName: '', email: '', password: '', birthDate: '' });
   const [loading, setLoading] = useState(false);
 
   if (user) return <Navigate to="/m" replace />;
@@ -51,6 +53,11 @@ export default function MAuth() {
     const { error } = mode === 'in'
       ? await signIn(form.email, form.password)
       : await signUp(form.email, form.password, form.displayName);
+    if (!error && mode === 'up') {
+      const { data: sess } = await supabase.auth.getSession();
+      const uid = sess.session?.user?.id;
+      if (uid) await supabase.from('profiles').update({ birth_date: form.birthDate } as any).eq('id', uid);
+    }
     setLoading(false);
     if (error) { toast.error(error); return; }
     toast.success(mode === 'in' ? '✨ Bem-vindo de volta!' : '🎮 Conta criada! Verifique seu e-mail.');
@@ -84,13 +91,31 @@ export default function MAuth() {
 
           <form onSubmit={onSubmit} className="space-y-3">
             {mode === 'up' && (
-              <div className="relative">
-                <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <input value={form.displayName} onChange={e => setForm({ ...form, displayName: e.target.value })}
-                  placeholder="Seu nome de exibição"
-                  className="w-full pl-10 pr-3 py-2.5 bg-background/60 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
-              </div>
+              <>
+                <div className="relative">
+                  <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <input value={form.displayName} onChange={e => setForm({ ...form, displayName: e.target.value })}
+                    placeholder="Seu nome de exibição"
+                    className="w-full pl-10 pr-3 py-2.5 bg-background/60 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
+                </div>
+                <div>
+                  <div className="relative">
+                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <input type="date" value={form.birthDate} onChange={e => setForm({ ...form, birthDate: e.target.value })}
+                      max={new Date().toISOString().slice(0, 10)}
+                      aria-label="Data de nascimento"
+                      className="w-full pl-10 pr-3 py-2.5 bg-background/60 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-1 px-1">Obrigatório (Lei 15.211/2025 — ECA Digital). Define quais jogos aparecem para você.</p>
+                </div>
+              </>
             )}
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
+                placeholder="seu@email.com"
+                className="w-full pl-10 pr-3 py-2.5 bg-background/60 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
+            </div>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
