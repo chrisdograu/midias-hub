@@ -39,7 +39,14 @@ export default function Auth() {
 
     if (mode === 'signup') {
       if (password.length < 6) { setLoading(false); toast.error('A senha deve ter no mínimo 6 caracteres'); return; }
+      if (!birthDate) { setLoading(false); toast.error('Informe sua data de nascimento (obrigatório).'); return; }
       const { error } = await signUp(email, password, name);
+      if (!error) {
+        // Grava birth_date no profile recém-criado (item 97 — ECA Digital)
+        const { data: sess } = await supabase.auth.getSession();
+        const uid = sess.session?.user?.id;
+        if (uid) await supabase.from('profiles').update({ birth_date: birthDate } as any).eq('id', uid);
+      }
       setLoading(false);
       if (error) { toast.error(error); return; }
       toast.success('Conta criada! Verifique seu e-mail para confirmar o cadastro.');
