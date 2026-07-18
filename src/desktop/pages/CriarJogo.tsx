@@ -36,6 +36,7 @@ export default function CriarJogo() {
       ...form,
       original_price: originalPrice,
       featured,
+      classificacao_indicativa: classificacao,
       product_type: 'jogo',
       estado_publicacao: 'ativo',
     } as any);
