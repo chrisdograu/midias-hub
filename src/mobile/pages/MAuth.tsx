@@ -53,6 +53,11 @@ export default function MAuth() {
     const { error } = mode === 'in'
       ? await signIn(form.email, form.password)
       : await signUp(form.email, form.password, form.displayName);
+    if (!error && mode === 'up') {
+      const { data: sess } = await supabase.auth.getSession();
+      const uid = sess.session?.user?.id;
+      if (uid) await supabase.from('profiles').update({ birth_date: form.birthDate } as any).eq('id', uid);
+    }
     setLoading(false);
     if (error) { toast.error(error); return; }
     toast.success(mode === 'in' ? '✨ Bem-vindo de volta!' : '🎮 Conta criada! Verifique seu e-mail.');
