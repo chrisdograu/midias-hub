@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 interface Notif {
   id: string; title: string; body: string | null; type: string;
   is_read: boolean; created_at: string; reference_type: string | null; reference_id: string | null;
+  kind?: string | null; cta_label?: string | null; cta_url?: string | null;
   href?: string;
 }
 
@@ -131,19 +132,36 @@ export default function NotificationBell() {
               </div>
               <div className="max-h-96 overflow-y-auto divide-y divide-border">
                 {items.length === 0 && <p className="p-6 text-center text-sm text-muted-foreground">Nenhuma notificação</p>}
-                {items.map(n => (
-                  <Link key={n.id} to={n.href || linkFor(n)} onClick={() => markOneRead(n.id, n.is_read)}
-                    className={`block p-3 hover:bg-secondary/50 transition-colors ${!n.is_read ? 'bg-primary/5' : ''}`}>
-                    <div className="flex items-start gap-2">
-                      {!n.is_read && <span className="w-2 h-2 rounded-full bg-primary mt-1.5 shrink-0" />}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground">{n.title}</p>
-                        {n.body && <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{n.body}</p>}
-                        <p className="text-[10px] text-muted-foreground mt-1">{new Date(n.created_at).toLocaleString('pt-BR')}</p>
-                      </div>
+                {items.map(n => {
+                  const isMobile = isMobileCtx();
+                  const ctaHref = n.cta_url
+                    ? (isMobile && n.cta_url.startsWith('/perfil') ? n.cta_url.replace('/perfil', '/m/perfil') : n.cta_url)
+                    : null;
+                  const mainHref = n.href || linkFor(n);
+                  return (
+                    <div key={n.id} className={`p-3 hover:bg-secondary/50 transition-colors ${!n.is_read ? 'bg-primary/5' : ''} ${n.kind === 'destacada' ? 'border-l-2 border-primary' : ''}`}>
+                      <Link to={mainHref} onClick={() => markOneRead(n.id, n.is_read)} className="block">
+                        <div className="flex items-start gap-2">
+                          {!n.is_read && <span className="w-2 h-2 rounded-full bg-primary mt-1.5 shrink-0" />}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-foreground">{n.title}</p>
+                            {n.body && <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{n.body}</p>}
+                            <p className="text-[10px] text-muted-foreground mt-1">{new Date(n.created_at).toLocaleString('pt-BR')}</p>
+                          </div>
+                        </div>
+                      </Link>
+                      {ctaHref && n.cta_label && (
+                        <Link
+                          to={ctaHref}
+                          onClick={() => markOneRead(n.id, n.is_read)}
+                          className="mt-2 ml-4 inline-flex items-center px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90"
+                        >
+                          {n.cta_label}
+                        </Link>
+                      )}
                     </div>
-                  </Link>
-                ))}
+                  );
+                })}
               </div>
             </motion.div>
           </>
