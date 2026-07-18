@@ -10,10 +10,21 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { AdminPageHeader } from '../components/AdminPageHeader';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+const CLASSIFICACOES: { value: 'L' | '10' | '12' | '14' | '16' | '18'; label: string; hint: string }[] = [
+  { value: 'L', label: 'Livre', hint: 'Sem restrição de idade.' },
+  { value: '10', label: '10 anos', hint: 'Fantasia leve, competição.' },
+  { value: '12', label: '12 anos', hint: 'Violência leve, insinuação.' },
+  { value: '14', label: '14 anos', hint: 'Violência, terror leve.' },
+  { value: '16', label: '16 anos', hint: 'Violência intensa, drogas.' },
+  { value: '18', label: '18 anos', hint: 'Adulto — só maiores.' },
+];
 
 export default function CriarJogo() {
   const [form, setForm] = useState({ title: '', description: '', price: 0, original_price: 0, stock: 0, image_url: '', publisher: '' });
   const [featured, setFeatured] = useState(false);
+  const [classificacao, setClassificacao] = useState<'L' | '10' | '12' | '14' | '16' | '18'>('L');
   const [saving, setSaving] = useState(false);
   const navigate = useNavigate();
 
