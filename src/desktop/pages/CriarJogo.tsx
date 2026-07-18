@@ -61,6 +61,18 @@ export default function CriarJogo() {
             <div><Label>Estoque</Label><Input type="number" value={form.stock} onChange={e => setForm({ ...form, stock: Number(e.target.value) })} /></div>
           </div>
           <div><Label>Descrição</Label><Textarea rows={5} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} /></div>
+          <div>
+            <Label>Classificação indicativa (ECA Digital — Lei 15.211/2025)</Label>
+            <Select value={classificacao} onValueChange={(v: any) => setClassificacao(v)}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {CLASSIFICACOES.map(c => (
+                  <SelectItem key={c.value} value={c.value}>{c.label} — <span className="text-muted-foreground">{c.hint}</span></SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground mt-1">Define a idade mínima para o jogo aparecer no catálogo do usuário.</p>
+          </div>
           <div className="flex items-center gap-3 rounded-lg border border-border p-3">
             <Switch checked={featured} onCheckedChange={setFeatured} />
             <div>
