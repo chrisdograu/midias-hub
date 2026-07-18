@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
-import { Mail, Lock, User as UserIcon, Loader2, ArrowLeft } from 'lucide-react';
+import { Mail, Lock, User as UserIcon, Loader2, ArrowLeft, Calendar } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { z } from 'zod';
 import { toast } from 'sonner';
 
@@ -10,6 +11,7 @@ const signUpSchema = z.object({
   displayName: z.string().trim().min(2, 'Nome muito curto').max(60),
   email: z.string().trim().email('E-mail inválido').max(255),
   password: z.string().min(6, 'Mínimo 6 caracteres').max(72),
+  birthDate: z.string().min(10, 'Informe sua data de nascimento'),
 });
 const signInSchema = z.object({
   email: z.string().trim().email('E-mail inválido').max(255),
