@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from '@/components/ui/dialog';
-import { Copy, Sparkles, Gamepad2, Gift, Loader2, Check, Info } from 'lucide-react';
+import { Copy, Sparkles, Gamepad2, Gift, Loader2, Check, Info, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
 
 const MIN_GENRES = 3;
@@ -23,6 +23,11 @@ export default function PreferencesPanel() {
   const [redeemInput, setRedeemInput] = useState('');
   const [redeeming, setRedeeming] = useState(false);
 
+  type ChatMode = 'friends_direct' | 'followers_direct' | 'request_only';
+  const [chatMode, setChatMode] = useState<ChatMode>('request_only');
+  const [savedChatMode, setSavedChatMode] = useState<ChatMode>('request_only');
+  const [savingChat, setSavingChat] = useState(false);
+
   const [steamOpen, setSteamOpen] = useState(false);
 
   const refresh = async () => {
@@ -38,6 +43,9 @@ export default function PreferencesPanel() {
       setSavedPicked(genres);
       setReferralCode(row.referral_code || null);
       setReferredBy(row.referred_by || null);
+      const mode: ChatMode = (row.chat_privacy_mode as ChatMode) || 'request_only';
+      setChatMode(mode);
+      setSavedChatMode(mode);
     }
   };
 
@@ -99,6 +107,16 @@ export default function PreferencesPanel() {
     setRedeemInput('');
   };
 
+  const saveChatMode = async (mode: ChatMode) => {
+    if (!user) return;
+    setSavingChat(true);
+    const { error } = await supabase.from('profiles').update({ chat_privacy_mode: mode } as any).eq('id', user.id);
+    setSavingChat(false);
+    if (error) { toast.error('Erro ao salvar privacidade do chat'); return; }
+    setChatMode(mode); setSavedChatMode(mode);
+    toast.success('Privacidade do chat atualizada');
+  };
+
   if (!user) return null;
 
   return (
@@ -143,6 +161,42 @@ export default function PreferencesPanel() {
           </Button>
         </div>
       </div>
+
+      <div className="border-t border-border pt-4">
+        <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-1">
+          <MessageSquare className="h-4 w-4 text-primary" /> Quem pode me mandar mensagem
+        </h3>
+        <p className="text-xs text-muted-foreground mb-3">
+          Define o comportamento padrão de novas conversas. Você sempre pode aprovar depois em cada pedido.
+        </p>
+        <div className="grid gap-2">
+          {([
+            { v: 'friends_direct',   t: 'Só amigos abrem direto',   d: 'Chat aberto na hora quando os dois se seguem. Estranho vira pedido.' },
+            { v: 'followers_direct', t: 'Quem me segue abre direto', d: 'Qualquer pessoa que te segue já entra na conversa. Resto vira pedido.' },
+            { v: 'request_only',     t: 'Sempre exigir pedido',      d: 'Toda nova conversa fica pendente até você aceitar. Mais restritivo.' },
+          ] as { v: ChatMode; t: string; d: string }[]).map(opt => {
+            const active = chatMode === opt.v;
+            return (
+              <button
+                key={opt.v}
+                type="button"
+                onClick={() => saveChatMode(opt.v)}
+                disabled={savingChat}
+                className={`text-left rounded-lg border p-3 transition-colors ${
+                  active ? 'border-primary bg-primary/10' : 'border-border bg-secondary hover:border-primary/60'
+                } disabled:opacity-60`}
+              >
+                <div className="flex items-center gap-2 text-sm font-semibold">
+                  {active && <Check className="h-3.5 w-3.5 text-primary" />} {opt.t}
+                </div>
+                <p className="text-[11px] text-muted-foreground mt-0.5">{opt.d}</p>
+              </button>
+            );
+          })}
+        </div>
+        {savedChatMode !== chatMode && <p className="text-[11px] text-amber-500 mt-2">Salvando…</p>}
+      </div>
+
 
       <div className="border-t border-border pt-4">
         <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-1">

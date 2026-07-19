@@ -67,17 +67,16 @@ export default function MMarketplaceItem() {
   const handleMessage = async () => {
     if (!user) { toast.error('Faça login primeiro'); navigate('/m/auth'); return; }
     if (!ad || user.id === ad.seller_id) return;
-    const { data: existing } = await supabase
-      .from('conversas').select('id')
-      .or(`and(participant_1.eq.${user.id},participant_2.eq.${ad.seller_id}),and(participant_1.eq.${ad.seller_id},participant_2.eq.${user.id})`)
-      .eq('anuncio_id', ad.id).maybeSingle();
-    if (existing) { navigate(`/m/chat/${existing.id}`); return; }
-    const { data: conv, error } = await supabase
-      .from('conversas')
-      .insert({ participant_1: user.id, participant_2: ad.seller_id, anuncio_id: ad.id, status: 'accepted' })
-      .select('id').single();
-    if (error || !conv) { toast.error('Erro ao iniciar conversa'); return; }
-    navigate(`/m/chat/${conv.id}`);
+    // channel='seller' → menor de idade pode virar pending_guardian; RPC também aplica chat_privacy_mode.
+    const { data, error } = await (supabase as any).rpc('start_conversation', {
+      p_target: ad.seller_id, p_anuncio_id: ad.id, p_torneio_id: null, p_channel: 'seller',
+    });
+    if (error) { toast.error('Erro ao iniciar conversa'); return; }
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!row?.conversation_id) { toast.error('Erro ao iniciar conversa'); return; }
+    if (row.status === 'pending_guardian') toast.success('Contato liberado após aprovação do responsável');
+    else if (row.status === 'pending') toast.success('Pedido enviado ao vendedor');
+    navigate(`/m/chat/${row.conversation_id}`);
   };
 
   const deleteAd = async () => {

@@ -5018,6 +5018,18 @@ export type Database = {
       should_notify: { Args: { _pref: string; _uid: string }; Returns: boolean }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
+      start_conversation: {
+        Args: {
+          p_anuncio_id?: string
+          p_channel?: string
+          p_target: string
+          p_torneio_id?: string
+        }
+        Returns: {
+          conversation_id: string
+          status: string
+        }[]
+      }
       submit_ban_appeal: {
         Args: {
           _description: string

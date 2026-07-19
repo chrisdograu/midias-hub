@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Sparkles, Check, Loader2, Copy, Gamepad2, Gift, Info, X } from 'lucide-react';
+import { Sparkles, Check, Loader2, Copy, Gamepad2, Gift, Info, X, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
 
 const MIN_GENRES = 3;
@@ -23,6 +23,10 @@ export default function MPreferencesSection() {
   const [redeemInput, setRedeemInput] = useState('');
   const [redeeming, setRedeeming] = useState(false);
 
+  type ChatMode = 'friends_direct' | 'followers_direct' | 'request_only';
+  const [chatMode, setChatMode] = useState<ChatMode>('request_only');
+  const [savingChat, setSavingChat] = useState(false);
+
   const [steamOpen, setSteamOpen] = useState(false);
 
   const refresh = async () => {
@@ -38,6 +42,7 @@ export default function MPreferencesSection() {
       setSavedPicked(genres);
       setReferralCode(row.referral_code || null);
       setReferredBy(row.referred_by || null);
+      setChatMode(((row as any).chat_privacy_mode as ChatMode) || 'request_only');
     }
   };
 
@@ -90,6 +95,15 @@ export default function MPreferencesSection() {
     setRedeemInput('');
   };
 
+  const saveChatMode = async (mode: ChatMode) => {
+    if (!user) return;
+    setSavingChat(true);
+    const { error } = await supabase.from('profiles').update({ chat_privacy_mode: mode } as any).eq('id', user.id);
+    setSavingChat(false);
+    if (error) { toast.error('Erro ao salvar'); return; }
+    setChatMode(mode); toast.success('Privacidade do chat atualizada');
+  };
+
   if (!user) return null;
 
   return (
@@ -140,6 +154,34 @@ export default function MPreferencesSection() {
       </div>
 
       <div className="border-t border-border pt-3">
+        <h3 className="text-xs font-semibold text-foreground flex items-center gap-1.5 mb-2">
+          <MessageSquare className="h-3.5 w-3.5 text-primary" /> Quem pode me mandar mensagem
+        </h3>
+        <p className="text-[10px] text-muted-foreground mb-2">
+          Comportamento padrão pra novas conversas — você ainda vê os pedidos pendentes.
+        </p>
+        <div className="grid gap-2">
+          {([
+            { v: 'friends_direct',   t: 'Só amigos abrem direto',    d: 'Follow mútuo entra; resto vira pedido.' },
+            { v: 'followers_direct', t: 'Quem me segue abre direto', d: 'Seguidores entram; resto vira pedido.' },
+            { v: 'request_only',     t: 'Sempre exigir pedido',      d: 'Toda conversa fica pendente.' },
+          ] as { v: ChatMode; t: string; d: string }[]).map(opt => {
+            const active = chatMode === opt.v;
+            return (
+              <button key={opt.v} type="button" onClick={() => saveChatMode(opt.v)} disabled={savingChat}
+                className={`text-left rounded-lg border p-2.5 ${active ? 'border-primary bg-primary/10' : 'border-border bg-secondary'} disabled:opacity-60`}>
+                <div className="flex items-center gap-1.5 text-xs font-semibold">
+                  {active && <Check className="h-3 w-3 text-primary" />} {opt.t}
+                </div>
+                <p className="text-[10px] text-muted-foreground mt-0.5">{opt.d}</p>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="border-t border-border pt-3">
+
         <h3 className="text-xs font-semibold text-foreground flex items-center gap-1.5 mb-2">
           <Gamepad2 className="h-3.5 w-3.5 text-primary" /> Plataformas conectadas
         </h3>

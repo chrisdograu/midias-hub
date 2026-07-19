@@ -118,14 +118,16 @@ export default function MProfile() {
   };
   const handleMessage = async () => {
     if (!user || !targetId) return;
-    const { data: existing } = await supabase.from('conversas').select('id')
-      .or(`and(participant_1.eq.${user.id},participant_2.eq.${targetId}),and(participant_1.eq.${targetId},participant_2.eq.${user.id})`)
-      .is('anuncio_id', null).maybeSingle();
-    if (existing) { navigate(`/m/chat/${existing.id}`); return; }
-    const { data: conv } = await supabase.from('conversas').insert({
-      participant_1: user.id, participant_2: targetId, status: 'pending'
-    }).select('id').single();
-    if (conv) { toast.success('Pedido de conversa enviado'); navigate(`/m/chat/${conv.id}`); }
+    // RPC start_conversation aplica chat_privacy_mode do destinatário (friends_direct / followers_direct / request_only).
+    const { data, error } = await (supabase as any).rpc('start_conversation', {
+      p_target: targetId, p_anuncio_id: null, p_torneio_id: null, p_channel: 'personal',
+    });
+    if (error) { toast.error('Não foi possível abrir a conversa'); return; }
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!row?.conversation_id) { toast.error('Erro ao iniciar conversa'); return; }
+    if (row.status === 'pending') toast.success('Pedido de conversa enviado');
+    else if (row.status === 'pending_guardian') toast.success('Aguardando aprovação do responsável');
+    navigate(`/m/chat/${row.conversation_id}`);
   };
   const submitReport = async () => {
     if (!user || !targetId || !reportText.trim()) return;
