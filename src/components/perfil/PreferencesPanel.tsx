@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
 } from '@/components/ui/dialog';
-import { Copy, Sparkles, Gamepad2, Gift, Loader2, Check, Info } from 'lucide-react';
+import { Copy, Sparkles, Gamepad2, Gift, Loader2, Check, Info, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
 
 const MIN_GENRES = 3;
