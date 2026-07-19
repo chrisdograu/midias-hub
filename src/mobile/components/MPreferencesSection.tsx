@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Sparkles, Check, Loader2, Copy, Gamepad2, Gift, Info, X } from 'lucide-react';
+import { Sparkles, Check, Loader2, Copy, Gamepad2, Gift, Info, X, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
 
 const MIN_GENRES = 3;
