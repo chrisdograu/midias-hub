@@ -107,6 +107,16 @@ export default function PreferencesPanel() {
     setRedeemInput('');
   };
 
+  const saveChatMode = async (mode: ChatMode) => {
+    if (!user) return;
+    setSavingChat(true);
+    const { error } = await supabase.from('profiles').update({ chat_privacy_mode: mode } as any).eq('id', user.id);
+    setSavingChat(false);
+    if (error) { toast.error('Erro ao salvar privacidade do chat'); return; }
+    setChatMode(mode); setSavedChatMode(mode);
+    toast.success('Privacidade do chat atualizada');
+  };
+
   if (!user) return null;
 
   return (
