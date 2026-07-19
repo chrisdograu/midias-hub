@@ -23,6 +23,10 @@ export default function MPreferencesSection() {
   const [redeemInput, setRedeemInput] = useState('');
   const [redeeming, setRedeeming] = useState(false);
 
+  type ChatMode = 'friends_direct' | 'followers_direct' | 'request_only';
+  const [chatMode, setChatMode] = useState<ChatMode>('request_only');
+  const [savingChat, setSavingChat] = useState(false);
+
   const [steamOpen, setSteamOpen] = useState(false);
 
   const refresh = async () => {
