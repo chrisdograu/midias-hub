@@ -42,6 +42,7 @@ export default function MPreferencesSection() {
       setSavedPicked(genres);
       setReferralCode(row.referral_code || null);
       setReferredBy(row.referred_by || null);
+      setChatMode(((row as any).chat_privacy_mode as ChatMode) || 'request_only');
     }
   };
 
