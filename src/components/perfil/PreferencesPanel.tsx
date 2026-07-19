@@ -43,6 +43,9 @@ export default function PreferencesPanel() {
       setSavedPicked(genres);
       setReferralCode(row.referral_code || null);
       setReferredBy(row.referred_by || null);
+      const mode: ChatMode = (row.chat_privacy_mode as ChatMode) || 'request_only';
+      setChatMode(mode);
+      setSavedChatMode(mode);
     }
   };
 
