@@ -164,6 +164,42 @@ export default function PreferencesPanel() {
 
       <div className="border-t border-border pt-4">
         <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-1">
+          <MessageSquare className="h-4 w-4 text-primary" /> Quem pode me mandar mensagem
+        </h3>
+        <p className="text-xs text-muted-foreground mb-3">
+          Define o comportamento padrão de novas conversas. Você sempre pode aprovar depois em cada pedido.
+        </p>
+        <div className="grid gap-2">
+          {([
+            { v: 'friends_direct',   t: 'Só amigos abrem direto',   d: 'Chat aberto na hora quando os dois se seguem. Estranho vira pedido.' },
+            { v: 'followers_direct', t: 'Quem me segue abre direto', d: 'Qualquer pessoa que te segue já entra na conversa. Resto vira pedido.' },
+            { v: 'request_only',     t: 'Sempre exigir pedido',      d: 'Toda nova conversa fica pendente até você aceitar. Mais restritivo.' },
+          ] as { v: ChatMode; t: string; d: string }[]).map(opt => {
+            const active = chatMode === opt.v;
+            return (
+              <button
+                key={opt.v}
+                type="button"
+                onClick={() => saveChatMode(opt.v)}
+                disabled={savingChat}
+                className={`text-left rounded-lg border p-3 transition-colors ${
+                  active ? 'border-primary bg-primary/10' : 'border-border bg-secondary hover:border-primary/60'
+                } disabled:opacity-60`}
+              >
+                <div className="flex items-center gap-2 text-sm font-semibold">
+                  {active && <Check className="h-3.5 w-3.5 text-primary" />} {opt.t}
+                </div>
+                <p className="text-[11px] text-muted-foreground mt-0.5">{opt.d}</p>
+              </button>
+            );
+          })}
+        </div>
+        {savedChatMode !== chatMode && <p className="text-[11px] text-amber-500 mt-2">Salvando…</p>}
+      </div>
+
+
+      <div className="border-t border-border pt-4">
+        <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-1">
           <Gamepad2 className="h-4 w-4 text-primary" /> Plataformas conectadas
         </h3>
         <p className="text-xs text-muted-foreground mb-3">Puxe sua biblioteca de outras plataformas.</p>
