@@ -155,6 +155,34 @@ export default function MPreferencesSection() {
 
       <div className="border-t border-border pt-3">
         <h3 className="text-xs font-semibold text-foreground flex items-center gap-1.5 mb-2">
+          <MessageSquare className="h-3.5 w-3.5 text-primary" /> Quem pode me mandar mensagem
+        </h3>
+        <p className="text-[10px] text-muted-foreground mb-2">
+          Comportamento padrão pra novas conversas — você ainda vê os pedidos pendentes.
+        </p>
+        <div className="grid gap-2">
+          {([
+            { v: 'friends_direct',   t: 'Só amigos abrem direto',    d: 'Follow mútuo entra; resto vira pedido.' },
+            { v: 'followers_direct', t: 'Quem me segue abre direto', d: 'Seguidores entram; resto vira pedido.' },
+            { v: 'request_only',     t: 'Sempre exigir pedido',      d: 'Toda conversa fica pendente.' },
+          ] as { v: ChatMode; t: string; d: string }[]).map(opt => {
+            const active = chatMode === opt.v;
+            return (
+              <button key={opt.v} type="button" onClick={() => saveChatMode(opt.v)} disabled={savingChat}
+                className={`text-left rounded-lg border p-2.5 ${active ? 'border-primary bg-primary/10' : 'border-border bg-secondary'} disabled:opacity-60`}>
+                <div className="flex items-center gap-1.5 text-xs font-semibold">
+                  {active && <Check className="h-3 w-3 text-primary" />} {opt.t}
+                </div>
+                <p className="text-[10px] text-muted-foreground mt-0.5">{opt.d}</p>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="border-t border-border pt-3">
+
+        <h3 className="text-xs font-semibold text-foreground flex items-center gap-1.5 mb-2">
           <Gamepad2 className="h-3.5 w-3.5 text-primary" /> Plataformas conectadas
         </h3>
         <button
