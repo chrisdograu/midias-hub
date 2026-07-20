@@ -120,14 +120,18 @@ export default function MProfile() {
     if (!user || !targetId) return;
     // RPC start_conversation aplica chat_privacy_mode do destinatário (friends_direct / followers_direct / request_only).
     const { data, error } = await (supabase as any).rpc('start_conversation', {
-      p_target: targetId, p_anuncio_id: null, p_torneio_id: null, p_channel: 'personal',
+      _other: targetId, _channel: 'personal',
     });
-    if (error) { toast.error('Não foi possível abrir a conversa'); return; }
-    const row = Array.isArray(data) ? data[0] : data;
-    if (!row?.conversation_id) { toast.error('Erro ao iniciar conversa'); return; }
+    if (error) {
+      if ((error.message || '').includes('minor_stranger_blocked')) toast.error('Essa conta só aceita mensagens de amigos.');
+      else toast.error('Não foi possível abrir a conversa');
+      return;
+    }
+    const row: any = data;
+    if (!row?.id) { toast.error('Erro ao iniciar conversa'); return; }
     if (row.status === 'pending') toast.success('Pedido de conversa enviado');
     else if (row.status === 'pending_guardian') toast.success('Aguardando aprovação do responsável');
-    navigate(`/m/chat/${row.conversation_id}`);
+    navigate(`/m/chat/${row.id}`);
   };
   const submitReport = async () => {
     if (!user || !targetId || !reportText.trim()) return;
