@@ -26,6 +26,10 @@ export default function MPreferencesSection() {
   type ChatMode = 'friends_direct' | 'followers_direct' | 'request_only';
   const [chatMode, setChatMode] = useState<ChatMode>('request_only');
   const [savingChat, setSavingChat] = useState(false);
+  const [bracket, setBracket] = useState<'crianca' | 'adolescente' | 'adulto' | 'desconhecido'>('desconhecido');
+  const [approvalMode, setApprovalMode] = useState<'notify' | 'approve'>('approve');
+  const isMinor = bracket === 'crianca' || bracket === 'adolescente';
+  const isChild = bracket === 'crianca';
 
   const [steamOpen, setSteamOpen] = useState(false);
 
