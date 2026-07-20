@@ -69,14 +69,18 @@ export default function MMarketplaceItem() {
     if (!ad || user.id === ad.seller_id) return;
     // channel='seller' → menor de idade pode virar pending_guardian; RPC também aplica chat_privacy_mode.
     const { data, error } = await (supabase as any).rpc('start_conversation', {
-      p_target: ad.seller_id, p_anuncio_id: ad.id, p_torneio_id: null, p_channel: 'seller',
+      _other: ad.seller_id, _channel: 'seller',
     });
-    if (error) { toast.error('Erro ao iniciar conversa'); return; }
-    const row = Array.isArray(data) ? data[0] : data;
-    if (!row?.conversation_id) { toast.error('Erro ao iniciar conversa'); return; }
+    if (error) {
+      if ((error.message || '').includes('minor_stranger_blocked')) toast.error('Contato bloqueado por regra de idade.');
+      else toast.error('Erro ao iniciar conversa');
+      return;
+    }
+    const row: any = data;
+    if (!row?.id) { toast.error('Erro ao iniciar conversa'); return; }
     if (row.status === 'pending_guardian') toast.success('Contato liberado após aprovação do responsável');
     else if (row.status === 'pending') toast.success('Pedido enviado ao vendedor');
-    navigate(`/m/chat/${row.conversation_id}`);
+    navigate(`/m/chat/${row.id}`);
   };
 
   const deleteAd = async () => {
