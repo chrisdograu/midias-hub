@@ -170,28 +170,62 @@ export default function MPreferencesSection() {
         <h3 className="text-xs font-semibold text-foreground flex items-center gap-1.5 mb-2">
           <MessageSquare className="h-3.5 w-3.5 text-primary" /> Quem pode me mandar mensagem
         </h3>
-        <p className="text-[10px] text-muted-foreground mb-2">
-          Comportamento padrão pra novas conversas — você ainda vê os pedidos pendentes.
-        </p>
-        <div className="grid gap-2">
-          {([
-            { v: 'friends_direct',   t: 'Só amigos abrem direto',    d: 'Follow mútuo entra; resto vira pedido.' },
-            { v: 'followers_direct', t: 'Quem me segue abre direto', d: 'Seguidores entram; resto vira pedido.' },
-            { v: 'request_only',     t: 'Sempre exigir pedido',      d: 'Toda conversa fica pendente.' },
-          ] as { v: ChatMode; t: string; d: string }[]).map(opt => {
-            const active = chatMode === opt.v;
-            return (
-              <button key={opt.v} type="button" onClick={() => saveChatMode(opt.v)} disabled={savingChat}
-                className={`text-left rounded-lg border p-2.5 ${active ? 'border-primary bg-primary/10' : 'border-border bg-secondary'} disabled:opacity-60`}>
-                <div className="flex items-center gap-1.5 text-xs font-semibold">
-                  {active && <Check className="h-3 w-3 text-primary" />} {opt.t}
-                </div>
-                <p className="text-[10px] text-muted-foreground mt-0.5">{opt.d}</p>
-              </button>
-            );
-          })}
-        </div>
+        {isMinor ? (
+          <div className="space-y-2">
+            <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-2.5">
+              <p className="text-[11px] text-amber-500 font-semibold mb-0.5">Conta de menor de idade — trava do ECA Digital</p>
+              <p className="text-[10px] text-muted-foreground">
+                Todo pedido de chat de estranho é bloqueado. Amigos precisam mandar pedido antes de conversar.
+                O nível de aprovação é definido pelo seu responsável.
+              </p>
+            </div>
+            <div className="grid gap-2">
+              {([
+                { v: 'notify',  t: 'Nível A — Amigo fala direto', d: 'Responsável só é notificado.' },
+                { v: 'approve', t: 'Nível B — Responsável aprova cada pedido', d: 'Nada entra sem OK do responsável.' },
+              ] as { v: 'notify' | 'approve'; t: string; d: string }[]).map(opt => {
+                const active = approvalMode === opt.v;
+                const disabled = isChild && opt.v === 'notify';
+                return (
+                  <div key={opt.v}
+                    className={`rounded-lg border p-2.5 ${active ? 'border-primary bg-primary/10' : 'border-border bg-secondary'} ${disabled ? 'opacity-50' : ''}`}>
+                    <div className="flex items-center gap-1.5 text-xs font-semibold">
+                      {active && <Check className="h-3 w-3 text-primary" />} {opt.t}
+                    </div>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">{opt.d}</p>
+                  </div>
+                );
+              })}
+            </div>
+            {isChild && <p className="text-[10px] text-muted-foreground">Criança (até 12) fica sempre no Nível B.</p>}
+          </div>
+        ) : (
+          <>
+            <p className="text-[10px] text-muted-foreground mb-2">
+              Comportamento padrão pra novas conversas — você ainda vê os pedidos pendentes.
+            </p>
+            <div className="grid gap-2">
+              {([
+                { v: 'friends_direct',   t: 'Só amigos abrem direto',    d: 'Follow mútuo entra; resto vira pedido.' },
+                { v: 'followers_direct', t: 'Quem me segue abre direto', d: 'Seguidores entram; resto vira pedido.' },
+                { v: 'request_only',     t: 'Sempre exigir pedido',      d: 'Toda conversa fica pendente.' },
+              ] as { v: ChatMode; t: string; d: string }[]).map(opt => {
+                const active = chatMode === opt.v;
+                return (
+                  <button key={opt.v} type="button" onClick={() => saveChatMode(opt.v)} disabled={savingChat}
+                    className={`text-left rounded-lg border p-2.5 ${active ? 'border-primary bg-primary/10' : 'border-border bg-secondary'} disabled:opacity-60`}>
+                    <div className="flex items-center gap-1.5 text-xs font-semibold">
+                      {active && <Check className="h-3 w-3 text-primary" />} {opt.t}
+                    </div>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">{opt.d}</p>
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        )}
       </div>
+
 
       <div className="border-t border-border pt-3">
 
