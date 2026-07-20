@@ -27,6 +27,10 @@ export default function PreferencesPanel() {
   const [chatMode, setChatMode] = useState<ChatMode>('request_only');
   const [savedChatMode, setSavedChatMode] = useState<ChatMode>('request_only');
   const [savingChat, setSavingChat] = useState(false);
+  const [bracket, setBracket] = useState<'crianca' | 'adolescente' | 'adulto' | 'desconhecido'>('desconhecido');
+  const [approvalMode, setApprovalMode] = useState<'notify' | 'approve'>('approve');
+  const isMinor = bracket === 'crianca' || bracket === 'adolescente';
+  const isChild = bracket === 'crianca';
 
   const [steamOpen, setSteamOpen] = useState(false);
 
@@ -46,6 +50,15 @@ export default function PreferencesPanel() {
       const mode: ChatMode = (row.chat_privacy_mode as ChatMode) || 'request_only';
       setChatMode(mode);
       setSavedChatMode(mode);
+      setApprovalMode(((row as any).minor_chat_approval_mode as any) || 'approve');
+      const bd = (row as any).birth_date;
+      if (bd) {
+        const d = new Date(bd); const now = new Date();
+        let age = now.getFullYear() - d.getFullYear();
+        const m = now.getMonth() - d.getMonth();
+        if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
+        setBracket(age < 12 ? 'crianca' : age < 18 ? 'adolescente' : 'adulto');
+      }
     }
   };
 
@@ -166,35 +179,69 @@ export default function PreferencesPanel() {
         <h3 className="text-sm font-semibold text-foreground flex items-center gap-2 mb-1">
           <MessageSquare className="h-4 w-4 text-primary" /> Quem pode me mandar mensagem
         </h3>
-        <p className="text-xs text-muted-foreground mb-3">
-          Define o comportamento padrão de novas conversas. Você sempre pode aprovar depois em cada pedido.
-        </p>
-        <div className="grid gap-2">
-          {([
-            { v: 'friends_direct',   t: 'Só amigos abrem direto',   d: 'Chat aberto na hora quando os dois se seguem. Estranho vira pedido.' },
-            { v: 'followers_direct', t: 'Quem me segue abre direto', d: 'Qualquer pessoa que te segue já entra na conversa. Resto vira pedido.' },
-            { v: 'request_only',     t: 'Sempre exigir pedido',      d: 'Toda nova conversa fica pendente até você aceitar. Mais restritivo.' },
-          ] as { v: ChatMode; t: string; d: string }[]).map(opt => {
-            const active = chatMode === opt.v;
-            return (
-              <button
-                key={opt.v}
-                type="button"
-                onClick={() => saveChatMode(opt.v)}
-                disabled={savingChat}
-                className={`text-left rounded-lg border p-3 transition-colors ${
-                  active ? 'border-primary bg-primary/10' : 'border-border bg-secondary hover:border-primary/60'
-                } disabled:opacity-60`}
-              >
-                <div className="flex items-center gap-2 text-sm font-semibold">
-                  {active && <Check className="h-3.5 w-3.5 text-primary" />} {opt.t}
-                </div>
-                <p className="text-[11px] text-muted-foreground mt-0.5">{opt.d}</p>
-              </button>
-            );
-          })}
-        </div>
-        {savedChatMode !== chatMode && <p className="text-[11px] text-amber-500 mt-2">Salvando…</p>}
+        {isMinor ? (
+          <div className="space-y-3">
+            <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3">
+              <p className="text-sm font-semibold text-amber-500 mb-1">Conta de menor de idade — trava do ECA Digital</p>
+              <p className="text-xs text-muted-foreground">
+                Todo pedido de chat de estranho é bloqueado automaticamente. Amigos precisam mandar pedido antes de conversar.
+                O nível de aprovação é definido pelo seu responsável.
+              </p>
+            </div>
+            <div className="grid gap-2">
+              {([
+                { v: 'notify',  t: 'Nível A — Amigo fala direto', d: 'Amigo abre a conversa; responsável recebe apenas notificação.' },
+                { v: 'approve', t: 'Nível B — Responsável aprova cada pedido', d: 'Nenhuma conversa entra sem aprovação explícita.' },
+              ] as { v: 'notify' | 'approve'; t: string; d: string }[]).map(opt => {
+                const active = approvalMode === opt.v;
+                const disabled = isChild && opt.v === 'notify';
+                return (
+                  <div key={opt.v}
+                    className={`rounded-lg border p-3 ${active ? 'border-primary bg-primary/10' : 'border-border bg-secondary'} ${disabled ? 'opacity-50' : ''}`}>
+                    <div className="flex items-center gap-2 text-sm font-semibold">
+                      {active && <Check className="h-3.5 w-3.5 text-primary" />} {opt.t}
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">{opt.d}</p>
+                  </div>
+                );
+              })}
+            </div>
+            {isChild && <p className="text-[11px] text-muted-foreground">Criança (até 12 anos) fica sempre no Nível B, sem exceção.</p>}
+          </div>
+        ) : (
+          <>
+            <p className="text-xs text-muted-foreground mb-3">
+              Define o comportamento padrão de novas conversas. Você sempre pode aprovar depois em cada pedido.
+            </p>
+            <div className="grid gap-2">
+              {([
+                { v: 'friends_direct',   t: 'Só amigos abrem direto',   d: 'Chat aberto na hora quando os dois se seguem. Estranho vira pedido.' },
+                { v: 'followers_direct', t: 'Quem me segue abre direto', d: 'Qualquer pessoa que te segue já entra na conversa. Resto vira pedido.' },
+                { v: 'request_only',     t: 'Sempre exigir pedido',      d: 'Toda nova conversa fica pendente até você aceitar. Mais restritivo.' },
+              ] as { v: ChatMode; t: string; d: string }[]).map(opt => {
+                const active = chatMode === opt.v;
+                return (
+                  <button
+                    key={opt.v}
+                    type="button"
+                    onClick={() => saveChatMode(opt.v)}
+                    disabled={savingChat}
+                    className={`text-left rounded-lg border p-3 transition-colors ${
+                      active ? 'border-primary bg-primary/10' : 'border-border bg-secondary hover:border-primary/60'
+                    } disabled:opacity-60`}
+                  >
+                    <div className="flex items-center gap-2 text-sm font-semibold">
+                      {active && <Check className="h-3.5 w-3.5 text-primary" />} {opt.t}
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">{opt.d}</p>
+                  </button>
+                );
+              })}
+            </div>
+            {savedChatMode !== chatMode && <p className="text-[11px] text-amber-500 mt-2">Salvando…</p>}
+          </>
+        )}
+
       </div>
 
 

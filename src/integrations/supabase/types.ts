@@ -2813,6 +2813,7 @@ export type Database = {
           id: string
           is_private: boolean
           library_visibility: string
+          minor_chat_approval_mode: string
           minor_chat_level: string | null
           monthly_favorites: string[] | null
           onboarded_at: string | null
@@ -2855,6 +2856,7 @@ export type Database = {
           id: string
           is_private?: boolean
           library_visibility?: string
+          minor_chat_approval_mode?: string
           minor_chat_level?: string | null
           monthly_favorites?: string[] | null
           onboarded_at?: string | null
@@ -2897,6 +2899,7 @@ export type Database = {
           id?: string
           is_private?: boolean
           library_visibility?: string
+          minor_chat_approval_mode?: string
           minor_chat_level?: string | null
           monthly_favorites?: string[] | null
           onboarded_at?: string | null
@@ -4765,6 +4768,7 @@ export type Database = {
           id: string
           is_private: boolean
           library_visibility: string
+          minor_chat_approval_mode: string
           minor_chat_level: string | null
           monthly_favorites: string[] | null
           onboarded_at: string | null
@@ -4823,6 +4827,7 @@ export type Database = {
           id: string
           is_private: boolean
           library_visibility: string
+          minor_chat_approval_mode: string
           minor_chat_level: string | null
           monthly_favorites: string[] | null
           onboarded_at: string | null
@@ -4956,6 +4961,7 @@ export type Database = {
           id: string
           is_private: boolean
           library_visibility: string
+          minor_chat_approval_mode: string
           minor_chat_level: string | null
           monthly_favorites: string[] | null
           onboarded_at: string | null
@@ -5018,18 +5024,20 @@ export type Database = {
       should_notify: { Args: { _pref: string; _uid: string }; Returns: boolean }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
-      start_conversation: {
-        Args: {
-          p_anuncio_id?: string
-          p_channel?: string
-          p_target: string
-          p_torneio_id?: string
-        }
-        Returns: {
-          conversation_id: string
-          status: string
-        }[]
-      }
+      start_conversation:
+        | { Args: { _channel?: string; _other: string }; Returns: Json }
+        | {
+            Args: {
+              p_anuncio_id?: string
+              p_channel?: string
+              p_target: string
+              p_torneio_id?: string
+            }
+            Returns: {
+              conversation_id: string
+              status: string
+            }[]
+          }
       submit_ban_appeal: {
         Args: {
           _description: string
