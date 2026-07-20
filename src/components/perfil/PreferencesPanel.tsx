@@ -50,6 +50,15 @@ export default function PreferencesPanel() {
       const mode: ChatMode = (row.chat_privacy_mode as ChatMode) || 'request_only';
       setChatMode(mode);
       setSavedChatMode(mode);
+      setApprovalMode(((row as any).minor_chat_approval_mode as any) || 'approve');
+      const bd = (row as any).birth_date;
+      if (bd) {
+        const d = new Date(bd); const now = new Date();
+        let age = now.getFullYear() - d.getFullYear();
+        const m = now.getMonth() - d.getMonth();
+        if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
+        setBracket(age < 12 ? 'crianca' : age < 18 ? 'adolescente' : 'adulto');
+      }
     }
   };
 
