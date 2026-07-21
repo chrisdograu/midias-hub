@@ -10,7 +10,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { ShieldCheck, ShieldX, ExternalLink } from 'lucide-react';
+import { ShieldCheck, ShieldX, ExternalLink, ShieldQuestion } from 'lucide-react';
 
 type Row = {
   id: string; minor_id: string; guardian_cpf: string; guardian_phone: string;
@@ -47,7 +47,7 @@ export default function VerificacaoResponsaveis() {
 
   return (
     <div className="p-6 space-y-4">
-      <AdminPageHeader title="Verificação de Responsáveis" subtitle="ECA Digital — Lei 15.211/2025" />
+      <AdminPageHeader icon={ShieldQuestion} title="Verificação de Responsáveis" subtitle="ECA Digital — Lei 15.211/2025" />
       <div className="flex gap-2">
         {(['pending', 'approved', 'rejected'] as const).map(t => (
           <Button key={t} size="sm" variant={tab === t ? 'default' : 'outline'} onClick={() => setTab(t)}>

@@ -11,7 +11,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Check, AlertTriangle } from 'lucide-react';
+import { Check, AlertTriangle, ShieldAlert } from 'lucide-react';
 
 type Row = {
   id: string; kind: string; severity: 'low' | 'medium' | 'high' | 'critical';
@@ -50,6 +50,7 @@ export default function ChatAlertsQueue() {
   return (
     <div className="p-6 space-y-4">
       <AdminPageHeader
+        icon={ShieldAlert}
         title="Fila de Alertas de IA — Chat de Menor"
         subtitle="Nenhuma mensagem é bloqueada sem revisão humana."
       />
