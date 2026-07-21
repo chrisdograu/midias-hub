@@ -46,6 +46,8 @@ const RecompensasAdmin = lazy(() => import("@/desktop/pages/RecompensasAdmin"));
 const GameRewardsAdmin = lazy(() => import("@/desktop/pages/GameRewardsAdmin"));
 const IntegracoesAdmin = lazy(() => import("@/desktop/pages/IntegracoesAdmin"));
 const VendedoresAdmin = lazy(() => import("@/desktop/pages/VendedoresAdmin"));
+const VerificacaoResponsaveis = lazy(() => import("@/desktop/pages/VerificacaoResponsaveis"));
+const ChatAlertsQueue = lazy(() => import("@/desktop/pages/ChatAlertsQueue"));
 
 export const desktopRoutes = (
   <>
@@ -95,6 +97,8 @@ export const desktopRoutes = (
       <Route path="recompensas/jogos" element={<GameRewardsAdmin />} />
       <Route path="integracoes" element={<IntegracoesAdmin />} />
       <Route path="vendedores" element={<VendedoresAdmin />} />
+      <Route path="eca/responsaveis" element={<VerificacaoResponsaveis />} />
+      <Route path="eca/chat-alerts" element={<ChatAlertsQueue />} />
     </Route>
   </>
 );

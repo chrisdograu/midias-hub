@@ -87,6 +87,8 @@ const navSections: {
     items: [
       { title: 'Moderação', url: '/desktop/moderacao', icon: Shield, route: 'moderacao' },
       { title: 'Denúncias', url: '/desktop/denuncias', icon: AlertTriangle, route: 'moderacao', pendingKey: 'denuncias' },
+      { title: 'ECA · Responsáveis', url: '/desktop/eca/responsaveis', icon: Shield, route: 'moderacao' },
+      { title: 'ECA · Alertas de Chat', url: '/desktop/eca/chat-alerts', icon: AlertTriangle, route: 'moderacao' },
     ],
   },
   {
