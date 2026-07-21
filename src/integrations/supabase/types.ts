@@ -531,6 +531,54 @@ export type Database = {
           },
         ]
       }
+      chat_ai_alerts: {
+        Row: {
+          action_taken: string | null
+          conversation_id: string | null
+          created_at: string
+          id: string
+          kind: string
+          message_id: string | null
+          minor_id: string
+          peer_id: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          severity: string
+          snippet: string | null
+          status: string
+        }
+        Insert: {
+          action_taken?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          message_id?: string | null
+          minor_id: string
+          peer_id?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          severity?: string
+          snippet?: string | null
+          status?: string
+        }
+        Update: {
+          action_taken?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          message_id?: string | null
+          minor_id?: string
+          peer_id?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          severity?: string
+          snippet?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       close_friends: {
         Row: {
           created_at: string
@@ -1969,6 +2017,54 @@ export type Database = {
           },
         ]
       }
+      guardian_link_requests: {
+        Row: {
+          atestado_url: string
+          created_at: string
+          guardian_cpf: string
+          guardian_full_name: string
+          guardian_id: string | null
+          guardian_phone: string
+          id: string
+          minor_id: string
+          reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          atestado_url: string
+          created_at?: string
+          guardian_cpf: string
+          guardian_full_name: string
+          guardian_id?: string | null
+          guardian_phone: string
+          id?: string
+          minor_id: string
+          reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          atestado_url?: string
+          created_at?: string
+          guardian_cpf?: string
+          guardian_full_name?: string
+          guardian_id?: string | null
+          guardian_phone?: string
+          id?: string
+          minor_id?: string
+          reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       integration_webhooks: {
         Row: {
           active: boolean
@@ -2789,6 +2885,7 @@ export type Database = {
       profiles: {
         Row: {
           active_title_id: string | null
+          adult_transitioned_at: string | null
           age_verified: boolean
           always_hide_spoilers: boolean
           anonymized_at: string | null
@@ -2812,6 +2909,7 @@ export type Database = {
           guardian_user_id: string | null
           id: string
           is_private: boolean
+          is_verified_account: boolean
           library_visibility: string
           minor_chat_approval_mode: string
           minor_chat_level: string | null
@@ -2829,9 +2927,11 @@ export type Database = {
           trophy_showcase: string[] | null
           updated_at: string
           username: string | null
+          verified_at: string | null
         }
         Insert: {
           active_title_id?: string | null
+          adult_transitioned_at?: string | null
           age_verified?: boolean
           always_hide_spoilers?: boolean
           anonymized_at?: string | null
@@ -2855,6 +2955,7 @@ export type Database = {
           guardian_user_id?: string | null
           id: string
           is_private?: boolean
+          is_verified_account?: boolean
           library_visibility?: string
           minor_chat_approval_mode?: string
           minor_chat_level?: string | null
@@ -2872,9 +2973,11 @@ export type Database = {
           trophy_showcase?: string[] | null
           updated_at?: string
           username?: string | null
+          verified_at?: string | null
         }
         Update: {
           active_title_id?: string | null
+          adult_transitioned_at?: string | null
           age_verified?: boolean
           always_hide_spoilers?: boolean
           anonymized_at?: string | null
@@ -2898,6 +3001,7 @@ export type Database = {
           guardian_user_id?: string | null
           id?: string
           is_private?: boolean
+          is_verified_account?: boolean
           library_visibility?: string
           minor_chat_approval_mode?: string
           minor_chat_level?: string | null
@@ -2915,6 +3019,7 @@ export type Database = {
           trophy_showcase?: string[] | null
           updated_at?: string
           username?: string | null
+          verified_at?: string | null
         }
         Relationships: [
           {
@@ -4655,6 +4760,10 @@ export type Database = {
         Args: { _request_id: string }
         Returns: undefined
       }
+      admin_review_guardian_link: {
+        Args: { _approve: boolean; _id: string; _reason: string }
+        Returns: undefined
+      }
       age_bracket: { Args: { _birth: string }; Returns: string }
       announce_new_notification_type: {
         Args: {
@@ -4729,6 +4838,18 @@ export type Database = {
         Args: { _event: string; _payload: Json }
         Returns: undefined
       }
+      enqueue_chat_ai_alert: {
+        Args: {
+          _conversation_id: string
+          _kind: string
+          _message_id: string
+          _minor: string
+          _peer: string
+          _severity: string
+          _snippet: string
+        }
+        Returns: string
+      }
       gen_referral_code: { Args: never; Returns: string }
       get_employee_position: {
         Args: { _user_id: string }
@@ -4744,6 +4865,7 @@ export type Database = {
         Args: never
         Returns: {
           active_title_id: string | null
+          adult_transitioned_at: string | null
           age_verified: boolean
           always_hide_spoilers: boolean
           anonymized_at: string | null
@@ -4767,6 +4889,7 @@ export type Database = {
           guardian_user_id: string | null
           id: string
           is_private: boolean
+          is_verified_account: boolean
           library_visibility: string
           minor_chat_approval_mode: string
           minor_chat_level: string | null
@@ -4784,6 +4907,7 @@ export type Database = {
           trophy_showcase: string[] | null
           updated_at: string
           username: string | null
+          verified_at: string | null
         }
         SetofOptions: {
           from: "*"
@@ -4803,6 +4927,7 @@ export type Database = {
         Args: { _id: string }
         Returns: {
           active_title_id: string | null
+          adult_transitioned_at: string | null
           age_verified: boolean
           always_hide_spoilers: boolean
           anonymized_at: string | null
@@ -4826,6 +4951,7 @@ export type Database = {
           guardian_user_id: string | null
           id: string
           is_private: boolean
+          is_verified_account: boolean
           library_visibility: string
           minor_chat_approval_mode: string
           minor_chat_level: string | null
@@ -4843,6 +4969,7 @@ export type Database = {
           trophy_showcase: string[] | null
           updated_at: string
           username: string | null
+          verified_at: string | null
         }
         SetofOptions: {
           from: "*"
@@ -4937,6 +5064,7 @@ export type Database = {
         Args: { _ids: string[] }
         Returns: {
           active_title_id: string | null
+          adult_transitioned_at: string | null
           age_verified: boolean
           always_hide_spoilers: boolean
           anonymized_at: string | null
@@ -4960,6 +5088,7 @@ export type Database = {
           guardian_user_id: string | null
           id: string
           is_private: boolean
+          is_verified_account: boolean
           library_visibility: string
           minor_chat_approval_mode: string
           minor_chat_level: string | null
@@ -4977,6 +5106,7 @@ export type Database = {
           trophy_showcase: string[] | null
           updated_at: string
           username: string | null
+          verified_at: string | null
         }[]
         SetofOptions: {
           from: "*"
@@ -4992,6 +5122,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      promote_minors_to_adults: { Args: never; Returns: number }
       read_user_library_admin: {
         Args: { _reason: string; _target: string }
         Returns: {
@@ -5021,6 +5152,10 @@ export type Database = {
         }
       }
       redeem_referral: { Args: { _code: string }; Returns: Json }
+      review_chat_ai_alert: {
+        Args: { _action: string; _id: string; _safe: boolean }
+        Returns: undefined
+      }
       should_notify: { Args: { _pref: string; _uid: string }; Returns: boolean }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
@@ -5042,6 +5177,15 @@ export type Database = {
         Args: {
           _description: string
           _reason: Database["public"]["Enums"]["ban_appeal_reason"]
+        }
+        Returns: string
+      }
+      submit_guardian_link: {
+        Args: {
+          _atestado_url: string
+          _cpf: string
+          _full_name: string
+          _phone: string
         }
         Returns: string
       }

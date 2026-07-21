@@ -19,6 +19,7 @@ import { Label } from '@/components/ui/label';
 import PrivacyTab from '@/components/perfil/PrivacyTab';
 import NotificationPrefsTab from '@/components/perfil/NotificationPrefsTab';
 import BlockedUsersTab from '@/components/perfil/BlockedUsersTab';
+import GuardianLinkSection from '@/components/perfil/GuardianLinkSection';
 
 export default function PrivacidadeCentral() {
   const { user, signOut } = useAuth();
@@ -156,6 +157,8 @@ export default function PrivacidadeCentral() {
           </Dialog>
         </section>
       )}
+
+      <GuardianLinkSection />
 
       {/* Toggles rápidos */}
       <section className="bg-card border border-border rounded-xl p-5 mb-6 space-y-4">
