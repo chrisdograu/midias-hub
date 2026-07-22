@@ -42,6 +42,7 @@ export default function CreateTournamentDialog({ onCreated }: { onCreated?: () =
       status: 'open',
       starts_at: startsAt ? new Date(startsAt).toISOString() : null,
       verified,
+      adaptado_pcd: adaptadoPcd,
       prize: prize.trim() || null,
       created_by: user.id,
       xp_signup: xp.signup,
