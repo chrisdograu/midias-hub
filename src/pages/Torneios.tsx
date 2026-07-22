@@ -192,7 +192,11 @@ export default function Torneios() {
     );
   };
 
-  const filterByGame = (l: Tournament[]) => gameFilter === 'all' ? l : l.filter(t => t.product_id === gameFilter);
+  const filterByGame = (l: Tournament[]) => {
+    let out = gameFilter === 'all' ? l : l.filter(t => t.product_id === gameFilter);
+    if (onlyPcd) out = out.filter(t => (t as any).adaptado_pcd === true);
+    return out;
+  };
   const tabs = {
     open: filterByGame(list.filter(t => t.status === 'open')),
     running: filterByGame(list.filter(t => t.status === 'running')),
