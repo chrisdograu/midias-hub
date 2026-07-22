@@ -114,6 +114,13 @@ export default function CreateTournamentDialog({ onCreated }: { onCreated?: () =
             </div>
             <Switch checked={verified} onCheckedChange={setVerified} />
           </div>
+          <div className="flex items-center justify-between bg-secondary/40 rounded-lg p-3">
+            <div>
+              <Label className="text-sm">♿ Torneio adaptado / PcD</Label>
+              <p className="text-xs text-muted-foreground">Sinaliza que o torneio é inclusivo para pessoas com deficiência</p>
+            </div>
+            <Switch checked={adaptadoPcd} onCheckedChange={setAdaptadoPcd} />
+          </div>
           <div className="grid grid-cols-3 gap-2 text-center">
             <div className="bg-primary/10 border border-primary/30 rounded p-2">
               <div className="text-[10px] text-muted-foreground uppercase">Inscrição</div>
