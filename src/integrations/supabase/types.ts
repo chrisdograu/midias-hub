@@ -2905,9 +2905,12 @@ export type Database = {
           display_name: string | null
           email_notifications: boolean
           favorite_genres: string[] | null
+          frequent_seller_at: string | null
+          frequent_seller_notice_dismissed_at: string | null
           gamer_personality: string | null
           guardian_user_id: string | null
           id: string
+          is_frequent_seller: boolean
           is_private: boolean
           is_verified_account: boolean
           library_visibility: string
@@ -2951,9 +2954,12 @@ export type Database = {
           display_name?: string | null
           email_notifications?: boolean
           favorite_genres?: string[] | null
+          frequent_seller_at?: string | null
+          frequent_seller_notice_dismissed_at?: string | null
           gamer_personality?: string | null
           guardian_user_id?: string | null
           id: string
+          is_frequent_seller?: boolean
           is_private?: boolean
           is_verified_account?: boolean
           library_visibility?: string
@@ -2997,9 +3003,12 @@ export type Database = {
           display_name?: string | null
           email_notifications?: boolean
           favorite_genres?: string[] | null
+          frequent_seller_at?: string | null
+          frequent_seller_notice_dismissed_at?: string | null
           gamer_personality?: string | null
           guardian_user_id?: string | null
           id?: string
+          is_frequent_seller?: boolean
           is_private?: boolean
           is_verified_account?: boolean
           library_visibility?: string
@@ -4109,6 +4118,7 @@ export type Database = {
       }
       tournaments: {
         Row: {
+          adaptado_pcd: boolean
           archived_at: string | null
           banner_url: string | null
           bracket_type: string
@@ -4157,6 +4167,7 @@ export type Database = {
           xp_signup: number
         }
         Insert: {
+          adaptado_pcd?: boolean
           archived_at?: string | null
           banner_url?: string | null
           bracket_type?: string
@@ -4205,6 +4216,7 @@ export type Database = {
           xp_signup?: number
         }
         Update: {
+          adaptado_pcd?: boolean
           archived_at?: string | null
           banner_url?: string | null
           bracket_type?: string
@@ -4885,9 +4897,12 @@ export type Database = {
           display_name: string | null
           email_notifications: boolean
           favorite_genres: string[] | null
+          frequent_seller_at: string | null
+          frequent_seller_notice_dismissed_at: string | null
           gamer_personality: string | null
           guardian_user_id: string | null
           id: string
+          is_frequent_seller: boolean
           is_private: boolean
           is_verified_account: boolean
           library_visibility: string
@@ -4947,9 +4962,12 @@ export type Database = {
           display_name: string | null
           email_notifications: boolean
           favorite_genres: string[] | null
+          frequent_seller_at: string | null
+          frequent_seller_notice_dismissed_at: string | null
           gamer_personality: string | null
           guardian_user_id: string | null
           id: string
+          is_frequent_seller: boolean
           is_private: boolean
           is_verified_account: boolean
           library_visibility: string
@@ -5084,9 +5102,12 @@ export type Database = {
           display_name: string | null
           email_notifications: boolean
           favorite_genres: string[] | null
+          frequent_seller_at: string | null
+          frequent_seller_notice_dismissed_at: string | null
           gamer_personality: string | null
           guardian_user_id: string | null
           id: string
+          is_frequent_seller: boolean
           is_private: boolean
           is_verified_account: boolean
           library_visibility: string
