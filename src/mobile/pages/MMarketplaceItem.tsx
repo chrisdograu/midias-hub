@@ -177,6 +177,17 @@ export default function MMarketplaceItem() {
           </div>
         )}
 
+        <div className="rounded-xl border border-warning/40 bg-warning/10 p-3 text-[11px] text-foreground/90">
+          <p className="font-semibold text-warning mb-1">⚠️ Troca segura</p>
+          <p>
+            Combine tudo dentro do chat da MIDIAS — nunca envie dinheiro fora da plataforma nem passe telefone/e-mail no primeiro contato.
+            {' '}
+            {ad.certificate_type !== 'sem_certificado'
+              ? 'Este anúncio tem Certificado de Proteção da loja: qualquer problema, abra uma disputa aqui.'
+              : 'Este anúncio não tem Certificado de Proteção — em caso de golpe, denuncie o vendedor imediatamente.'}
+          </p>
+        </div>
+
         <div className="flex gap-2 items-center">
           {user && user.id !== ad.seller_id && (
             <>

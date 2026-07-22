@@ -361,6 +361,25 @@ export default function Perfil() {
               </div>
             </div>
           )}
+          <div className="mt-4 pt-4 border-t border-border">
+            <p className="text-xs text-muted-foreground mb-2">
+              Se você acha que sua conta pode estar sendo usada em outro dispositivo, encerre todas as outras sessões.
+            </p>
+            <button
+              onClick={async () => {
+                try {
+                  const { error } = await supabase.auth.signOut({ scope: 'others' } as any);
+                  if (error) throw error;
+                  toast.success('Todas as outras sessões foram encerradas.');
+                } catch (e: any) {
+                  toast.error(e?.message || 'Não foi possível encerrar as outras sessões.');
+                }
+              }}
+              className="text-sm text-destructive hover:underline"
+            >
+              Encerrar todas as outras sessões
+            </button>
+          </div>
         </div>
           </TabsContent>
         </Tabs>

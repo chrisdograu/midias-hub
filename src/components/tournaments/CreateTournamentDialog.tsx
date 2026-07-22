@@ -20,6 +20,7 @@ export default function CreateTournamentDialog({ onCreated }: { onCreated?: () =
   const [maxParticipants, setMaxParticipants] = useState(8);
   const [startsAt, setStartsAt] = useState('');
   const [verified, setVerified] = useState(false);
+  const [adaptadoPcd, setAdaptadoPcd] = useState(false);
   const [prize, setPrize] = useState('');
   const { submitting, guard } = useSubmitGuard();
 
@@ -41,6 +42,7 @@ export default function CreateTournamentDialog({ onCreated }: { onCreated?: () =
       status: 'open',
       starts_at: startsAt ? new Date(startsAt).toISOString() : null,
       verified,
+      adaptado_pcd: adaptadoPcd,
       prize: prize.trim() || null,
       created_by: user.id,
       xp_signup: xp.signup,
@@ -111,6 +113,13 @@ export default function CreateTournamentDialog({ onCreated }: { onCreated?: () =
               <p className="text-xs text-muted-foreground">Exige telefone cadastrado para inscrição</p>
             </div>
             <Switch checked={verified} onCheckedChange={setVerified} />
+          </div>
+          <div className="flex items-center justify-between bg-secondary/40 rounded-lg p-3">
+            <div>
+              <Label className="text-sm">♿ Torneio adaptado / PcD</Label>
+              <p className="text-xs text-muted-foreground">Sinaliza que o torneio é inclusivo para pessoas com deficiência</p>
+            </div>
+            <Switch checked={adaptadoPcd} onCheckedChange={setAdaptadoPcd} />
           </div>
           <div className="grid grid-cols-3 gap-2 text-center">
             <div className="bg-primary/10 border border-primary/30 rounded p-2">

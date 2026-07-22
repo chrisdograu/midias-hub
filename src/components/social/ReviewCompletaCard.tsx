@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { BookOpen, Clock, Gamepad2, Heart, Lock, ThumbsDown, ThumbsUp, Users } from 'lucide-react';
+import { BookOpen, Clock, Gamepad2, Heart, Lock, ShieldCheck, ThumbsDown, ThumbsUp, Users } from 'lucide-react';
 import SpoilerGuard from '@/components/spoiler/SpoilerGuard';
 
 export interface ReviewCompletaData {
@@ -22,6 +22,7 @@ export interface ReviewCompletaData {
   created_at: string;
   is_spoiler?: boolean | null;
   spoiler_achievement_name?: string | null;
+  verified_purchase?: boolean | null;
   profile?: { display_name?: string | null; avatar_url?: string | null } | null;
 }
 
@@ -44,8 +45,15 @@ export default function ReviewCompletaCard({ review }: { review: ReviewCompletaD
             </p>
           </div>
         </Link>
-        <span className="ml-auto text-[10px] flex items-center gap-1 px-2 py-0.5 rounded-full border border-border text-muted-foreground">
-          {review.visibility === 'private' ? <><Lock className="h-3 w-3" /> Close</> : <><Users className="h-3 w-3" /> Amigos</>}
+        <span className="ml-auto flex items-center gap-1.5">
+          {review.verified_purchase && (
+            <span className="text-[10px] flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/15 text-success border border-success/30" title="Comprou o jogo aqui na MIDIAS">
+              <ShieldCheck className="h-3 w-3" /> Compra verificada
+            </span>
+          )}
+          <span className="text-[10px] flex items-center gap-1 px-2 py-0.5 rounded-full border border-border text-muted-foreground">
+            {review.visibility === 'private' ? <><Lock className="h-3 w-3" /> Close</> : <><Users className="h-3 w-3" /> Amigos</>}
+          </span>
         </span>
       </header>
 

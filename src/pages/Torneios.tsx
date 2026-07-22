@@ -34,6 +34,7 @@ export default function Torneios() {
   const [selected, setSelected] = useState<Tournament | null>(null);
   const [myIds, setMyIds] = useState<Set<string>>(new Set());
   const [gameFilter, setGameFilter] = useState<string>('all');
+  const [onlyPcd, setOnlyPcd] = useState(false);
   const [games, setGames] = useState<GameOpt[]>([]);
 
   const load = async () => {
@@ -191,7 +192,11 @@ export default function Torneios() {
     );
   };
 
-  const filterByGame = (l: Tournament[]) => gameFilter === 'all' ? l : l.filter(t => t.product_id === gameFilter);
+  const filterByGame = (l: Tournament[]) => {
+    let out = gameFilter === 'all' ? l : l.filter(t => t.product_id === gameFilter);
+    if (onlyPcd) out = out.filter(t => (t as any).adaptado_pcd === true);
+    return out;
+  };
   const tabs = {
     open: filterByGame(list.filter(t => t.status === 'open')),
     running: filterByGame(list.filter(t => t.status === 'running')),
@@ -232,6 +237,14 @@ export default function Torneios() {
               </button>
             );
           })}
+          <button
+            onClick={() => setOnlyPcd(v => !v)}
+            className={`ml-2 px-3 py-1.5 rounded-full text-xs font-semibold shrink-0 inline-flex items-center gap-1.5 ${onlyPcd ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}
+            aria-pressed={onlyPcd}
+            title="Somente torneios adaptados / PcD"
+          >
+            ♿ Adaptado / PcD
+          </button>
         </div>
       )}
       {loading ? <div className="flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin" /></div> : (
