@@ -232,7 +232,16 @@ export default function MForumGame() {
 
   return (
     <div className="pb-24">
-      <button onClick={() => navigate(-1)} className="px-4 py-3 flex items-center gap-1 text-sm text-muted-foreground"><ArrowLeft className="h-4 w-4" /> Voltar</button>
+      <div className="px-4 py-3 flex items-center justify-between">
+        <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-sm text-muted-foreground"><ArrowLeft className="h-4 w-4" /> Voltar</button>
+        <button
+          onClick={() => navigate(`/m/marketplace?q=${encodeURIComponent(game?.title || '')}`)}
+          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-secondary text-xs font-semibold text-foreground"
+          aria-label="Ver anúncios deste jogo no marketplace"
+        >
+          <ShoppingBag className="h-3.5 w-3.5" /> Marketplace
+        </button>
+      </div>
 
       <div className="px-4">
         <div className="glass rounded-2xl overflow-hidden">
