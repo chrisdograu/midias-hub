@@ -20,6 +20,7 @@ export default function CreateTournamentDialog({ onCreated }: { onCreated?: () =
   const [maxParticipants, setMaxParticipants] = useState(8);
   const [startsAt, setStartsAt] = useState('');
   const [verified, setVerified] = useState(false);
+  const [adaptadoPcd, setAdaptadoPcd] = useState(false);
   const [prize, setPrize] = useState('');
   const { submitting, guard } = useSubmitGuard();
 
