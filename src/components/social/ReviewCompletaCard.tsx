@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { BookOpen, Clock, Gamepad2, Heart, Lock, ThumbsDown, ThumbsUp, Users } from 'lucide-react';
+import { BookOpen, Clock, Gamepad2, Heart, Lock, ShieldCheck, ThumbsDown, ThumbsUp, Users } from 'lucide-react';
 import SpoilerGuard from '@/components/spoiler/SpoilerGuard';
 
 export interface ReviewCompletaData {
@@ -22,6 +22,7 @@ export interface ReviewCompletaData {
   created_at: string;
   is_spoiler?: boolean | null;
   spoiler_achievement_name?: string | null;
+  verified_purchase?: boolean | null;
   profile?: { display_name?: string | null; avatar_url?: string | null } | null;
 }
 
