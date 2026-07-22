@@ -237,7 +237,6 @@ export default function Torneios() {
               </button>
             );
           })}
-          </button>
           <button
             onClick={() => setOnlyPcd(v => !v)}
             className={`ml-2 px-3 py-1.5 rounded-full text-xs font-semibold shrink-0 inline-flex items-center gap-1.5 ${onlyPcd ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}
