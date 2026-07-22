@@ -34,6 +34,7 @@ export default function Torneios() {
   const [selected, setSelected] = useState<Tournament | null>(null);
   const [myIds, setMyIds] = useState<Set<string>>(new Set());
   const [gameFilter, setGameFilter] = useState<string>('all');
+  const [onlyPcd, setOnlyPcd] = useState(false);
   const [games, setGames] = useState<GameOpt[]>([]);
 
   const load = async () => {
