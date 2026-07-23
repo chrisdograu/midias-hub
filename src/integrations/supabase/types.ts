@@ -64,6 +64,7 @@ export type Database = {
           description: string | null
           desired_item: string | null
           expires_at: string | null
+          forum_game_ids: string[]
           game_title: string | null
           id: string
           plataformas: string[] | null
@@ -85,6 +86,7 @@ export type Database = {
           description?: string | null
           desired_item?: string | null
           expires_at?: string | null
+          forum_game_ids?: string[]
           game_title?: string | null
           id?: string
           plataformas?: string[] | null
@@ -106,6 +108,7 @@ export type Database = {
           description?: string | null
           desired_item?: string | null
           expires_at?: string | null
+          forum_game_ids?: string[]
           game_title?: string | null
           id?: string
           plataformas?: string[] | null
@@ -855,9 +858,12 @@ export type Database = {
       }
       denuncias: {
         Row: {
+          category: string
+          cautionary_action: string | null
           created_at: string
           description: string | null
           id: string
+          priority: string
           reason: string
           reporter_id: string
           resolved_at: string | null
@@ -867,9 +873,12 @@ export type Database = {
           target_type: string
         }
         Insert: {
+          category?: string
+          cautionary_action?: string | null
           created_at?: string
           description?: string | null
           id?: string
+          priority?: string
           reason: string
           reporter_id: string
           resolved_at?: string | null
@@ -879,9 +888,12 @@ export type Database = {
           target_type: string
         }
         Update: {
+          category?: string
+          cautionary_action?: string | null
           created_at?: string
           description?: string | null
           id?: string
+          priority?: string
           reason?: string
           reporter_id?: string
           resolved_at?: string | null
@@ -2927,6 +2939,8 @@ export type Database = {
           require_follow_approval: boolean
           seller_bio: string | null
           theme_color: string | null
+          tournament_penalty_count: number
+          tournament_penalty_skip_remaining: number
           trophy_showcase: string[] | null
           updated_at: string
           username: string | null
@@ -2976,6 +2990,8 @@ export type Database = {
           require_follow_approval?: boolean
           seller_bio?: string | null
           theme_color?: string | null
+          tournament_penalty_count?: number
+          tournament_penalty_skip_remaining?: number
           trophy_showcase?: string[] | null
           updated_at?: string
           username?: string | null
@@ -3025,6 +3041,8 @@ export type Database = {
           require_follow_approval?: boolean
           seller_bio?: string | null
           theme_color?: string | null
+          tournament_penalty_count?: number
+          tournament_penalty_skip_remaining?: number
           trophy_showcase?: string[] | null
           updated_at?: string
           username?: string | null
@@ -3046,6 +3064,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      rate_limits: {
+        Row: {
+          count: number
+          id: string
+          key: string
+          user_id: string
+          window_start: string
+        }
+        Insert: {
+          count?: number
+          id?: string
+          key: string
+          user_id: string
+          window_start?: string
+        }
+        Update: {
+          count?: number
+          id?: string
+          key?: string
+          user_id?: string
+          window_start?: string
+        }
+        Relationships: []
       }
       review_comments: {
         Row: {
@@ -3786,6 +3828,7 @@ export type Database = {
         Row: {
           bracket_side: string
           created_at: string
+          dispute_open: boolean
           ended_at: string | null
           id: string
           is_live: boolean
@@ -3794,6 +3837,10 @@ export type Database = {
           player_a: string | null
           player_b: string | null
           position: number
+          reported_at: string | null
+          reported_by: string | null
+          reported_score_a: number | null
+          reported_score_b: number | null
           round: number
           round_label: string | null
           scheduled_at: string | null
@@ -3808,6 +3855,7 @@ export type Database = {
         Insert: {
           bracket_side?: string
           created_at?: string
+          dispute_open?: boolean
           ended_at?: string | null
           id?: string
           is_live?: boolean
@@ -3816,6 +3864,10 @@ export type Database = {
           player_a?: string | null
           player_b?: string | null
           position?: number
+          reported_at?: string | null
+          reported_by?: string | null
+          reported_score_a?: number | null
+          reported_score_b?: number | null
           round?: number
           round_label?: string | null
           scheduled_at?: string | null
@@ -3830,6 +3882,7 @@ export type Database = {
         Update: {
           bracket_side?: string
           created_at?: string
+          dispute_open?: boolean
           ended_at?: string | null
           id?: string
           is_live?: boolean
@@ -3838,6 +3891,10 @@ export type Database = {
           player_a?: string | null
           player_b?: string | null
           position?: number
+          reported_at?: string | null
+          reported_by?: string | null
+          reported_score_a?: number | null
+          reported_score_b?: number | null
           round?: number
           round_label?: string | null
           scheduled_at?: string | null
@@ -4142,6 +4199,7 @@ export type Database = {
           narrative: string | null
           prize: string | null
           prize_badge_id: string | null
+          prize_confirmed: boolean
           prize_coupon_id: string | null
           prize_distribution: Json
           prize_game_id: string | null
@@ -4191,6 +4249,7 @@ export type Database = {
           narrative?: string | null
           prize?: string | null
           prize_badge_id?: string | null
+          prize_confirmed?: boolean
           prize_coupon_id?: string | null
           prize_distribution?: Json
           prize_game_id?: string | null
@@ -4240,6 +4299,7 @@ export type Database = {
           narrative?: string | null
           prize?: string | null
           prize_badge_id?: string | null
+          prize_confirmed?: boolean
           prize_coupon_id?: string | null
           prize_distribution?: Json
           prize_game_id?: string | null
@@ -4786,6 +4846,10 @@ export type Database = {
         }
         Returns: number
       }
+      apply_tournament_penalty: {
+        Args: { _skip_next: number; _user_id: string }
+        Returns: undefined
+      }
       are_mutual_friends: { Args: { _a: string; _b: string }; Returns: boolean }
       are_users_all_mutual_friends: {
         Args: { _users: string[] }
@@ -4835,6 +4899,10 @@ export type Database = {
         Args: { _product_id: string; _user_id: string }
         Returns: undefined
       }
+      confirm_match_result: {
+        Args: { _agree: boolean; _match_id: string }
+        Returns: undefined
+      }
       create_order_secure: {
         Args: {
           _client_total: number
@@ -4860,6 +4928,10 @@ export type Database = {
           _severity: string
           _snippet: string
         }
+        Returns: string
+      }
+      ensure_match_conversation: {
+        Args: { _match_id: string }
         Returns: string
       }
       gen_referral_code: { Args: never; Returns: string }
@@ -4919,6 +4991,8 @@ export type Database = {
           require_follow_approval: boolean
           seller_bio: string | null
           theme_color: string | null
+          tournament_penalty_count: number
+          tournament_penalty_skip_remaining: number
           trophy_showcase: string[] | null
           updated_at: string
           username: string | null
@@ -4984,6 +5058,8 @@ export type Database = {
           require_follow_approval: boolean
           seller_bio: string | null
           theme_color: string | null
+          tournament_penalty_count: number
+          tournament_penalty_skip_remaining: number
           trophy_showcase: string[] | null
           updated_at: string
           username: string | null
@@ -5057,6 +5133,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      hit_rate_limit: {
+        Args: { _key: string; _limit: number; _window_secs: number }
+        Returns: boolean
+      }
       is_admin: { Args: never; Returns: boolean }
       is_atendente: { Args: never; Returns: boolean }
       is_close_friend: {
@@ -5124,6 +5204,8 @@ export type Database = {
           require_follow_approval: boolean
           seller_bio: string | null
           theme_color: string | null
+          tournament_penalty_count: number
+          tournament_penalty_skip_remaining: number
           trophy_showcase: string[] | null
           updated_at: string
           username: string | null
@@ -5173,6 +5255,10 @@ export type Database = {
         }
       }
       redeem_referral: { Args: { _code: string }; Returns: Json }
+      report_match_result: {
+        Args: { _match_id: string; _score_a: number; _score_b: number }
+        Returns: undefined
+      }
       review_chat_ai_alert: {
         Args: { _action: string; _id: string; _safe: boolean }
         Returns: undefined
@@ -5226,6 +5312,14 @@ export type Database = {
       validate_and_use_coupon: {
         Args: { _code: string; _order_id: string }
         Returns: string
+      }
+      validate_discount_price: {
+        Args: {
+          _preco_atual: number
+          _preco_original: number
+          _produto_id: string
+        }
+        Returns: Json
       }
     }
     Enums: {
